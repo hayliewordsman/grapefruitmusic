@@ -43,14 +43,17 @@ public final class AboutFragment extends BaseFragment {
         TextView name = Ui.text(c, 24, R.attr.gfTextPrimary, true);
         name.setText(R.string.app_name);
         name.setPadding(0, Ui.dp(c, 10), 0, 0);
-        hero.addView(name);
         TextView version = Ui.text(c, 15, R.attr.gfTextSecondary, false);
         version.setText("Version " + SettingsFragment.versionName(c));
-        hero.addView(version);
         TextView copyright = Ui.text(c, 13, R.attr.gfTextSecondary, false);
         copyright.setText(COPYRIGHT);
         copyright.setPadding(0, Ui.dp(c, 6), 0, 0);
-        hero.addView(copyright);
+        for (TextView t : new TextView[]{name, version, copyright}) {
+            // Full-width lines with centered text (a plain addView would left-align them).
+            t.setGravity(Gravity.CENTER_HORIZONTAL);
+            hero.addView(t, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
         g.add(hero);
 
         g.section("Developer");
