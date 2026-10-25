@@ -16,6 +16,7 @@ import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
 import com.grapefruitmusic.source.MusicSource;
+import com.grapefruitmusic.ui.widget.FastScrollListView;
 import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.util.Bg;
 
@@ -68,7 +69,8 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
         Context c = getActivity();
-        list = new ListView(c);
+        boolean longList = mode() == SONGS || mode() == ARTISTS;
+        list = longList ? new FastScrollListView(c) : new ListView(c);
         RowAdapter.style(list);
         LinearLayout header = Ui.header(c, backLabel(), title(), goBack());
         if (backLabel() == null) {
@@ -106,7 +108,22 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
             }
         });
         list.setAdapter(adapter);
-        list.setFastScrollEnabled(mode() == SONGS || mode() == ARTISTS);
+        if (longList) {
+            FastScrollListView fast = (FastScrollListView) list;
+            fast.setThumbColor(Ui.accent(c));
+            fast.setLabeler(new FastScrollListView.Labeler() {
+                @Override
+                public String label(int position) {
+                    int i = position - list.getHeaderViewsCount();
+                    if (i < 0 || i >= adapter.getCount()) return null;
+                    Object row = adapter.getItem(i);
+                    String title = row instanceof MediaItem ? ((MediaItem) row).title : null;
+                    if (title == null || title.trim().length() == 0) return null;
+                    char first = Character.toUpperCase(title.trim().charAt(0));
+                    return Character.isLetter(first) ? String.valueOf(first) : "#";
+                }
+            });
+        }
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

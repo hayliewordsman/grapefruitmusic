@@ -25,6 +25,9 @@ with downloads for offline listening and time-synced lyrics.
   card that slides up over a blurred copy of the artwork. The artwork shrinks when paused. Pull the card down to close it.
   Lyrics and Up Next show a condensed header (small artwork and title) above the list.
 - **Light and dark modes:** Settings › Theme. *Match System* follows the phone's dark mode on Android 10+.
+- **Looks the same on every Android version:** Grapefruit draws its own switches, dialogs, menus, text fields,
+  messages and fast-scroll thumb instead of using Android's (Holo on 4.x, Material later). Settings switches are
+  little grapefruit slices that roll across a grapefruit-gradient track.
 - **Playback:** background playback with notification, lock-screen and headset controls, shuffle, repeat (all/one),
   Up Next (drag the ≡ handle to reorder), Play Next / Add to Up Next.
 - **Recently Played:** scroll up in Up Next to see the songs you've played (newest just above Now Playing).
@@ -87,7 +90,7 @@ The code is plain Java with no AndroidX or support libraries. Everything uses fr
 | `lyrics` | LRC parser and the lyrics lookup and cache |
 | `playback` | `Player` (queue + MediaPlayer), `PlaybackService` (notification, lock screen, headset) |
 | `net` | HTTP helper, Conscrypt/TLS setup, and a loopback relay that lets MediaPlayer stream over modern HTTPS |
-| `ui` | Single activity, pages as fragments, Now Playing card, code-drawn icons |
+| `ui` | Single activity, pages as fragments, Now Playing card, Grapefruit's own dialogs and widgets (toggle, slider, fast scroll), code-drawn icons |
 
 ### Release signing
 

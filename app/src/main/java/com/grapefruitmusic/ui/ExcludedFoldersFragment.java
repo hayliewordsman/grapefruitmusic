@@ -12,13 +12,13 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.grapefruitmusic.R;
 import com.grapefruitmusic.source.Folders;
 import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.util.Bg;
+import com.grapefruitmusic.util.Notice;
 import com.grapefruitmusic.util.Prefs;
 
 import java.util.Map;
@@ -144,27 +144,22 @@ public final class ExcludedFoldersFragment extends BaseFragment {
 
     private void addByPath() {
         final Context c = getActivity();
-        final EditText field = new EditText(c);
+        final EditText field = Ui.field(c, 16, false, "/folder/path");
         field.setSingleLine(true);
         field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         String root = storageRoot();
         field.setText(root != null ? root + "/" : "/");
         field.setSelection(field.getText().length());
-        LinearLayout box = new LinearLayout(c);
-        int pad = Ui.dp(c, 16);
-        box.setPadding(pad, pad / 2, pad, 0);
-        box.addView(field, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
         Ui.dialog(c)
                 .setTitle("Exclude a Folder")
                 .setMessage("Enter the folder's full path. Folders inside it are excluded too.")
-                .setView(box)
+                .setView(field)
                 .setPositiveButton("Exclude", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String folder = Folders.normalize(field.getText().toString());
                         if (folder == null) {
-                            Toast.makeText(c, "Enter a full path that starts with /", Toast.LENGTH_LONG).show();
+                            Notice.showLong(c, "Enter a full path that starts with /");
                             return;
                         }
                         Set<String> set = Prefs.excludedFolders();

@@ -650,6 +650,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         if (s instanceof DownloadedSource) {
             Ui.dialog(c)
                     .setMessage("Remove “" + item().title + "” from this phone? You can download it again later.")
+                    .setDestructive(true)
                     .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -669,6 +670,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         if (allDone) {
             Ui.dialog(c)
                     .setMessage("Remove the downloaded copy of “" + item().title + "”?")
+                    .setDestructive(true)
                     .setPositiveButton("Remove Download", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {

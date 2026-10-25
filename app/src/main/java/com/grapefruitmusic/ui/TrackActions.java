@@ -2,7 +2,6 @@ package com.grapefruitmusic.ui;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.widget.Toast;
 
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
@@ -12,6 +11,7 @@ import com.grapefruitmusic.source.JellyfinSource;
 import com.grapefruitmusic.source.MusicSource;
 import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.util.Bg;
+import com.grapefruitmusic.util.Notice;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -92,7 +92,7 @@ final class TrackActions {
                     @Override
                     public void run() {
                         downloads.enqueue(Collections.singletonList(item), null);
-                        Toast.makeText(c, "Downloading “" + item.title + "”", Toast.LENGTH_SHORT).show();
+                        Notice.show(c, "Downloading “" + item.title + "”");
                     }
                 });
             }
@@ -126,7 +126,7 @@ final class TrackActions {
                     @Override
                     public void run(List<MediaItem> tracks) {
                         downloads.enqueue(tracks, item.kind == MediaItem.PLAYLIST ? item : null);
-                        Toast.makeText(c, "Downloading “" + item.title + "”", Toast.LENGTH_SHORT).show();
+                        Notice.show(c, "Downloading “" + item.title + "”");
                     }
                 }));
             }
@@ -216,7 +216,7 @@ final class TrackActions {
                     @Override
                     public void done(List<MediaItem> tracks, Exception error) {
                         if (error != null) {
-                            Toast.makeText(c, BaseFragment.describe(error, source), Toast.LENGTH_LONG).show();
+                            Notice.showLong(c, BaseFragment.describe(error, source));
                         } else if (!tracks.isEmpty()) {
                             action.run(tracks);
                         }

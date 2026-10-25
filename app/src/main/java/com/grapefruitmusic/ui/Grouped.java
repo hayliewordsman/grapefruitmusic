@@ -4,14 +4,13 @@ import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.grapefruitmusic.R;
 import com.grapefruitmusic.ui.widget.Icons;
+import com.grapefruitmusic.ui.widget.Toggle;
 
 import java.util.Locale;
 
@@ -113,15 +112,28 @@ final class Grouped {
         addRow(row, true);
     }
 
-    void toggle(String label, boolean on, CompoundButton.OnCheckedChangeListener listener) {
-        LinearLayout row = row(null);
+    /** A label and a Toggle; tapping anywhere on the row switches it. */
+    Toggle toggle(String label, boolean on, Toggle.Listener listener) {
+        final Toggle t = new Toggle(c);
+        LinearLayout row = row(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                t.performClick();
+            }
+        });
         TextView l = Ui.text(c, 17, R.attr.gfTextPrimary, false);
         l.setText(label);
         row.addView(l, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-        Switch s = new Switch(c);
-        s.setChecked(on);
-        s.setOnCheckedChangeListener(listener);
-        row.addView(s);
-        addRow(row, false);
+        boolean dark = Ui.isDark(c);
+        t.setOffColors(dark ? 0xff39393d : 0xffe3e3e8, dark ? 0xffd1d1d6 : 0xffdcdce0);
+        t.setChecked(on);
+        t.setListener(listener);
+        t.setContentDescription(label);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.rightMargin = -Ui.dp(c, 4);
+        row.addView(t, lp);
+        addRow(row, true);
+        return t;
     }
 }

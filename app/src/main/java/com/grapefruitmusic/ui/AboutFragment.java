@@ -15,9 +15,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.grapefruitmusic.R;
+import com.grapefruitmusic.util.Notice;
 
 /** Settings › About Grapefruit Music. */
 public final class AboutFragment extends BaseFragment {
@@ -109,6 +109,6 @@ public final class AboutFragment extends BaseFragment {
         Context c = getActivity();
         ClipboardManager clipboard = (ClipboardManager) c.getSystemService(Context.CLIPBOARD_SERVICE);
         clipboard.setPrimaryClip(ClipData.newPlainText(text, text));
-        Toast.makeText(c, "Copied " + text, Toast.LENGTH_SHORT).show();
+        Notice.show(c, "Copied " + text);
     }
 }

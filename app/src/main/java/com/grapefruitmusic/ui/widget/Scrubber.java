@@ -1,5 +1,6 @@
 package com.grapefruitmusic.ui.widget;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -7,6 +8,7 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 
 /** Thin iOS-style slider for song position and volume. */
 public class Scrubber extends View {
@@ -26,6 +28,9 @@ public class Scrubber extends View {
     private boolean dragging;
     private float thumbRadius;
     private float dragThumbRadius;
+    /** 0 at rest, 1 while touched; animated so the thumb grows and shrinks smoothly. */
+    private float grow;
+    private ValueAnimator growAnimator;
     private int trackColor = 0xffc8c7cc;
     private int fillColor = 0xff8e8e93;
     private int thumbColor = 0xff8e8e93;
@@ -95,7 +100,7 @@ public class Scrubber extends View {
         canvas.drawRoundRect(track, h, h, paint);
         paint.setColor(thumbColor);
         if (thumbShadow) paint.setShadowLayer(2 * density, 0, density, 0x40000000);
-        canvas.drawCircle(x, cy, dragging ? dragThumbRadius : thumbRadius, paint);
+        canvas.drawCircle(x, cy, thumbRadius + (dragThumbRadius - thumbRadius) * grow, paint);
     }
 
     @Override
@@ -105,6 +110,7 @@ public class Scrubber extends View {
             case MotionEvent.ACTION_DOWN:
                 getParent().requestDisallowInterceptTouchEvent(true);
                 dragging = true;
+                animateGrow(1f, 160);
                 if (listener != null) listener.onScrubStart();
                 track(e.getX());
                 return true;
@@ -115,12 +121,27 @@ public class Scrubber extends View {
             case MotionEvent.ACTION_CANCEL:
                 track(e.getX());
                 dragging = false;
-                invalidate();
+                animateGrow(0f, 240);
                 if (listener != null) listener.onScrubEnd(value);
                 return true;
             default:
                 return super.onTouchEvent(e);
         }
+    }
+
+    private void animateGrow(float to, long duration) {
+        if (growAnimator != null) growAnimator.cancel();
+        growAnimator = ValueAnimator.ofFloat(grow, to);
+        growAnimator.setDuration(duration);
+        growAnimator.setInterpolator(new DecelerateInterpolator(1.5f));
+        growAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator a) {
+                grow = (Float) a.getAnimatedValue();
+                invalidate();
+            }
+        });
+        growAnimator.start();
     }
 
     private void track(float x) {

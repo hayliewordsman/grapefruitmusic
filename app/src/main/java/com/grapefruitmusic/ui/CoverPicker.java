@@ -1,7 +1,6 @@
 package com.grapefruitmusic.ui;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,13 +17,13 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.grapefruitmusic.data.PlaylistMeta;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.ui.widget.ArtworkView;
 import com.grapefruitmusic.util.ArtworkLoader;
 import com.grapefruitmusic.util.Bg;
+import com.grapefruitmusic.util.Notice;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -149,7 +148,7 @@ final class CoverPicker {
                     @Override
                     public void onArtwork(final Bitmap bitmap) {
                         if (bitmap == null) {
-                            Toast.makeText(app, "Couldn't load that artwork.", Toast.LENGTH_SHORT).show();
+                            Notice.show(app, "Couldn't load that artwork.");
                             return;
                         }
                         save(app, new Bg.Work<Bitmap>() {
@@ -175,7 +174,7 @@ final class CoverPicker {
             @Override
             public void done(List<MediaItem> photos, Exception error) {
                 if (photos == null || photos.isEmpty()) {
-                    Toast.makeText(app, "No photos found.", Toast.LENGTH_SHORT).show();
+                    Notice.show(app, "No photos found.");
                     return;
                 }
                 grid(c, "Photos", photos, new Pick() {
@@ -267,7 +266,7 @@ final class CoverPicker {
                 return v;
             }
         });
-        final AlertDialog dialog = Ui.dialog(c).setTitle(title).setView(g).setNegativeButton("Cancel", null).create();
+        final GrapefruitDialog dialog = Ui.dialog(c).setTitle(title).setView(g).setNegativeButton("Cancel", null).create();
         g.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -293,7 +292,7 @@ final class CoverPicker {
             @Override
             public void done(File file, Exception error) {
                 if (file == null) {
-                    Toast.makeText(app, "Couldn't use that picture.", Toast.LENGTH_SHORT).show();
+                    Notice.show(app, "Couldn't use that picture.");
                     return;
                 }
                 listener.onCoverChosen(file);

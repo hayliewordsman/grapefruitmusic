@@ -1,7 +1,6 @@
 package com.grapefruitmusic.ui;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
@@ -37,9 +36,9 @@ public final class Ui {
         a.setTheme(isDark(a) ? R.style.Theme_Grapefruit_Dark : R.style.Theme_Grapefruit_Light);
     }
 
-    /** Dialogs pick up the Holo light/dark dialog theme from the activity's theme. */
-    public static AlertDialog.Builder dialog(Context c) {
-        return new AlertDialog.Builder(c);
+    /** Grapefruit's own dialog (card or bottom sheet), the same on every Android version. */
+    public static GrapefruitDialog.Builder dialog(Context c) {
+        return new GrapefruitDialog.Builder(c);
     }
 
     public static int color(Context c, int attr) {

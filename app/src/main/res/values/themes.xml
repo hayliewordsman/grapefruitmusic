@@ -17,6 +17,19 @@
         <item name="gfRowBackground">@drawable/row_light</item>
         <item name="gfFieldBackground">@drawable/field_light</item>
         <item name="gfPillBackground">@drawable/pill_light</item>
+        <item name="gfControl">@color/light_control</item>
+        <item name="gfControlPressed">@color/light_control_pressed</item>
+        <!-- Grapefruit's own look for platform widgets, the same on every Android version. -->
+        <item name="android:editTextStyle">@style/GrapefruitEditText.Light</item>
+        <item name="android:textSelectHandle">@drawable/handle_middle</item>
+        <item name="android:textSelectHandleLeft">@drawable/handle_left</item>
+        <item name="android:textSelectHandleRight">@drawable/handle_right</item>
+        <item name="android:listViewStyle">@style/GrapefruitListView.Light</item>
+        <item name="android:gridViewStyle">@style/GrapefruitGridView.Light</item>
+        <item name="android:scrollViewStyle">@style/GrapefruitScrollView.Light</item>
+        <item name="android:scrollbarThumbVertical">@drawable/scrollbar_thumb</item>
+        <item name="android:scrollbarTrackVertical">@null</item>
+        <item name="android:scrollbarSize">4dp</item>
     </style>
 
     <style name="Theme.Grapefruit.Dark" parent="android:Theme.Holo.NoActionBar">
@@ -36,5 +49,93 @@
         <item name="gfRowBackground">@drawable/row_dark</item>
         <item name="gfFieldBackground">@drawable/field_dark</item>
         <item name="gfPillBackground">@drawable/pill_dark</item>
+        <item name="gfControl">@color/dark_control</item>
+        <item name="gfControlPressed">@color/dark_control_pressed</item>
+        <!-- Grapefruit's own look for platform widgets, the same on every Android version. -->
+        <item name="android:editTextStyle">@style/GrapefruitEditText.Dark</item>
+        <item name="android:textSelectHandle">@drawable/handle_middle</item>
+        <item name="android:textSelectHandleLeft">@drawable/handle_left</item>
+        <item name="android:textSelectHandleRight">@drawable/handle_right</item>
+        <item name="android:listViewStyle">@style/GrapefruitListView.Dark</item>
+        <item name="android:gridViewStyle">@style/GrapefruitGridView.Dark</item>
+        <item name="android:scrollViewStyle">@style/GrapefruitScrollView.Dark</item>
+        <item name="android:scrollbarThumbVertical">@drawable/scrollbar_thumb</item>
+        <item name="android:scrollbarTrackVertical">@null</item>
+        <item name="android:scrollbarSize">4dp</item>
+    </style>
+
+    <!-- Text fields: rounded fill, grapefruit cursor. -->
+    <style name="GrapefruitEditText.Light" parent="android:Widget.Holo.Light.EditText">
+        <item name="android:background">@drawable/field_light</item>
+        <item name="android:textCursorDrawable">@drawable/cursor_light</item>
+        <item name="android:textColor">@color/light_text</item>
+        <item name="android:textColorHint">@color/light_text_secondary</item>
+    </style>
+
+    <style name="GrapefruitEditText.Dark" parent="android:Widget.Holo.EditText">
+        <item name="android:background">@drawable/field_dark</item>
+        <item name="android:textCursorDrawable">@drawable/cursor_dark</item>
+        <item name="android:textColor">@color/dark_text</item>
+        <item name="android:textColorHint">@color/dark_text_secondary</item>
+    </style>
+
+    <!-- No overscroll glow (blue on Android 4, tinted on 5+). -->
+    <style name="GrapefruitListView.Light" parent="android:Widget.Holo.Light.ListView">
+        <item name="android:overScrollMode">never</item>
+        <item name="android:listSelector">@android:color/transparent</item>
+    </style>
+
+    <style name="GrapefruitListView.Dark" parent="android:Widget.Holo.ListView">
+        <item name="android:overScrollMode">never</item>
+        <item name="android:listSelector">@android:color/transparent</item>
+    </style>
+
+    <style name="GrapefruitGridView.Light" parent="android:Widget.Holo.Light.GridView">
+        <item name="android:overScrollMode">never</item>
+        <item name="android:listSelector">@drawable/grid_selector</item>
+        <item name="android:drawSelectorOnTop">true</item>
+    </style>
+
+    <style name="GrapefruitGridView.Dark" parent="android:Widget.Holo.GridView">
+        <item name="android:overScrollMode">never</item>
+        <item name="android:listSelector">@drawable/grid_selector</item>
+        <item name="android:drawSelectorOnTop">true</item>
+    </style>
+
+    <style name="GrapefruitScrollView.Light" parent="android:Widget.Holo.Light.ScrollView">
+        <item name="android:overScrollMode">never</item>
+    </style>
+
+    <style name="GrapefruitScrollView.Dark" parent="android:Widget.Holo.ScrollView">
+        <item name="android:overScrollMode">never</item>
+    </style>
+
+    <!--
+        Window for GrapefruitDialog. Applied on top of the activity's theme, so it only sets up
+        the window; the dialog draws its own card or sheet.
+    -->
+    <style name="GrapefruitDialogWindow">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.4</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:windowMinWidthMajor">0%</item>
+        <item name="android:windowMinWidthMinor">0%</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="android:windowAnimationStyle">@style/GrapefruitCardAnimation</item>
+    </style>
+
+    <style name="GrapefruitCardAnimation">
+        <item name="android:windowEnterAnimation">@anim/card_in</item>
+        <item name="android:windowExitAnimation">@anim/card_out</item>
+    </style>
+
+    <style name="GrapefruitSheetAnimation">
+        <item name="android:windowEnterAnimation">@anim/sheet_in</item>
+        <item name="android:windowExitAnimation">@anim/sheet_out</item>
     </style>
 </resources>

@@ -6,12 +6,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.ScrollView;
 
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.source.Account;
 import com.grapefruitmusic.source.Sources;
+import com.grapefruitmusic.ui.widget.Toggle;
 import com.grapefruitmusic.util.Format;
 import com.grapefruitmusic.util.Prefs;
 
@@ -83,6 +83,7 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
                             .setTitle(a.name)
                             .setMessage(a.url + "\nSigned in as " + a.username
                                     + "\n\nRemoving the server keeps songs you've downloaded from it.")
+                            .setDestructive(true)
                             .setPositiveButton("Remove Server", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -143,9 +144,9 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
                 });
             }
         });
-        g.toggle("Download over Wi‑Fi Only", Prefs.wifiOnlyDownloads(), new CompoundButton.OnCheckedChangeListener() {
+        g.toggle("Download over Wi‑Fi Only", Prefs.wifiOnlyDownloads(), new Toggle.Listener() {
             @Override
-            public void onCheckedChanged(CompoundButton b, boolean on) {
+            public void onToggled(Toggle t, boolean on) {
                 Prefs.setWifiOnlyDownloads(on);
                 Downloads.get(getActivity()).startWorker();
             }
@@ -171,6 +172,7 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
                 public void onClick(View v) {
                     Ui.dialog(c)
                             .setMessage("Remove every downloaded song from this phone?")
+                            .setDestructive(true)
                             .setPositiveButton("Remove All", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -185,9 +187,9 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
         g.footer("Downloaded music plays without a connection. Find it under Library › Downloaded Music.");
 
         g.section("Lyrics");
-        g.toggle("Find Lyrics Online", Prefs.onlineLyrics(), new CompoundButton.OnCheckedChangeListener() {
+        g.toggle("Find Lyrics Online", Prefs.onlineLyrics(), new Toggle.Listener() {
             @Override
-            public void onCheckedChanged(CompoundButton b, boolean on) {
+            public void onToggled(Toggle t, boolean on) {
                 Prefs.setOnlineLyrics(on);
             }
         });

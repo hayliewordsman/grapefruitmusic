@@ -3,14 +3,12 @@ package com.grapefruitmusic.ui;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.text.InputType;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.source.MusicSource;
 import com.grapefruitmusic.util.Bg;
+import com.grapefruitmusic.util.Notice;
 
 import java.util.List;
 
@@ -32,7 +30,7 @@ final class PlaylistPicker {
                 final Context c = page.getActivity();
                 if (c == null) return;
                 if (error != null) {
-                    Toast.makeText(app, BaseFragment.describe(error, source), Toast.LENGTH_LONG).show();
+                    Notice.showLong(app, BaseFragment.describe(error, source));
                     return;
                 }
                 String[] names = new String[playlists.size() + 1];
@@ -64,26 +62,20 @@ final class PlaylistPicker {
         }, new Bg.Done<Void>() {
             @Override
             public void done(Void result, Exception error) {
-                Toast.makeText(app, error != null ? BaseFragment.describe(error, source)
-                        : "Added to “" + playlist.title + "”", Toast.LENGTH_SHORT).show();
+                Notice.show(app, error != null ? BaseFragment.describe(error, source)
+                        : "Added to “" + playlist.title + "”");
             }
         });
     }
 
     private static void askName(Context c, final MusicSource source, final List<MediaItem> tracks) {
         final Context app = c.getApplicationContext();
-        final EditText field = new EditText(c);
+        final EditText field = Ui.field(c, 16, false, "Playlist name");
         field.setSingleLine(true);
-        field.setHint("Playlist name");
         field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        LinearLayout box = new LinearLayout(c);
-        int pad = Ui.dp(c, 16);
-        box.setPadding(pad, pad / 2, pad, 0);
-        box.addView(field, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
         Ui.dialog(c)
                 .setTitle("New Playlist")
-                .setView(box)
+                .setView(field)
                 .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -98,8 +90,8 @@ final class PlaylistPicker {
                         }, new Bg.Done<Void>() {
                             @Override
                             public void done(Void result, Exception error) {
-                                Toast.makeText(app, error != null ? BaseFragment.describe(error, source)
-                                        : "Created “" + name + "”", Toast.LENGTH_SHORT).show();
+                                Notice.show(app, error != null ? BaseFragment.describe(error, source)
+                                        : "Created “" + name + "”");
                             }
                         });
                     }

@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -19,9 +22,11 @@ import com.grapefruitmusic.ui.widget.ArtworkView;
 import com.grapefruitmusic.ui.widget.IconView;
 import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.util.ArtworkLoader;
+import com.grapefruitmusic.util.Bg;
+import com.grapefruitmusic.util.Notice;
 
 /** One activity: tab bar, a stack of pages, the mini player and the Now Playing card. */
-public final class MainActivity extends Activity implements Player.Listener {
+public final class MainActivity extends Activity implements Player.Listener, Notice.Sink {
     public static final String EXTRA_OPEN_NOW_PLAYING = "open_now_playing";
 
     private static final int TAB_LIBRARY = 0;
@@ -42,6 +47,20 @@ public final class MainActivity extends Activity implements Player.Listener {
     private ArtworkView miniArt;
     private TextView miniTitle;
     private IconView miniPlay;
+    private TextView notice;
+    private final Runnable hideNotice = new Runnable() {
+        @Override
+        public void run() {
+            if (notice == null) return;
+            notice.animate().alpha(0f).translationY(Ui.dp(MainActivity.this, 8)).setDuration(200)
+                    .withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            notice.setVisibility(View.GONE);
+                        }
+                    }).start();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle saved) {
@@ -182,6 +201,56 @@ public final class MainActivity extends Activity implements Player.Listener {
         player.addListener(this);
         onPlayerChanged();
         nowPlaying.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Notice.setSink(this);
+    }
+
+    @Override
+    protected void onPause() {
+        Notice.clearSink(this);
+        super.onPause();
+    }
+
+    /** A rounded message above the tab bar (and mini player) that fades away by itself. */
+    @Override
+    public void showNotice(CharSequence text, boolean longer) {
+        if (notice == null) {
+            notice = Ui.text(this, 15, R.attr.gfBackground, false);
+            notice.setId(R.id.notice);
+            notice.setSingleLine(false);
+            notice.setMaxLines(3);
+            notice.setGravity(Gravity.CENTER);
+            notice.setPadding(Ui.dp(this, 18), Ui.dp(this, 10), Ui.dp(this, 18), Ui.dp(this, 10));
+            GradientDrawable bg = new GradientDrawable();
+            bg.setColor((Ui.color(this, R.attr.gfTextPrimary) & 0x00ffffff) | 0xe6000000);
+            bg.setCornerRadius(Ui.dp(this, 20));
+            notice.setBackground(bg);
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+            int side = Ui.dp(this, 24);
+            lp.leftMargin = side;
+            lp.rightMargin = side;
+            ((FrameLayout) findViewById(R.id.root)).addView(notice, lp);
+        }
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) notice.getLayoutParams();
+        int above = findViewById(R.id.tab_bar).getHeight() + (mini.getVisibility() == View.VISIBLE ? mini.getHeight() : 0);
+        lp.bottomMargin = above + Ui.dp(this, 14);
+        notice.setLayoutParams(lp);
+        notice.setText(text);
+        Bg.cancelMain(hideNotice);
+        notice.animate().cancel();
+        if (notice.getVisibility() != View.VISIBLE) {
+            notice.setVisibility(View.VISIBLE);
+            notice.setAlpha(0f);
+            notice.setTranslationY(Ui.dp(this, 8));
+        }
+        notice.animate().alpha(1f).translationY(0).setDuration(180)
+                .setInterpolator(new DecelerateInterpolator()).withEndAction(null).start();
+        Bg.mainDelayed(hideNotice, longer ? 3500 : 2000);
     }
 
     @Override

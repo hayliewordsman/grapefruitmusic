@@ -7,7 +7,6 @@ import android.media.MediaPlayer;
 import android.net.wifi.WifiManager;
 import android.os.PowerManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
@@ -17,6 +16,7 @@ import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.source.StreamRequest;
 import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Lists;
+import com.grapefruitmusic.util.Notice;
 import com.grapefruitmusic.util.Prefs;
 
 import java.io.File;
@@ -489,7 +489,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     private void failed(MediaItem item, String message) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+        Notice.show(context, message);
         boolean wasPlaying = playWhenReady;
         release();
         consecutiveErrors++;

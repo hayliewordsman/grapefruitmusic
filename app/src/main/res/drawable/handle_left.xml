@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Start of a text selection: a drop pointing up-right at the text. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="6dp"
+    android:insetRight="0dp"
+    android:insetBottom="4dp">
+    <shape android:shape="rectangle">
+        <solid android:color="@color/grapefruit" />
+        <size android:width="20dp" android:height="20dp" />
+        <corners
+            android:bottomLeftRadius="10dp"
+            android:bottomRightRadius="10dp"
+            android:topLeftRadius="10dp"
+            android:topRightRadius="0dp" />
+    </shape>
+</inset>

@@ -1,25 +1,24 @@
 package com.grapefruitmusic.ui;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.text.InputType;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.grapefruitmusic.R;
 import com.grapefruitmusic.net.Http;
 import com.grapefruitmusic.source.Account;
 import com.grapefruitmusic.source.JellyfinSource;
 import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.source.SubsonicSource;
 import com.grapefruitmusic.util.Bg;
+import com.grapefruitmusic.util.Notice;
 
 /** Sign in to a Navidrome/Subsonic or Jellyfin server. */
 final class AddServerDialog {
@@ -31,48 +30,33 @@ final class AddServerDialog {
         ScrollView scroll = new ScrollView(c);
         LinearLayout form = new LinearLayout(c);
         form.setOrientation(LinearLayout.VERTICAL);
-        int pad = Ui.dp(c, 16);
-        form.setPadding(pad, pad / 2, pad, 0);
         scroll.addView(form);
 
-        final RadioGroup type = new RadioGroup(c);
-        type.setOrientation(RadioGroup.VERTICAL);
-        final RadioButton subsonic = new RadioButton(c);
-        subsonic.setText("Navidrome / Subsonic");
-        subsonic.setId(View.generateViewId());
-        final RadioButton jellyfin = new RadioButton(c);
-        jellyfin.setText("Jellyfin");
-        jellyfin.setId(View.generateViewId());
-        type.addView(subsonic);
-        type.addView(jellyfin);
-        type.check(subsonic.getId());
+        final Segmented type = new Segmented(c, new String[]{"Navidrome / Subsonic", "Jellyfin"}, 0);
         form.addView(type);
 
-        final EditText url = field(c, "Server address, e.g. http://192.168.1.10:4533",
+        final EditText url = field(c, form, "Server address, e.g. http://192.168.1.10:4533",
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
-        final EditText user = field(c, "Username", InputType.TYPE_CLASS_TEXT);
-        final EditText pass = field(c, "Password", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        final EditText name = field(c, "Name (optional), e.g. Home", InputType.TYPE_CLASS_TEXT);
-        form.addView(url);
-        form.addView(user);
-        form.addView(pass);
-        form.addView(name);
-        final TextView error = new TextView(c);
-        error.setTextColor(0xffe0484e);
-        error.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 8));
+        final EditText user = field(c, form, "Username", InputType.TYPE_CLASS_TEXT);
+        final EditText pass = field(c, form, "Password",
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        final EditText name = field(c, form, "Name (optional), e.g. Home", InputType.TYPE_CLASS_TEXT);
+        final TextView error = Ui.text(c, 14, R.attr.gfTextSecondary, false);
+        error.setSingleLine(false);
+        error.setPadding(0, Ui.dp(c, 10), 0, 0);
         error.setVisibility(View.GONE);
         form.addView(error);
 
-        type.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        type.setListener(new Segmented.Listener() {
             @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                url.setHint(checkedId == jellyfin.getId()
+            public void onSelected(int index) {
+                url.setHint(index == 1
                         ? "Server address, e.g. http://192.168.1.10:8096"
                         : "Server address, e.g. http://192.168.1.10:4533");
             }
         });
 
-        final AlertDialog dialog = Ui.dialog(c)
+        final GrapefruitDialog dialog = Ui.dialog(c)
                 .setTitle("Add a Server")
                 .setView(scroll)
                 .setPositiveButton("Sign In", null)
@@ -81,23 +65,23 @@ final class AddServerDialog {
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface d) {
-                final View signIn = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                final View signIn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
                 signIn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        final boolean isJellyfin = type.getCheckedRadioButtonId() == jellyfin.getId();
+                        final boolean isJellyfin = type.selected() == 1;
                         final String base = Http.normalizeBaseUrl(url.getText().toString());
                         final String username = user.getText().toString().trim();
                         final String password = pass.getText().toString();
                         String label = name.getText().toString().trim();
                         if (url.getText().toString().trim().length() == 0 || username.length() == 0) {
-                            error.setText("Enter the server address and your username.");
-                            error.setVisibility(View.VISIBLE);
+                            showError(error, "Enter the server address and your username.");
                             return;
                         }
                         if (label.length() == 0) label = isJellyfin ? "Jellyfin" : "Navidrome";
                         final String finalLabel = label;
                         signIn.setEnabled(false);
+                        error.setTextColor(Ui.color(c, R.attr.gfTextSecondary));
                         error.setText("Connecting…");
                         error.setVisibility(View.VISIBLE);
                         Bg.run(new Bg.Work<String[]>() {
@@ -116,7 +100,7 @@ final class AddServerDialog {
                             public void done(String[] session, Exception e) {
                                 signIn.setEnabled(true);
                                 if (e != null) {
-                                    error.setText(explain(e));
+                                    showError(error, explain(e));
                                     return;
                                 }
                                 Sources sources = Sources.get(c);
@@ -127,7 +111,7 @@ final class AddServerDialog {
                                     sources.addAccount(Account.SUBSONIC, finalLabel, base, username, password,
                                             null, null);
                                 }
-                                Toast.makeText(c, "Connected to " + finalLabel, Toast.LENGTH_SHORT).show();
+                                Notice.show(c, "Connected to " + finalLabel);
                                 dialog.dismiss();
                             }
                         });
@@ -155,11 +139,20 @@ final class AddServerDialog {
         return e.getMessage() != null ? e.getMessage() : "Couldn't connect.";
     }
 
-    private static EditText field(Context c, String hint, int inputType) {
-        EditText e = new EditText(c);
-        e.setHint(hint);
+    private static void showError(TextView error, String text) {
+        error.setTextColor(0xffff3b30);
+        error.setText(text);
+        error.setVisibility(View.VISIBLE);
+    }
+
+    private static EditText field(Context c, LinearLayout form, String hint, int inputType) {
+        EditText e = Ui.field(c, 16, false, hint);
         e.setSingleLine(true);
         e.setInputType(inputType);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = Ui.dp(c, 10);
+        form.addView(e, lp);
         return e;
     }
 }
