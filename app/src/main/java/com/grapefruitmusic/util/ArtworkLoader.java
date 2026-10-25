@@ -210,8 +210,8 @@ public final class ArtworkLoader {
         } finally {
             try {
                 r.release();
-            } catch (RuntimeException ignored) {
-                // Already released.
+            } catch (Exception ignored) {
+                // Already released. (Declared to throw IOException since Android 10.)
             }
         }
     }
