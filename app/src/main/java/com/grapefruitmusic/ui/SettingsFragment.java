@@ -18,7 +18,7 @@ import com.grapefruitmusic.util.Prefs;
 /** The Settings tab, as an iOS-style grouped list. */
 public final class SettingsFragment extends BaseFragment implements Sources.Listener, Downloads.Listener {
     /** Theme names, in Prefs.THEME_* order. */
-    private static final String[] THEMES = {"Match System", "Moonlight", "Pitch Black"};
+    private static final String[] THEMES = {"Match System", "Starlight", "Pitch Black"};
 
     private ScrollView page;
 
@@ -73,7 +73,7 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
                 });
             }
         });
-        g.footer("Match System switches between Moonlight and Pitch Black with the phone's dark mode "
+        g.footer("Match System switches between Starlight and Pitch Black with the phone's dark mode "
                 + "(Android 10 and later).");
 
         g.section("Servers");
