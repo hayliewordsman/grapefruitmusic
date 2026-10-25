@@ -21,7 +21,7 @@ import com.grapefruitmusic.R;
 
 /** Settings › About Grapefruit Music. */
 public final class AboutFragment extends BaseFragment {
-    static final String COPYRIGHT = "Copyright © 2026 Magic Flute LLC";
+    static final String COPYRIGHT = "Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER = "Haylie";
     static final String TELEGRAM = "afishinauto";
     static final String PAYPAL = "paypal.me/fishglub";

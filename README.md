@@ -103,5 +103,5 @@ a debug key and won't install over a release-signed copy.
 
 ## About
 
-Copyright © 2026 Magic Flute LLC. Developer: Haylie (Telegram [@afishinauto](https://t.me/afishinauto)).
+Copyright © 2026 MagicFlute LLC. Developer: Haylie (Telegram [@afishinauto](https://t.me/afishinauto)).
 Donate: [paypal.me/fishglub](https://paypal.me/fishglub).
