@@ -31,6 +31,7 @@ public final class Icons {
     public static final int SPEAKER_HIGH = 22;
     public static final int CHECK = 23;
     public static final int PLAYLIST = 24;
+    public static final int HANDLE = 25;
 
     private static final Paint PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final Path PATH = new Path();
@@ -269,6 +270,12 @@ public final class Icons {
                 p.setStyle(Paint.Style.FILL);
                 OVAL.set(14.3f, 16.4f, 20.3f, 20.6f);
                 c.drawOval(OVAL, p);
+                break;
+            case HANDLE:
+                stroke(p, 1.8f);
+                c.drawLine(4, 8, 20, 8, p);
+                c.drawLine(4, 12, 20, 12, p);
+                c.drawLine(4, 16, 20, 16, p);
                 break;
             case CHECK:
                 stroke(p, 2.4f);

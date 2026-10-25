@@ -16,6 +16,7 @@ import com.grapefruitmusic.source.MusicSource;
 import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.source.StreamRequest;
 import com.grapefruitmusic.util.Bg;
+import com.grapefruitmusic.util.Lists;
 import com.grapefruitmusic.util.Prefs;
 
 import java.io.File;
@@ -143,6 +144,15 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         List<MediaItem> out = new ArrayList<MediaItem>();
         for (int i = position + 1; i < order.size(); i++) out.add(queue.get(order.get(i)));
         return out;
+    }
+
+    /** Reorders Up Next: the item at index from of upNext() moves to index to. */
+    public void moveUpNext(int from, int to) {
+        int a = position + 1 + from;
+        int b = position + 1 + to;
+        if (from == to || from < 0 || to < 0 || a >= order.size() || b >= order.size()) return;
+        Lists.move(order, a, b);
+        changed();
     }
 
     /** Jump to the n-th item of upNext(). */

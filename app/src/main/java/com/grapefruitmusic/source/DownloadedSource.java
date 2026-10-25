@@ -118,4 +118,20 @@ public final class DownloadedSource implements MusicSource {
     public Lyrics lyrics(MediaItem track) throws IOException {
         return LocalSource.sidecarLyrics(track.path, "Saved lyrics");
     }
+
+    /** Downloaded songs belong to their server; playlists are edited there. */
+    @Override
+    public boolean canEditPlaylists() {
+        return false;
+    }
+
+    @Override
+    public void addToPlaylist(MediaItem playlist, List<MediaItem> tracks) throws IOException {
+        throw new IOException("Downloaded playlists can't be changed");
+    }
+
+    @Override
+    public void createPlaylist(String name, List<MediaItem> tracks) throws IOException {
+        throw new IOException("Downloaded playlists can't be changed");
+    }
 }

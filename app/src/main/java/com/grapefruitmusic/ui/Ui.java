@@ -89,6 +89,18 @@ public final class Ui {
         return v;
     }
 
+    /** The "⋯" button at the end of a song row (same menu as a long press). */
+    public static IconView moreButton(Context c) {
+        IconView more = new IconView(c);
+        more.setIcon(Icons.MORE);
+        more.setColor(color(c, R.attr.gfTextSecondary));
+        int pad = dp(c, 9);
+        more.setPadding(pad, pad, pad, pad);
+        more.setContentDescription("More");
+        more.setLayoutParams(new LinearLayout.LayoutParams(dp(c, 38), dp(c, 38)));
+        return more;
+    }
+
     public static ArtworkView artwork(Context c, int sizeDp) {
         ArtworkView a = new ArtworkView(c);
         a.setPlaceholderColors(color(c, R.attr.gfFill), color(c, R.attr.gfTextSecondary));

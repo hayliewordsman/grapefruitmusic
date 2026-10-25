@@ -1,6 +1,8 @@
 package com.grapefruitmusic.source;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -395,6 +397,57 @@ public final class LocalSource implements MusicSource {
     @Override
     public Lyrics lyrics(MediaItem track) throws IOException {
         return sidecarLyrics(track.path, "Lyrics file");
+    }
+
+    @Override
+    public boolean canEditPlaylists() {
+        return true;
+    }
+
+    @Override
+    public void addToPlaylist(MediaItem playlist, List<MediaItem> tracks) throws IOException {
+        addMembers(Long.parseLong(playlist.id), tracks);
+    }
+
+    @Override
+    public void createPlaylist(String name, List<MediaItem> tracks) throws IOException {
+        ContentValues v = new ContentValues();
+        long now = System.currentTimeMillis() / 1000;
+        v.put(MediaStore.Audio.Playlists.NAME, name);
+        v.put(MediaStore.Audio.Playlists.DATE_ADDED, now);
+        v.put(MediaStore.Audio.Playlists.DATE_MODIFIED, now);
+        Uri created;
+        try {
+            created = resolver.insert(PLAYLISTS, v);
+        } catch (RuntimeException e) {
+            throw new IOException("This phone didn't let Grapefruit make a playlist");
+        }
+        if (created == null) throw new IOException("This phone didn't let Grapefruit make a playlist");
+        addMembers(ContentUris.parseId(created), tracks);
+    }
+
+    private void addMembers(long playlistId, List<MediaItem> tracks) throws IOException {
+        Uri members = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
+        int base = 0;
+        Cursor c = query(members, new String[]{MediaStore.Audio.Playlists.Members.PLAY_ORDER}, null, null, null);
+        try {
+            while (c.moveToNext()) base = Math.max(base, c.getInt(0));
+        } finally {
+            c.close();
+        }
+        List<ContentValues> rows = new ArrayList<ContentValues>();
+        for (MediaItem t : tracks) {
+            if (!ID.equals(t.sourceId)) continue;
+            ContentValues v = new ContentValues();
+            v.put(MediaStore.Audio.Playlists.Members.AUDIO_ID, Long.parseLong(t.id));
+            v.put(MediaStore.Audio.Playlists.Members.PLAY_ORDER, base + rows.size() + 1);
+            rows.add(v);
+        }
+        try {
+            resolver.bulkInsert(members, rows.toArray(new ContentValues[rows.size()]));
+        } catch (RuntimeException e) {
+            throw new IOException("This phone didn't let Grapefruit change the playlist");
+        }
     }
 
     /** Reads "Song.lrc" next to "Song.mp3", if there is one. */

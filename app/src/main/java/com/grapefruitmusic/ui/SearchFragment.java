@@ -48,6 +48,11 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
     };
 
     @Override
+    String backTitle() {
+        return "Search";
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
         Context c = getActivity();
         list = new ListView(c);

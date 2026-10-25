@@ -250,6 +250,27 @@ public final class SubsonicSource implements MusicSource {
         return LrcParser.parse(value, name());
     }
 
+    @Override
+    public boolean canEditPlaylists() {
+        return true;
+    }
+
+    private static String songIds(String param, List<MediaItem> tracks) {
+        StringBuilder sb = new StringBuilder();
+        for (MediaItem t : tracks) sb.append('&').append(param).append('=').append(Http.enc(t.id));
+        return sb.toString();
+    }
+
+    @Override
+    public void addToPlaylist(MediaItem playlist, List<MediaItem> tracks) throws IOException {
+        call("updatePlaylist", "playlistId=" + Http.enc(playlist.id) + songIds("songIdToAdd", tracks));
+    }
+
+    @Override
+    public void createPlaylist(String name, List<MediaItem> tracks) throws IOException {
+        call("createPlaylist", "name=" + Http.enc(name) + songIds("songId", tracks));
+    }
+
     private MediaItem artist(JSONObject a) {
         MediaItem m = new MediaItem(MediaItem.ARTIST, id(), a.optString("id"), a.optString("name"));
         m.count = a.optInt("albumCount");

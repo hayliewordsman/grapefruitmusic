@@ -227,6 +227,38 @@ public final class JellyfinSource implements MusicSource {
         return out.isEmpty() ? null : new Lyrics(synced, out, name());
     }
 
+    @Override
+    public boolean canEditPlaylists() {
+        return true;
+    }
+
+    @Override
+    public void addToPlaylist(MediaItem playlist, List<MediaItem> tracks) throws IOException {
+        StringBuilder ids = new StringBuilder();
+        for (MediaItem t : tracks) {
+            if (ids.length() > 0) ids.append(',');
+            ids.append(t.id);
+        }
+        Http.post(account.url + "/Playlists/" + Http.enc(playlist.id) + "/Items?ids=" + Http.enc(ids.toString())
+                + "&userId=" + Http.enc(account.userId), headers(), "application/json", "");
+    }
+
+    @Override
+    public void createPlaylist(String name, List<MediaItem> tracks) throws IOException {
+        JSONObject body = new JSONObject();
+        try {
+            JSONArray ids = new JSONArray();
+            for (MediaItem t : tracks) ids.put(t.id);
+            body.put("Name", name);
+            body.put("Ids", ids);
+            body.put("UserId", account.userId);
+            body.put("MediaType", "Audio");
+        } catch (JSONException e) {
+            throw new IOException(e.getMessage());
+        }
+        Http.post(account.url + "/Playlists", headers(), "application/json", body.toString());
+    }
+
     private MediaItem item(JSONObject o) {
         if (o == null) return null;
         String type = o.optString("Type");

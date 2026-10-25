@@ -47,6 +47,11 @@ public abstract class BaseFragment extends Fragment {
         scrollOffset = 0;
     }
 
+    /** What a page opened from this one shows on its back button. */
+    String backTitle() {
+        return "Back";
+    }
+
     MainActivity main() {
         return (MainActivity) getActivity();
     }

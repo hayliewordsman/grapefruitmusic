@@ -58,6 +58,11 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
     }
 
     @Override
+    String backTitle() {
+        return title();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
         Context c = getActivity();
         list = new ListView(c);

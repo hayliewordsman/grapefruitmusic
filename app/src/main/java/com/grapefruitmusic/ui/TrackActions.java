@@ -8,6 +8,7 @@ import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
 import com.grapefruitmusic.source.DownloadedSource;
+import com.grapefruitmusic.source.JellyfinSource;
 import com.grapefruitmusic.source.MusicSource;
 import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.util.Bg;
@@ -44,7 +45,37 @@ final class TrackActions {
                     player.addToQueue(item);
                 }
             });
-            MusicSource origin = Sources.get(c).byId(item.sourceId);
+            final MusicSource origin = Sources.get(c).byId(item.sourceId);
+            if (origin != null && origin.canEditPlaylists()) {
+                labels.add("Add to Playlist\u2026");
+                actions.add(new Runnable() {
+                    @Override
+                    public void run() {
+                        PlaylistPicker.show(page, origin, Collections.singletonList(item));
+                    }
+                });
+            }
+            final MediaItem album = albumOf(item, listSource);
+            if (album != null && !showing(page, album)) {
+                labels.add("Go to Album");
+                actions.add(new Runnable() {
+                    @Override
+                    public void run() {
+                        page.main().push(AlbumFragment.newInstance(album.sourceId, album, page.backTitle()));
+                    }
+                });
+            }
+            final MediaItem artist = artistOf(item, listSource, origin);
+            if (artist != null) {
+                labels.add("Go to Artist");
+                actions.add(new Runnable() {
+                    @Override
+                    public void run() {
+                        page.main().push(BrowseFragment.newInstance(artist.sourceId, BrowseFragment.ARTIST_ALBUMS,
+                                artist, page.backTitle()));
+                    }
+                });
+            }
             Map<String, Integer> states = downloads.states(item.sourceId);
             Integer state = states.get(item.id);
             if (state != null && state != Downloads.FAILED) {
@@ -80,6 +111,15 @@ final class TrackActions {
                     player.play(tracks, -1, true);
                 }
             }));
+            if (listSource.canEditPlaylists()) {
+                labels.add("Add to Playlist\u2026");
+                actions.add(withTracks(page, listSource, item, new TracksAction() {
+                    @Override
+                    public void run(List<MediaItem> tracks) {
+                        PlaylistPicker.show(page, listSource, tracks);
+                    }
+                }));
+            }
             if (listSource.canDownload()) {
                 labels.add("Download");
                 actions.add(withTracks(page, listSource, item, new TracksAction() {
@@ -112,6 +152,39 @@ final class TrackActions {
                     }
                 })
                 .show();
+    }
+
+    /** The album a track is on, as an item the album page can open (null if unknown). */
+    private static MediaItem albumOf(MediaItem t, MusicSource listSource) {
+        if (t.albumId == null) return null;
+        MediaItem a;
+        if (listSource instanceof DownloadedSource) {
+            a = new MediaItem(MediaItem.ALBUM, DownloadedSource.ID, t.sourceId + Downloads.SEP + t.albumId, t.album);
+        } else {
+            a = new MediaItem(MediaItem.ALBUM, t.sourceId, t.albumId, t.album);
+        }
+        a.artist = t.albumArtist != null ? t.albumArtist : t.artist;
+        a.artKey = t.artKey;
+        a.year = t.year;
+        return a;
+    }
+
+    /** The track's artist, as an item the artist page can open (null if unknown). */
+    private static MediaItem artistOf(MediaItem t, MusicSource listSource, MusicSource origin) {
+        if (listSource instanceof DownloadedSource) {
+            String name = t.albumArtist != null ? t.albumArtist : t.artist;
+            return name == null ? null : new MediaItem(MediaItem.ARTIST, DownloadedSource.ID, name, name);
+        }
+        if (t.artistId == null) return null;
+        // Jellyfin's artist id is the album artist's; Subsonic's and the phone's are the track artist's.
+        String name = origin instanceof JellyfinSource && t.albumArtist != null ? t.albumArtist : t.artist;
+        return new MediaItem(MediaItem.ARTIST, t.sourceId, t.artistId, name != null ? name : "Artist");
+    }
+
+    /** Is page already the album page for album? */
+    private static boolean showing(BaseFragment page, MediaItem album) {
+        MediaItem shown = page instanceof AlbumFragment ? page.item() : null;
+        return shown != null && shown.id.equals(album.id) && shown.sourceId.equals(album.sourceId);
     }
 
     /** Deletes a downloaded album or playlist (container from DownloadedSource). */

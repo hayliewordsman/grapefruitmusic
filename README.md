@@ -23,9 +23,12 @@ with downloads for offline listening and time-synced lyrics.
   Lyrics are saved after the first lookup, so they work offline too.
 - **iOS 10-style design:** large bold titles, album-art grids, a mini player above the tab bar, and a Now Playing
   card that slides up over a blurred copy of the artwork. The artwork shrinks when paused. Pull the card down to close it.
+  Lyrics and Up Next show a condensed header (small artwork and title) above the list.
 - **Light and dark modes:** Settings › Theme. *Match System* follows the phone's dark mode on Android 10+.
 - **Playback:** background playback with notification, lock-screen and headset controls, shuffle, repeat (all/one),
-  Up Next, Play Next / Add to Up Next.
+  Up Next (drag the ≡ handle to reorder), Play Next / Add to Up Next.
+- **Song menu:** the ⋯ button on any song (or a long press) offers Play Next, Add to Up Next, Add to Playlist
+  (an existing playlist or a new one, on your server or the phone), Go to Album, Go to Artist and Download.
 - **Streaming quality:** stream original files when the phone can play them (MP3, AAC/M4A, FLAC, Ogg Vorbis, WAV),
   otherwise the server converts to MP3. You can also pick a fixed MP3 bitrate.
 - **Modern HTTPS on old phones:** bundles [Conscrypt](https://github.com/google/conscrypt) for TLS 1.2/1.3 and a few

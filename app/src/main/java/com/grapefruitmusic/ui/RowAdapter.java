@@ -201,6 +201,7 @@ final class RowAdapter extends BaseAdapter {
         TextView title;
         TextView subtitle;
         IconView accessory;
+        IconView more;
     }
 
     private View row(int position, View convertView) {
@@ -225,6 +226,14 @@ final class RowAdapter extends BaseAdapter {
             row.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
             h.accessory = Ui.icon(context, Icons.CHEVRON_RIGHT, secondary, 18);
             row.addView(h.accessory);
+            h.more = Ui.moreButton(context);
+            h.more.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onLongItem((MediaItem) v.getTag());
+                }
+            });
+            row.addView(h.more);
             row.setTag(h);
             convertView = row;
         } else {
@@ -241,6 +250,8 @@ final class RowAdapter extends BaseAdapter {
         h.title.setTextColor(m.kind == MediaItem.TRACK && m.key().equals(playingKey) ? accent : primary);
         h.subtitle.setText(subtitle(m));
         h.subtitle.setVisibility(h.subtitle.getText().length() > 0 ? View.VISIBLE : View.GONE);
+        h.more.setTag(m);
+        h.more.setVisibility(m.kind == MediaItem.TRACK ? View.VISIBLE : View.GONE);
         if (m.kind == MediaItem.TRACK) {
             Integer state = downloadStates != null ? downloadStates.get(m.id) : null;
             if (state != null && state == Downloads.DONE) {
@@ -250,7 +261,7 @@ final class RowAdapter extends BaseAdapter {
                 h.accessory.setIcon(Icons.DOWNLOAD);
                 h.accessory.setVisibility(View.VISIBLE);
             } else {
-                h.accessory.setVisibility(View.INVISIBLE);
+                h.accessory.setVisibility(View.GONE);
             }
         } else {
             h.accessory.setIcon(Icons.CHEVRON_RIGHT);

@@ -38,6 +38,11 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
     private String error;
 
     @Override
+    String backTitle() {
+        return "Library";
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
         final Context c = getActivity();
         list = new ListView(c);

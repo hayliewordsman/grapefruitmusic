@@ -51,4 +51,13 @@ public interface MusicSource {
 
     /** Lyrics the source itself knows about (server lyrics, .lrc files), or null. Blocking. */
     Lyrics lyrics(MediaItem track) throws IOException;
+
+    /** Can songs be added to this source's playlists (and new playlists made)? */
+    boolean canEditPlaylists();
+
+    /** Appends tracks (from this source) to one of its playlists. Blocking. */
+    void addToPlaylist(MediaItem playlist, List<MediaItem> tracks) throws IOException;
+
+    /** Makes a new playlist holding tracks (from this source). Blocking. */
+    void createPlaylist(String name, List<MediaItem> tracks) throws IOException;
 }

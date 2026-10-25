@@ -57,6 +57,11 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
     }
 
     @Override
+    String backTitle() {
+        return item().title;
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
         final Context c = getActivity();
         final MediaItem album = item();
@@ -381,6 +386,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
             TextView subtitle;
             IconView state;
             TextView duration;
+            IconView more;
         }
 
         @Override
@@ -416,6 +422,15 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
                 h.duration = Ui.text(context, 14, R.attr.gfTextSecondary, false);
                 h.duration.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
                 row.addView(h.duration);
+                h.more = Ui.moreButton(context);
+                ((LinearLayout.LayoutParams) h.more.getLayoutParams()).rightMargin = -Ui.dp(context, 8);
+                h.more.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TrackActions.show(AlbumFragment.this, (MediaItem) v.getTag(), source());
+                    }
+                });
+                row.addView(h.more);
                 row.setTag(h);
                 convertView = row;
             } else {
@@ -453,6 +468,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
                 h.state.setVisibility(View.GONE);
             }
             h.duration.setText(t.durationMs > 0 ? Format.duration(t.durationMs) : "");
+            h.more.setTag(t);
             return convertView;
         }
     }

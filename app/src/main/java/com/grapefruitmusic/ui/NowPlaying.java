@@ -3,9 +3,11 @@ package com.grapefruitmusic.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,8 @@ import android.view.animation.OvershootInterpolator;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,6 +36,7 @@ import com.grapefruitmusic.util.ArtworkLoader;
 import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Blur;
 import com.grapefruitmusic.util.Format;
+import com.grapefruitmusic.util.Lists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +70,11 @@ final class NowPlaying {
     private final IconView btnShuffle;
     private final IconView btnRepeat;
     private final IconView btnQueue;
+    private final View condensed;
+    private final ArtworkView smallArt;
+    private final TextView smallTitle;
+    private final TextView smallArtist;
+    private final FrameLayout listArea;
     private final int accent;
     private final int secondary;
 
@@ -80,6 +90,53 @@ final class NowPlaying {
     private int lyricIndex = -2;
     private long lastUserScroll;
     private Boolean artPlaying;
+
+    // Dragging a song in Up Next by its handle.
+    private boolean dragging;
+    private int dragFrom;
+    private int dragAt;
+    private MediaItem dragCurrent;
+    private ImageView dragGhost;
+    private float dragGrabOffset;
+    private float dragLastRawY;
+    private int dragScroll;
+
+    /** Keeps the list scrolling while a dragged song is held near its top or bottom edge. */
+    private final Runnable dragAutoScroll = new Runnable() {
+        @Override
+        public void run() {
+            if (!dragging) return;
+            if (dragScroll != 0 && queueList.getChildCount() > 0) {
+                View first = queueList.getChildAt(0);
+                queueList.setSelectionFromTop(queueList.getFirstVisiblePosition(),
+                        first.getTop() - dragScroll * Ui.dp(activity, 6));
+                moveDrag(dragLastRawY);
+            }
+            Bg.mainDelayed(this, 30);
+        }
+    };
+
+    private final View.OnTouchListener handleTouch = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View handle, MotionEvent e) {
+            switch (e.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    // Neither the list nor the card (pull-to-close) may take this gesture.
+                    handle.getParent().requestDisallowInterceptTouchEvent(true);
+                    startDrag((View) handle.getParent(), (Integer) handle.getTag(), e.getRawY());
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    moveDrag(e.getRawY());
+                    return true;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    endDrag();
+                    return true;
+                default:
+                    return true;
+            }
+        }
+    };
 
     private final Runnable ticker = new Runnable() {
         @Override
@@ -118,6 +175,11 @@ final class NowPlaying {
         btnShuffle = (IconView) root.findViewById(R.id.np_btn_shuffle);
         btnRepeat = (IconView) root.findViewById(R.id.np_btn_repeat);
         btnQueue = (IconView) root.findViewById(R.id.np_btn_queue);
+        condensed = root.findViewById(R.id.np_condensed);
+        smallArt = (ArtworkView) root.findViewById(R.id.np_small_art);
+        smallTitle = (TextView) root.findViewById(R.id.np_small_title);
+        smallArtist = (TextView) root.findViewById(R.id.np_small_artist);
+        listArea = (FrameLayout) root.findViewById(R.id.np_list_area);
         IconView volLow = (IconView) root.findViewById(R.id.np_vol_low);
         IconView volHigh = (IconView) root.findViewById(R.id.np_vol_high);
 
@@ -125,6 +187,13 @@ final class NowPlaying {
         art.setPlaceholderColors(Ui.color(a, R.attr.gfFill), secondary);
         art.setCornerRadiusDp(6);
         art.setShadowDp(14);
+        smallArt.setPlaceholderColors(Ui.color(a, R.attr.gfFill), secondary);
+        root.findViewById(R.id.np_mini_header).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setMode(MODE_ART);
+            }
+        });
         scrubber.setColors(separator, secondary, secondary);
         scrubber.setThumb(3.5f, 9, false);
         boolean dark = Ui.isDark(a);
@@ -379,6 +448,8 @@ final class NowPlaying {
         String line = item.artist != null ? item.artist : "";
         if (item.album != null) line = line.length() == 0 ? item.album : line + " — " + item.album;
         artist.setText(line);
+        smallTitle.setText(item.title);
+        smallArtist.setText(line);
         boolean playing = player.wantsToPlay();
         play.setIcon(playing ? Icons.PAUSE : Icons.PLAY);
         btnShuffle.setColor(player.isShuffle() ? accent : secondary);
@@ -404,7 +475,7 @@ final class NowPlaying {
             loadArtwork(item);
             loadLyrics(item);
         }
-        if (mode == MODE_QUEUE) queueAdapter.setItems(player.upNext());
+        if (mode == MODE_QUEUE && !dragging) queueAdapter.setItems(player.upNext());
         tick();
     }
 
@@ -413,6 +484,7 @@ final class NowPlaying {
         final int size = Math.max(Ui.dp(activity, 300), 512);
         Bitmap cached = ArtworkLoader.get(activity).cached(item, size);
         art.setBitmap(cached);
+        smallArt.setBitmap(cached);
         card.setBlurredArtwork(cached != null ? Blur.of(cached) : null);
         if (cached != null) return;
         ArtworkLoader.get(activity).load(item, size, new ArtworkLoader.Callback() {
@@ -420,6 +492,7 @@ final class NowPlaying {
             public void onArtwork(Bitmap bitmap) {
                 if (!key.equals(trackKey)) return;
                 art.setBitmap(bitmap);
+                smallArt.setBitmap(bitmap);
                 card.setBlurredArtwork(bitmap != null ? Blur.of(bitmap) : null);
             }
         });
@@ -462,7 +535,16 @@ final class NowPlaying {
     }
 
     private void showMode() {
-        art.setVisibility(mode == MODE_ART ? View.VISIBLE : View.INVISIBLE);
+        // Lyrics and Up Next: small artwork and title on top, the list below (iOS-style).
+        boolean condensedMode = mode != MODE_ART;
+        art.setVisibility(condensedMode ? View.INVISIBLE : View.VISIBLE);
+        if (condensedMode && condensed.getVisibility() != View.VISIBLE) {
+            condensed.setAlpha(0f);
+            condensed.animate().alpha(1f).setDuration(180).setListener(null).start();
+        }
+        condensed.setVisibility(condensedMode ? View.VISIBLE : View.GONE);
+        title.setVisibility(condensedMode ? View.GONE : View.VISIBLE);
+        artist.setVisibility(condensedMode ? View.GONE : View.VISIBLE);
         boolean showLyrics = mode == MODE_LYRICS && lyrics != null;
         lyricsList.setVisibility(showLyrics ? View.VISIBLE : View.GONE);
         queueList.setVisibility(mode == MODE_QUEUE ? View.VISIBLE : View.GONE);
@@ -507,6 +589,77 @@ final class NowPlaying {
                 }
             }
         }
+    }
+
+    private void startDrag(View row, int index, float rawY) {
+        if (dragging || row.getWidth() == 0 || row.getHeight() == 0) return;
+        Bitmap shot = Bitmap.createBitmap(row.getWidth(), row.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(shot);
+        canvas.drawColor(Ui.color(activity, R.attr.gfSurface));
+        row.draw(canvas);
+        dragGhost = new ImageView(activity);
+        dragGhost.setImageBitmap(shot);
+        dragGhost.setAlpha(0.95f);
+        listArea.addView(dragGhost, new FrameLayout.LayoutParams(row.getWidth(), row.getHeight(),
+                Gravity.TOP | Gravity.LEFT));
+        int[] rowLoc = new int[2];
+        int[] areaLoc = new int[2];
+        row.getLocationOnScreen(rowLoc);
+        listArea.getLocationOnScreen(areaLoc);
+        dragGhost.setTranslationY(rowLoc[1] - areaLoc[1]);
+        dragGrabOffset = rawY - rowLoc[1];
+        dragFrom = index;
+        dragAt = index;
+        dragCurrent = player.current();
+        dragLastRawY = rawY;
+        dragScroll = 0;
+        dragging = true;
+        queueAdapter.setHidden(index);
+        Bg.cancelMain(dragAutoScroll);
+        Bg.main(dragAutoScroll);
+    }
+
+    private void moveDrag(float rawY) {
+        if (!dragging) return;
+        dragLastRawY = rawY;
+        int[] areaLoc = new int[2];
+        int[] listLoc = new int[2];
+        listArea.getLocationOnScreen(areaLoc);
+        queueList.getLocationOnScreen(listLoc);
+        float top = rawY - dragGrabOffset - areaLoc[1];
+        top = Math.max(0, Math.min(top, listArea.getHeight() - dragGhost.getHeight()));
+        dragGhost.setTranslationY(top);
+
+        // The row under the middle of the dragged song is where it goes.
+        float center = areaLoc[1] + top + dragGhost.getHeight() / 2f - listLoc[1];
+        int count = queueAdapter.getCount();
+        int pos = queueList.pointToPosition(queueList.getWidth() / 2, (int) center);
+        int target;
+        if (pos == AdapterView.INVALID_POSITION) {
+            View first = queueList.getChildAt(0);
+            target = first != null && center < first.getTop() ? 0 : count - 1;
+        } else {
+            target = pos - queueList.getHeaderViewsCount();
+        }
+        target = Math.max(0, Math.min(count - 1, target));
+        if (target != dragAt) {
+            queueAdapter.move(dragAt, target);
+            dragAt = target;
+        }
+        float edge = Ui.dp(activity, 40);
+        dragScroll = center < edge ? -1 : (center > queueList.getHeight() - edge ? 1 : 0);
+    }
+
+    private void endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        Bg.cancelMain(dragAutoScroll);
+        listArea.removeView(dragGhost);
+        dragGhost = null;
+        queueAdapter.setHidden(-1);
+        // If the song changed meanwhile, Up Next shifted under the finger: drop the move.
+        if (player.current() == dragCurrent && dragFrom != dragAt) player.moveUpNext(dragFrom, dragAt);
+        queueAdapter.setItems(player.upNext());
     }
 
     /** Lyrics lines: the current one bold and bright, the rest faded. */
@@ -578,10 +731,19 @@ final class NowPlaying {
         }
     }
 
-    /** Up Next rows. */
-    private static final class QueueAdapter extends BaseAdapter {
+    private static final class QueueHolder {
+        ArtworkView art;
+        TextView title;
+        TextView subtitle;
+        IconView handle;
+    }
+
+    /** Up Next rows, each with a handle on the right for dragging it to a new place. */
+    private final class QueueAdapter extends BaseAdapter {
         private final Context context;
         private List<MediaItem> items = new ArrayList<MediaItem>();
+        /** Row being dragged (drawn as a floating copy instead), or -1. */
+        private int hidden = -1;
 
         QueueAdapter(Context context) {
             this.context = context;
@@ -589,6 +751,17 @@ final class NowPlaying {
 
         void setItems(List<MediaItem> list) {
             items = list;
+            notifyDataSetChanged();
+        }
+
+        void setHidden(int index) {
+            hidden = index;
+            notifyDataSetChanged();
+        }
+
+        void move(int from, int to) {
+            Lists.move(items, from, to);
+            hidden = to;
             notifyDataSetChanged();
         }
 
@@ -609,40 +782,44 @@ final class NowPlaying {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            Holder h;
+            QueueHolder h;
             if (convertView == null) {
                 LinearLayout row = new LinearLayout(context);
                 row.setOrientation(LinearLayout.HORIZONTAL);
-                row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-                row.setPadding(Ui.dp(context, 20), Ui.dp(context, 6), Ui.dp(context, 20), Ui.dp(context, 6));
+                row.setGravity(Gravity.CENTER_VERTICAL);
+                row.setPadding(Ui.dp(context, 20), Ui.dp(context, 4), Ui.dp(context, 6), Ui.dp(context, 4));
                 row.setBackgroundResource(Ui.resource(context, R.attr.gfRowBackground));
-                h = new Holder();
+                h = new QueueHolder();
                 h.art = Ui.artwork(context, 40);
                 row.addView(h.art);
                 LinearLayout texts = new LinearLayout(context);
                 texts.setOrientation(LinearLayout.VERTICAL);
-                texts.setPadding(Ui.dp(context, 12), 0, 0, 0);
+                texts.setPadding(Ui.dp(context, 12), 0, Ui.dp(context, 4), 0);
                 h.title = Ui.text(context, 15, R.attr.gfTextPrimary, false);
                 h.subtitle = Ui.text(context, 13, R.attr.gfTextSecondary, false);
                 texts.addView(h.title);
                 texts.addView(h.subtitle);
                 row.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+                h.handle = new IconView(context);
+                h.handle.setIcon(Icons.HANDLE);
+                h.handle.setColor(secondary);
+                int pad = Ui.dp(context, 11);
+                h.handle.setPadding(pad, pad, pad, pad);
+                h.handle.setContentDescription("Drag to reorder");
+                h.handle.setOnTouchListener(handleTouch);
+                row.addView(h.handle, new LinearLayout.LayoutParams(Ui.dp(context, 46), Ui.dp(context, 46)));
                 row.setTag(h);
                 convertView = row;
             } else {
-                h = (Holder) convertView.getTag();
+                h = (QueueHolder) convertView.getTag();
             }
             MediaItem m = items.get(position);
             h.title.setText(m.title);
             h.subtitle.setText(m.artist != null ? m.artist : "");
+            h.handle.setTag(position);
             ArtworkLoader.get(context).into(h.art, m, Ui.dp(context, 40));
+            convertView.setVisibility(position == hidden ? View.INVISIBLE : View.VISIBLE);
             return convertView;
-        }
-
-        private static final class Holder {
-            ArtworkView art;
-            TextView title;
-            TextView subtitle;
         }
     }
 }
