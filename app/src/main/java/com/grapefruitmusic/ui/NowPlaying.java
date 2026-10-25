@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.util.TypedValue;
@@ -36,7 +37,6 @@ import com.grapefruitmusic.util.ArtworkLoader;
 import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Blur;
 import com.grapefruitmusic.util.Format;
-import com.grapefruitmusic.util.Lists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,15 +92,23 @@ final class NowPlaying {
     private Boolean artPlaying;
     private String queueAnchorKey;
 
-    // Dragging a song in Up Next by its handle.
+    // Dragging a song in Up Next by its handle. The list's data stays put while dragging: the
+    // rows in between slide aside (translationY), and the move is made on release.
     private boolean dragging;
+    /** The lifted copy is gliding into its new place after release. */
+    private boolean dragSettling;
     private int dragFrom;
     private int dragAt;
     private MediaItem dragCurrent;
     private ImageView dragGhost;
+    /** Extra pixels around the lifted copy for its shadow. */
+    private int dragShadow;
     private float dragGrabOffset;
     private float dragLastRawY;
-    private int dragScroll;
+    /** Auto-scroll speed in pixels per frame: negative up, positive down. */
+    private float dragScroll;
+    /** Height of an Up Next row. */
+    private int dragRowHeight;
 
     /** Keeps the list scrolling while a dragged song is held near its top or bottom edge. */
     private final Runnable dragAutoScroll = new Runnable() {
@@ -110,10 +118,10 @@ final class NowPlaying {
             if (dragScroll != 0 && queueList.getChildCount() > 0) {
                 View first = queueList.getChildAt(0);
                 queueList.setSelectionFromTop(queueList.getFirstVisiblePosition(),
-                        first.getTop() - dragScroll * Ui.dp(activity, 6));
+                        first.getTop() - Math.round(dragScroll));
                 moveDrag(dragLastRawY);
             }
-            Bg.mainDelayed(this, 30);
+            Bg.mainDelayed(this, 16);
         }
     };
 
@@ -635,31 +643,72 @@ final class NowPlaying {
     }
 
     private void startDrag(View row, int index, float rawY) {
-        if (dragging || row.getWidth() == 0 || row.getHeight() == 0) return;
-        Bitmap shot = Bitmap.createBitmap(row.getWidth(), row.getHeight(), Bitmap.Config.ARGB_8888);
+        if (dragging || dragSettling || row.getWidth() == 0 || row.getHeight() == 0) return;
+        // A lifted copy of the row, with a soft shadow, follows the finger.
+        dragShadow = Ui.dp(activity, 10);
+        int w = row.getWidth();
+        int h = row.getHeight();
+        Bitmap shot = Bitmap.createBitmap(w, h + 2 * dragShadow, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(shot);
-        canvas.drawColor(Ui.color(activity, R.attr.gfSurface));
+        Paint shadow = new Paint(Paint.ANTI_ALIAS_FLAG);
+        shadow.setColor(Ui.color(activity, R.attr.gfSurface));
+        shadow.setShadowLayer(dragShadow * 0.8f, 0, dragShadow * 0.25f, 0x40000000);
+        canvas.drawRect(0, dragShadow, w, dragShadow + h, shadow);
+        canvas.save();
+        canvas.translate(0, dragShadow);
         row.draw(canvas);
+        canvas.restore();
         dragGhost = new ImageView(activity);
         dragGhost.setImageBitmap(shot);
-        dragGhost.setAlpha(0.95f);
-        listArea.addView(dragGhost, new FrameLayout.LayoutParams(row.getWidth(), row.getHeight(),
-                Gravity.TOP | Gravity.LEFT));
+        listArea.addView(dragGhost, new FrameLayout.LayoutParams(w, h + 2 * dragShadow, Gravity.TOP | Gravity.LEFT));
         int[] rowLoc = new int[2];
         int[] areaLoc = new int[2];
         row.getLocationOnScreen(rowLoc);
         listArea.getLocationOnScreen(areaLoc);
-        dragGhost.setTranslationY(rowLoc[1] - areaLoc[1]);
+        dragGhost.setTranslationY(rowLoc[1] - areaLoc[1] - dragShadow);
+        dragGhost.animate().scaleX(1.03f).scaleY(1.03f).setDuration(120).start();
         dragGrabOffset = rawY - rowLoc[1];
         dragFrom = index;
         dragAt = index;
+        dragRowHeight = h;
         dragCurrent = player.current();
         dragLastRawY = rawY;
         dragScroll = 0;
         dragging = true;
-        queueAdapter.setHidden(index);
+        // Hide the row itself (no re-binding of the list), and remember it for rows bound later.
+        queueAdapter.hidden = index;
+        row.setVisibility(View.INVISIBLE);
         Bg.cancelMain(dragAutoScroll);
         Bg.main(dragAutoScroll);
+    }
+
+    /** How far the Up Next row at index is pushed aside to make room for the dragged song. */
+    private int dragShift(int index) {
+        if (!dragging) return 0;
+        if (index == dragFrom) return 0;
+        if (dragFrom < dragAt && index > dragFrom && index <= dragAt) return -dragRowHeight;
+        if (dragFrom > dragAt && index >= dragAt && index < dragFrom) return dragRowHeight;
+        return 0;
+    }
+
+    /** Slides the visible rows to where they belong for the current drop spot. */
+    private void applyShifts(boolean animate) {
+        for (int i = 0; i < queueList.getChildCount(); i++) {
+            View child = queueList.getChildAt(i);
+            Object tag = child.getTag();
+            if (!(tag instanceof QueueHolder)) continue;
+            QueueHolder h = (QueueHolder) tag;
+            if (h.role != ROLE_NEXT) continue;
+            float to = dragShift(h.index);
+            if (child.getTranslationY() == to && h.shiftTarget == to) continue;
+            h.shiftTarget = to;
+            child.animate().cancel();
+            if (animate) {
+                child.animate().translationY(to).setDuration(150).setInterpolator(new DecelerateInterpolator()).start();
+            } else {
+                child.setTranslationY(to);
+            }
+        }
     }
 
     private void moveDrag(float rawY) {
@@ -670,35 +719,96 @@ final class NowPlaying {
         listArea.getLocationOnScreen(areaLoc);
         queueList.getLocationOnScreen(listLoc);
         float top = rawY - dragGrabOffset - areaLoc[1];
-        top = Math.max(0, Math.min(top, listArea.getHeight() - dragGhost.getHeight()));
-        dragGhost.setTranslationY(top);
+        top = Math.max(0, Math.min(top, listArea.getHeight() - dragRowHeight));
+        dragGhost.setTranslationY(top - dragShadow);
 
-        // The row under the middle of the dragged song is where it goes.
-        float center = areaLoc[1] + top + dragGhost.getHeight() / 2f - listLoc[1];
+        // The drop spot: where the middle of the dragged song is, counted in Up Next rows from a
+        // visible Up Next row's own (unshifted) place.
+        float center = areaLoc[1] + top + dragRowHeight / 2f - listLoc[1];
         int count = queueAdapter.nextCount();
-        int pos = queueList.pointToPosition(queueList.getWidth() / 2, (int) center);
-        int target = pos == AdapterView.INVALID_POSITION
-                ? (center < 0 ? 0 : count - 1)
-                : pos - queueAdapter.firstNextPosition();
+        int target = dragAt;
+        for (int i = 0; i < queueList.getChildCount(); i++) {
+            View child = queueList.getChildAt(i);
+            Object tag = child.getTag();
+            if (tag instanceof QueueHolder && ((QueueHolder) tag).role == ROLE_NEXT) {
+                int index = ((QueueHolder) tag).index;
+                target = index + (int) Math.floor((center - child.getTop()) / dragRowHeight);
+                break;
+            }
+        }
         target = Math.max(0, Math.min(count - 1, target));
         if (target != dragAt) {
-            queueAdapter.move(dragAt, target);
             dragAt = target;
+            applyShifts(true);
         }
-        float edge = Ui.dp(activity, 40);
-        dragScroll = center < edge ? -1 : (center > queueList.getHeight() - edge ? 1 : 0);
+
+        // Near the top or bottom edge, scroll; faster the closer to the edge.
+        float edge = Ui.dp(activity, 48);
+        float max = Ui.dp(activity, 10);
+        if (center < edge) dragScroll = -max * Math.min(1f, (edge - center) / edge);
+        else if (center > queueList.getHeight() - edge) {
+            dragScroll = max * Math.min(1f, (center - (queueList.getHeight() - edge)) / edge);
+        } else dragScroll = 0;
     }
 
     private void endDrag() {
         if (!dragging) return;
-        dragging = false;
         Bg.cancelMain(dragAutoScroll);
-        listArea.removeView(dragGhost);
-        dragGhost = null;
-        queueAdapter.setHidden(-1);
         // If the song changed meanwhile, Up Next shifted under the finger: drop the move.
-        if (player.current() == dragCurrent && dragFrom != dragAt) player.moveUpNext(dragFrom, dragAt);
+        boolean moved = player.current() == dragCurrent && dragFrom != dragAt;
+        if (moved) player.moveUpNext(dragFrom, dragAt);
+        final int landing = moved ? dragAt : dragFrom;
+        // Where the song lands: a visible Up Next row's own place, stepped to the landing spot.
+        float slot = Float.NaN;
+        int[] areaLoc = new int[2];
+        listArea.getLocationOnScreen(areaLoc);
+        for (int i = 0; i < queueList.getChildCount(); i++) {
+            View child = queueList.getChildAt(i);
+            Object tag = child.getTag();
+            if (tag instanceof QueueHolder && ((QueueHolder) tag).role == ROLE_NEXT) {
+                int[] loc = new int[2];
+                child.getLocationOnScreen(loc);
+                float home = loc[1] - child.getTranslationY() - areaLoc[1];
+                slot = home + (landing - ((QueueHolder) tag).index) * (float) dragRowHeight;
+                break;
+            }
+        }
+        dragging = false;
+        dragSettling = true;
+        // Show the new order now: the rows are already where they end up, so nothing moves.
+        // The landing spot stays empty until the lifted copy gets there.
+        queueAdapter.hidden = landing;
+        for (int i = 0; i < queueList.getChildCount(); i++) {
+            View child = queueList.getChildAt(i);
+            child.animate().cancel();
+            child.setTranslationY(0);
+        }
         refreshQueue(false);
+
+        final ImageView ghost = dragGhost;
+        Runnable finish = new Runnable() {
+            @Override
+            public void run() {
+                if (!dragSettling || dragGhost != ghost) return;
+                dragSettling = false;
+                dragGhost = null;
+                listArea.removeView(ghost);
+                queueAdapter.hidden = -1;
+                for (int i = 0; i < queueList.getChildCount(); i++) {
+                    View child = queueList.getChildAt(i);
+                    Object tag = child.getTag();
+                    if (tag instanceof QueueHolder && ((QueueHolder) tag).role == ROLE_NEXT) child.setVisibility(View.VISIBLE);
+                }
+            }
+        };
+        if (ghost == null || Float.isNaN(slot) || slot < -dragRowHeight || slot > listArea.getHeight()) {
+            finish.run();
+            return;
+        }
+        ghost.animate().translationY(slot - dragShadow).scaleX(1f).scaleY(1f).setDuration(140)
+                .setInterpolator(new DecelerateInterpolator()).withEndAction(finish).start();
+        // In case the animation never ends (the card closed meanwhile).
+        Bg.mainDelayed(finish, 400);
     }
 
     /** Lyrics lines: the current one bold and bright, the rest faded. */
@@ -796,6 +906,10 @@ final class NowPlaying {
     }
 
     private static final class QueueHolder {
+        int role;
+        int index;
+        /** Where the row is sliding to (translationY) while a song is dragged. */
+        float shiftTarget;
         View texts;
         ArtworkView art;
         TextView title;
@@ -890,16 +1004,6 @@ final class NowPlaying {
             return next.size();
         }
 
-        void setHidden(int index) {
-            hidden = index;
-            notifyDataSetChanged();
-        }
-
-        void move(int from, int to) {
-            Lists.move(next, from, to);
-            hidden = to;
-            rebuild();
-        }
 
         void click(int position) {
             if (position < 0 || position >= entries.size()) return;
@@ -1045,6 +1149,13 @@ final class NowPlaying {
             h.handle.setTag(e.index);
             boolean beingDragged = e.role == ROLE_NEXT && e.index == hidden;
             convertView.setVisibility(beingDragged ? View.INVISIBLE : View.VISIBLE);
+            h.role = e.role;
+            h.index = e.index;
+            // Rows scrolled into view mid-drag sit where the drag has pushed them.
+            int shift = e.role == ROLE_NEXT ? dragShift(e.index) : 0;
+            convertView.animate().cancel();
+            convertView.setTranslationY(shift);
+            h.shiftTarget = shift;
             return convertView;
         }
     }

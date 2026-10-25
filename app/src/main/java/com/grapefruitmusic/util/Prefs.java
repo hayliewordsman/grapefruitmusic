@@ -79,6 +79,23 @@ public final class Prefs {
         prefs.edit().putBoolean("volume_match", v).apply();
     }
 
+    /** Volume Boost level, 0 (off) to 4 (Extreme); see playback.Dsp. */
+    public static int volumeBoost() {
+        return prefs.getInt("volume_boost", 0);
+    }
+
+    public static void setVolumeBoost(int level) {
+        prefs.edit().putInt("volume_boost", level).apply();
+    }
+
+    public static boolean bassBoost() {
+        return prefs.getBoolean("bass_boost", false);
+    }
+
+    public static void setBassBoost(boolean on) {
+        prefs.edit().putBoolean("bass_boost", on).apply();
+    }
+
     /** Folders hidden from On This Phone (absolute paths, no trailing slash). */
     public static Set<String> excludedFolders() {
         return new TreeSet<String>(prefs.getStringSet("excluded_folders", new HashSet<String>()));

@@ -3,9 +3,7 @@ package com.grapefruitmusic.playback;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.wifi.WifiManager;
-import android.os.PowerManager;
 import android.util.Log;
 
 import com.grapefruitmusic.download.Downloads;
@@ -31,7 +29,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-/** The play queue and the MediaPlayer. Main thread only. */
+/** The play queue and the player engine. Main thread only. */
 public final class Player implements AudioManager.OnAudioFocusChangeListener {
     private static final String TAG = "GrapefruitPlayer";
 
@@ -59,7 +57,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     private boolean shuffle;
     private int repeat = REPEAT_OFF;
 
-    private MediaPlayer mp;
+    private Engine engine;
     private boolean prepared;
     private boolean playWhenReady;
     private boolean buffering;
@@ -79,6 +77,11 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     private boolean measuring;
     /** Turned down while another app talks over the music. */
     private boolean ducked;
+
+    /** Where to start the loading song (after switching engines mid-song), in ms. */
+    private long startAtMs;
+    /** A song Grapefruit's own engine couldn't play; Android's plays it, without effects. */
+    private String effectsFailedKey;
 
     public static synchronized Player get(Context context) {
         if (instance == null) instance = new Player(context.getApplicationContext());
@@ -110,17 +113,39 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     private void applyVolume() {
-        if (mp == null) return;
-        float v = matchVolume * (ducked ? 0.2f : 1f);
-        mp.setVolume(v, v);
+        if (engine == null) return;
+        engine.setVolume(matchVolume * (ducked ? 0.2f : 1f));
     }
 
     /** Starts the prepared song once nothing's holding it back (it may still be measured). */
     private void startIfReady() {
-        if (mp == null || !prepared || !playWhenReady || measuring || mp.isPlaying()) return;
-        mp.start();
+        if (engine == null || !prepared || !playWhenReady || measuring || engine.isPlaying()) return;
+        engine.start();
         loadedItemStarted = true;
         changed();
+    }
+
+    // ---- Volume Boost and Bass Boost ----
+
+    /** Is the song playing through Grapefruit's own engine (with effects)? */
+    public boolean effectsActive() {
+        return engine != null && engine.hasEffects();
+    }
+
+    /**
+     * Volume Boost or Bass Boost changed: applies it to the song that's playing, switching
+     * engines (and carrying on from the same spot) when effects go on or off.
+     */
+    public void audioEffectsChanged() {
+        MediaItem item = current();
+        if (engine == null || item == null) return;
+        engine.setEffects(Prefs.volumeBoost(), Prefs.bassBoost());
+        boolean want = wantsEffects(item);
+        if (want != engine.hasEffects()) load(playWhenReady, positionMs());
+    }
+
+    private boolean wantsEffects(MediaItem item) {
+        return Dsp.anyOn(Prefs.volumeBoost(), Prefs.bassBoost()) && !item.key().equals(effectsFailedKey);
     }
 
     // ---- Recently played ----
@@ -313,7 +338,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     // ---- Transport ----
 
     public boolean isPlaying() {
-        return mp != null && prepared && mp.isPlaying();
+        return engine != null && prepared && engine.isPlaying();
     }
 
     /** True while waiting for a stream to start. */
@@ -327,12 +352,12 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     public long positionMs() {
-        return mp != null && prepared ? mp.getCurrentPosition() : 0;
+        return engine != null && prepared ? engine.getCurrentPosition() : startAtMs;
     }
 
     public long durationMs() {
-        if (mp != null && prepared) {
-            int d = mp.getDuration();
+        if (engine != null && prepared) {
+            int d = engine.getDuration();
             if (d > 0) return d;
         }
         MediaItem c = current();
@@ -346,14 +371,14 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
 
     public void resume() {
         if (current() == null) return;
-        if (mp == null) {
+        if (engine == null) {
             load(true);
             return;
         }
         if (!requestFocus()) return;
         playWhenReady = true;
         if (prepared && !measuring) {
-            mp.start();
+            engine.start();
             loadedItemStarted = true;
         }
         startService();
@@ -363,7 +388,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     public void pause() {
         playWhenReady = false;
         pausedByFocusLoss = false;
-        if (mp != null && prepared && mp.isPlaying()) mp.pause();
+        if (engine != null && prepared && engine.isPlaying()) engine.pause();
         if (wifiLock.isHeld()) wifiLock.release();
         changed();
     }
@@ -377,7 +402,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         } else {
             return;
         }
-        load(playWhenReady || mp == null);
+        load(playWhenReady || engine == null);
     }
 
     /** Restarts the track if more than 3 seconds in, otherwise goes back one. */
@@ -392,8 +417,8 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     public void seekTo(long ms) {
-        if (mp != null && prepared) {
-            mp.seekTo((int) ms);
+        if (engine != null && prepared) {
+            engine.seekTo((int) ms);
             changed();
         }
     }
@@ -415,13 +440,12 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         changed();
     }
 
-    // ---- MediaPlayer ----
+    // ---- Engine ----
 
     private void release() {
-        if (mp != null) {
-            mp.reset();
-            mp.release();
-            mp = null;
+        if (engine != null) {
+            engine.release();
+            engine = null;
         }
         prepared = false;
         buffering = false;
@@ -429,7 +453,13 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     private void load(boolean play) {
+        load(play, 0);
+    }
+
+    /** Loads the current song, starting at startAt ms. */
+    private void load(boolean play, long startAt) {
         release();
+        startAtMs = startAt;
         final MediaItem item = current();
         if (loadedItem != null && loadedItemStarted && loadedItem != item) {
             history.add(loadedItem);
@@ -442,50 +472,54 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
             return;
         }
         playWhenReady = play && requestFocus();
-        mp = new MediaPlayer();
-        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mp.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK);
-        final MediaPlayer player = mp;
+        engine = wantsEffects(item) ? new DspEngine(context) : new MediaPlayerEngine(context);
+        engine.setEffects(Prefs.volumeBoost(), Prefs.bassBoost());
+        final Engine player = engine;
         matchVolume = volumeMatch.volumeFor(item);
         measuring = false;
         applyVolume();
-        mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        engine.setCallback(new Engine.Callback() {
             @Override
-            public void onPrepared(MediaPlayer m) {
-                if (m != mp) return;
+            public void onPrepared(Engine e) {
+                if (e != engine) return;
                 prepared = true;
                 buffering = false;
                 consecutiveErrors = 0;
+                if (startAtMs > 0) e.seekTo((int) startAtMs);
+                startAtMs = 0;
                 if (playWhenReady && !measuring) {
-                    m.start();
+                    e.start();
                     loadedItemStarted = true;
                 }
                 changed();
             }
-        });
-        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
             @Override
-            public void onCompletion(MediaPlayer m) {
-                if (m != mp) return;
+            public void onCompletion(Engine e) {
+                if (e != engine) return;
                 if (repeat == REPEAT_ONE) {
-                    m.seekTo(0);
-                    m.start();
+                    e.seekTo(0);
+                    e.start();
                 } else if (position + 1 < order.size() || repeat == REPEAT_ALL) {
                     next();
                 } else {
                     playWhenReady = false;
-                    m.seekTo(0);
+                    e.seekTo(0);
                     changed();
                 }
             }
-        });
-        mp.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+
             @Override
-            public boolean onError(MediaPlayer m, int what, int extra) {
-                if (m != mp) return true;
-                Log.w(TAG, "playback error " + what + "/" + extra + " for " + item.title);
+            public void onError(Engine e, String what) {
+                if (e != engine) return;
+                Log.w(TAG, "playback error (" + what + ") for " + item.title);
+                if (e.hasEffects()) {
+                    // Grapefruit's engine can't play this one: Android's plays it, without effects.
+                    effectsFailedKey = item.key();
+                    load(playWhenReady, prepared ? e.getCurrentPosition() : startAtMs);
+                    return;
+                }
                 failed(item, "Couldn't play “" + item.title + "”");
-                return true;
             }
         });
         try {
@@ -496,7 +530,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 Runnable measured = new Runnable() {
                     @Override
                     public void run() {
-                        if (mp != player || !measuring) return;
+                        if (engine != player || !measuring) return;
                         measuring = false;
                         matchVolume = volumeMatch.volumeFor(item);
                         applyVolume();
@@ -508,13 +542,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 Bg.mainDelayed(measured, 2500);
             }
             if (file != null) {
-                FileInputStream in = new FileInputStream(file);
-                try {
-                    // A file descriptor works for files in app-private storage too.
-                    player.setDataSource(in.getFD());
-                } finally {
-                    in.close();
-                }
+                player.setDataSource(file.getPath());
             } else {
                 MusicSource source = Sources.get(context).byId(item.sourceId);
                 StreamRequest req = source != null ? source.stream(item, Prefs.streamQuality()) : null;

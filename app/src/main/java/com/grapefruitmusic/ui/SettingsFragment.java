@@ -10,6 +10,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.grapefruitmusic.download.Downloads;
+import com.grapefruitmusic.playback.Dsp;
 import com.grapefruitmusic.playback.Player;
 import com.grapefruitmusic.playback.VolumeMatch;
 import com.grapefruitmusic.source.Account;
@@ -171,6 +172,32 @@ public final class SettingsFragment extends BaseFragment
                 + "Loud songs are turned down to match; quiet ones play as they are. Grapefruit measures the "
                 + "songs on this phone, and uses the loudness your server reports for streamed songs (or "
                 + "measures them the first time they play).");
+
+        g.section("Sound");
+        g.value("Volume Boost", Dsp.BOOST_NAMES[Prefs.volumeBoost()], new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                choose("Volume Boost", Dsp.BOOST_NAMES, Prefs.volumeBoost(), new Choice() {
+                    @Override
+                    public void chosen(int which) {
+                        Prefs.setVolumeBoost(which);
+                        Player.get(getActivity()).audioEffectsChanged();
+                        build();
+                    }
+                });
+            }
+        });
+        g.toggle("Bass Boost", Prefs.bassBoost(), new Toggle.Listener() {
+            @Override
+            public void onToggled(Toggle t, boolean on) {
+                Prefs.setBassBoost(on);
+                Player.get(getActivity()).audioEffectsChanged();
+            }
+        });
+        g.footer("Volume Boost makes Grapefruit louder than the phone's own maximum, like eXtra-Loud: a limiter "
+                + "keeps the loudest moments from crackling, and the higher levels squeeze the music more to "
+                + "get louder. Bass Boost adds low end. Both only change Grapefruit's sound. Listening loud for "
+                + "a long time can damage your hearing.");
 
         g.section("Downloads");
         g.value("Download Quality", Prefs.qualityLabel(Prefs.downloadQuality()), new View.OnClickListener() {
