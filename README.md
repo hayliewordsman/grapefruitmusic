@@ -79,3 +79,8 @@ The code is plain Java with no AndroidX or support libraries. Everything uses fr
 | `playback` | `Player` (queue + MediaPlayer), `PlaybackService` (notification, lock screen, headset) |
 | `net` | HTTP helper, Conscrypt/TLS setup, and a loopback relay that lets MediaPlayer stream over modern HTTPS |
 | `ui` | Single activity, pages as fragments, Now Playing card, code-drawn icons |
+
+## About
+
+Copyright © 2026 Magic Flute LLC. Developer: Haylie (Telegram [@afishinauto](https://t.me/afishinauto)).
+Donate: [paypal.me/fishglub](https://paypal.me/fishglub).

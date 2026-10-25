@@ -196,10 +196,15 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
                 + "and song title.");
 
         g.section("About");
-        g.value("Grapefruit Music", "Version " + versionName(c), null);
+        g.value("About Grapefruit Music", "Version " + versionName(c), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                main().push(new AboutFragment());
+            }
+        });
     }
 
-    private static String versionName(Context c) {
+    static String versionName(Context c) {
         try {
             return c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionName;
         } catch (android.content.pm.PackageManager.NameNotFoundException e) {
