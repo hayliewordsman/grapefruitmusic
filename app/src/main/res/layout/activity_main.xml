@@ -174,7 +174,7 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <FrameLayout
+                    <com.grapefruitmusic.ui.widget.DragFrame
                         android:id="@+id/np_list_area"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
@@ -198,7 +198,9 @@
                             android:layout_height="match_parent"
                             android:cacheColorHint="#00000000"
                             android:divider="@null"
+                            android:fadingEdgeLength="32dp"
                             android:listSelector="@android:color/transparent"
+                            android:requiresFadingEdge="vertical"
                             android:visibility="gone" />
 
                         <TextView
@@ -210,7 +212,7 @@
                             android:textColor="?attr/gfTextSecondary"
                             android:textSize="17sp"
                             android:visibility="gone" />
-                    </FrameLayout>
+                    </com.grapefruitmusic.ui.widget.DragFrame>
                 </LinearLayout>
             </FrameLayout>
 

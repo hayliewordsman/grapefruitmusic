@@ -18,8 +18,27 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Repository secrets GRAPEFRUIT_KEYSTORE_BASE64 (the .p12 file, base64) and
+      # GRAPEFRUIT_KEYSTORE_PASSWORD sign the release APK with the permanent key.
+      - name: Release signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.GRAPEFRUIT_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/grapefruit.p12"
+            echo "GRAPEFRUIT_KEYSTORE=$RUNNER_TEMP/grapefruit.p12" >> "$GITHUB_ENV"
+          else
+            echo "No release key; the release APK is signed with the debug key."
+          fi
+
       - name: Build, test and lint
+        env:
+          GRAPEFRUIT_KEYSTORE_PASSWORD: ${{ secrets.GRAPEFRUIT_KEYSTORE_PASSWORD }}
         run: ./gradlew --no-daemon assembleDebug assembleRelease testDebugUnitTest lintDebug
+
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/grapefruit.p12"
 
       - uses: actions/upload-artifact@v4
         with:

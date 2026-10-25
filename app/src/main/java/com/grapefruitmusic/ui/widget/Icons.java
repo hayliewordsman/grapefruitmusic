@@ -32,6 +32,8 @@ public final class Icons {
     public static final int CHECK = 23;
     public static final int PLAYLIST = 24;
     public static final int HANDLE = 25;
+    /** Filled circle with a white minus (the color is the circle's). */
+    public static final int REMOVE = 26;
 
     private static final Paint PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final Path PATH = new Path();
@@ -276,6 +278,14 @@ public final class Icons {
                 c.drawLine(4, 8, 20, 8, p);
                 c.drawLine(4, 12, 20, 12, p);
                 c.drawLine(4, 16, 20, 16, p);
+                break;
+            case REMOVE:
+                p.setStyle(Paint.Style.FILL);
+                c.drawCircle(12, 12, 10, p);
+                p.setColor(0xffffffff);
+                stroke(p, 2.4f);
+                p.setStrokeCap(Paint.Cap.SQUARE);
+                c.drawLine(7, 12, 17, 12, p);
                 break;
             case CHECK:
                 stroke(p, 2.4f);

@@ -60,4 +60,13 @@ public interface MusicSource {
 
     /** Makes a new playlist holding tracks (from this source). Blocking. */
     void createPlaylist(String name, List<MediaItem> tracks) throws IOException;
+
+    /**
+     * Changes a playlist: renames it (name not null), sets its description (description not
+     * null), and removes tracks (as loaded by tracks(), identified by their entryId). Blocking.
+     *
+     * @return whether the source kept the description; if not, Grapefruit keeps it on the phone
+     */
+    boolean editPlaylist(MediaItem playlist, String name, String description, List<MediaItem> removed)
+            throws IOException;
 }

@@ -125,9 +125,15 @@ public final class LocalSource implements MusicSource {
     }
 
     private List<MediaItem> tracksFrom(Cursor c, String idColumn) {
+        return tracksFrom(c, idColumn, null);
+    }
+
+    /** entryColumn: the playlist member row, for playlists. */
+    private List<MediaItem> tracksFrom(Cursor c, String idColumn, String entryColumn) {
         List<MediaItem> out = new ArrayList<MediaItem>();
         try {
             int id = c.getColumnIndexOrThrow(idColumn);
+            int entry = entryColumn != null ? c.getColumnIndexOrThrow(entryColumn) : -1;
             int title = c.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE);
             int artist = c.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST);
             int artistId = c.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID);
@@ -151,6 +157,7 @@ public final class LocalSource implements MusicSource {
                 m.path = c.getString(data);
                 m.year = c.getInt(year);
                 m.artKey = "album:" + m.albumId;
+                if (entry >= 0) m.entryId = c.getString(entry);
                 String p = m.path;
                 int dot = p == null ? -1 : p.lastIndexOf('.');
                 if (dot > 0) m.suffix = p.substring(dot + 1);
@@ -300,12 +307,14 @@ public final class LocalSource implements MusicSource {
     public List<MediaItem> tracks(MediaItem container) throws IOException {
         if (container.kind == MediaItem.PLAYLIST) {
             Uri members = MediaStore.Audio.Playlists.Members.getContentUri("external", Long.parseLong(container.id));
-            String[] cols = TRACK_COLUMNS.clone();
+            String[] cols = Arrays.copyOf(TRACK_COLUMNS, TRACK_COLUMNS.length + 1);
             cols[0] = MediaStore.Audio.Playlists.Members.AUDIO_ID;
+            cols[cols.length - 1] = MediaStore.Audio.Playlists.Members._ID;
             List<String> args = new ArrayList<String>();
             String selection = "1" + notHidden(args);
             return tracksFrom(query(members, cols, selection, args.toArray(new String[args.size()]),
-                    MediaStore.Audio.Playlists.Members.PLAY_ORDER), MediaStore.Audio.Playlists.Members.AUDIO_ID);
+                    MediaStore.Audio.Playlists.Members.PLAY_ORDER), MediaStore.Audio.Playlists.Members.AUDIO_ID,
+                    MediaStore.Audio.Playlists.Members._ID);
         }
         return tracksFrom(media(TRACK_COLUMNS, MediaStore.Audio.Media.ALBUM_ID + " = ?", new String[]{container.id},
                 MediaStore.Audio.Media.TRACK + ", " + MediaStore.Audio.Media.TITLE_KEY), MediaStore.Audio.Media._ID);
@@ -424,6 +433,33 @@ public final class LocalSource implements MusicSource {
         }
         if (created == null) throw new IOException("This phone didn't let Grapefruit make a playlist");
         addMembers(ContentUris.parseId(created), tracks);
+    }
+
+    @Override
+    public boolean editPlaylist(MediaItem playlist, String name, String description, List<MediaItem> removed)
+            throws IOException {
+        // MediaStore playlists have no description; Grapefruit keeps it on the phone.
+        long id = Long.parseLong(playlist.id);
+        try {
+            if (name != null) {
+                ContentValues v = new ContentValues();
+                v.put(MediaStore.Audio.Playlists.NAME, name);
+                v.put(MediaStore.Audio.Playlists.DATE_MODIFIED, System.currentTimeMillis() / 1000);
+                resolver.update(ContentUris.withAppendedId(PLAYLISTS, id), v, null, null);
+            }
+            if (!removed.isEmpty()) {
+                StringBuilder in = new StringBuilder();
+                for (MediaItem t : removed) {
+                    if (in.length() > 0) in.append(',');
+                    in.append(Long.parseLong(t.entryId));
+                }
+                resolver.delete(MediaStore.Audio.Playlists.Members.getContentUri("external", id),
+                        MediaStore.Audio.Playlists.Members._ID + " IN (" + in + ")", null);
+            }
+        } catch (RuntimeException e) {
+            throw new IOException("This phone didn't let Grapefruit change the playlist");
+        }
+        return false;
     }
 
     private void addMembers(long playlistId, List<MediaItem> tracks) throws IOException {

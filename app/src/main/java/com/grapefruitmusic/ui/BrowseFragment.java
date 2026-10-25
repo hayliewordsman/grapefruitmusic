@@ -11,6 +11,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.grapefruitmusic.R;
+import com.grapefruitmusic.data.PlaylistMeta;
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
@@ -34,6 +35,8 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
     private TextView status;
     /** Loaded items, kept while a page on top of this one is open. */
     private List<MediaItem> items;
+    /** PlaylistMeta.version() when items were loaded. */
+    private int loadedMeta;
 
     static BrowseFragment newInstance(String sourceId, int mode, MediaItem artist, String back) {
         BrowseFragment f = new BrowseFragment();
@@ -120,8 +123,9 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         if (items != null) {
             show();
             restoreScroll(list);
-            // Phone and download lists are cheap to re-read and may have changed meanwhile.
-            if (!source().isRemote()) load();
+            // Phone and download lists are cheap to re-read and may have changed meanwhile, and
+            // playlists change when one is edited.
+            if (!source().isRemote() || (mode() == PLAYLISTS && loadedMeta != PlaylistMeta.version())) load();
         } else {
             load();
         }
@@ -150,6 +154,8 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         final MusicSource s = source();
         final int mode = mode();
         final MediaItem artist = item();
+        final PlaylistMeta meta = PlaylistMeta.get(getActivity());
+        loadedMeta = PlaylistMeta.version();
         if (items == null) {
             status.setText("Loading\u2026");
             status.setVisibility(View.VISIBLE);
@@ -158,7 +164,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
             @Override
             public List<MediaItem> run() throws Exception {
                 switch (mode) {
-                    case PLAYLISTS: return s.playlists();
+                    case PLAYLISTS: return meta.apply(s.playlists());
                     case ARTISTS: return s.artists();
                     case SONGS: return s.songs();
                     case ARTIST_ALBUMS: return s.artistAlbums(artist);

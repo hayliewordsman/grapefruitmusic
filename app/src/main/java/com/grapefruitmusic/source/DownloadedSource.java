@@ -134,4 +134,10 @@ public final class DownloadedSource implements MusicSource {
     public void createPlaylist(String name, List<MediaItem> tracks) throws IOException {
         throw new IOException("Downloaded playlists can't be changed");
     }
+
+    @Override
+    public boolean editPlaylist(MediaItem playlist, String name, String description, List<MediaItem> removed)
+            throws IOException {
+        throw new IOException("Downloaded playlists can't be changed");
+    }
 }

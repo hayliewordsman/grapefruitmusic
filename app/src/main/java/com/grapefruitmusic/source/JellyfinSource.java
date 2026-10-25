@@ -87,8 +87,12 @@ public final class JellyfinSource implements MusicSource {
     }
 
     private String itemsQuery(String types, String extra) {
+        return itemsQuery(types, "ChildCount", extra);
+    }
+
+    private String itemsQuery(String types, String fields, String extra) {
         return "/Items?userId=" + Http.enc(account.userId) + "&Recursive=true&IncludeItemTypes=" + types
-                + "&Fields=ChildCount&EnableTotalRecordCount=false" + (extra == null ? "" : "&" + extra);
+                + "&Fields=" + fields + "&EnableTotalRecordCount=false" + (extra == null ? "" : "&" + extra);
     }
 
     private List<MediaItem> items(String query) throws IOException {
@@ -105,7 +109,7 @@ public final class JellyfinSource implements MusicSource {
     @Override
     public List<MediaItem> playlists() throws IOException {
         List<MediaItem> out = new ArrayList<MediaItem>();
-        for (MediaItem m : items(itemsQuery("Playlist", "SortBy=SortName"))) {
+        for (MediaItem m : items(itemsQuery("Playlist", "ChildCount,Overview", "SortBy=SortName"))) {
             if (m.kind == MediaItem.PLAYLIST) out.add(m);
         }
         return out;
@@ -259,6 +263,39 @@ public final class JellyfinSource implements MusicSource {
         Http.post(account.url + "/Playlists", headers(), "application/json", body.toString());
     }
 
+    @Override
+    public boolean editPlaylist(MediaItem playlist, String name, String description, List<MediaItem> removed)
+            throws IOException {
+        // Jellyfin only lets admins change descriptions, so Grapefruit keeps them on the phone.
+        if (name != null) {
+            JSONObject body = new JSONObject();
+            try {
+                body.put("Name", name);
+            } catch (JSONException e) {
+                throw new IOException(e.getMessage());
+            }
+            try {
+                Http.post(account.url + "/Playlists/" + Http.enc(playlist.id), headers(), "application/json",
+                        body.toString());
+            } catch (Http.StatusException e) {
+                if (e.code == 404 || e.code == 405) {
+                    throw new IOException("Renaming playlists needs Jellyfin 10.9 or later.");
+                }
+                throw e;
+            }
+        }
+        if (!removed.isEmpty()) {
+            StringBuilder ids = new StringBuilder();
+            for (MediaItem t : removed) {
+                if (ids.length() > 0) ids.append(',');
+                ids.append(t.entryId);
+            }
+            Http.open("DELETE", account.url + "/Playlists/" + Http.enc(playlist.id) + "/Items?entryIds="
+                    + Http.enc(ids.toString()), headers(), null, null).disconnect();
+        }
+        return false;
+    }
+
     private MediaItem item(JSONObject o) {
         if (o == null) return null;
         String type = o.optString("Type");
@@ -270,6 +307,8 @@ public final class JellyfinSource implements MusicSource {
         else return null;
         if (kind == MediaItem.PLAYLIST && "Video".equals(Json.str(o, "MediaType"))) return null;
         MediaItem m = new MediaItem(kind, id(), o.optString("Id"), o.optString("Name"));
+        m.entryId = Json.str(o, "PlaylistItemId");
+        if (kind == MediaItem.PLAYLIST) m.description = Json.str(o, "Overview");
         m.album = Json.str(o, "Album");
         m.albumId = Json.str(o, "AlbumId");
         m.albumArtist = Json.str(o, "AlbumArtist");

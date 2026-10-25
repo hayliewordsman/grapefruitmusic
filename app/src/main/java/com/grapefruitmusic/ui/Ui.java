@@ -10,6 +10,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -141,6 +142,28 @@ public final class Ui {
             h.addView(t);
         }
         return h;
+    }
+
+    /** Accent text button for a page's top line ("Edit", "Done", "Cancel"). */
+    public static TextView textButton(Context c, String label, boolean bold) {
+        TextView t = text(c, 17, R.attr.gfAccent, bold);
+        t.setText(label);
+        t.setGravity(Gravity.CENTER_VERTICAL);
+        t.setPadding(dp(c, 10), dp(c, 6), dp(c, 10), dp(c, 6));
+        t.setBackgroundResource(resource(c, R.attr.gfRowBackground));
+        return t;
+    }
+
+    /** Rounded gray text field. */
+    public static EditText field(Context c, float sp, boolean bold, String hint) {
+        EditText e = new EditText(c);
+        e.setBackgroundResource(resource(c, R.attr.gfFieldBackground));
+        e.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
+        e.setTextColor(color(c, R.attr.gfTextPrimary));
+        e.setHintTextColor(color(c, R.attr.gfTextSecondary));
+        if (bold) e.setTypeface(Typeface.DEFAULT_BOLD);
+        e.setHint(hint);
+        return e;
     }
 
     /** Bold section title ("Recently Added"). */

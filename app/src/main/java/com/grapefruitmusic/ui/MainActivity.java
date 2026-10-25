@@ -214,8 +214,11 @@ public final class MainActivity extends Activity implements Player.Listener {
 
     @Override
     public void onBackPressed() {
+        Fragment page = getFragmentManager().findFragmentById(R.id.content);
         if (nowPlaying.isOpen()) {
             nowPlaying.close();
+        } else if (page instanceof BaseFragment && ((BaseFragment) page).onBackPressed()) {
+            return;
         } else if (getFragmentManager().getBackStackEntryCount() > 0) {
             getFragmentManager().popBackStack();
         } else if (tab != TAB_LIBRARY) {

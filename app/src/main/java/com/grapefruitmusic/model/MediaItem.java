@@ -35,6 +35,10 @@ public class MediaItem implements Serializable {
     public String suffix;
     /** Local file to play, when the item is on this phone. */
     public String path;
+    /** Playlist description. */
+    public String description;
+    /** A track's entry in the playlist it was loaded from (used to remove it). */
+    public String entryId;
 
     public MediaItem() {
     }

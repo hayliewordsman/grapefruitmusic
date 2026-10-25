@@ -47,6 +47,11 @@ public abstract class BaseFragment extends Fragment {
         scrollOffset = 0;
     }
 
+    /** Handles the Back key itself (returns true), e.g. to leave edit mode. */
+    boolean onBackPressed() {
+        return false;
+    }
+
     /** What a page opened from this one shows on its back button. */
     String backTitle() {
         return "Back";

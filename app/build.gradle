@@ -13,8 +13,8 @@ android {
         // Kept below 23 on purpose: Grapefruit Music is built for Android 4.2.2 and uses
         // install-time permissions. Android 14+ refuses to install apps targeting < 23.
         targetSdk 22
-        versionCode 6
-        versionName "1.4"
+        versionCode 7
+        versionName "1.5"
 
         ndk {
             // Conscrypt ships native code; these are the ABIs Android 4.2.2 phones use.
@@ -22,11 +22,27 @@ android {
         }
     }
 
+    signingConfigs {
+        // The permanent release key, kept out of the repository. Builds find it through
+        // GRAPEFRUIT_KEYSTORE (path to the .p12 file) and GRAPEFRUIT_KEYSTORE_PASSWORD.
+        release {
+            def keystore = System.getenv("GRAPEFRUIT_KEYSTORE")
+            if (keystore) {
+                storeFile = file(keystore)
+                storeType = "pkcs12"
+                storePassword = System.getenv("GRAPEFRUIT_KEYSTORE_PASSWORD")
+                keyAlias = "grapefruit"
+                keyPassword = System.getenv("GRAPEFRUIT_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
-            // Lets CI produce an installable release APK without a private keystore.
-            signingConfig signingConfigs.debug
+            // Without the release key (forks, pull requests) the debug key still makes an
+            // installable APK, but it can't update copies signed with the release key.
+            signingConfig System.getenv("GRAPEFRUIT_KEYSTORE") ? signingConfigs.release : signingConfigs.debug
         }
     }
 

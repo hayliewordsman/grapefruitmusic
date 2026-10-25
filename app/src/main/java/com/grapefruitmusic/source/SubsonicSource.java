@@ -100,6 +100,7 @@ public final class SubsonicSource implements MusicSource {
             m.durationMs = p.optLong("duration") * 1000L;
             m.artKey = Json.str(p, "coverArt");
             m.artist = Json.str(p, "owner");
+            m.description = Json.str(p, "comment");
             out.add(m);
         }
         return out;
@@ -168,7 +169,12 @@ public final class SubsonicSource implements MusicSource {
         List<MediaItem> out = new ArrayList<MediaItem>();
         if (container.kind == MediaItem.PLAYLIST) {
             JSONObject r = call("getPlaylist", "id=" + Http.enc(container.id));
-            for (JSONObject s : Json.list(r.optJSONObject("playlist"), "entry")) out.add(track(s));
+            for (JSONObject s : Json.list(r.optJSONObject("playlist"), "entry")) {
+                MediaItem t = track(s);
+                // Subsonic removes playlist songs by position.
+                t.entryId = String.valueOf(out.size());
+                out.add(t);
+            }
         } else {
             JSONObject r = call("getAlbum", "id=" + Http.enc(container.id));
             JSONObject album = r.optJSONObject("album");
@@ -269,6 +275,18 @@ public final class SubsonicSource implements MusicSource {
     @Override
     public void createPlaylist(String name, List<MediaItem> tracks) throws IOException {
         call("createPlaylist", "name=" + Http.enc(name) + songIds("songId", tracks));
+    }
+
+    @Override
+    public boolean editPlaylist(MediaItem playlist, String name, String description, List<MediaItem> removed)
+            throws IOException {
+        // One request, so the server applies all of it or none of it.
+        StringBuilder params = new StringBuilder("playlistId=").append(Http.enc(playlist.id));
+        if (name != null) params.append("&name=").append(Http.enc(name));
+        if (description != null) params.append("&comment=").append(Http.enc(description));
+        for (MediaItem t : removed) params.append("&songIndexToRemove=").append(Http.enc(t.entryId));
+        call("updatePlaylist", params.toString());
+        return true;
     }
 
     private MediaItem artist(JSONObject a) {

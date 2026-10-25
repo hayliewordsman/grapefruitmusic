@@ -21,7 +21,10 @@ import com.grapefruitmusic.util.Prefs;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,6 +66,13 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     private boolean pausedByFocusLoss;
     private int consecutiveErrors;
 
+    /** Songs that actually started playing, oldest first (shown as Recently Played). */
+    private final PlayHistory history = new PlayHistory(50);
+    private final File historyFile;
+    /** The song in the MediaPlayer, and whether it started playing. */
+    private MediaItem loadedItem;
+    private boolean loadedItemStarted;
+
     public static synchronized Player get(Context context) {
         if (instance == null) instance = new Player(context.getApplicationContext());
         return instance;
@@ -74,6 +84,77 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiLock = wifi.createWifiLock(WifiManager.WIFI_MODE_FULL, "grapefruit-stream");
         wifiLock.setReferenceCounted(false);
+        historyFile = new File(context.getFilesDir(), "history.ser");
+        loadHistory();
+    }
+
+    // ---- Recently played ----
+
+    public List<MediaItem> history() {
+        return history.items();
+    }
+
+    /** Records a song as played (normally done when playback moves on from it). */
+    public void recordPlayed(MediaItem item) {
+        history.add(item);
+        saveHistory();
+        changed();
+    }
+
+    public void clearHistory() {
+        history.clear();
+        saveHistory();
+        changed();
+    }
+
+    /** Plays item right away, keeping the rest of Up Next. */
+    public void playNow(MediaItem item) {
+        if (current() == null) {
+            play(Collections.singletonList(item), 0, false);
+            return;
+        }
+        queue.add(item);
+        order.add(position + 1, queue.size() - 1);
+        position++;
+        consecutiveErrors = 0;
+        load(true);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void loadHistory() {
+        if (!historyFile.exists()) return;
+        try {
+            ObjectInputStream in = new ObjectInputStream(new FileInputStream(historyFile));
+            try {
+                history.setAll((List<MediaItem>) in.readObject());
+            } finally {
+                in.close();
+            }
+        } catch (Exception e) {
+            // Unreadable (e.g. from an incompatible version): start a new history.
+            historyFile.delete();
+        }
+    }
+
+    private void saveHistory() {
+        final ArrayList<MediaItem> snapshot = new ArrayList<MediaItem>(history.items());
+        Bg.execute(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (historyFile) {
+                    try {
+                        ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(historyFile));
+                        try {
+                            out.writeObject(snapshot);
+                        } finally {
+                            out.close();
+                        }
+                    } catch (IOException e) {
+                        Log.w(TAG, "couldn't save history", e);
+                    }
+                }
+            }
+        });
     }
 
     public void addListener(Listener l) {
@@ -236,7 +317,10 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         }
         if (!requestFocus()) return;
         playWhenReady = true;
-        if (prepared) mp.start();
+        if (prepared) {
+            mp.start();
+            loadedItemStarted = true;
+        }
         startService();
         changed();
     }
@@ -281,6 +365,12 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
 
     /** Stops playback and clears the queue. */
     public void stop() {
+        if (loadedItem != null && loadedItemStarted) {
+            history.add(loadedItem);
+            saveHistory();
+        }
+        loadedItem = null;
+        loadedItemStarted = false;
         release();
         queue.clear();
         order.clear();
@@ -306,6 +396,12 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     private void load(boolean play) {
         release();
         final MediaItem item = current();
+        if (loadedItem != null && loadedItemStarted && loadedItem != item) {
+            history.add(loadedItem);
+            saveHistory();
+        }
+        loadedItem = item;
+        loadedItemStarted = false;
         if (item == null) {
             changed();
             return;
@@ -322,7 +418,10 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 prepared = true;
                 buffering = false;
                 consecutiveErrors = 0;
-                if (playWhenReady) m.start();
+                if (playWhenReady) {
+                    m.start();
+                    loadedItemStarted = true;
+                }
                 changed();
             }
         });

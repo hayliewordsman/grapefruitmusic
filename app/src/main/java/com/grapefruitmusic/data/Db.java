@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-/** Downloads and cached lyrics. */
+/** Downloads, cached lyrics, and playlist covers and descriptions. */
 public final class Db extends SQLiteOpenHelper {
     private static Db instance;
 
@@ -14,7 +14,7 @@ public final class Db extends SQLiteOpenHelper {
     }
 
     private Db(Context context) {
-        super(context, "grapefruit.db", null, 1);
+        super(context, "grapefruit.db", null, 2);
     }
 
     @Override
@@ -34,10 +34,18 @@ public final class Db extends SQLiteOpenHelper {
                 + "source_id TEXT NOT NULL, playlist_id TEXT NOT NULL, position INTEGER NOT NULL, track_id TEXT NOT NULL)");
         db.execSQL("CREATE TABLE lyrics ("
                 + "song_key TEXT PRIMARY KEY, synced INTEGER, body TEXT, credit TEXT, fetched_at INTEGER)");
+        createPlaylistMeta(db);
+    }
+
+    /** Version 2 (Grapefruit 1.5). */
+    private static void createPlaylistMeta(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE playlist_meta ("
+                + "source_id TEXT NOT NULL, playlist_id TEXT NOT NULL, description TEXT, cover_path TEXT,"
+                + "PRIMARY KEY (source_id, playlist_id))");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Version 1 only.
+        if (oldVersion < 2) createPlaylistMeta(db);
     }
 }

@@ -2,20 +2,28 @@ package com.grapefruitmusic.ui;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.grapefruitmusic.R;
+import com.grapefruitmusic.data.PlaylistMeta;
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
@@ -28,23 +36,53 @@ import com.grapefruitmusic.util.ArtworkLoader;
 import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Format;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** An album or playlist: artwork, Play / Shuffle, Download, and the track list. */
+/**
+ * An album or playlist: artwork, Play / Shuffle, Download, and the track list. Playlists have an
+ * Edit mode for the name, description and cover photo, and for removing songs; Done saves it all.
+ */
 public final class AlbumFragment extends BaseFragment implements Downloads.Listener, Player.Listener {
+    private static final int RED = 0xffff3b30;
+
     private ListView list;
     private TrackAdapter adapter;
     private TextView footer;
     private View downloadRow;
     private IconView downloadIcon;
     private TextView downloadLabel;
+    private View backButton;
+    private TextView cancelButton;
+    private TextView editButton;
+    private ArtworkView art;
+    private TextView coverLabel;
+    private TextView titleView;
+    private EditText nameField;
+    private TextView descriptionView;
+    private EditText descriptionField;
+    private TextView editNote;
+    private View playButtons;
     /** Loaded tracks, kept while a page on top of this one (an artist) is open. */
     private List<MediaItem> tracks = new ArrayList<MediaItem>();
     private boolean loaded;
+    private boolean loading;
     private Map<String, Integer> states = new HashMap<String, Integer>();
+
+    // Edit mode. Nothing is saved until Done.
+    private boolean editing;
+    private boolean saving;
+    /** The songs left; removed ones go to removedTracks. */
+    private List<MediaItem> editTracks = new ArrayList<MediaItem>();
+    private final List<MediaItem> removedTracks = new ArrayList<MediaItem>();
+    /** Text typed so far, kept if the page's views are rebuilt. */
+    private String editName;
+    private String editDescription;
+    /** A new cover file, "" to remove the cover photo, or null for no change. */
+    private String pendingCover;
 
     static AlbumFragment newInstance(String sourceId, MediaItem container, String back) {
         AlbumFragment f = new AlbumFragment();
@@ -69,21 +107,27 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         RowAdapter.style(list);
 
         LinearLayout header = Ui.header(c, backLabel(), null, goBack());
+        header.addView(topBar(c, header), 0);
 
         LinearLayout info = new LinearLayout(c);
         info.setOrientation(LinearLayout.HORIZONTAL);
         info.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 4));
-        ArtworkView art = Ui.artwork(c, 136);
-        ArtworkLoader.get(c).into(art, album, Ui.dp(c, 280));
-        info.addView(art);
+        info.addView(cover(c), new LinearLayout.LayoutParams(Ui.dp(c, 136), Ui.dp(c, 136)));
         LinearLayout texts = new LinearLayout(c);
         texts.setOrientation(LinearLayout.VERTICAL);
         texts.setPadding(Ui.dp(c, 14), Ui.dp(c, 2), 0, 0);
-        TextView title = Ui.text(c, 20, R.attr.gfTextPrimary, true);
-        title.setSingleLine(false);
-        title.setMaxLines(3);
-        title.setText(album.title);
-        texts.addView(title);
+        titleView = Ui.text(c, 20, R.attr.gfTextPrimary, true);
+        titleView.setSingleLine(false);
+        titleView.setMaxLines(3);
+        titleView.setText(album.title);
+        texts.addView(titleView);
+        nameField = Ui.field(c, 17, true, "Playlist Name");
+        nameField.setSingleLine(true);
+        nameField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        nameField.setImeOptions(EditorInfo.IME_ACTION_NEXT);
+        nameField.setVisibility(View.GONE);
+        texts.addView(nameField, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
         if (album.artist != null) {
             TextView artist = Ui.text(c, 18, R.attr.gfAccent, false);
             artist.setSingleLine(false);
@@ -104,6 +148,27 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         texts.addView(meta);
         info.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         header.addView(info);
+
+        descriptionView = Ui.text(c, 15, R.attr.gfTextSecondary, false);
+        descriptionView.setSingleLine(false);
+        descriptionView.setMaxLines(6);
+        descriptionView.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 2));
+        header.addView(descriptionView);
+        descriptionField = Ui.field(c, 15, false, "Description");
+        descriptionField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        descriptionField.setSingleLine(false);
+        descriptionField.setMinLines(2);
+        descriptionField.setMaxLines(6);
+        descriptionField.setGravity(Gravity.TOP);
+        LinearLayout.LayoutParams fl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        fl.topMargin = Ui.dp(c, 10);
+        header.addView(descriptionField, fl);
+        editNote = Ui.text(c, 13, R.attr.gfTextSecondary, false);
+        editNote.setSingleLine(false);
+        editNote.setPadding(Ui.dp(c, 4), Ui.dp(c, 8), Ui.dp(c, 4), Ui.dp(c, 4));
+        header.addView(editNote);
 
         LinearLayout buttons = new LinearLayout(c);
         buttons.setOrientation(LinearLayout.HORIZONTAL);
@@ -128,6 +193,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
             }
         });
         header.addView(buttons);
+        playButtons = buttons;
 
         LinearLayout dl = new LinearLayout(c);
         dl.setOrientation(LinearLayout.HORIZONTAL);
@@ -160,7 +226,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int i = position - list.getHeaderViewsCount();
-                if (i >= 0 && i < tracks.size()) {
+                if (!editing && i >= 0 && i < tracks.size()) {
                     Player p = Player.get(getActivity());
                     p.play(tracks, i, p.isShuffle());
                 }
@@ -170,14 +236,17 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 int i = position - list.getHeaderViewsCount();
-                if (i >= 0 && i < tracks.size()) TrackActions.show(AlbumFragment.this, tracks.get(i), source());
+                if (!editing && i >= 0 && i < tracks.size()) {
+                    TrackActions.show(AlbumFragment.this, tracks.get(i), source());
+                }
                 return true;
             }
         });
+        showHeader();
         if (loaded) {
             showTracks();
             restoreScroll(list);
-            if (!source().isRemote()) load();
+            if (!source().isRemote() && !editing) load();
         } else {
             load();
         }
@@ -187,7 +256,294 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
     @Override
     public void onDestroyView() {
         rememberScroll(list);
+        if (editing) {
+            editName = nameField.getText().toString();
+            editDescription = descriptionField.getText().toString();
+        }
         super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        // Left without Done or Cancel (e.g. another tab was picked): drop the unsaved cover.
+        if (editing) discardPendingCover();
+        super.onDestroy();
+    }
+
+    /** "‹ Back" (or "Cancel" while editing) on the left, "Edit" / "Done" on the right. */
+    private View topBar(Context c, LinearLayout header) {
+        LinearLayout bar = new LinearLayout(c);
+        bar.setOrientation(LinearLayout.HORIZONTAL);
+        bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setMinimumHeight(Ui.dp(c, 40));
+        if (header.getChildCount() > 0) {
+            backButton = header.getChildAt(0);
+            ViewGroup.LayoutParams lp = backButton.getLayoutParams();
+            header.removeView(backButton);
+            bar.addView(backButton, lp);
+        }
+        cancelButton = Ui.textButton(c, "Cancel", false);
+        LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        cl.leftMargin = -Ui.dp(c, 10);
+        bar.addView(cancelButton, cl);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelEditing();
+            }
+        });
+        bar.addView(new View(c), new LinearLayout.LayoutParams(0, 1, 1));
+        editButton = Ui.textButton(c, "Edit", false);
+        LinearLayout.LayoutParams el = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        el.rightMargin = -Ui.dp(c, 10);
+        bar.addView(editButton, el);
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (editing) finishEditing();
+                else startEditing();
+            }
+        });
+        return bar;
+    }
+
+    /** Artwork, with an "Edit" band across the bottom in edit mode (tap to change the cover). */
+    private View cover(Context c) {
+        FrameLayout frame = new FrameLayout(c);
+        art = Ui.artwork(c, 0);
+        frame.addView(art, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        coverLabel = new TextView(c);
+        coverLabel.setText("Edit");
+        coverLabel.setTextColor(0xffffffff);
+        coverLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        coverLabel.setGravity(Gravity.CENTER);
+        coverLabel.setPadding(0, Ui.dp(c, 5), 0, Ui.dp(c, 6));
+        GradientDrawable band = new GradientDrawable();
+        band.setColor(0x99000000);
+        float r = Ui.dp(c, 4); // ArtworkView's corner radius
+        band.setCornerRadii(new float[]{0, 0, 0, 0, r, r, r, r});
+        coverLabel.setBackground(band);
+        frame.addView(coverLabel, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM));
+        frame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (editing && !saving) {
+                    CoverPicker.show(AlbumFragment.this, editTracks, hasCoverWhenSaved(), coverListener);
+                }
+            }
+        });
+        frame.setClickable(false);
+        return frame;
+    }
+
+    private boolean canEdit() {
+        return isPlaylist() && source().canEditPlaylists();
+    }
+
+    /** Shows the header for the current mode. */
+    private void showHeader() {
+        Context c = getActivity();
+        MediaItem album = item();
+        String description = album.description != null ? album.description.trim() : "";
+        boolean e = editing;
+        backButton.setVisibility(e ? View.GONE : View.VISIBLE);
+        cancelButton.setVisibility(e ? View.VISIBLE : View.GONE);
+        editButton.setVisibility(canEdit() ? View.VISIBLE : View.GONE);
+        editButton.setText(saving ? "Saving…" : (e ? "Done" : "Edit"));
+        editButton.setTypeface(e ? android.graphics.Typeface.DEFAULT_BOLD : android.graphics.Typeface.DEFAULT);
+        editButton.setEnabled(!saving);
+        cancelButton.setEnabled(!saving);
+        editButton.setAlpha(saving ? 0.5f : 1f);
+        cancelButton.setAlpha(saving ? 0.5f : 1f);
+        titleView.setText(album.title);
+        titleView.setVisibility(e ? View.GONE : View.VISIBLE);
+        nameField.setVisibility(e ? View.VISIBLE : View.GONE);
+        descriptionView.setText(description);
+        descriptionView.setVisibility(!e && description.length() > 0 ? View.VISIBLE : View.GONE);
+        descriptionField.setVisibility(e ? View.VISIBLE : View.GONE);
+        editNote.setText(source().isRemote() ? "The cover photo is kept on this phone, not on your server." : "");
+        editNote.setVisibility(e && editNote.length() > 0 ? View.VISIBLE : View.GONE);
+        coverLabel.setVisibility(e ? View.VISIBLE : View.GONE);
+        ((View) art.getParent()).setClickable(e);
+        playButtons.setVisibility(e ? View.GONE : View.VISIBLE);
+        if (e) {
+            downloadRow.setVisibility(View.GONE);
+            if (editName != null) nameField.setText(editName);
+            if (editDescription != null) descriptionField.setText(editDescription);
+            editName = null;
+            editDescription = null;
+        }
+        nameField.setEnabled(!saving);
+        descriptionField.setEnabled(!saving);
+        showCover(c);
+    }
+
+    private void showCover(Context c) {
+        MediaItem album = item();
+        MediaItem shown = album;
+        if (editing && pendingCover != null) {
+            shown = new MediaItem(album.kind, album.sourceId, album.id, album.title);
+            shown.artKey = pendingCover.length() > 0 ? pendingCover : PlaylistMeta.get(c).sourceArtKey(album);
+        }
+        ArtworkLoader.get(c).into(art, shown, Ui.dp(c, 280));
+    }
+
+    /** Will the playlist have a cover photo after Done? */
+    private boolean hasCoverWhenSaved() {
+        if (pendingCover != null) return pendingCover.length() > 0;
+        return PlaylistMeta.get(getActivity()).isCover(item().artKey);
+    }
+
+    private final CoverPicker.Listener coverListener = new CoverPicker.Listener() {
+        @Override
+        public void onCoverChosen(File file) {
+            if (!editing || saving) {
+                file.delete();
+                return;
+            }
+            discardPendingCover();
+            pendingCover = file.getPath();
+            if (getActivity() != null && art != null) showCover(getActivity());
+        }
+
+        @Override
+        public void onCoverRemoved() {
+            discardPendingCover();
+            pendingCover = PlaylistMeta.get(getActivity()).isCover(item().artKey) ? "" : null;
+            showCover(getActivity());
+        }
+    };
+
+    private void discardPendingCover() {
+        if (pendingCover != null && pendingCover.length() > 0) new File(pendingCover).delete();
+        pendingCover = null;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (editing && getActivity() != null) {
+            CoverPicker.onActivityResult(getActivity(), requestCode, resultCode, data, coverListener);
+        }
+    }
+
+    @Override
+    boolean onBackPressed() {
+        if (!editing) return false;
+        if (!saving) cancelEditing();
+        return true;
+    }
+
+    private void startEditing() {
+        if (editing || loading || !loaded) return;
+        MediaItem album = item();
+        editing = true;
+        editTracks = new ArrayList<MediaItem>(tracks);
+        removedTracks.clear();
+        pendingCover = null;
+        nameField.setText(album.title);
+        descriptionField.setText(album.description != null ? album.description : "");
+        showHeader();
+        showTracks();
+    }
+
+    private void cancelEditing() {
+        if (!editing || saving) return;
+        hideKeyboard();
+        discardPendingCover();
+        editing = false;
+        removedTracks.clear();
+        showHeader();
+        showTracks();
+    }
+
+    private void remove(MediaItem track) {
+        if (!editing || saving) return;
+        if (editTracks.remove(track)) {
+            removedTracks.add(track);
+            showTracks();
+        }
+    }
+
+    /** Done: saves the changes to the playlist's source and the phone, then leaves edit mode. */
+    private void finishEditing() {
+        if (!editing || saving) return;
+        hideKeyboard();
+        final MediaItem album = item();
+        final MusicSource s = source();
+        String name = nameField.getText().toString().trim();
+        String description = descriptionField.getText().toString().trim();
+        String oldDescription = album.description != null ? album.description.trim() : "";
+        final String newName = name.length() > 0 && !name.equals(album.title) ? name : null;
+        final String newDescription = description.equals(oldDescription) ? null : description;
+        final List<MediaItem> removed = new ArrayList<MediaItem>(removedTracks);
+        final String cover = pendingCover;
+        if (newName == null && newDescription == null && removed.isEmpty() && cover == null) {
+            editing = false;
+            showHeader();
+            showTracks();
+            return;
+        }
+        // Saved on a copy, so the page keeps showing the old values until it's done.
+        final MediaItem saved = new MediaItem(album.kind, album.sourceId, album.id, album.title);
+        saved.artKey = album.artKey;
+        saved.description = album.description;
+        final Context app = getActivity().getApplicationContext();
+        saving = true;
+        showHeader();
+        bg(new Bg.Work<Void>() {
+            @Override
+            public Void run() throws Exception {
+                boolean sourceKeptDescription = false;
+                if (newName != null || newDescription != null || !removed.isEmpty()) {
+                    sourceKeptDescription = s.editPlaylist(saved, newName, newDescription, removed);
+                }
+                PlaylistMeta.get(app).save(saved, sourceKeptDescription ? null : newDescription, cover);
+                if (newDescription != null) saved.description = newDescription;
+                return null;
+            }
+        }, new Bg.Done<Void>() {
+            @Override
+            public void done(Void result, Exception error) {
+                saving = false;
+                if (error != null) {
+                    showHeader();
+                    Ui.dialog(getActivity())
+                            .setTitle("Couldn't Save Changes")
+                            .setMessage(describe(error, s))
+                            .setPositiveButton("OK", null)
+                            .show();
+                    return;
+                }
+                if (newName != null) album.title = newName;
+                album.description = saved.description;
+                album.artKey = saved.artKey;
+                pendingCover = null; // Now the playlist's cover.
+                editing = false;
+                tracks = new ArrayList<MediaItem>(editTracks);
+                removedTracks.clear();
+                showHeader();
+                showTracks();
+                // Fresh entry ids (Subsonic counts them by position).
+                if (!removed.isEmpty()) load();
+            }
+        });
+    }
+
+    private void hideKeyboard() {
+        View focus = getActivity() != null ? getActivity().getCurrentFocus() : null;
+        if (focus == null) return;
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
+        focus.clearFocus();
+    }
+
+    /** The songs on screen: the edited list while editing. */
+    private List<MediaItem> shown() {
+        return editing ? editTracks : tracks;
     }
 
     private void openArtist() {
@@ -204,6 +560,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         final MusicSource s = source();
         final MediaItem album = item();
         if (!loaded) footer.setText("Loading\u2026");
+        loading = true;
         bg(new Bg.Work<List<MediaItem>>() {
             @Override
             public List<MediaItem> run() throws Exception {
@@ -212,26 +569,29 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         }, new Bg.Done<List<MediaItem>>() {
             @Override
             public void done(List<MediaItem> result, Exception error) {
+                loading = false;
                 if (error != null) {
                     if (!loaded) footer.setText(describe(error, s));
                     return;
                 }
                 tracks = result;
                 loaded = true;
-                showTracks();
+                if (!editing) showTracks();
             }
         });
     }
 
     private void showTracks() {
+        List<MediaItem> songs = shown();
         long total = 0;
-        for (MediaItem t : tracks) total += t.durationMs;
-        footer.setText(tracks.isEmpty() ? "No songs." : Format.songsSummary(tracks.size(), total));
+        for (MediaItem t : songs) total += t.durationMs;
+        footer.setText(songs.isEmpty() ? "No songs." : Format.songsSummary(songs.size(), total));
         adapter.notifyDataSetChanged();
         refreshStates();
     }
 
     private void refreshStates() {
+        if (editing) return;
         final MusicSource s = source();
         if (s instanceof DownloadedSource) {
             downloadRow.setVisibility(tracks.isEmpty() ? View.GONE : View.VISIBLE);
@@ -365,12 +725,12 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
 
         @Override
         public int getCount() {
-            return tracks.size();
+            return shown().size();
         }
 
         @Override
         public Object getItem(int position) {
-            return tracks.get(position);
+            return shown().get(position);
         }
 
         @Override
@@ -379,6 +739,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         }
 
         private final class Holder {
+            IconView remove;
             TextView number;
             IconView playing;
             ArtworkView art;
@@ -400,6 +761,22 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
                 row.setPadding(Ui.dp(context, 16), Ui.dp(context, 6), Ui.dp(context, 16), Ui.dp(context, 6));
                 row.setBackgroundResource(Ui.resource(context, R.attr.gfRowBackground));
                 h = new Holder();
+                h.remove = new IconView(context);
+                h.remove.setIcon(Icons.REMOVE);
+                h.remove.setColor(RED);
+                int pad = Ui.dp(context, 9);
+                h.remove.setPadding(pad, pad, pad, pad);
+                h.remove.setContentDescription("Remove");
+                LinearLayout.LayoutParams rl = new LinearLayout.LayoutParams(Ui.dp(context, 42), Ui.dp(context, 42));
+                rl.leftMargin = -Ui.dp(context, 8);
+                rl.rightMargin = Ui.dp(context, 4);
+                row.addView(h.remove, rl);
+                h.remove.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        remove((MediaItem) v.getTag());
+                    }
+                });
                 h.number = Ui.text(context, 15, R.attr.gfTextSecondary, false);
                 h.number.setGravity(Gravity.CENTER);
                 row.addView(h.number, new LinearLayout.LayoutParams(Ui.dp(context, 28), ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -436,10 +813,12 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
             } else {
                 h = (Holder) convertView.getTag();
             }
-            MediaItem t = tracks.get(position);
+            MediaItem t = shown().get(position);
             MediaItem current = Player.get(context).current();
             boolean isCurrent = current != null && current.key().equals(t.key());
             boolean playlist = isPlaylist();
+            h.remove.setVisibility(editing ? View.VISIBLE : View.GONE);
+            h.remove.setTag(t);
 
             h.art.setVisibility(playlist ? View.VISIBLE : View.GONE);
             if (playlist) ArtworkLoader.get(context).into(h.art, t, Ui.dp(context, 44));
@@ -469,6 +848,16 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
             }
             h.duration.setText(t.durationMs > 0 ? Format.duration(t.durationMs) : "");
             h.more.setTag(t);
+            if (editing) {
+                h.number.setVisibility(View.GONE);
+                h.playing.setVisibility(View.GONE);
+                h.state.setVisibility(View.GONE);
+                h.duration.setVisibility(View.GONE);
+                h.more.setVisibility(View.GONE);
+            } else {
+                h.duration.setVisibility(View.VISIBLE);
+                h.more.setVisibility(View.VISIBLE);
+            }
             return convertView;
         }
     }

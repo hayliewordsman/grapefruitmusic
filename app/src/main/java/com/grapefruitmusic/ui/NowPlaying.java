@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
@@ -28,6 +27,7 @@ import com.grapefruitmusic.lyrics.LyricsRepository;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
 import com.grapefruitmusic.ui.widget.ArtworkView;
+import com.grapefruitmusic.ui.widget.DragFrame;
 import com.grapefruitmusic.ui.widget.IconView;
 import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.ui.widget.NowPlayingCard;
@@ -74,7 +74,7 @@ final class NowPlaying {
     private final ArtworkView smallArt;
     private final TextView smallTitle;
     private final TextView smallArtist;
-    private final FrameLayout listArea;
+    private final DragFrame listArea;
     private final int accent;
     private final int secondary;
 
@@ -90,6 +90,7 @@ final class NowPlaying {
     private int lyricIndex = -2;
     private long lastUserScroll;
     private Boolean artPlaying;
+    private String queueAnchorKey;
 
     // Dragging a song in Up Next by its handle.
     private boolean dragging;
@@ -121,18 +122,20 @@ final class NowPlaying {
         public boolean onTouch(View handle, MotionEvent e) {
             switch (e.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    // Neither the list nor the card (pull-to-close) may take this gesture.
-                    handle.getParent().requestDisallowInterceptTouchEvent(true);
                     startDrag((View) handle.getParent(), (Integer) handle.getTag(), e.getRawY());
+                    // From here the DragFrame around the list owns the gesture; keep the card's
+                    // pull-to-close (an ancestor of the frame) out of it.
+                    if (dragging) listArea.getParent().requestDisallowInterceptTouchEvent(true);
                     return true;
                 case MotionEvent.ACTION_MOVE:
                     moveDrag(e.getRawY());
                     return true;
                 case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
                     endDrag();
                     return true;
                 default:
+                    // ACTION_CANCEL: the list redrew this row, or the DragFrame took over. The
+                    // drag carries on through the DragFrame.
                     return true;
             }
         }
@@ -179,7 +182,23 @@ final class NowPlaying {
         smallArt = (ArtworkView) root.findViewById(R.id.np_small_art);
         smallTitle = (TextView) root.findViewById(R.id.np_small_title);
         smallArtist = (TextView) root.findViewById(R.id.np_small_artist);
-        listArea = (FrameLayout) root.findViewById(R.id.np_list_area);
+        listArea = (DragFrame) root.findViewById(R.id.np_list_area);
+        listArea.setCallback(new DragFrame.Callback() {
+            @Override
+            public boolean isDragging() {
+                return dragging;
+            }
+
+            @Override
+            public void onDragMove(float rawY) {
+                moveDrag(rawY);
+            }
+
+            @Override
+            public void onDragEnd() {
+                endDrag();
+            }
+        });
         IconView volLow = (IconView) root.findViewById(R.id.np_vol_low);
         IconView volHigh = (IconView) root.findViewById(R.id.np_vol_high);
 
@@ -359,15 +378,24 @@ final class NowPlaying {
         });
 
         queueAdapter = new QueueAdapter(a);
-        TextView upNext = Ui.text(a, 20, R.attr.gfTextPrimary, true);
-        upNext.setText("Up Next");
-        upNext.setPadding(Ui.dp(a, 20), Ui.dp(a, 8), Ui.dp(a, 20), Ui.dp(a, 8));
-        queueList.addHeaderView(upNext, null, false);
+        // With little queued, the list would be too short to scroll Now Playing to the top, and
+        // Recently Played would always show. Blank room below Up Next keeps history tucked away
+        // above. Measured with the rows, so it's right on the first layout too.
+        View queueSpacer = new View(a) {
+            @Override
+            protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                int height = queueList.getHeight();
+                int now = queueAdapter.nowSectionPosition();
+                int room = height > 0 && now > 0 ? Math.max(0, height - queueAdapter.heightFrom(now, height, queueList)) : 0;
+                setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), room);
+            }
+        };
+        queueList.addFooterView(queueSpacer, null, false);
         queueList.setAdapter(queueAdapter);
         queueList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                player.skipToUpNext(position - queueList.getHeaderViewsCount());
+                queueAdapter.click(position);
             }
         });
     }
@@ -475,8 +503,23 @@ final class NowPlaying {
             loadArtwork(item);
             loadLyrics(item);
         }
-        if (mode == MODE_QUEUE && !dragging) queueAdapter.setItems(player.upNext());
+        if (mode == MODE_QUEUE) refreshQueue(false);
         tick();
+    }
+
+    /**
+     * Rebuilds the queue list. Opening Up Next, or a new song starting, scrolls so "Now Playing"
+     * is at the top; Recently Played sits above it, revealed by scrolling up.
+     */
+    private void refreshQueue(boolean anchor) {
+        if (dragging) return;
+        MediaItem current = player.current();
+        queueAdapter.setData(player.history(), current, player.upNext());
+        String key = current != null ? current.key() : null;
+        if (anchor || (key != null && !key.equals(queueAnchorKey))) {
+            queueAnchorKey = key;
+            queueList.setSelectionFromTop(queueAdapter.nowSectionPosition(), 0);
+        }
     }
 
     private void loadArtwork(final MediaItem item) {
@@ -529,7 +572,7 @@ final class NowPlaying {
         mode = m;
         lyricIndex = -2;
         lastUserScroll = 0;
-        if (m == MODE_QUEUE) queueAdapter.setItems(player.upNext());
+        if (m == MODE_QUEUE) refreshQueue(true);
         showMode();
         tick();
     }
@@ -632,15 +675,11 @@ final class NowPlaying {
 
         // The row under the middle of the dragged song is where it goes.
         float center = areaLoc[1] + top + dragGhost.getHeight() / 2f - listLoc[1];
-        int count = queueAdapter.getCount();
+        int count = queueAdapter.nextCount();
         int pos = queueList.pointToPosition(queueList.getWidth() / 2, (int) center);
-        int target;
-        if (pos == AdapterView.INVALID_POSITION) {
-            View first = queueList.getChildAt(0);
-            target = first != null && center < first.getTop() ? 0 : count - 1;
-        } else {
-            target = pos - queueList.getHeaderViewsCount();
-        }
+        int target = pos == AdapterView.INVALID_POSITION
+                ? (center < 0 ? 0 : count - 1)
+                : pos - queueAdapter.firstNextPosition();
         target = Math.max(0, Math.min(count - 1, target));
         if (target != dragAt) {
             queueAdapter.move(dragAt, target);
@@ -659,7 +698,7 @@ final class NowPlaying {
         queueAdapter.setHidden(-1);
         // If the song changed meanwhile, Up Next shifted under the finger: drop the move.
         if (player.current() == dragCurrent && dragFrom != dragAt) player.moveUpNext(dragFrom, dragAt);
-        queueAdapter.setItems(player.upNext());
+        refreshQueue(false);
     }
 
     /** Lyrics lines: the current one bold and bright, the rest faded. */
@@ -731,27 +770,124 @@ final class NowPlaying {
         }
     }
 
+    private static final int ROW_SECTION = 0;
+    private static final int ROW_SONG = 1;
+    private static final int ROW_EMPTY = 2;
+    private static final int ROLE_HISTORY = 0;
+    private static final int ROLE_NOW = 1;
+    private static final int ROLE_NEXT = 2;
+
+    /** One line of the queue list: a section title, a song, or an empty-state note. */
+    private static final class QueueEntry {
+        final int type;
+        final String text;
+        final MediaItem item;
+        final int role;
+        /** Index within its section (Up Next index for ROLE_NEXT). */
+        final int index;
+
+        QueueEntry(int type, String text, MediaItem item, int role, int index) {
+            this.type = type;
+            this.text = text;
+            this.item = item;
+            this.role = role;
+            this.index = index;
+        }
+    }
+
     private static final class QueueHolder {
+        View texts;
         ArtworkView art;
         TextView title;
         TextView subtitle;
+        IconView speaker;
         IconView handle;
     }
 
-    /** Up Next rows, each with a handle on the right for dragging it to a new place. */
+    private static final class SectionHolder {
+        TextView title;
+        TextView action;
+    }
+
+    /**
+     * Recently Played (oldest first, faded), Now Playing, then Up Next with drag handles.
+     */
     private final class QueueAdapter extends BaseAdapter {
         private final Context context;
-        private List<MediaItem> items = new ArrayList<MediaItem>();
-        /** Row being dragged (drawn as a floating copy instead), or -1. */
+        private final List<QueueEntry> entries = new ArrayList<QueueEntry>();
+        private List<MediaItem> history = new ArrayList<MediaItem>();
+        private MediaItem current;
+        private List<MediaItem> next = new ArrayList<MediaItem>();
+        /** Up Next index being dragged (drawn as a floating copy instead), or -1. */
         private int hidden = -1;
+        private int nowSection;
+        private int firstNext;
+        /** Measured height of each row type, filled in as needed. */
+        private final int[] rowHeights = new int[3];
 
         QueueAdapter(Context context) {
             this.context = context;
         }
 
-        void setItems(List<MediaItem> list) {
-            items = list;
+        void setData(List<MediaItem> history, MediaItem current, List<MediaItem> next) {
+            this.history = history;
+            this.current = current;
+            this.next = next;
+            rebuild();
+        }
+
+        private void rebuild() {
+            entries.clear();
+            if (!history.isEmpty()) {
+                entries.add(new QueueEntry(ROW_SECTION, "Recently Played", null, -1, -1));
+                for (int i = 0; i < history.size(); i++) {
+                    entries.add(new QueueEntry(ROW_SONG, null, history.get(i), ROLE_HISTORY, i));
+                }
+            }
+            nowSection = entries.size();
+            if (current != null) {
+                entries.add(new QueueEntry(ROW_SECTION, "Now Playing", null, -1, -1));
+                entries.add(new QueueEntry(ROW_SONG, null, current, ROLE_NOW, 0));
+            }
+            entries.add(new QueueEntry(ROW_SECTION, "Up Next", null, -1, -1));
+            firstNext = entries.size();
+            if (next.isEmpty()) {
+                entries.add(new QueueEntry(ROW_EMPTY, "Nothing else is queued.", null, -1, -1));
+            } else {
+                for (int i = 0; i < next.size(); i++) {
+                    entries.add(new QueueEntry(ROW_SONG, null, next.get(i), ROLE_NEXT, i));
+                }
+            }
             notifyDataSetChanged();
+        }
+
+        /** Height of the rows from position on, counting only up to limit. */
+        int heightFrom(int position, int limit, ViewGroup parent) {
+            int width = View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.EXACTLY);
+            int unspecified = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+            int total = 0;
+            for (int i = position; i < entries.size() && total < limit; i++) {
+                int type = entries.get(i).type;
+                if (rowHeights[type] == 0) {
+                    View v = getView(i, null, parent);
+                    v.measure(width, unspecified);
+                    rowHeights[type] = v.getMeasuredHeight();
+                }
+                total += rowHeights[type];
+            }
+            return total;
+        }
+
+        int nowSectionPosition() {
+            return nowSection;
+        }
+
+        int firstNextPosition() {
+            return firstNext;
+        }
+
+        int nextCount() {
+            return next.size();
         }
 
         void setHidden(int index) {
@@ -760,19 +896,27 @@ final class NowPlaying {
         }
 
         void move(int from, int to) {
-            Lists.move(items, from, to);
+            Lists.move(next, from, to);
             hidden = to;
-            notifyDataSetChanged();
+            rebuild();
+        }
+
+        void click(int position) {
+            if (position < 0 || position >= entries.size()) return;
+            QueueEntry e = entries.get(position);
+            if (e.type != ROW_SONG) return;
+            if (e.role == ROLE_HISTORY) player.playNow(e.item);
+            else if (e.role == ROLE_NEXT) player.skipToUpNext(e.index);
         }
 
         @Override
         public int getCount() {
-            return items.size();
+            return entries.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return items.get(position);
+            return entries.get(position);
         }
 
         @Override
@@ -781,12 +925,79 @@ final class NowPlaying {
         }
 
         @Override
+        public int getViewTypeCount() {
+            return 3;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return entries.get(position).type;
+        }
+
+        @Override
+        public boolean areAllItemsEnabled() {
+            return false;
+        }
+
+        @Override
+        public boolean isEnabled(int position) {
+            QueueEntry e = entries.get(position);
+            return e.type == ROW_SONG && e.role != ROLE_NOW;
+        }
+
+        @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+            QueueEntry e = entries.get(position);
+            if (e.type == ROW_SECTION) return section(e, convertView);
+            if (e.type == ROW_EMPTY) {
+                TextView t = (TextView) convertView;
+                if (t == null) {
+                    t = Ui.text(context, 15, R.attr.gfTextSecondary, false);
+                    t.setPadding(Ui.dp(context, 20), Ui.dp(context, 10), Ui.dp(context, 20), Ui.dp(context, 24));
+                }
+                t.setText(e.text);
+                return t;
+            }
+            return song(e, convertView);
+        }
+
+        private View section(QueueEntry e, View convertView) {
+            SectionHolder h;
+            if (convertView == null) {
+                LinearLayout row = new LinearLayout(context);
+                row.setOrientation(LinearLayout.HORIZONTAL);
+                row.setGravity(Gravity.BOTTOM);
+                row.setPadding(Ui.dp(context, 20), Ui.dp(context, 14), Ui.dp(context, 20), Ui.dp(context, 6));
+                h = new SectionHolder();
+                h.title = Ui.text(context, 20, R.attr.gfTextPrimary, true);
+                row.addView(h.title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+                h.action = Ui.text(context, 16, R.attr.gfAccent, false);
+                h.action.setText("Clear");
+                h.action.setPadding(Ui.dp(context, 12), Ui.dp(context, 4), 0, Ui.dp(context, 2));
+                h.action.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        player.clearHistory();
+                    }
+                });
+                row.addView(h.action);
+                row.setTag(h);
+                convertView = row;
+            } else {
+                h = (SectionHolder) convertView.getTag();
+            }
+            h.title.setText(e.text);
+            h.action.setVisibility("Recently Played".equals(e.text) ? View.VISIBLE : View.GONE);
+            return convertView;
+        }
+
+        private View song(QueueEntry e, View convertView) {
             QueueHolder h;
             if (convertView == null) {
                 LinearLayout row = new LinearLayout(context);
                 row.setOrientation(LinearLayout.HORIZONTAL);
                 row.setGravity(Gravity.CENTER_VERTICAL);
+                row.setMinimumHeight(Ui.dp(context, 54));
                 row.setPadding(Ui.dp(context, 20), Ui.dp(context, 4), Ui.dp(context, 6), Ui.dp(context, 4));
                 row.setBackgroundResource(Ui.resource(context, R.attr.gfRowBackground));
                 h = new QueueHolder();
@@ -799,11 +1010,18 @@ final class NowPlaying {
                 h.subtitle = Ui.text(context, 13, R.attr.gfTextSecondary, false);
                 texts.addView(h.title);
                 texts.addView(h.subtitle);
+                h.texts = texts;
                 row.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+                h.speaker = new IconView(context);
+                h.speaker.setIcon(Icons.SPEAKER_HIGH);
+                h.speaker.setColor(accent);
+                int pad = Ui.dp(context, 13);
+                h.speaker.setPadding(pad, pad, pad, pad);
+                row.addView(h.speaker, new LinearLayout.LayoutParams(Ui.dp(context, 46), Ui.dp(context, 46)));
                 h.handle = new IconView(context);
                 h.handle.setIcon(Icons.HANDLE);
                 h.handle.setColor(secondary);
-                int pad = Ui.dp(context, 11);
+                pad = Ui.dp(context, 11);
                 h.handle.setPadding(pad, pad, pad, pad);
                 h.handle.setContentDescription("Drag to reorder");
                 h.handle.setOnTouchListener(handleTouch);
@@ -813,12 +1031,20 @@ final class NowPlaying {
             } else {
                 h = (QueueHolder) convertView.getTag();
             }
-            MediaItem m = items.get(position);
+            MediaItem m = e.item;
             h.title.setText(m.title);
+            h.title.setTextColor(e.role == ROLE_NOW ? accent : Ui.color(context, R.attr.gfTextPrimary));
             h.subtitle.setText(m.artist != null ? m.artist : "");
-            h.handle.setTag(position);
             ArtworkLoader.get(context).into(h.art, m, Ui.dp(context, 40));
-            convertView.setVisibility(position == hidden ? View.INVISIBLE : View.VISIBLE);
+            // Songs already played are faded, so the past reads differently from what's next.
+            float alpha = e.role == ROLE_HISTORY ? 0.55f : 1f;
+            h.art.setAlpha(alpha);
+            h.texts.setAlpha(alpha);
+            h.speaker.setVisibility(e.role == ROLE_NOW ? View.VISIBLE : View.GONE);
+            h.handle.setVisibility(e.role == ROLE_NEXT ? View.VISIBLE : View.GONE);
+            h.handle.setTag(e.index);
+            boolean beingDragged = e.role == ROLE_NEXT && e.index == hidden;
+            convertView.setVisibility(beingDragged ? View.INVISIBLE : View.VISIBLE);
             return convertView;
         }
     }

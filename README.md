@@ -27,6 +27,12 @@ with downloads for offline listening and time-synced lyrics.
 - **Light and dark modes:** Settings › Theme. *Match System* follows the phone's dark mode on Android 10+.
 - **Playback:** background playback with notification, lock-screen and headset controls, shuffle, repeat (all/one),
   Up Next (drag the ≡ handle to reorder), Play Next / Add to Up Next.
+- **Recently Played:** scroll up in Up Next to see the songs you've played (newest just above Now Playing).
+  Tap one to play it again, or Clear the list.
+- **Playlist editing:** Edit on a playlist changes its name, description and cover photo (a photo on the phone,
+  album art from the playlist, or a picture from another app), and removes songs. Done saves; Cancel or Back
+  leaves it as it was. Names, removed songs and (on Navidrome/Subsonic) descriptions are saved on the server;
+  cover photos are kept on the phone.
 - **Song menu:** the ⋯ button on any song (or a long press) offers Play Next, Add to Up Next, Add to Playlist
   (an existing playlist or a new one, on your server or the phone), Go to Album, Go to Artist and Download.
 - **Streaming quality:** stream original files when the phone can play them (MP3, AAC/M4A, FLAC, Ogg Vorbis, WAV),
@@ -82,6 +88,18 @@ The code is plain Java with no AndroidX or support libraries. Everything uses fr
 | `playback` | `Player` (queue + MediaPlayer), `PlaybackService` (notification, lock screen, headset) |
 | `net` | HTTP helper, Conscrypt/TLS setup, and a loopback relay that lets MediaPlayer stream over modern HTTPS |
 | `ui` | Single activity, pages as fragments, Now Playing card, code-drawn icons |
+
+### Release signing
+
+Release APKs are signed with a permanent key so each version installs over the last. The key is never stored in
+the repository. Builds use it when these are set:
+
+- `GRAPEFRUIT_KEYSTORE`: path to the PKCS12 keystore (`.p12`, key alias `grapefruit`)
+- `GRAPEFRUIT_KEYSTORE_PASSWORD`: its password
+
+On GitHub, add two repository secrets (Settings › Secrets and variables › Actions): `GRAPEFRUIT_KEYSTORE_BASE64`
+(the keystore, base64-encoded) and `GRAPEFRUIT_KEYSTORE_PASSWORD`. Without them, the release APK is signed with
+a debug key and won't install over a release-signed copy.
 
 ## About
 
