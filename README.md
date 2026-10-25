@@ -9,6 +9,9 @@ with downloads for offline listening and time-synced lyrics.
 ## Features
 
 - **Sources:** music files on the phone, any number of Navidrome/Subsonic and Jellyfin servers, and *Downloaded Music*.
+- **Tabs:** Library, Playlists, Search and Settings. Library and Playlists show the source picked in Library.
+- **Excluded folders:** Settings › Excluded Folders hides folders (ringtones, voice messages, …) from
+  *On This Phone*. Grapefruit's own download folder is always kept out of it.
 - **Offline listening:** download albums, playlists or single songs from a server. Downloads keep their cover art
   and lyrics, play with no connection, and can be limited to Wi‑Fi. Interrupted downloads resume.
 - **Time-synced lyrics:** lyrics scroll with the song and highlight the current line; tap a line to jump to it.

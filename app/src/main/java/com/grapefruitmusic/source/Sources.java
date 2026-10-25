@@ -72,6 +72,11 @@ public final class Sources {
         for (Listener l : listeners) l.onSourcesChanged();
     }
 
+    /** Something about a source's contents changed (e.g. excluded folders). */
+    public void notifyChanged() {
+        for (Listener l : listeners) l.onSourcesChanged();
+    }
+
     public void addListener(Listener l) {
         listeners.add(l);
     }

@@ -76,6 +76,16 @@ public final class Downloads {
         }
         if (dir == null) dir = new File(context.getFilesDir(), "music");
         if (!dir.exists()) dir.mkdirs();
+        // Keep the system media scanner out: downloads would otherwise show up twice under
+        // On This Phone, and cover art in the Gallery.
+        File noMedia = new File(dir, ".nomedia");
+        if (!noMedia.exists()) {
+            try {
+                noMedia.createNewFile();
+            } catch (java.io.IOException ignored) {
+                // Downloads still work; LocalSource also skips this folder.
+            }
+        }
         return dir;
     }
 

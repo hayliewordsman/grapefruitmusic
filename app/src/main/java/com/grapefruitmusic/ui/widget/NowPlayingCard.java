@@ -125,6 +125,22 @@ public class NowPlayingCard extends FrameLayout {
         return y < limit[1] - me[1];
     }
 
+    /** A downward pull that started above the drag limit, and isn't a list scrolling back up. */
+    private boolean isPullDown(MotionEvent e) {
+        float dy = e.getY() - downY;
+        float dx = e.getX() - downX;
+        boolean listScrolls = scrollingChild != null && scrollingChild.getVisibility() == VISIBLE
+                && scrollingChild.canScrollVertically(-1);
+        return dy > touchSlop && dy > Math.abs(dx) * 1.5f && startsInDragArea(downY) && !listScrolls;
+    }
+
+    private void startDrag(MotionEvent e) {
+        dragging = true;
+        dragStartRawY = e.getRawY();
+        if (velocity != null) velocity.clear();
+    }
+
+    /** Pulls that start on a control (the grabber, a button) are taken over here. */
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
         switch (e.getActionMasked()) {
@@ -134,13 +150,8 @@ public class NowPlayingCard extends FrameLayout {
                 dragging = false;
                 break;
             case MotionEvent.ACTION_MOVE:
-                float dy = e.getY() - downY;
-                float dx = e.getX() - downX;
-                boolean listScrolls = scrollingChild != null && scrollingChild.getVisibility() == VISIBLE
-                        && scrollingChild.canScrollVertically(-1);
-                if (dy > touchSlop && dy > Math.abs(dx) * 1.5f && startsInDragArea(downY) && !listScrolls) {
-                    dragging = true;
-                    dragStartRawY = e.getRawY();
+                if (!dragging && isPullDown(e)) {
+                    startDrag(e);
                     return true;
                 }
                 break;
@@ -150,9 +161,23 @@ public class NowPlayingCard extends FrameLayout {
         return false;
     }
 
+    /**
+     * Pulls that start on something that isn't a control (artwork, empty space around the
+     * grabber) arrive here directly, without onInterceptTouchEvent, so detect them here too.
+     */
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        if (!dragging) return true; // The card swallows taps that miss its controls.
+        int action = e.getActionMasked();
+        if (action == MotionEvent.ACTION_DOWN) {
+            downX = e.getX();
+            downY = e.getY();
+            dragging = false;
+            return true; // The card swallows touches that miss its controls.
+        }
+        if (!dragging) {
+            if (action == MotionEvent.ACTION_MOVE && isPullDown(e)) startDrag(e);
+            else return true;
+        }
         // The card moves while dragging, so track screen coordinates.
         if (velocity == null) velocity = VelocityTracker.obtain();
         MotionEvent screen = MotionEvent.obtain(e);
@@ -160,7 +185,7 @@ public class NowPlayingCard extends FrameLayout {
         velocity.addMovement(screen);
         screen.recycle();
         float offset = Math.max(0, e.getRawY() - dragStartRawY);
-        switch (e.getActionMasked()) {
+        switch (action) {
             case MotionEvent.ACTION_MOVE:
                 if (dragListener != null) dragListener.onDrag(offset);
                 return true;
@@ -172,7 +197,10 @@ public class NowPlayingCard extends FrameLayout {
                 velocity = null;
                 dragging = false;
                 float fling = 1000 * getResources().getDisplayMetrics().density;
-                if (dragListener != null) dragListener.onRelease(offset > getHeight() * 0.25f || v > fling);
+                if (dragListener != null) {
+                    dragListener.onRelease(action == MotionEvent.ACTION_UP
+                            && (offset > getHeight() * 0.25f || v > fling));
+                }
                 return true;
             default:
                 return true;

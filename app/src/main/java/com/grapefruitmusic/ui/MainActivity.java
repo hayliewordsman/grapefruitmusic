@@ -25,16 +25,17 @@ public final class MainActivity extends Activity implements Player.Listener {
     public static final String EXTRA_OPEN_NOW_PLAYING = "open_now_playing";
 
     private static final int TAB_LIBRARY = 0;
-    private static final int TAB_SEARCH = 1;
-    private static final int TAB_SETTINGS = 2;
-    private static final String[] TAB_NAMES = {"Library", "Search", "Settings"};
-    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.SEARCH, Icons.SETTINGS};
+    private static final int TAB_PLAYLISTS = 1;
+    private static final int TAB_SEARCH = 2;
+    private static final int TAB_SETTINGS = 3;
+    private static final String[] TAB_NAMES = {"Library", "Playlists", "Search", "Settings"};
+    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.PLAYLIST, Icons.SEARCH, Icons.SETTINGS};
 
     private Player player;
     private NowPlaying nowPlaying;
     private int tab = TAB_LIBRARY;
-    private final IconView[] tabIcons = new IconView[3];
-    private final TextView[] tabLabels = new TextView[3];
+    private final IconView[] tabIcons = new IconView[TAB_NAMES.length];
+    private final TextView[] tabLabels = new TextView[TAB_NAMES.length];
 
     private View mini;
     private View miniSeparator;
@@ -97,7 +98,7 @@ public final class MainActivity extends Activity implements Player.Listener {
 
     private void buildTabBar() {
         LinearLayout bar = (LinearLayout) findViewById(R.id.tab_bar);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < TAB_NAMES.length; i++) {
             final int index = i;
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.VERTICAL);
@@ -107,7 +108,9 @@ public final class MainActivity extends Activity implements Player.Listener {
             item.addView(icon);
             TextView label = Ui.text(this, 10, R.attr.gfTextSecondary, false);
             label.setText(TAB_NAMES[i]);
-            item.addView(label);
+            label.setGravity(Gravity.CENTER_HORIZONTAL);
+            item.addView(label, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
             item.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -124,7 +127,7 @@ public final class MainActivity extends Activity implements Player.Listener {
     private void highlightTab() {
         int accent = Ui.accent(this);
         int inactive = Ui.color(this, R.attr.gfTextSecondary);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < TAB_NAMES.length; i++) {
             tabIcons[i].setColor(i == tab ? accent : inactive);
             tabLabels[i].setTextColor(i == tab ? accent : inactive);
         }
@@ -139,7 +142,8 @@ public final class MainActivity extends Activity implements Player.Listener {
             fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
         Fragment root;
-        if (index == TAB_SEARCH) root = new SearchFragment();
+        if (index == TAB_PLAYLISTS) root = BrowseFragment.newInstance(null, BrowseFragment.PLAYLISTS, null, null);
+        else if (index == TAB_SEARCH) root = new SearchFragment();
         else if (index == TAB_SETTINGS) root = new SettingsFragment();
         else root = new LibraryFragment();
         fm.beginTransaction().replace(R.id.content, root).commit();

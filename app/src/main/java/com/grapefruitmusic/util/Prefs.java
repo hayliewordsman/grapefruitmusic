@@ -3,6 +3,10 @@ package com.grapefruitmusic.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+
 /** App settings. */
 public final class Prefs {
     public static final int THEME_SYSTEM = 0;
@@ -64,6 +68,15 @@ public final class Prefs {
 
     public static void setOnlineLyrics(boolean v) {
         prefs.edit().putBoolean("online_lyrics", v).apply();
+    }
+
+    /** Folders hidden from On This Phone (absolute paths, no trailing slash). */
+    public static Set<String> excludedFolders() {
+        return new TreeSet<String>(prefs.getStringSet("excluded_folders", new HashSet<String>()));
+    }
+
+    public static void setExcludedFolders(Set<String> folders) {
+        prefs.edit().putStringSet("excluded_folders", new HashSet<String>(folders)).apply();
     }
 
     public static String currentSource() {

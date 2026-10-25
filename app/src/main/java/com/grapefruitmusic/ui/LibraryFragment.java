@@ -118,7 +118,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
 
     @Override
     public void onSourcesChanged() {
-        refresh(false);
+        refresh(true);
     }
 
     @Override

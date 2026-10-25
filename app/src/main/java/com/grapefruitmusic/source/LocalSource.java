@@ -10,39 +10,49 @@ import com.grapefruitmusic.lyrics.LrcParser;
 import com.grapefruitmusic.lyrics.Lyrics;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.net.Http;
+import com.grapefruitmusic.util.Prefs;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
-/** Music files stored on this phone (via the system media library). Works offline. */
+/**
+ * Music files stored on this phone (via the system media library). Works offline. Songs in
+ * folders the user excluded, and Grapefruit's own downloads, are left out.
+ */
 public final class LocalSource implements MusicSource {
     public static final String ID = "device";
 
     private static final Uri MEDIA = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
     private static final Uri ALBUMS = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
-    private static final Uri ARTISTS = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI;
     private static final Uri PLAYLISTS = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
 
+    private static final String DATA = MediaStore.Audio.Media.DATA;
     private static final String[] TRACK_COLUMNS = {
             MediaStore.Audio.Media._ID, MediaStore.Audio.Media.TITLE, MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.ARTIST_ID, MediaStore.Audio.Media.ALBUM, MediaStore.Audio.Media.ALBUM_ID,
-            MediaStore.Audio.Media.TRACK, MediaStore.Audio.Media.DURATION, MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.TRACK, MediaStore.Audio.Media.DURATION, DATA,
             MediaStore.Audio.Media.YEAR};
     private static final String IS_MUSIC = MediaStore.Audio.Media.IS_MUSIC + " != 0";
 
+    private final Context context;
     private final ContentResolver resolver;
     private final Map<String, String> artCache = new HashMap<String, String>();
 
     public LocalSource(Context context) {
-        resolver = context.getApplicationContext().getContentResolver();
+        this.context = context.getApplicationContext();
+        resolver = this.context.getContentResolver();
     }
 
     @Override
@@ -70,6 +80,30 @@ public final class LocalSource implements MusicSource {
         return false;
     }
 
+    /** Grapefruit's own folder (downloads, cover art), which is never shown here. */
+    private String ownFolder() {
+        File files = context.getExternalFilesDir(null);
+        File own = files != null ? files.getParentFile() : null;
+        return own != null ? Folders.normalize(own.getPath()) : null;
+    }
+
+    private List<String> hiddenFolders() {
+        List<String> out = new ArrayList<String>(Prefs.excludedFolders());
+        String own = ownFolder();
+        if (own != null) out.add(own);
+        return out;
+    }
+
+    /** " AND _data NOT LIKE ? ..." for every hidden folder; adds the arguments. */
+    private String notHidden(List<String> args) {
+        StringBuilder sb = new StringBuilder();
+        for (String folder : hiddenFolders()) {
+            sb.append(" AND ").append(DATA).append(" NOT LIKE ? ESCAPE '\\'");
+            args.add(Folders.likeInside(folder));
+        }
+        return sb.toString();
+    }
+
     private Cursor query(Uri uri, String[] columns, String selection, String[] args, String order) throws IOException {
         try {
             Cursor c = resolver.query(uri, columns, selection, args, order);
@@ -78,6 +112,14 @@ public final class LocalSource implements MusicSource {
         } catch (SecurityException e) {
             throw new IOException("Grapefruit Music isn't allowed to read music files");
         }
+    }
+
+    /** Visible music, optionally narrowed by an extra condition. */
+    private Cursor media(String[] columns, String extra, String[] extraArgs, String order) throws IOException {
+        List<String> args = new ArrayList<String>();
+        if (extraArgs != null) args.addAll(Arrays.asList(extraArgs));
+        String selection = IS_MUSIC + (extra != null ? " AND (" + extra + ")" : "") + notHidden(args);
+        return query(MEDIA, columns, selection, args.toArray(new String[args.size()]), order);
     }
 
     private List<MediaItem> tracksFrom(Cursor c, String idColumn) {
@@ -91,7 +133,7 @@ public final class LocalSource implements MusicSource {
             int albumId = c.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID);
             int track = c.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK);
             int duration = c.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION);
-            int data = c.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
+            int data = c.getColumnIndexOrThrow(DATA);
             int year = c.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR);
             while (c.moveToNext()) {
                 MediaItem m = new MediaItem(MediaItem.TRACK, ID, c.getString(id), c.getString(title));
@@ -124,51 +166,72 @@ public final class LocalSource implements MusicSource {
 
     @Override
     public List<MediaItem> songs() throws IOException {
-        return tracksFrom(query(MEDIA, TRACK_COLUMNS, IS_MUSIC, null, MediaStore.Audio.Media.TITLE_KEY),
+        return tracksFrom(media(TRACK_COLUMNS, null, null, MediaStore.Audio.Media.TITLE_KEY),
                 MediaStore.Audio.Media._ID);
+    }
+
+    /**
+     * Albums built from the visible songs (the system's album table would also count songs in
+     * excluded folders).
+     */
+    private List<MediaItem> albumsFromSongs(String extra, String[] args, String order) throws IOException {
+        Cursor c = media(new String[]{MediaStore.Audio.Media.ALBUM_ID, MediaStore.Audio.Media.ALBUM,
+                MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.YEAR}, extra, args, order);
+        Map<String, MediaItem> albums = new LinkedHashMap<String, MediaItem>();
+        try {
+            while (c.moveToNext()) {
+                String id = c.getString(0);
+                String artist = unknownToNull(c.getString(2));
+                MediaItem m = albums.get(id);
+                if (m == null) {
+                    m = new MediaItem(MediaItem.ALBUM, ID, id, c.getString(1));
+                    m.artist = artist;
+                    m.artKey = "album:" + id;
+                    albums.put(id, m);
+                } else if (artist != null && m.artist != null && !artist.equals(m.artist)) {
+                    m.artist = "Various Artists";
+                }
+                m.count++;
+                m.year = Math.max(m.year, c.getInt(3));
+            }
+        } finally {
+            c.close();
+        }
+        return new ArrayList<MediaItem>(albums.values());
     }
 
     @Override
     public List<MediaItem> albums() throws IOException {
-        return albumsWhere(null, null, MediaStore.Audio.Albums.ALBUM_KEY);
+        return albumsFromSongs(null, null, MediaStore.Audio.Media.ALBUM_KEY);
     }
 
-    private List<MediaItem> albumsWhere(String selection, String[] args, String order) throws IOException {
-        Cursor c = query(ALBUMS, new String[]{MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM,
-                MediaStore.Audio.Albums.ARTIST, MediaStore.Audio.Albums.NUMBER_OF_SONGS,
-                MediaStore.Audio.Albums.FIRST_YEAR}, selection, args, order);
-        List<MediaItem> out = new ArrayList<MediaItem>();
+    private List<MediaItem> artistsFromSongs(String extra, String[] args) throws IOException {
+        Cursor c = media(new String[]{MediaStore.Audio.Media.ARTIST_ID, MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.ALBUM_ID}, extra, args, MediaStore.Audio.Media.ARTIST_KEY);
+        Map<String, MediaItem> artists = new LinkedHashMap<String, MediaItem>();
+        Map<String, Set<String>> albums = new HashMap<String, Set<String>>();
         try {
             while (c.moveToNext()) {
-                MediaItem m = new MediaItem(MediaItem.ALBUM, ID, c.getString(0), c.getString(1));
-                m.artist = unknownToNull(c.getString(2));
-                m.count = c.getInt(3);
-                m.year = c.getInt(4);
-                m.artKey = "album:" + m.id;
-                out.add(m);
+                String id = c.getString(0);
+                MediaItem m = artists.get(id);
+                if (m == null) {
+                    String name = unknownToNull(c.getString(1));
+                    m = new MediaItem(MediaItem.ARTIST, ID, id, name == null ? "Unknown Artist" : name);
+                    artists.put(id, m);
+                    albums.put(id, new HashSet<String>());
+                }
+                albums.get(id).add(c.getString(2));
             }
         } finally {
             c.close();
         }
-        return out;
+        for (MediaItem m : artists.values()) m.count = albums.get(m.id).size();
+        return new ArrayList<MediaItem>(artists.values());
     }
 
     @Override
     public List<MediaItem> artists() throws IOException {
-        Cursor c = query(ARTISTS, new String[]{MediaStore.Audio.Artists._ID, MediaStore.Audio.Artists.ARTIST,
-                MediaStore.Audio.Artists.NUMBER_OF_ALBUMS}, null, null, MediaStore.Audio.Artists.ARTIST_KEY);
-        List<MediaItem> out = new ArrayList<MediaItem>();
-        try {
-            while (c.moveToNext()) {
-                String name = unknownToNull(c.getString(1));
-                MediaItem m = new MediaItem(MediaItem.ARTIST, ID, c.getString(0), name == null ? "Unknown Artist" : name);
-                m.count = c.getInt(2);
-                out.add(m);
-            }
-        } finally {
-            c.close();
-        }
-        return out;
+        return artistsFromSongs(null, null);
     }
 
     @Override
@@ -189,7 +252,7 @@ public final class LocalSource implements MusicSource {
     @Override
     public List<MediaItem> recentAlbums(int limit) throws IOException {
         // Albums of the most recently added songs, newest first.
-        Cursor c = query(MEDIA, new String[]{MediaStore.Audio.Media.ALBUM_ID}, IS_MUSIC, null,
+        Cursor c = media(new String[]{MediaStore.Audio.Media.ALBUM_ID}, null, null,
                 MediaStore.Audio.Media.DATE_ADDED + " DESC");
         Set<String> ids = new LinkedHashSet<String>();
         try {
@@ -202,9 +265,8 @@ public final class LocalSource implements MusicSource {
 
     @Override
     public List<MediaItem> artistAlbums(MediaItem artist) throws IOException {
-        Cursor c = query(MEDIA, new String[]{MediaStore.Audio.Media.ALBUM_ID},
-                IS_MUSIC + " AND " + MediaStore.Audio.Media.ARTIST_ID + " = ?", new String[]{artist.id},
-                MediaStore.Audio.Media.YEAR);
+        Cursor c = media(new String[]{MediaStore.Audio.Media.ALBUM_ID}, MediaStore.Audio.Media.ARTIST_ID + " = ?",
+                new String[]{artist.id}, MediaStore.Audio.Media.YEAR);
         Set<String> ids = new LinkedHashSet<String>();
         try {
             while (c.moveToNext()) ids.add(c.getString(0));
@@ -221,7 +283,7 @@ public final class LocalSource implements MusicSource {
             if (in.length() > 0) in.append(',');
             in.append(Long.parseLong(id));
         }
-        List<MediaItem> found = albumsWhere(MediaStore.Audio.Albums._ID + " IN (" + in + ")", null, null);
+        List<MediaItem> found = albumsFromSongs(MediaStore.Audio.Media.ALBUM_ID + " IN (" + in + ")", null, null);
         Map<String, MediaItem> byId = new HashMap<String, MediaItem>();
         for (MediaItem m : found) byId.put(m.id, m);
         List<MediaItem> out = new ArrayList<MediaItem>();
@@ -238,37 +300,54 @@ public final class LocalSource implements MusicSource {
             Uri members = MediaStore.Audio.Playlists.Members.getContentUri("external", Long.parseLong(container.id));
             String[] cols = TRACK_COLUMNS.clone();
             cols[0] = MediaStore.Audio.Playlists.Members.AUDIO_ID;
-            return tracksFrom(query(members, cols, null, null, MediaStore.Audio.Playlists.Members.PLAY_ORDER),
-                    MediaStore.Audio.Playlists.Members.AUDIO_ID);
+            List<String> args = new ArrayList<String>();
+            String selection = "1" + notHidden(args);
+            return tracksFrom(query(members, cols, selection, args.toArray(new String[args.size()]),
+                    MediaStore.Audio.Playlists.Members.PLAY_ORDER), MediaStore.Audio.Playlists.Members.AUDIO_ID);
         }
-        return tracksFrom(query(MEDIA, TRACK_COLUMNS, MediaStore.Audio.Media.ALBUM_ID + " = ?",
-                new String[]{container.id}, MediaStore.Audio.Media.TRACK + ", " + MediaStore.Audio.Media.TITLE_KEY),
-                MediaStore.Audio.Media._ID);
+        return tracksFrom(media(TRACK_COLUMNS, MediaStore.Audio.Media.ALBUM_ID + " = ?", new String[]{container.id},
+                MediaStore.Audio.Media.TRACK + ", " + MediaStore.Audio.Media.TITLE_KEY), MediaStore.Audio.Media._ID);
     }
 
     @Override
     public List<MediaItem> search(String query) throws IOException {
         String like = "%" + query.replace("%", "").replace("_", "") + "%";
         List<MediaItem> out = new ArrayList<MediaItem>();
-        Cursor a = query(ARTISTS, new String[]{MediaStore.Audio.Artists._ID, MediaStore.Audio.Artists.ARTIST,
-                MediaStore.Audio.Artists.NUMBER_OF_ALBUMS}, MediaStore.Audio.Artists.ARTIST + " LIKE ?",
-                new String[]{like}, MediaStore.Audio.Artists.ARTIST_KEY);
+        List<MediaItem> artists = artistsFromSongs(MediaStore.Audio.Media.ARTIST + " LIKE ?", new String[]{like});
+        out.addAll(artists.size() > 10 ? artists.subList(0, 10) : artists);
+        out.addAll(albumsFromSongs(MediaStore.Audio.Media.ALBUM + " LIKE ? OR " + MediaStore.Audio.Media.ARTIST
+                + " LIKE ?", new String[]{like, like}, MediaStore.Audio.Media.ALBUM_KEY));
+        out.addAll(tracksFrom(media(TRACK_COLUMNS, MediaStore.Audio.Media.TITLE + " LIKE ? OR "
+                        + MediaStore.Audio.Media.ARTIST + " LIKE ? OR " + MediaStore.Audio.Media.ALBUM + " LIKE ?",
+                new String[]{like, like, like}, MediaStore.Audio.Media.TITLE_KEY), MediaStore.Audio.Media._ID));
+        return out;
+    }
+
+    /**
+     * Every folder that directly holds music, with its number of songs, sorted by path. Includes
+     * excluded folders (so they can be shown again) but not Grapefruit's own downloads.
+     */
+    public Map<String, Integer> musicFolders() throws IOException {
+        List<String> args = new ArrayList<String>();
+        String own = ownFolder();
+        String selection = IS_MUSIC;
+        if (own != null) {
+            selection += " AND " + DATA + " NOT LIKE ? ESCAPE '\\'";
+            args.add(Folders.likeInside(own));
+        }
+        Cursor c = query(MEDIA, new String[]{DATA}, selection, args.toArray(new String[args.size()]), null);
+        Map<String, Integer> folders = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
         try {
-            while (a.moveToNext() && out.size() < 10) {
-                MediaItem m = new MediaItem(MediaItem.ARTIST, ID, a.getString(0), a.getString(1));
-                m.count = a.getInt(2);
-                out.add(m);
+            while (c.moveToNext()) {
+                String folder = Folders.parent(c.getString(0));
+                if (folder == null) continue;
+                Integer n = folders.get(folder);
+                folders.put(folder, n == null ? 1 : n + 1);
             }
         } finally {
-            a.close();
+            c.close();
         }
-        out.addAll(albumsWhere(MediaStore.Audio.Albums.ALBUM + " LIKE ? OR " + MediaStore.Audio.Albums.ARTIST
-                + " LIKE ?", new String[]{like, like}, MediaStore.Audio.Albums.ALBUM_KEY));
-        out.addAll(tracksFrom(query(MEDIA, TRACK_COLUMNS, IS_MUSIC + " AND (" + MediaStore.Audio.Media.TITLE
-                        + " LIKE ? OR " + MediaStore.Audio.Media.ARTIST + " LIKE ? OR " + MediaStore.Audio.Media.ALBUM
-                        + " LIKE ?)", new String[]{like, like, like}, MediaStore.Audio.Media.TITLE_KEY),
-                MediaStore.Audio.Media._ID));
-        return out;
+        return folders;
     }
 
     @Override
@@ -288,7 +367,7 @@ public final class LocalSource implements MusicSource {
             if (result == null || !new File(result).exists()) {
                 // No cached album art: read the picture embedded in one of the album's files.
                 result = null;
-                Cursor t = query(MEDIA, new String[]{MediaStore.Audio.Media.DATA},
+                Cursor t = query(MEDIA, new String[]{DATA},
                         MediaStore.Audio.Media.ALBUM_ID + " = ?", new String[]{albumId}, null);
                 try {
                     if (t.moveToFirst() && t.getString(0) != null) result = "embedded:" + t.getString(0);

@@ -96,14 +96,18 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <View
+            <!-- Tap or pull down to close. Taller than the pill so it's easy to hit. -->
+            <FrameLayout
                 android:id="@+id/np_grabber"
-                android:layout_width="38dp"
-                android:layout_height="5dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="4dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/grabber" />
+                android:layout_width="match_parent"
+                android:layout_height="26dp">
+
+                <View
+                    android:layout_width="38dp"
+                    android:layout_height="5dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/grabber" />
+            </FrameLayout>
 
             <FrameLayout
                 android:id="@+id/np_stage"

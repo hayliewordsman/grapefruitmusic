@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.grapefruitmusic.R;
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
@@ -61,6 +62,12 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         list = new ListView(c);
         RowAdapter.style(list);
         LinearLayout header = Ui.header(c, backLabel(), title(), goBack());
+        if (backLabel() == null) {
+            // Used as the Playlists tab: say which source the playlists come from.
+            TextView from = Ui.text(c, 15, R.attr.gfTextSecondary, false);
+            from.setText(source().name());
+            header.addView(from);
+        }
         if (mode() == SONGS) {
             LinearLayout shuffle = Ui.pill(c, Icons.SHUFFLE, "Shuffle All");
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
