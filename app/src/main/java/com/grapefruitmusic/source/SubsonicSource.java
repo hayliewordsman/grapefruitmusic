@@ -323,6 +323,11 @@ public final class SubsonicSource implements MusicSource {
         m.durationMs = s.optLong("duration") * 1000L;
         m.artKey = Json.str(s, "coverArt");
         m.suffix = Json.str(s, "suffix");
+        // OpenSubsonic (Navidrome): ReplayGain from the file's tags.
+        JSONObject rg = s.optJSONObject("replayGain");
+        if (rg != null && rg.has("trackGain") && !rg.isNull("trackGain")) {
+            m.replayGain = (float) rg.optDouble("trackGain");
+        }
         return m;
     }
 }

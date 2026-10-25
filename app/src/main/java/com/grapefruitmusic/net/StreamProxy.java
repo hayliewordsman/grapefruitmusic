@@ -6,6 +6,8 @@ import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Hashes;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,13 +31,27 @@ public final class StreamProxy {
     private static final String TAG = "GrapefruitProxy";
     private static final int MAX_TARGETS = 16;
 
+    /** Saves a copy of a stream as it plays (for Volume Match to measure afterwards). */
+    public interface Capture {
+        File file();
+
+        /** The whole stream is in file(). Called on a relay thread. */
+        void complete();
+    }
+
     private static final class Target {
         final String url;
         final Map<String, String> headers;
+        final Capture capture;
+        /** Bytes saved so far, all from the start of the stream without gaps. */
+        long captured;
+        boolean capturing;
+        boolean captureDone;
 
-        Target(String url, Map<String, String> headers) {
+        Target(String url, Map<String, String> headers, Capture capture) {
             this.url = url;
             this.headers = headers;
+            this.capture = capture;
         }
     }
 
@@ -60,10 +76,15 @@ public final class StreamProxy {
 
     /** Returns a loopback URL MediaPlayer can open. Starts the relay if needed. */
     public String register(String url, Map<String, String> headers) throws IOException {
+        return register(url, headers, null);
+    }
+
+    /** Like register(url, headers), also saving the stream when capture isn't null. */
+    public String register(String url, Map<String, String> headers, Capture capture) throws IOException {
         ensureStarted();
         String token = Hashes.randomHex(8);
         synchronized (targets) {
-            targets.put(token, new Target(url, headers == null ? new HashMap<String, String>() : headers));
+            targets.put(token, new Target(url, headers == null ? new HashMap<String, String>() : headers, capture));
         }
         return "http://127.0.0.1:" + server.getLocalPort() + "/s/" + token;
     }
@@ -146,10 +167,45 @@ public final class StreamProxy {
             out.write(head.toString().getBytes("US-ASCII"));
 
             if (!"HEAD".equalsIgnoreCase(method) && code < 400) {
+                long start = captureStart(target, range, code, upstream.getHeaderField("Content-Range"));
+                OutputStream copy = null;
+                try {
+                    if (start >= 0) copy = new FileOutputStream(target.capture.file(), start > 0);
+                } catch (IOException e) {
+                    endCapture(target, false);
+                }
                 InputStream body = upstream.getInputStream();
                 byte[] buf = new byte[16384];
                 int n;
-                while ((n = body.read(buf)) > 0) out.write(buf, 0, n);
+                try {
+                    while ((n = body.read(buf)) > 0) {
+                        out.write(buf, 0, n);
+                        if (copy != null) {
+                            try {
+                                copy.write(buf, 0, n);
+                                synchronized (target) {
+                                    target.captured += n;
+                                }
+                            } catch (IOException e) {
+                                copy.close();
+                                copy = null;
+                                endCapture(target, false);
+                            }
+                        }
+                    }
+                    if (copy != null) {
+                        copy.close();
+                        copy = null;
+                        endCapture(target, reachedEnd(target, code, upstream));
+                    }
+                } finally {
+                    if (copy != null) {
+                        // Cut off (MediaPlayer seeked or stopped): keep what's there; a request
+                        // that carries on from it can finish the copy.
+                        copy.close();
+                        endCapture(target, false);
+                    }
+                }
             }
             out.flush();
         } catch (IOException e) {
@@ -162,6 +218,67 @@ public final class StreamProxy {
             } catch (IOException ignored) {
                 // Already closed.
             }
+        }
+    }
+
+    /**
+     * Where this response continues the target's saved copy, or -1 if it doesn't (no capture, a
+     * jump elsewhere in the file, or another response already saving).
+     */
+    private static long captureStart(Target t, String range, int code, String contentRange) {
+        if (t.capture == null) return -1;
+        long start;
+        if (code == 200) {
+            start = 0;
+        } else if (code == 206 && contentRange != null && contentRange.startsWith("bytes ")) {
+            try {
+                start = Long.parseLong(contentRange.substring(6, contentRange.indexOf('-')).trim());
+            } catch (RuntimeException e) {
+                return -1;
+            }
+        } else {
+            return -1;
+        }
+        if (range != null && !range.trim().endsWith("-")) return -1; // only open-ended ranges
+        synchronized (t) {
+            if (t.captureDone || t.capturing) return -1;
+            if (start == 0) t.captured = 0;
+            else if (start != t.captured) return -1;
+            t.capturing = true;
+        }
+        return start;
+    }
+
+    /** Stops saving; when the copy holds the whole stream, tells the capture. */
+    private static void endCapture(Target t, boolean whole) {
+        synchronized (t) {
+            t.capturing = false;
+            if (!whole || t.captureDone) return;
+            t.captureDone = true;
+        }
+        t.capture.complete();
+    }
+
+    /** Whether the copy now holds the whole stream (from Content-Range or Content-Length). */
+    private static boolean reachedEnd(Target t, int code, HttpURLConnection c) {
+        long total = -1;
+        String cr = c.getHeaderField("Content-Range");
+        if (code == 206 && cr != null && cr.lastIndexOf('/') > 0) {
+            try {
+                total = Long.parseLong(cr.substring(cr.lastIndexOf('/') + 1).trim());
+            } catch (NumberFormatException ignored) {
+                // "*": unknown.
+            }
+        } else if (code == 200) {
+            String len = c.getHeaderField("Content-Length");
+            try {
+                total = len != null ? Long.parseLong(len.trim()) : -1;
+            } catch (NumberFormatException ignored) {
+                // Unknown length; the server closed the stream normally, so it's all here.
+            }
+        }
+        synchronized (t) {
+            return total < 0 || t.captured >= total;
         }
     }
 

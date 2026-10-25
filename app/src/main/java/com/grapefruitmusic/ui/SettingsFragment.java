@@ -7,8 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import com.grapefruitmusic.download.Downloads;
+import com.grapefruitmusic.playback.Player;
+import com.grapefruitmusic.playback.VolumeMatch;
 import com.grapefruitmusic.source.Account;
 import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.ui.widget.Toggle;
@@ -16,11 +19,14 @@ import com.grapefruitmusic.util.Format;
 import com.grapefruitmusic.util.Prefs;
 
 /** The Settings tab, as an iOS-style grouped list. */
-public final class SettingsFragment extends BaseFragment implements Sources.Listener, Downloads.Listener {
+public final class SettingsFragment extends BaseFragment
+        implements Sources.Listener, Downloads.Listener, VolumeMatch.Listener {
     /** Theme names, in Prefs.THEME_* order. */
     private static final String[] THEMES = {"Match System", "Starlight", "Pitch Black"};
 
     private ScrollView page;
+    /** "12 of 340" while Volume Match measures songs, else null. */
+    private TextView measuring;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
@@ -33,6 +39,7 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
         super.onResume();
         Sources.get(getActivity()).addListener(this);
         Downloads.get(getActivity()).addListener(this);
+        VolumeMatch.get(getActivity()).addListener(this);
         build();
     }
 
@@ -40,6 +47,7 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
     public void onPause() {
         Sources.get(getActivity()).removeListener(this);
         Downloads.get(getActivity()).removeListener(this);
+        VolumeMatch.get(getActivity()).removeListener(this);
         super.onPause();
     }
 
@@ -51,6 +59,20 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
     @Override
     public void onDownloadsChanged() {
         build();
+    }
+
+    @Override
+    public void onVolumeMatchProgress() {
+        int[] p = VolumeMatch.get(getActivity()).progress();
+        if (p != null && measuring != null) {
+            measuring.setText(progressText(p));
+        } else if ((p != null) != (measuring != null)) {
+            build(); // the Measuring Songs row comes or goes
+        }
+    }
+
+    private static String progressText(int[] p) {
+        return p[0] + " of " + p[1];
     }
 
     private void build() {
@@ -133,6 +155,22 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
         });
         g.footer("Original streams the file as it is when this phone can play it, and converts it to MP3 "
                 + "when it can't (for example Opus or ALAC).");
+
+        g.section("Volume");
+        final VolumeMatch volumeMatch = VolumeMatch.get(c);
+        g.toggle("Volume Match", volumeMatch.enabled(), new Toggle.Listener() {
+            @Override
+            public void onToggled(Toggle t, boolean on) {
+                volumeMatch.setEnabled(on);
+                Player.get(getActivity()).refreshVolumeMatch();
+            }
+        });
+        int[] progress = volumeMatch.enabled() ? volumeMatch.progress() : null;
+        measuring = progress != null ? g.value("Measuring Songs", progressText(progress), null) : null;
+        g.footer("Plays songs at about the same volume, so a loud song doesn't jump out after a quiet one. "
+                + "Loud songs are turned down to match; quiet ones play as they are. Grapefruit measures the "
+                + "songs on this phone, and uses the loudness your server reports for streamed songs (or "
+                + "measures them the first time they play).");
 
         g.section("Downloads");
         g.value("Download Quality", Prefs.qualityLabel(Prefs.downloadQuality()), new View.OnClickListener() {

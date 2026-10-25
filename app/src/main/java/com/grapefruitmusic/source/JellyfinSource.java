@@ -335,6 +335,10 @@ public final class JellyfinSource implements MusicSource {
         m.count = o.optInt("ChildCount");
         m.durationMs = o.optLong("RunTimeTicks") / TICKS_PER_MS;
         m.suffix = Json.str(o, "Container");
+        // Jellyfin 10.9+ measures loudness itself (relative to -18 LUFS, like ReplayGain).
+        if (o.has("NormalizationGain") && !o.isNull("NormalizationGain")) {
+            m.replayGain = (float) o.optDouble("NormalizationGain");
+        }
         JSONObject tags = o.optJSONObject("ImageTags");
         String primary = tags != null ? Json.str(tags, "Primary") : null;
         if (primary != null) {

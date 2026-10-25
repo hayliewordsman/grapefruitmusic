@@ -70,6 +70,15 @@ public final class Prefs {
         prefs.edit().putBoolean("online_lyrics", v).apply();
     }
 
+    /** Volume Match: play songs at about the same loudness. */
+    public static boolean volumeMatch() {
+        return prefs.getBoolean("volume_match", false);
+    }
+
+    public static void setVolumeMatch(boolean v) {
+        prefs.edit().putBoolean("volume_match", v).apply();
+    }
+
     /** Folders hidden from On This Phone (absolute paths, no trailing slash). */
     public static Set<String> excludedFolders() {
         return new TreeSet<String>(prefs.getStringSet("excluded_folders", new HashSet<String>()));

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-/** Downloads, cached lyrics, and playlist covers and descriptions. */
+/** Downloads, cached lyrics, playlist covers and descriptions, and song loudness. */
 public final class Db extends SQLiteOpenHelper {
     private static Db instance;
 
@@ -14,7 +14,7 @@ public final class Db extends SQLiteOpenHelper {
     }
 
     private Db(Context context) {
-        super(context, "grapefruit.db", null, 2);
+        super(context, "grapefruit.db", null, 3);
     }
 
     @Override
@@ -35,6 +35,7 @@ public final class Db extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE lyrics ("
                 + "song_key TEXT PRIMARY KEY, synced INTEGER, body TEXT, credit TEXT, fetched_at INTEGER)");
         createPlaylistMeta(db);
+        createLoudness(db);
     }
 
     /** Version 2 (Grapefruit 1.5). */
@@ -44,8 +45,14 @@ public final class Db extends SQLiteOpenHelper {
                 + "PRIMARY KEY (source_id, playlist_id))");
     }
 
+    /** Version 3 (Grapefruit 1.7): Volume Match measurements. lufs is NULL if unmeasurable. */
+    private static void createLoudness(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE loudness (song_key TEXT PRIMARY KEY, lufs REAL, measured_at INTEGER)");
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 2) createPlaylistMeta(db);
+        if (oldVersion < 3) createLoudness(db);
     }
 }

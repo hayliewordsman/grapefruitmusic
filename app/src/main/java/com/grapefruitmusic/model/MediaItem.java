@@ -39,6 +39,8 @@ public class MediaItem implements Serializable {
     public String description;
     /** A track's entry in the playlist it was loaded from (used to remove it). */
     public String entryId;
+    /** Track gain in dB reported by the server (ReplayGain, relative to -18 LUFS), or null. */
+    public Float replayGain;
 
     public MediaItem() {
     }

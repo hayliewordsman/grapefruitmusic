@@ -31,6 +31,11 @@ with downloads for offline listening and time-synced lyrics.
   little grapefruit slices that roll across a grapefruit-gradient track.
 - **Playback:** background playback with notification, lock-screen and headset controls, shuffle, repeat (all/one),
   Up Next (drag the ≡ handle to reorder), Play Next / Add to Up Next.
+- **Volume Match:** Settings › Volume Match plays every song at about the same loudness, like Apple's Sound Check.
+  Grapefruit measures songs on the phone and downloads in the background (EBU R128, the measure ReplayGain 2 uses),
+  uses the loudness your server reports for streamed songs (Navidrome ReplayGain tags, Jellyfin 10.9+
+  normalization), and otherwise measures a streamed song after its first play. Loud songs are turned down to
+  -16 LUFS; Android's player can't turn quiet songs up, so they play as they are.
 - **Recently Played:** scroll up in Up Next to see the songs you've played (newest just above Now Playing).
   Tap one to play it again, or Clear the list.
 - **Playlist editing:** Edit on a playlist changes its name, description and cover photo (a photo on the phone,

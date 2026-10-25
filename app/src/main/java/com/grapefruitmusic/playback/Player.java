@@ -73,6 +73,13 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     private MediaItem loadedItem;
     private boolean loadedItemStarted;
 
+    // Volume Match: this song's volume (1 = as recorded), and whether it's still being measured.
+    private final VolumeMatch volumeMatch;
+    private float matchVolume = 1f;
+    private boolean measuring;
+    /** Turned down while another app talks over the music. */
+    private boolean ducked;
+
     public static synchronized Player get(Context context) {
         if (instance == null) instance = new Player(context.getApplicationContext());
         return instance;
@@ -86,6 +93,34 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         wifiLock.setReferenceCounted(false);
         historyFile = new File(context.getFilesDir(), "history.ser");
         loadHistory();
+        volumeMatch = VolumeMatch.get(context);
+    }
+
+    // ---- Volume Match ----
+
+    /** The current song's Volume Match volume, 0 to 1 (1 = unchanged). */
+    public float matchVolume() {
+        return matchVolume;
+    }
+
+    /** Volume Match was switched on or off: applies it to the song that's playing. */
+    public void refreshVolumeMatch() {
+        matchVolume = volumeMatch.volumeFor(current());
+        applyVolume();
+    }
+
+    private void applyVolume() {
+        if (mp == null) return;
+        float v = matchVolume * (ducked ? 0.2f : 1f);
+        mp.setVolume(v, v);
+    }
+
+    /** Starts the prepared song once nothing's holding it back (it may still be measured). */
+    private void startIfReady() {
+        if (mp == null || !prepared || !playWhenReady || measuring || mp.isPlaying()) return;
+        mp.start();
+        loadedItemStarted = true;
+        changed();
     }
 
     // ---- Recently played ----
@@ -317,7 +352,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         }
         if (!requestFocus()) return;
         playWhenReady = true;
-        if (prepared) {
+        if (prepared && !measuring) {
             mp.start();
             loadedItemStarted = true;
         }
@@ -411,6 +446,9 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mp.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK);
         final MediaPlayer player = mp;
+        matchVolume = volumeMatch.volumeFor(item);
+        measuring = false;
+        applyVolume();
         mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer m) {
@@ -418,7 +456,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 prepared = true;
                 buffering = false;
                 consecutiveErrors = 0;
-                if (playWhenReady) {
+                if (playWhenReady && !measuring) {
                     m.start();
                     loadedItemStarted = true;
                 }
@@ -452,6 +490,23 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         });
         try {
             File file = localFile(item);
+            if (file != null && volumeMatch.enabled() && !volumeMatch.isMeasured(item)) {
+                // Not measured yet: measure it while it loads, so it starts at the right volume.
+                measuring = true;
+                Runnable measured = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mp != player || !measuring) return;
+                        measuring = false;
+                        matchVolume = volumeMatch.volumeFor(item);
+                        applyVolume();
+                        startIfReady();
+                    }
+                };
+                volumeMatch.measureNow(item, file.getPath(), measured);
+                // Don't keep the listener waiting on a slow measurement.
+                Bg.mainDelayed(measured, 2500);
+            }
             if (file != null) {
                 FileInputStream in = new FileInputStream(file);
                 try {
@@ -464,7 +519,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 MusicSource source = Sources.get(context).byId(item.sourceId);
                 StreamRequest req = source != null ? source.stream(item, Prefs.streamQuality()) : null;
                 if (req == null) throw new IOException("This song is no longer available");
-                player.setDataSource(StreamProxy.get().register(req.url, req.headers));
+                player.setDataSource(StreamProxy.get().register(req.url, req.headers, volumeMatch.captureFor(item)));
                 wifiLock.acquire();
                 buffering = true;
             }
@@ -527,10 +582,12 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 }
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                if (mp != null) mp.setVolume(0.2f, 0.2f);
+                ducked = true;
+                applyVolume();
                 break;
             case AudioManager.AUDIOFOCUS_GAIN:
-                if (mp != null) mp.setVolume(1f, 1f);
+                ducked = false;
+                applyVolume();
                 if (pausedByFocusLoss) {
                     pausedByFocusLoss = false;
                     resume();

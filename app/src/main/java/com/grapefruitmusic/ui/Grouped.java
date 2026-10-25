@@ -90,7 +90,8 @@ final class Grouped {
         content.addView(Ui.separator(c, 0));
     }
 
-    void value(String label, String value, View.OnClickListener click) {
+    /** A label and a gray value; returns the value's view (to update it later). */
+    TextView value(String label, String value, View.OnClickListener click) {
         LinearLayout row = row(click);
         TextView l = Ui.text(c, 17, R.attr.gfTextPrimary, false);
         l.setText(label);
@@ -101,6 +102,7 @@ final class Grouped {
         row.addView(v);
         if (click != null) row.addView(Ui.icon(c, Icons.CHEVRON_RIGHT, Ui.color(c, R.attr.gfSeparator), 18));
         addRow(row, click != null);
+        return v;
     }
 
     void action(String label, boolean destructive, View.OnClickListener click) {
