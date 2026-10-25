@@ -143,6 +143,13 @@ final class NowPlaying {
         btnShuffle.setIcon(Icons.SHUFFLE);
         btnRepeat.setIcon(Icons.REPEAT);
         btnQueue.setIcon(Icons.QUEUE);
+        prev.setContentDescription("Previous");
+        next.setContentDescription("Next");
+        play.setContentDescription("Play or pause");
+        btnLyrics.setContentDescription("Lyrics");
+        btnShuffle.setContentDescription("Shuffle");
+        btnRepeat.setContentDescription("Repeat");
+        btnQueue.setContentDescription("Up Next");
 
         dim.setOnClickListener(new View.OnClickListener() {
             @Override

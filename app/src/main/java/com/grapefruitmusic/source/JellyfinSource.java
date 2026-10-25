@@ -236,10 +236,7 @@ public final class JellyfinSource implements MusicSource {
         else if (type.equals("MusicArtist")) kind = MediaItem.ARTIST;
         else if (type.equals("Playlist")) kind = MediaItem.PLAYLIST;
         else return null;
-        if (kind == MediaItem.PLAYLIST) {
-            String mediaType = Json.str(o, "MediaType");
-            if (mediaType != null && !mediaType.equals("Audio")) return null;
-        }
+        if (kind == MediaItem.PLAYLIST && "Video".equals(Json.str(o, "MediaType"))) return null;
         MediaItem m = new MediaItem(kind, id(), o.optString("Id"), o.optString("Name"));
         m.album = Json.str(o, "Album");
         m.albumId = Json.str(o, "AlbumId");

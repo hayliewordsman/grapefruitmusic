@@ -62,6 +62,8 @@ public final class MainActivity extends Activity implements Player.Listener {
         miniPlay.setColor(primary);
         miniNext.setColor(primary);
         miniNext.setIcon(Icons.NEXT);
+        miniNext.setContentDescription("Next");
+        miniPlay.setContentDescription("Play or pause");
         mini.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
