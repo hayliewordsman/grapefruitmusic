@@ -24,7 +24,8 @@ with downloads for offline listening and time-synced lyrics.
 - **iOS 10-style design:** large bold titles, album-art grids, a mini player above the tab bar, and a Now Playing
   card that slides up over a blurred copy of the artwork. The artwork shrinks when paused. Pull the card down to close it.
   Lyrics and Up Next show a condensed header (small artwork and title) above the list.
-- **Light and dark modes:** Settings › Theme. *Match System* follows the phone's dark mode on Android 10+.
+- **Themes:** Settings › Theme: *Moonlight* (light) or *Pitch Black* (dark). *Match System* switches between them
+  with the phone's dark mode on Android 10+.
 - **Looks the same on every Android version:** Grapefruit draws its own switches, dialogs, menus, text fields,
   messages and fast-scroll thumb instead of using Android's (Holo on 4.x, Material later). Settings switches are
   little grapefruit slices that roll across a grapefruit-gradient track.

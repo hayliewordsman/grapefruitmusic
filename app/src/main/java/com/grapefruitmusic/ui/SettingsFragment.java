@@ -17,6 +17,9 @@ import com.grapefruitmusic.util.Prefs;
 
 /** The Settings tab, as an iOS-style grouped list. */
 public final class SettingsFragment extends BaseFragment implements Sources.Listener, Downloads.Listener {
+    /** Theme names, in Prefs.THEME_* order. */
+    private static final String[] THEMES = {"Match System", "Moonlight", "Pitch Black"};
+
     private ScrollView page;
 
     @Override
@@ -56,11 +59,10 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
         g.add(Ui.header(c, null, "Settings", null));
 
         g.section("Appearance");
-        String[] themes = {"Match System", "Light", "Dark"};
-        g.value("Theme", themes[Prefs.theme()], new View.OnClickListener() {
+        g.value("Theme", THEMES[Prefs.theme()], new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                choose("Theme", new String[]{"Match System", "Light", "Dark"}, Prefs.theme(), new Choice() {
+                choose("Theme", THEMES, Prefs.theme(), new Choice() {
                     @Override
                     public void chosen(int which) {
                         if (which != Prefs.theme()) {
@@ -71,7 +73,8 @@ public final class SettingsFragment extends BaseFragment implements Sources.List
                 });
             }
         });
-        g.footer("Match System follows the phone's dark mode on Android 10 and later.");
+        g.footer("Match System switches between Moonlight and Pitch Black with the phone's dark mode "
+                + "(Android 10 and later).");
 
         g.section("Servers");
         for (final Account a : Sources.get(c).accounts()) {
