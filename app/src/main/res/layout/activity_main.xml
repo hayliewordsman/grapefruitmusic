@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/gfBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <View
+            android:id="@+id/mini_separator"
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="?attr/gfSeparator"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/mini_player"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="?attr/gfBar"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="10dp"
+            android:paddingRight="4dp"
+            android:visibility="gone">
+
+            <com.grapefruitmusic.ui.widget.ArtworkView
+                android:id="@+id/mini_art"
+                android:layout_width="44dp"
+                android:layout_height="44dp" />
+
+            <TextView
+                android:id="@+id/mini_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="12dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="?attr/gfTextPrimary"
+                android:textSize="15sp" />
+
+            <com.grapefruitmusic.ui.widget.IconView
+                android:id="@+id/mini_play"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="12dp" />
+
+            <com.grapefruitmusic.ui.widget.IconView
+                android:id="@+id/mini_next"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="12dp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="?attr/gfSeparator" />
+
+        <LinearLayout
+            android:id="@+id/tab_bar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="?attr/gfBar"
+            android:orientation="horizontal" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/np_dim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:clickable="true"
+        android:visibility="gone" />
+
+    <com.grapefruitmusic.ui.widget.NowPlayingCard
+        android:id="@+id/np_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="16dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/np_grabber"
+                android:layout_width="38dp"
+                android:layout_height="5dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="4dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/grabber" />
+
+            <FrameLayout
+                android:id="@+id/np_stage"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <com.grapefruitmusic.ui.widget.ArtworkView
+                    android:id="@+id/np_art"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_margin="12dp" />
+
+                <ListView
+                    android:id="@+id/np_lyrics"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:cacheColorHint="#00000000"
+                    android:divider="@null"
+                    android:fadingEdgeLength="48dp"
+                    android:listSelector="@android:color/transparent"
+                    android:requiresFadingEdge="vertical"
+                    android:scrollbars="none"
+                    android:visibility="gone" />
+
+                <ListView
+                    android:id="@+id/np_queue"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:cacheColorHint="#00000000"
+                    android:divider="@null"
+                    android:listSelector="@android:color/transparent"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/np_message"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:padding="32dp"
+                    android:textColor="?attr/gfTextSecondary"
+                    android:textSize="17sp"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <com.grapefruitmusic.ui.widget.Scrubber
+                android:id="@+id/np_scrubber"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginLeft="14dp"
+                android:layout_marginRight="14dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="24dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/np_elapsed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="?attr/gfTextSecondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/np_remaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/gfTextSecondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/np_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:singleLine="true"
+                android:textColor="?attr/gfTextPrimary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/np_artist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:singleLine="true"
+                android:textColor="?attr/gfAccent"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <com.grapefruitmusic.ui.widget.IconView
+                    android:id="@+id/np_prev"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:padding="14dp" />
+
+                <com.grapefruitmusic.ui.widget.IconView
+                    android:id="@+id/np_play"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:layout_marginLeft="28dp"
+                    android:layout_marginRight="28dp"
+                    android:padding="14dp" />
+
+                <com.grapefruitmusic.ui.widget.IconView
+                    android:id="@+id/np_next"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:padding="14dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.grapefruitmusic.ui.widget.IconView
+                    android:id="@+id/np_vol_low"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp" />
+
+                <com.grapefruitmusic.ui.widget.Scrubber
+                    android:id="@+id/np_volume"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <com.grapefruitmusic.ui.widget.IconView
+                    android:id="@+id/np_vol_high"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginBottom="4dp"
+                android:orientation="horizontal">
+
+                <com.grapefruitmusic.ui.widget.IconView
+                    android:id="@+id/np_btn_lyrics"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:padding="13dp" />
+
+                <com.grapefruitmusic.ui.widget.IconView
+                    android:id="@+id/np_btn_shuffle"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:padding="13dp" />
+
+                <com.grapefruitmusic.ui.widget.IconView
+                    android:id="@+id/np_btn_repeat"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:padding="13dp" />
+
+                <com.grapefruitmusic.ui.widget.IconView
+                    android:id="@+id/np_btn_queue"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:padding="13dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.grapefruitmusic.ui.widget.NowPlayingCard>
+</FrameLayout>

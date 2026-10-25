@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Grapefruit accent -->
+    <color name="grapefruit">#F2545B</color>
+    <color name="grapefruit_bright">#FF6B6B</color>
+
+    <!-- Light palette (iOS 10 inspired) -->
+    <color name="light_background">#FFFFFF</color>
+    <color name="light_grouped">#EFEFF4</color>
+    <color name="light_surface">#FFFFFF</color>
+    <color name="light_bar">#F7F7F7</color>
+    <color name="light_text">#000000</color>
+    <color name="light_text_secondary">#8E8E93</color>
+    <color name="light_separator">#C8C7CC</color>
+    <color name="light_fill">#EEEEF0</color>
+    <color name="light_pressed">#D9D9D9</color>
+    <color name="light_scrim">#E6FFFFFF</color>
+
+    <!-- Dark palette -->
+    <color name="dark_background">#000000</color>
+    <color name="dark_grouped">#000000</color>
+    <color name="dark_surface">#1C1C1E</color>
+    <color name="dark_bar">#121212</color>
+    <color name="dark_text">#FFFFFF</color>
+    <color name="dark_text_secondary">#8E8E93</color>
+    <color name="dark_separator">#38383A</color>
+    <color name="dark_fill">#1C1C1E</color>
+    <color name="dark_pressed">#2C2C2E</color>
+    <color name="dark_scrim">#D9000000</color>
+</resources>

@@ -1,0 +1,89 @@
+package com.grapefruitmusic.util;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+/** App settings. */
+public final class Prefs {
+    public static final int THEME_SYSTEM = 0;
+    public static final int THEME_LIGHT = 1;
+    public static final int THEME_DARK = 2;
+
+    /** Quality 0 means "original file when this phone can play it"; otherwise MP3 at that kbps. */
+    public static final int QUALITY_ORIGINAL = 0;
+    public static final int[] QUALITIES = {QUALITY_ORIGINAL, 320, 192, 128};
+
+    private static SharedPreferences prefs;
+
+    private Prefs() {
+    }
+
+    public static void init(Context context) {
+        prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
+    }
+
+    public static SharedPreferences raw() {
+        return prefs;
+    }
+
+    public static int theme() {
+        return prefs.getInt("theme", THEME_SYSTEM);
+    }
+
+    public static void setTheme(int theme) {
+        prefs.edit().putInt("theme", theme).apply();
+    }
+
+    public static int streamQuality() {
+        return prefs.getInt("stream_quality", QUALITY_ORIGINAL);
+    }
+
+    public static void setStreamQuality(int q) {
+        prefs.edit().putInt("stream_quality", q).apply();
+    }
+
+    public static int downloadQuality() {
+        return prefs.getInt("download_quality", QUALITY_ORIGINAL);
+    }
+
+    public static void setDownloadQuality(int q) {
+        prefs.edit().putInt("download_quality", q).apply();
+    }
+
+    public static boolean wifiOnlyDownloads() {
+        return prefs.getBoolean("wifi_only", true);
+    }
+
+    public static void setWifiOnlyDownloads(boolean v) {
+        prefs.edit().putBoolean("wifi_only", v).apply();
+    }
+
+    public static boolean onlineLyrics() {
+        return prefs.getBoolean("online_lyrics", true);
+    }
+
+    public static void setOnlineLyrics(boolean v) {
+        prefs.edit().putBoolean("online_lyrics", v).apply();
+    }
+
+    public static String currentSource() {
+        return prefs.getString("current_source", null);
+    }
+
+    public static void setCurrentSource(String id) {
+        prefs.edit().putString("current_source", id).apply();
+    }
+
+    public static String deviceId() {
+        String id = prefs.getString("device_id", null);
+        if (id == null) {
+            id = Hashes.randomHex(16);
+            prefs.edit().putString("device_id", id).apply();
+        }
+        return id;
+    }
+
+    public static String qualityLabel(int q) {
+        return q == QUALITY_ORIGINAL ? "Original" : ("MP3 " + q + " kbps");
+    }
+}

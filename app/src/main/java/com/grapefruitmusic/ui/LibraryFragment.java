@@ -1,0 +1,228 @@
+package com.grapefruitmusic.ui;
+
+import android.content.Context;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.grapefruitmusic.R;
+import com.grapefruitmusic.download.Downloads;
+import com.grapefruitmusic.model.MediaItem;
+import com.grapefruitmusic.source.DownloadedSource;
+import com.grapefruitmusic.source.MusicSource;
+import com.grapefruitmusic.source.Sources;
+import com.grapefruitmusic.ui.widget.IconView;
+import com.grapefruitmusic.ui.widget.Icons;
+
+import java.util.List;
+
+/** The Library tab: source picker, Playlists / Artists / Albums / Songs, and Recently Added. */
+public final class LibraryFragment extends BaseFragment implements Sources.Listener, Downloads.Listener {
+    private ListView list;
+    private RowAdapter adapter;
+    private TextView sourceName;
+    private LinearLayout rows;
+    private TextView recentTitle;
+    private TextView status;
+    private String loadedFor;
+    private int generation;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
+        final Context c = getActivity();
+        list = new ListView(c);
+        RowAdapter.style(list);
+
+        LinearLayout top = new LinearLayout(c);
+        top.setOrientation(LinearLayout.VERTICAL);
+        top.addView(Ui.header(c, null, "Library", null));
+
+        LinearLayout chip = new LinearLayout(c);
+        chip.setOrientation(LinearLayout.HORIZONTAL);
+        chip.setGravity(Gravity.CENTER_VERTICAL);
+        chip.setPadding(Ui.dp(c, 16), Ui.dp(c, 2), Ui.dp(c, 16), Ui.dp(c, 10));
+        chip.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+        sourceName = Ui.text(c, 15, R.attr.gfAccent, true);
+        chip.addView(sourceName);
+        IconView down = Ui.icon(c, Icons.CHEVRON_DOWN, Ui.accent(c), 16);
+        ((LinearLayout.LayoutParams) down.getLayoutParams()).leftMargin = Ui.dp(c, 4);
+        chip.addView(down);
+        chip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pickSource();
+            }
+        });
+        top.addView(chip, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        top.addView(Ui.separator(c, 16));
+
+        rows = new LinearLayout(c);
+        rows.setOrientation(LinearLayout.VERTICAL);
+        top.addView(rows);
+
+        recentTitle = Ui.sectionTitle(c, "Recently Added");
+        top.addView(recentTitle);
+        list.addHeaderView(top, null, false);
+
+        status = Ui.status(c);
+        list.addFooterView(status, null, false);
+
+        adapter = new RowAdapter(c, new RowAdapter.Listener() {
+            @Override
+            public void onItem(MediaItem item, int index) {
+                push(AlbumFragment.newInstance(item.sourceId, item, "Library"));
+            }
+
+            @Override
+            public void onLongItem(MediaItem item) {
+                MusicSource s = Sources.get(getActivity()).byId(item.sourceId);
+                if (s != null) TrackActions.show(LibraryFragment.this, item, s);
+            }
+        });
+        list.setAdapter(adapter);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                adapter.click(position - list.getHeaderViewsCount());
+            }
+        });
+        return list;
+    }
+
+    private void push(android.app.Fragment f) {
+        main().push(f);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Sources.get(getActivity()).addListener(this);
+        Downloads.get(getActivity()).addListener(this);
+        refresh(false);
+    }
+
+    @Override
+    public void onPause() {
+        Sources.get(getActivity()).removeListener(this);
+        Downloads.get(getActivity()).removeListener(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onSourcesChanged() {
+        refresh(false);
+    }
+
+    @Override
+    public void onDownloadsChanged() {
+        if (Sources.get(getActivity()).current() instanceof DownloadedSource) refresh(true);
+    }
+
+    private void refresh(boolean force) {
+        final MusicSource s = Sources.get(getActivity()).current();
+        sourceName.setText(s.name());
+        buildRows(s);
+        if (!force && s.id().equals(loadedFor)) return;
+        loadedFor = s.id();
+        final int gen = ++generation;
+        if (adapter.getCount() == 0 || !force) {
+            status.setText("Loading…");
+            status.setVisibility(View.VISIBLE);
+        }
+        bg(new com.grapefruitmusic.util.Bg.Work<List<MediaItem>>() {
+            @Override
+            public List<MediaItem> run() throws Exception {
+                return s.recentAlbums(20);
+            }
+        }, new com.grapefruitmusic.util.Bg.Done<List<MediaItem>>() {
+            @Override
+            public void done(List<MediaItem> albums, Exception error) {
+                if (gen != generation) return;
+                if (error != null) {
+                    loadedFor = null;
+                    adapter.setItems(new java.util.ArrayList<MediaItem>(), true, false);
+                    status.setText(describe(error, s));
+                    status.setVisibility(View.VISIBLE);
+                    return;
+                }
+                adapter.setItems(albums, true, false);
+                recentTitle.setVisibility(albums.isEmpty() ? View.GONE : View.VISIBLE);
+                if (albums.isEmpty()) {
+                    status.setText(s instanceof DownloadedSource
+                            ? "Nothing downloaded yet. Open an album on your server and tap Download."
+                            : "No music here yet.");
+                    status.setVisibility(View.VISIBLE);
+                } else {
+                    status.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
+    private void buildRows(final MusicSource s) {
+        Context c = getActivity();
+        rows.removeAllViews();
+        addRow(c, "Playlists", BrowseFragment.PLAYLISTS, s);
+        addRow(c, "Artists", BrowseFragment.ARTISTS, s);
+        addRow(c, "Albums", BrowseFragment.ALBUMS, s);
+        addRow(c, "Songs", BrowseFragment.SONGS, s);
+        if (!(s instanceof DownloadedSource)) {
+            TextView t = rowText(c, "Downloaded Music");
+            t.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Sources sources = Sources.get(getActivity());
+                    sources.setCurrent(sources.downloaded());
+                }
+            });
+            rows.addView(t);
+            rows.addView(Ui.separator(c, 16));
+        }
+    }
+
+    private void addRow(Context c, String label, final int mode, final MusicSource s) {
+        TextView t = rowText(c, label);
+        t.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                push(BrowseFragment.newInstance(s.id(), mode, null, "Library"));
+            }
+        });
+        rows.addView(t);
+        rows.addView(Ui.separator(c, 16));
+    }
+
+    private TextView rowText(Context c, String label) {
+        TextView t = Ui.text(c, 21, R.attr.gfAccent, false);
+        t.setText(label);
+        t.setPadding(Ui.dp(c, 16), Ui.dp(c, 11), Ui.dp(c, 16), Ui.dp(c, 11));
+        t.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+        return t;
+    }
+
+    private void pickSource() {
+        final Context c = getActivity();
+        final List<MusicSource> all = Sources.get(c).all();
+        String[] names = new String[all.size() + 1];
+        for (int i = 0; i < all.size(); i++) names[i] = all.get(i).name() + "  ·  " + all.get(i).typeLabel();
+        names[all.size()] = "Add a Server…";
+        Ui.dialog(c)
+                .setTitle("Show music from")
+                .setItems(names, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which < all.size()) Sources.get(c).setCurrent(all.get(which));
+                        else AddServerDialog.show(getActivity());
+                    }
+                })
+                .show();
+    }
+}

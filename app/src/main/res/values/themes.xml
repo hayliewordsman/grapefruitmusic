@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Grapefruit.Light" parent="android:Theme.Holo.Light.NoActionBar">
+        <item name="android:windowBackground">@color/light_background</item>
+        <item name="android:colorBackground">@color/light_background</item>
+        <item name="android:textColorHighlight">#66F2545B</item>
+        <item name="gfBackground">@color/light_background</item>
+        <item name="gfGroupedBackground">@color/light_grouped</item>
+        <item name="gfSurface">@color/light_surface</item>
+        <item name="gfBar">@color/light_bar</item>
+        <item name="gfTextPrimary">@color/light_text</item>
+        <item name="gfTextSecondary">@color/light_text_secondary</item>
+        <item name="gfSeparator">@color/light_separator</item>
+        <item name="gfAccent">@color/grapefruit</item>
+        <item name="gfFill">@color/light_fill</item>
+        <item name="gfScrim">@color/light_scrim</item>
+        <item name="gfRowBackground">@drawable/row_light</item>
+        <item name="gfFieldBackground">@drawable/field_light</item>
+        <item name="gfPillBackground">@drawable/pill_light</item>
+    </style>
+
+    <style name="Theme.Grapefruit.Dark" parent="android:Theme.Holo.NoActionBar">
+        <item name="android:windowBackground">@color/dark_background</item>
+        <item name="android:colorBackground">@color/dark_background</item>
+        <item name="android:textColorHighlight">#66FF6B6B</item>
+        <item name="gfBackground">@color/dark_background</item>
+        <item name="gfGroupedBackground">@color/dark_grouped</item>
+        <item name="gfSurface">@color/dark_surface</item>
+        <item name="gfBar">@color/dark_bar</item>
+        <item name="gfTextPrimary">@color/dark_text</item>
+        <item name="gfTextSecondary">@color/dark_text_secondary</item>
+        <item name="gfSeparator">@color/dark_separator</item>
+        <item name="gfAccent">@color/grapefruit_bright</item>
+        <item name="gfFill">@color/dark_fill</item>
+        <item name="gfScrim">@color/dark_scrim</item>
+        <item name="gfRowBackground">@drawable/row_dark</item>
+        <item name="gfFieldBackground">@drawable/field_dark</item>
+        <item name="gfPillBackground">@drawable/pill_dark</item>
+    </style>
+</resources>

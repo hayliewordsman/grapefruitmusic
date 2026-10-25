@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="gfBackground" format="color" />
+    <attr name="gfGroupedBackground" format="color" />
+    <attr name="gfSurface" format="color" />
+    <attr name="gfBar" format="color" />
+    <attr name="gfTextPrimary" format="color" />
+    <attr name="gfTextSecondary" format="color" />
+    <attr name="gfSeparator" format="color" />
+    <attr name="gfAccent" format="color" />
+    <attr name="gfFill" format="color" />
+    <attr name="gfScrim" format="color" />
+    <attr name="gfRowBackground" format="reference" />
+    <attr name="gfFieldBackground" format="reference" />
+    <attr name="gfPillBackground" format="reference" />
+</resources>
