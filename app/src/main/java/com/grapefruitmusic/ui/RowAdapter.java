@@ -1,6 +1,7 @@
 package com.grapefruitmusic.ui;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.InsetDrawable;
 import android.view.Gravity;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/** Lists of artists, albums (as rows or a two-column grid), playlists and songs. */
+/** Lists of artists, albums (as rows or a grid), playlists and songs. */
 final class RowAdapter extends BaseAdapter {
     interface Listener {
         /** A tap. For songs, index is the position in tracks(). */
@@ -34,12 +35,17 @@ final class RowAdapter extends BaseAdapter {
 
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_ROW = 1;
-    private static final int TYPE_PAIR = 2;
+    private static final int TYPE_GRID = 2;
 
     private final Context context;
     private final Listener listener;
     private final List<Object> rows = new ArrayList<Object>();
     private final List<MediaItem> tracks = new ArrayList<MediaItem>();
+    private List<MediaItem> items = new ArrayList<MediaItem>();
+    private boolean albumGrid;
+    private boolean sections;
+    /** Albums in a row of the grid. */
+    private int columns;
     private Map<String, Integer> downloadStates;
     private String playingKey;
     private final int accent;
@@ -52,6 +58,22 @@ final class RowAdapter extends BaseAdapter {
         accent = Ui.accent(context);
         primary = Ui.color(context, R.attr.gfTextPrimary);
         secondary = Ui.color(context, R.attr.gfTextSecondary);
+        columns = gridColumns(context);
+    }
+
+    /** Two albums a row, or more in landscape (about 170dp each). */
+    static int gridColumns(Context c) {
+        Configuration config = c.getResources().getConfiguration();
+        if (config.orientation != Configuration.ORIENTATION_LANDSCAPE) return 2;
+        return Math.max(3, Math.round(config.screenWidthDp / 170f));
+    }
+
+    /** The screen turned: regroups the album grid for the new width. */
+    void configurationChanged() {
+        int c = gridColumns(context);
+        if (c == columns) return;
+        columns = c;
+        build();
     }
 
     /** Styles a page's ListView: inset hairlines, no Holo highlight. */
@@ -67,41 +89,42 @@ final class RowAdapter extends BaseAdapter {
     }
 
     /**
-     * @param albumGrid show albums as a two-column grid
+     * @param albumGrid show albums as a grid
      * @param sections  add "Artists" / "Albums" / "Songs" headings (search results)
      */
     void setItems(List<MediaItem> items, boolean albumGrid, boolean sections) {
+        this.items = items;
+        this.albumGrid = albumGrid;
+        this.sections = sections;
+        build();
+    }
+
+    private void build() {
         rows.clear();
         tracks.clear();
         int lastKind = -1;
-        MediaItem pending = null;
+        MediaItem[] grid = null;
+        int filled = 0;
         for (MediaItem m : items) {
             if (sections && m.kind != lastKind) {
-                if (pending != null) {
-                    rows.add(new MediaItem[]{pending, null});
-                    pending = null;
-                }
+                grid = null;
                 rows.add(m.kind == MediaItem.ARTIST ? "Artists" : m.kind == MediaItem.ALBUM ? "Albums"
                         : m.kind == MediaItem.PLAYLIST ? "Playlists" : "Songs");
                 lastKind = m.kind;
             }
             if (albumGrid && m.kind == MediaItem.ALBUM) {
-                if (pending == null) {
-                    pending = m;
-                } else {
-                    rows.add(new MediaItem[]{pending, m});
-                    pending = null;
+                if (grid == null || filled == columns) {
+                    grid = new MediaItem[columns];
+                    filled = 0;
+                    rows.add(grid);
                 }
+                grid[filled++] = m;
                 continue;
             }
-            if (pending != null) {
-                rows.add(new MediaItem[]{pending, null});
-                pending = null;
-            }
+            grid = null;
             rows.add(m);
             if (m.kind == MediaItem.TRACK) tracks.add(m);
         }
-        if (pending != null) rows.add(new MediaItem[]{pending, null});
         notifyDataSetChanged();
     }
 
@@ -160,7 +183,7 @@ final class RowAdapter extends BaseAdapter {
     public int getItemViewType(int position) {
         Object o = rows.get(position);
         if (o instanceof String) return TYPE_HEADER;
-        if (o instanceof MediaItem[]) return TYPE_PAIR;
+        if (o instanceof MediaItem[]) return TYPE_GRID;
         return TYPE_ROW;
     }
 
@@ -179,8 +202,8 @@ final class RowAdapter extends BaseAdapter {
         switch (getItemViewType(position)) {
             case TYPE_HEADER:
                 return header(position, convertView);
-            case TYPE_PAIR:
-                return pair(position, convertView);
+            case TYPE_GRID:
+                return gridRow(position, convertView);
             default:
                 return row(position, convertView);
         }
@@ -292,25 +315,25 @@ final class RowAdapter extends BaseAdapter {
         TextView artist;
     }
 
-    private View pair(int position, View convertView) {
-        Card[] cards;
-        if (convertView == null) {
+    private View gridRow(int position, View convertView) {
+        MediaItem[] albums = (MediaItem[]) rows.get(position);
+        // A row built before the screen turned has the old number of cards.
+        Card[] cards = convertView != null ? (Card[]) convertView.getTag() : null;
+        if (cards == null || cards.length != albums.length) {
             LinearLayout row = new LinearLayout(context);
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setPadding(Ui.dp(context, 16), Ui.dp(context, 4), Ui.dp(context, 16), Ui.dp(context, 14));
-            cards = new Card[]{card(), card()};
-            LinearLayout.LayoutParams left = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-            LinearLayout.LayoutParams right = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-            right.leftMargin = Ui.dp(context, 14);
-            row.addView(cards[0].root, left);
-            row.addView(cards[1].root, right);
+            cards = new Card[albums.length];
+            for (int i = 0; i < cards.length; i++) {
+                cards[i] = card();
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+                if (i > 0) lp.leftMargin = Ui.dp(context, 14);
+                row.addView(cards[i].root, lp);
+            }
             row.setTag(cards);
             convertView = row;
-        } else {
-            cards = (Card[]) convertView.getTag();
         }
-        MediaItem[] pair = (MediaItem[]) rows.get(position);
-        for (int i = 0; i < 2; i++) bindCard(cards[i], pair[i]);
+        for (int i = 0; i < cards.length; i++) bindCard(cards[i], albums[i]);
         return convertView;
     }
 

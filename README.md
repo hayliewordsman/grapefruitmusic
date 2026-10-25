@@ -24,9 +24,11 @@ with downloads for offline listening and time-synced lyrics.
 - **iOS 10-style design:** large bold titles, album-art grids, a mini player above the tab bar, and a Now Playing
   card that slides up over a blurred copy of the artwork. The artwork shrinks when paused. Pull the card down to close it.
   Lyrics and Up Next show a condensed header (small artwork and title) above the list.
-- **Themes:** Settings › Theme: *Starlight* (light), *Pitch Black* (dark) or *Grapefruit* (light, in the app icon's
-  peach, cream and ruby). Until you pick one, Grapefruit uses Starlight or Pitch Black to match the phone's dark mode
-  (Android 10+).
+- **Themes:** Settings › Theme: *Grapefruit Light* and *Grapefruit Dark* (in the app icon's peach, cream, ruby and
+  coral), *Starlight* (white) or *Pitch Black* (black). Until you pick one, Grapefruit Music uses Grapefruit Light, or
+  Pitch Black while the phone is in dark mode (Android 10+).
+- **Landscape:** turn the phone and album grids show more albums a row; Now Playing pops in as a panel on the right,
+  beside the library (swipe it right or tap outside to close it).
 - **Looks the same on every Android version:** Grapefruit draws its own switches, dialogs, menus, text fields,
   messages and fast-scroll thumb instead of using Android's (Holo on 4.x, Material later). Settings switches are
   little grapefruit slices that roll across a grapefruit-gradient track.

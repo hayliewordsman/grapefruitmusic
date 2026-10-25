@@ -70,30 +70,56 @@
         <item name="android:scrollbarSize">4dp</item>
     </style>
 
-    <!-- On the lighter side, in the app icon's colours instead of white. -->
-    <style name="Theme.Grapefruit.Grapefruit" parent="Theme.Grapefruit.Light">
-        <item name="android:windowBackground">@color/grapefruit_background</item>
-        <item name="android:colorBackground">@color/grapefruit_background</item>
+    <!-- Grapefruit Light: on the lighter side, in the app icon's colours instead of white. -->
+    <style name="Theme.Grapefruit.GrapefruitLight" parent="Theme.Grapefruit.Light">
+        <item name="android:windowBackground">@color/grapefruit_light_background</item>
+        <item name="android:colorBackground">@color/grapefruit_light_background</item>
         <item name="android:textColorHighlight">#66E83850</item>
-        <item name="gfBackground">@color/grapefruit_background</item>
-        <item name="gfGroupedBackground">@color/grapefruit_grouped</item>
-        <item name="gfSurface">@color/grapefruit_surface</item>
-        <item name="gfBar">@color/grapefruit_bar</item>
-        <item name="gfTextPrimary">@color/grapefruit_text</item>
-        <item name="gfTextSecondary">@color/grapefruit_text_secondary</item>
-        <item name="gfSeparator">@color/grapefruit_separator</item>
-        <item name="gfAccent">@color/grapefruit_accent</item>
-        <item name="gfFill">@color/grapefruit_fill</item>
-        <item name="gfScrim">@color/grapefruit_scrim</item>
-        <item name="gfRowBackground">@drawable/row_grapefruit</item>
-        <item name="gfFieldBackground">@drawable/field_grapefruit</item>
-        <item name="gfPillBackground">@drawable/pill_grapefruit</item>
-        <item name="gfControl">@color/grapefruit_control</item>
-        <item name="gfControlPressed">@color/grapefruit_control_pressed</item>
-        <item name="gfToggleOff">@color/grapefruit_toggle_off</item>
-        <item name="gfToggleOffSegments">@color/grapefruit_toggle_off_segments</item>
-        <item name="gfKnob">@color/grapefruit_knob</item>
-        <item name="android:editTextStyle">@style/GrapefruitEditText.Grapefruit</item>
+        <item name="gfBackground">@color/grapefruit_light_background</item>
+        <item name="gfGroupedBackground">@color/grapefruit_light_grouped</item>
+        <item name="gfSurface">@color/grapefruit_light_surface</item>
+        <item name="gfBar">@color/grapefruit_light_bar</item>
+        <item name="gfTextPrimary">@color/grapefruit_light_text</item>
+        <item name="gfTextSecondary">@color/grapefruit_light_text_secondary</item>
+        <item name="gfSeparator">@color/grapefruit_light_separator</item>
+        <item name="gfAccent">@color/grapefruit_light_accent</item>
+        <item name="gfFill">@color/grapefruit_light_fill</item>
+        <item name="gfScrim">@color/grapefruit_light_scrim</item>
+        <item name="gfRowBackground">@drawable/row_grapefruit_light</item>
+        <item name="gfFieldBackground">@drawable/field_grapefruit_light</item>
+        <item name="gfPillBackground">@drawable/pill_grapefruit_light</item>
+        <item name="gfControl">@color/grapefruit_light_control</item>
+        <item name="gfControlPressed">@color/grapefruit_light_control_pressed</item>
+        <item name="gfToggleOff">@color/grapefruit_light_toggle_off</item>
+        <item name="gfToggleOffSegments">@color/grapefruit_light_toggle_off_segments</item>
+        <item name="gfKnob">@color/grapefruit_light_knob</item>
+        <item name="android:editTextStyle">@style/GrapefruitEditText.GrapefruitLight</item>
+    </style>
+
+    <!-- Grapefruit Dark: the same colours after dark, instead of black. -->
+    <style name="Theme.Grapefruit.GrapefruitDark" parent="Theme.Grapefruit.Dark">
+        <item name="android:windowBackground">@color/grapefruit_dark_background</item>
+        <item name="android:colorBackground">@color/grapefruit_dark_background</item>
+        <item name="android:textColorHighlight">#66FF7F6B</item>
+        <item name="gfBackground">@color/grapefruit_dark_background</item>
+        <item name="gfGroupedBackground">@color/grapefruit_dark_grouped</item>
+        <item name="gfSurface">@color/grapefruit_dark_surface</item>
+        <item name="gfBar">@color/grapefruit_dark_bar</item>
+        <item name="gfTextPrimary">@color/grapefruit_dark_text</item>
+        <item name="gfTextSecondary">@color/grapefruit_dark_text_secondary</item>
+        <item name="gfSeparator">@color/grapefruit_dark_separator</item>
+        <item name="gfAccent">@color/grapefruit_dark_accent</item>
+        <item name="gfFill">@color/grapefruit_dark_fill</item>
+        <item name="gfScrim">@color/grapefruit_dark_scrim</item>
+        <item name="gfRowBackground">@drawable/row_grapefruit_dark</item>
+        <item name="gfFieldBackground">@drawable/field_grapefruit_dark</item>
+        <item name="gfPillBackground">@drawable/pill_grapefruit_dark</item>
+        <item name="gfControl">@color/grapefruit_dark_control</item>
+        <item name="gfControlPressed">@color/grapefruit_dark_control_pressed</item>
+        <item name="gfToggleOff">@color/grapefruit_dark_toggle_off</item>
+        <item name="gfToggleOffSegments">@color/grapefruit_dark_toggle_off_segments</item>
+        <item name="gfKnob">@color/grapefruit_dark_knob</item>
+        <item name="android:editTextStyle">@style/GrapefruitEditText.GrapefruitDark</item>
     </style>
 
     <!-- Text fields: rounded fill, grapefruit cursor. -->
@@ -104,11 +130,18 @@
         <item name="android:textColorHint">@color/light_text_secondary</item>
     </style>
 
-    <style name="GrapefruitEditText.Grapefruit" parent="android:Widget.Holo.Light.EditText">
-        <item name="android:background">@drawable/field_grapefruit</item>
-        <item name="android:textCursorDrawable">@drawable/cursor_grapefruit</item>
-        <item name="android:textColor">@color/grapefruit_text</item>
-        <item name="android:textColorHint">@color/grapefruit_text_secondary</item>
+    <style name="GrapefruitEditText.GrapefruitLight" parent="android:Widget.Holo.Light.EditText">
+        <item name="android:background">@drawable/field_grapefruit_light</item>
+        <item name="android:textCursorDrawable">@drawable/cursor_grapefruit_light</item>
+        <item name="android:textColor">@color/grapefruit_light_text</item>
+        <item name="android:textColorHint">@color/grapefruit_light_text_secondary</item>
+    </style>
+
+    <style name="GrapefruitEditText.GrapefruitDark" parent="android:Widget.Holo.EditText">
+        <item name="android:background">@drawable/field_grapefruit_dark</item>
+        <item name="android:textCursorDrawable">@drawable/cursor_grapefruit_dark</item>
+        <item name="android:textColor">@color/grapefruit_dark_text</item>
+        <item name="android:textColorHint">@color/grapefruit_dark_text_secondary</item>
     </style>
 
     <style name="GrapefruitEditText.Dark" parent="android:Widget.Holo.EditText">

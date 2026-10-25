@@ -2,6 +2,7 @@ package com.grapefruitmusic.ui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -12,6 +13,7 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.AdapterView;
@@ -41,7 +43,10 @@ import com.grapefruitmusic.util.Format;
 import java.util.ArrayList;
 import java.util.List;
 
-/** The Now Playing card: artwork, controls, time-synced lyrics and Up Next. */
+/**
+ * The Now Playing card: artwork, controls, time-synced lyrics and Up Next. It slides up from the
+ * bottom, or in landscape pops in from the right as a panel beside the library.
+ */
 final class NowPlaying {
     private static final int MODE_ART = 0;
     private static final int MODE_LYRICS = 1;
@@ -82,6 +87,8 @@ final class NowPlaying {
     private final QueueAdapter queueAdapter;
 
     private boolean open;
+    /** Landscape: the card is a panel at the right. */
+    private boolean side;
     private boolean started;
     private int mode = MODE_ART;
     private String trackKey;
@@ -337,8 +344,8 @@ final class NowPlaying {
         card.setDragListener(new NowPlayingCard.DragListener() {
             @Override
             public void onDrag(float offset) {
-                card.setTranslationY(offset);
-                dim.setAlpha(DIM * Math.max(0f, 1f - offset / Math.max(1, root.getHeight())));
+                setOffset(offset);
+                dim.setAlpha(DIM * Math.max(0f, 1f - offset / Math.max(1f, hiddenOffset())));
             }
 
             @Override
@@ -346,11 +353,12 @@ final class NowPlaying {
                 if (dismiss) {
                     close();
                 } else {
-                    card.animate().translationY(0).setDuration(200).setListener(null).start();
+                    slide(0).setDuration(200).setListener(null).start();
                     dim.animate().alpha(DIM).setDuration(200).setListener(null).start();
                 }
             }
         });
+        applyLayout();
 
         lyricsAdapter = new LyricsAdapter(a, primary, secondary);
         TextView credit = Ui.text(a, 13, R.attr.gfTextSecondary, false);
@@ -411,6 +419,56 @@ final class NowPlaying {
         return open;
     }
 
+    /** The screen turned: from the bottom in portrait, a panel at the right in landscape. */
+    void configurationChanged() {
+        card.animate().cancel();
+        dim.animate().cancel();
+        applyLayout();
+        setOffset(0);
+        if (open) {
+            dim.setAlpha(DIM);
+        } else {
+            card.setVisibility(View.GONE);
+            dim.setVisibility(View.GONE);
+        }
+    }
+
+    private void applyLayout() {
+        Configuration config = activity.getResources().getConfiguration();
+        side = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) card.getLayoutParams();
+        if (side) {
+            int screen = Ui.dp(activity, config.screenWidthDp);
+            int width = Math.max(Ui.dp(activity, 320), Math.min(Math.round(screen * 0.42f), Ui.dp(activity, 440)));
+            int margin = Ui.dp(activity, 8);
+            lp.width = Math.min(width, screen - Ui.dp(activity, 48));
+            lp.gravity = Gravity.RIGHT;
+            lp.setMargins(0, margin, margin, margin);
+        } else {
+            lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            lp.gravity = Gravity.TOP | Gravity.LEFT;
+            lp.setMargins(0, Ui.dp(activity, 16), 0, 0);
+        }
+        card.setLayoutParams(lp);
+        card.setSide(side);
+    }
+
+    /** How far the card moves to be out of sight: down, or right at the side. */
+    private float hiddenOffset() {
+        if (!side) return root.getHeight();
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) card.getLayoutParams();
+        return lp.width + lp.rightMargin;
+    }
+
+    private void setOffset(float offset) {
+        card.setTranslationX(side ? offset : 0);
+        card.setTranslationY(side ? 0 : offset);
+    }
+
+    private ViewPropertyAnimator slide(float offset) {
+        return side ? card.animate().translationX(offset) : card.animate().translationY(offset);
+    }
+
     void onStart() {
         started = true;
         if (open) {
@@ -428,13 +486,11 @@ final class NowPlaying {
         if (open || player.current() == null) return;
         open = true;
         update();
-        float h = root.getHeight();
         card.setVisibility(View.VISIBLE);
         dim.setVisibility(View.VISIBLE);
-        card.setTranslationY(h);
+        setOffset(hiddenOffset());
         dim.setAlpha(0f);
-        card.animate().translationY(0).setDuration(320).setInterpolator(new DecelerateInterpolator(2f))
-                .setListener(null).start();
+        slide(0).setDuration(320).setInterpolator(new DecelerateInterpolator(2f)).setListener(null).start();
         dim.animate().alpha(DIM).setDuration(320).setListener(null).start();
         Bg.cancelMain(ticker);
         Bg.main(ticker);
@@ -445,7 +501,7 @@ final class NowPlaying {
         open = true;
         card.setVisibility(View.VISIBLE);
         dim.setVisibility(View.VISIBLE);
-        card.setTranslationY(0);
+        setOffset(0);
         dim.setAlpha(DIM);
         update();
         Bg.cancelMain(ticker);
@@ -456,7 +512,7 @@ final class NowPlaying {
         if (!open) return;
         open = false;
         Bg.cancelMain(ticker);
-        card.animate().translationY(root.getHeight()).setDuration(260).setInterpolator(new DecelerateInterpolator())
+        slide(hiddenOffset()).setDuration(260).setInterpolator(new DecelerateInterpolator())
                 .setListener(new android.animation.AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(android.animation.Animator animation) {

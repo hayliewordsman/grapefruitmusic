@@ -212,12 +212,18 @@ public final class GrapefruitDialog extends Dialog {
             FrameLayout frame = new FrameLayout(c);
             int margin = Ui.dp(c, 8);
             frame.setPadding(margin, 0, margin, margin);
-            LinearLayout column = new LinearLayout(c);
+            final int maxWidth = Ui.dp(c, 480);
+            LinearLayout column = new LinearLayout(c) {
+                @Override
+                protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                    // Full width, up to 480dp (also after the screen turns).
+                    int width = Math.min(MeasureSpec.getSize(widthMeasureSpec), maxWidth);
+                    super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), heightMeasureSpec);
+                }
+            };
             column.setOrientation(LinearLayout.VERTICAL);
-            DisplayMetrics dm = c.getResources().getDisplayMetrics();
-            int width = Math.min(dm.widthPixels - 2 * margin, Ui.dp(c, 480));
-            frame.addView(column, new FrameLayout.LayoutParams(width, ViewGroup.LayoutParams.WRAP_CONTENT,
-                    Gravity.CENTER_HORIZONTAL));
+            frame.addView(column, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL));
 
             LinearLayout menu = new LinearLayout(c);
             menu.setOrientation(LinearLayout.VERTICAL);

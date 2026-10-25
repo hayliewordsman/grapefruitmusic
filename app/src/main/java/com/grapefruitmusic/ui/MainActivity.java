@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -258,6 +259,13 @@ public final class MainActivity extends Activity implements Player.Listener, Not
         player.removeListener(this);
         nowPlaying.onStop();
         super.onStop();
+    }
+
+    /** Turning the screen doesn't restart the activity (the manifest says so); pages adapt instead. */
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        nowPlaying.configurationChanged();
     }
 
     @Override

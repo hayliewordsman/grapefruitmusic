@@ -1,6 +1,7 @@
 package com.grapefruitmusic.ui;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -147,6 +148,13 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
             load();
         }
         return list;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Turned to landscape or back: more or fewer albums a row.
+        if (adapter != null) adapter.configurationChanged();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.grapefruitmusic.ui;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -105,6 +106,13 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         showRecent();
         restoreScroll(list);
         return list;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Turned to landscape or back: more or fewer albums a row.
+        if (adapter != null) adapter.configurationChanged();
     }
 
     @Override

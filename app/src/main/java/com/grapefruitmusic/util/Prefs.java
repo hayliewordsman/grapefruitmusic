@@ -9,11 +9,12 @@ import java.util.TreeSet;
 
 /** App settings. */
 public final class Prefs {
-    /** No theme picked: Starlight, or Pitch Black while the phone is in dark mode. */
+    /** No theme picked: Grapefruit Light, or Pitch Black while the phone is in dark mode. */
     public static final int THEME_SYSTEM = 0;
     public static final int THEME_STARLIGHT = 1;
     public static final int THEME_PITCH_BLACK = 2;
-    public static final int THEME_GRAPEFRUIT = 3;
+    public static final int THEME_GRAPEFRUIT_LIGHT = 3;
+    public static final int THEME_GRAPEFRUIT_DARK = 4;
 
     /** Quality 0 means "original file when this phone can play it"; otherwise MP3 at that kbps. */
     public static final int QUALITY_ORIGINAL = 0;

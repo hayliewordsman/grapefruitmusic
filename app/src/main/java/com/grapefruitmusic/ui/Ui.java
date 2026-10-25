@@ -27,16 +27,27 @@ public final class Ui {
     /** The theme showing (a Prefs.THEME_* other than THEME_SYSTEM). */
     public static int theme(Context c) {
         int t = Prefs.theme();
-        if (t == Prefs.THEME_STARLIGHT || t == Prefs.THEME_PITCH_BLACK || t == Prefs.THEME_GRAPEFRUIT) return t;
+        if (t >= Prefs.THEME_STARLIGHT && t <= Prefs.THEME_GRAPEFRUIT_DARK) return t;
         // None picked: match the phone's dark mode (Android 10 and later).
         int night = c.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        return night == Configuration.UI_MODE_NIGHT_YES ? Prefs.THEME_PITCH_BLACK : Prefs.THEME_STARLIGHT;
+        return night == Configuration.UI_MODE_NIGHT_YES ? Prefs.THEME_PITCH_BLACK : Prefs.THEME_GRAPEFRUIT_LIGHT;
     }
 
     public static void applyTheme(Activity a) {
-        int t = theme(a);
-        a.setTheme(t == Prefs.THEME_PITCH_BLACK ? R.style.Theme_Grapefruit_Dark
-                : t == Prefs.THEME_GRAPEFRUIT ? R.style.Theme_Grapefruit_Grapefruit : R.style.Theme_Grapefruit_Light);
+        switch (theme(a)) {
+            case Prefs.THEME_STARLIGHT:
+                a.setTheme(R.style.Theme_Grapefruit_Light);
+                break;
+            case Prefs.THEME_PITCH_BLACK:
+                a.setTheme(R.style.Theme_Grapefruit_Dark);
+                break;
+            case Prefs.THEME_GRAPEFRUIT_DARK:
+                a.setTheme(R.style.Theme_Grapefruit_GrapefruitDark);
+                break;
+            default:
+                a.setTheme(R.style.Theme_Grapefruit_GrapefruitLight);
+                break;
+        }
     }
 
     /** Grapefruit's own dialog (card or bottom sheet), the same on every Android version. */

@@ -19,11 +19,12 @@ import android.widget.FrameLayout;
 
 /**
  * The iOS 10 Now Playing card: rounded top corners over a blurred copy of the artwork, and a
- * pull-down gesture to dismiss it.
+ * pull-down gesture to dismiss it. In landscape it's a panel at the right instead, rounded all
+ * round and swiped right to dismiss.
  */
 public class NowPlayingCard extends FrameLayout {
     public interface DragListener {
-        /** offset >= 0, how far the card has been pulled down. */
+        /** offset >= 0, how far the card has been pulled down (right, at the side). */
         void onDrag(float offset);
 
         /** Released: dismiss or spring back. */
@@ -45,9 +46,10 @@ public class NowPlayingCard extends FrameLayout {
     private DragListener dragListener;
     private View dragLimit;
     private AbsListView scrollingChild;
+    private boolean side;
     private float downX;
     private float downY;
-    private float dragStartRawY;
+    private float dragStartRaw;
     private boolean dragging;
     private VelocityTracker velocity;
 
@@ -88,12 +90,25 @@ public class NowPlayingCard extends FrameLayout {
         dragListener = l;
     }
 
+    /** The landscape panel at the right (true), or the card from the bottom. */
+    public void setSide(boolean side) {
+        this.side = side;
+        buildShape(getWidth(), getHeight());
+        invalidate();
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        buildShape(w, h);
+    }
+
+    private void buildShape(int w, int h) {
         shape.reset();
         rect.set(0, 0, w, h);
-        shape.addRoundRect(rect, new float[]{radius, radius, radius, radius, 0, 0, 0, 0}, Path.Direction.CW);
+        float bottom = side ? radius : 0;
+        shape.addRoundRect(rect, new float[]{radius, radius, radius, radius, bottom, bottom, bottom, bottom},
+                Path.Direction.CW);
     }
 
     @Override
@@ -125,18 +140,21 @@ public class NowPlayingCard extends FrameLayout {
         return y < limit[1] - me[1];
     }
 
-    /** A downward pull that started above the drag limit, and isn't a list scrolling back up. */
-    private boolean isPullDown(MotionEvent e) {
-        float dy = e.getY() - downY;
-        float dx = e.getX() - downX;
-        boolean listScrolls = scrollingChild != null && scrollingChild.getVisibility() == VISIBLE
+    /**
+     * A pull down (right, at the side) that started above the drag limit, and isn't a list
+     * scrolling back up.
+     */
+    private boolean isPullAway(MotionEvent e) {
+        float along = side ? e.getX() - downX : e.getY() - downY;
+        float across = side ? e.getY() - downY : e.getX() - downX;
+        boolean listScrolls = !side && scrollingChild != null && scrollingChild.getVisibility() == VISIBLE
                 && scrollingChild.canScrollVertically(-1);
-        return dy > touchSlop && dy > Math.abs(dx) * 1.5f && startsInDragArea(downY) && !listScrolls;
+        return along > touchSlop && along > Math.abs(across) * 1.5f && startsInDragArea(downY) && !listScrolls;
     }
 
     private void startDrag(MotionEvent e) {
         dragging = true;
-        dragStartRawY = e.getRawY();
+        dragStartRaw = side ? e.getRawX() : e.getRawY();
         if (velocity != null) velocity.clear();
     }
 
@@ -150,7 +168,7 @@ public class NowPlayingCard extends FrameLayout {
                 dragging = false;
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (!dragging && isPullDown(e)) {
+                if (!dragging && isPullAway(e)) {
                     startDrag(e);
                     return true;
                 }
@@ -175,7 +193,7 @@ public class NowPlayingCard extends FrameLayout {
             return true; // The card swallows touches that miss its controls.
         }
         if (!dragging) {
-            if (action == MotionEvent.ACTION_MOVE && isPullDown(e)) startDrag(e);
+            if (action == MotionEvent.ACTION_MOVE && isPullAway(e)) startDrag(e);
             else return true;
         }
         // The card moves while dragging, so track screen coordinates.
@@ -184,7 +202,7 @@ public class NowPlayingCard extends FrameLayout {
         screen.setLocation(e.getRawX(), e.getRawY());
         velocity.addMovement(screen);
         screen.recycle();
-        float offset = Math.max(0, e.getRawY() - dragStartRawY);
+        float offset = Math.max(0, (side ? e.getRawX() : e.getRawY()) - dragStartRaw);
         switch (action) {
             case MotionEvent.ACTION_MOVE:
                 if (dragListener != null) dragListener.onDrag(offset);
@@ -192,14 +210,14 @@ public class NowPlayingCard extends FrameLayout {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 velocity.computeCurrentVelocity(1000);
-                float v = velocity.getYVelocity();
+                float v = side ? velocity.getXVelocity() : velocity.getYVelocity();
                 velocity.recycle();
                 velocity = null;
                 dragging = false;
                 float fling = 1000 * getResources().getDisplayMetrics().density;
                 if (dragListener != null) {
                     dragListener.onRelease(action == MotionEvent.ACTION_UP
-                            && (offset > getHeight() * 0.25f || v > fling));
+                            && (offset > (side ? getWidth() : getHeight()) * 0.25f || v > fling));
                 }
                 return true;
             default:

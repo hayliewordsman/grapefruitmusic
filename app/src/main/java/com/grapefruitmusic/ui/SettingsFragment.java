@@ -24,7 +24,7 @@ import com.grapefruitmusic.util.Prefs;
 public final class SettingsFragment extends BaseFragment
         implements Sources.Listener, Downloads.Listener, VolumeMatch.Listener {
     /** Theme names, in Prefs.THEME_* order from THEME_STARLIGHT. */
-    private static final String[] THEMES = {"Starlight", "Pitch Black", "Grapefruit"};
+    private static final String[] THEMES = {"Starlight", "Pitch Black", "Grapefruit Light", "Grapefruit Dark"};
 
     private ScrollView page;
     /** "12 of 340" while Volume Match measures songs, else null. */
