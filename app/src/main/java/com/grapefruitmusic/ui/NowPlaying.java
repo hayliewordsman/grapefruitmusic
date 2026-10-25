@@ -223,8 +223,7 @@ final class NowPlaying {
         });
         scrubber.setColors(separator, secondary, secondary);
         scrubber.setThumb(3.5f, 9, false);
-        boolean dark = Ui.isDark(a);
-        volume.setColors(separator, secondary, dark ? 0xffd1d1d6 : 0xffffffff);
+        volume.setColors(separator, secondary, Ui.color(a, R.attr.gfKnob));
         volume.setThumb(8, 10, true);
         prev.setIcon(Icons.PREVIOUS);
         next.setIcon(Icons.NEXT);

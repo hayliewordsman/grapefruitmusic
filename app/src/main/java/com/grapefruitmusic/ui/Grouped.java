@@ -126,8 +126,7 @@ final class Grouped {
         TextView l = Ui.text(c, 17, R.attr.gfTextPrimary, false);
         l.setText(label);
         row.addView(l, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-        boolean dark = Ui.isDark(c);
-        t.setOffColors(dark ? 0xff39393d : 0xffe3e3e8, dark ? 0xffd1d1d6 : 0xffdcdce0);
+        t.setOffColors(Ui.color(c, R.attr.gfToggleOff), Ui.color(c, R.attr.gfToggleOffSegments));
         t.setChecked(on);
         t.setListener(listener);
         t.setContentDescription(label);

@@ -19,6 +19,9 @@
         <item name="gfPillBackground">@drawable/pill_light</item>
         <item name="gfControl">@color/light_control</item>
         <item name="gfControlPressed">@color/light_control_pressed</item>
+        <item name="gfToggleOff">@color/light_toggle_off</item>
+        <item name="gfToggleOffSegments">@color/light_toggle_off_segments</item>
+        <item name="gfKnob">@color/light_knob</item>
         <!-- Grapefruit's own look for platform widgets, the same on every Android version. -->
         <item name="android:editTextStyle">@style/GrapefruitEditText.Light</item>
         <item name="android:textSelectHandle">@drawable/handle_middle</item>
@@ -51,6 +54,9 @@
         <item name="gfPillBackground">@drawable/pill_dark</item>
         <item name="gfControl">@color/dark_control</item>
         <item name="gfControlPressed">@color/dark_control_pressed</item>
+        <item name="gfToggleOff">@color/dark_toggle_off</item>
+        <item name="gfToggleOffSegments">@color/dark_toggle_off_segments</item>
+        <item name="gfKnob">@color/dark_knob</item>
         <!-- Grapefruit's own look for platform widgets, the same on every Android version. -->
         <item name="android:editTextStyle">@style/GrapefruitEditText.Dark</item>
         <item name="android:textSelectHandle">@drawable/handle_middle</item>
@@ -64,12 +70,45 @@
         <item name="android:scrollbarSize">4dp</item>
     </style>
 
+    <!-- On the lighter side, in the app icon's colours instead of white. -->
+    <style name="Theme.Grapefruit.Grapefruit" parent="Theme.Grapefruit.Light">
+        <item name="android:windowBackground">@color/grapefruit_background</item>
+        <item name="android:colorBackground">@color/grapefruit_background</item>
+        <item name="android:textColorHighlight">#66E83850</item>
+        <item name="gfBackground">@color/grapefruit_background</item>
+        <item name="gfGroupedBackground">@color/grapefruit_grouped</item>
+        <item name="gfSurface">@color/grapefruit_surface</item>
+        <item name="gfBar">@color/grapefruit_bar</item>
+        <item name="gfTextPrimary">@color/grapefruit_text</item>
+        <item name="gfTextSecondary">@color/grapefruit_text_secondary</item>
+        <item name="gfSeparator">@color/grapefruit_separator</item>
+        <item name="gfAccent">@color/grapefruit_accent</item>
+        <item name="gfFill">@color/grapefruit_fill</item>
+        <item name="gfScrim">@color/grapefruit_scrim</item>
+        <item name="gfRowBackground">@drawable/row_grapefruit</item>
+        <item name="gfFieldBackground">@drawable/field_grapefruit</item>
+        <item name="gfPillBackground">@drawable/pill_grapefruit</item>
+        <item name="gfControl">@color/grapefruit_control</item>
+        <item name="gfControlPressed">@color/grapefruit_control_pressed</item>
+        <item name="gfToggleOff">@color/grapefruit_toggle_off</item>
+        <item name="gfToggleOffSegments">@color/grapefruit_toggle_off_segments</item>
+        <item name="gfKnob">@color/grapefruit_knob</item>
+        <item name="android:editTextStyle">@style/GrapefruitEditText.Grapefruit</item>
+    </style>
+
     <!-- Text fields: rounded fill, grapefruit cursor. -->
     <style name="GrapefruitEditText.Light" parent="android:Widget.Holo.Light.EditText">
         <item name="android:background">@drawable/field_light</item>
         <item name="android:textCursorDrawable">@drawable/cursor_light</item>
         <item name="android:textColor">@color/light_text</item>
         <item name="android:textColorHint">@color/light_text_secondary</item>
+    </style>
+
+    <style name="GrapefruitEditText.Grapefruit" parent="android:Widget.Holo.Light.EditText">
+        <item name="android:background">@drawable/field_grapefruit</item>
+        <item name="android:textCursorDrawable">@drawable/cursor_grapefruit</item>
+        <item name="android:textColor">@color/grapefruit_text</item>
+        <item name="android:textColorHint">@color/grapefruit_text_secondary</item>
     </style>
 
     <style name="GrapefruitEditText.Dark" parent="android:Widget.Holo.EditText">

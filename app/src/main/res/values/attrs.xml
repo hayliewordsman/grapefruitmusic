@@ -16,4 +16,9 @@
     <!-- Fill for text fields and secondary buttons; visible on pages and on dialogs. -->
     <attr name="gfControl" format="color" />
     <attr name="gfControlPressed" format="color" />
+    <!-- A Toggle's track and its knob's segment lines when off. -->
+    <attr name="gfToggleOff" format="color" />
+    <attr name="gfToggleOffSegments" format="color" />
+    <!-- The volume slider's knob. -->
+    <attr name="gfKnob" format="color" />
 </resources>

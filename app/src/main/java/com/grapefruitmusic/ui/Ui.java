@@ -24,16 +24,19 @@ public final class Ui {
     private Ui() {
     }
 
-    public static boolean isDark(Context c) {
+    /** The theme showing (a Prefs.THEME_* other than THEME_SYSTEM). */
+    public static int theme(Context c) {
         int t = Prefs.theme();
-        if (t == Prefs.THEME_DARK) return true;
-        if (t == Prefs.THEME_LIGHT) return false;
+        if (t == Prefs.THEME_STARLIGHT || t == Prefs.THEME_PITCH_BLACK || t == Prefs.THEME_GRAPEFRUIT) return t;
+        // None picked: match the phone's dark mode (Android 10 and later).
         int night = c.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        return night == Configuration.UI_MODE_NIGHT_YES;
+        return night == Configuration.UI_MODE_NIGHT_YES ? Prefs.THEME_PITCH_BLACK : Prefs.THEME_STARLIGHT;
     }
 
     public static void applyTheme(Activity a) {
-        a.setTheme(isDark(a) ? R.style.Theme_Grapefruit_Dark : R.style.Theme_Grapefruit_Light);
+        int t = theme(a);
+        a.setTheme(t == Prefs.THEME_PITCH_BLACK ? R.style.Theme_Grapefruit_Dark
+                : t == Prefs.THEME_GRAPEFRUIT ? R.style.Theme_Grapefruit_Grapefruit : R.style.Theme_Grapefruit_Light);
     }
 
     /** Grapefruit's own dialog (card or bottom sheet), the same on every Android version. */

@@ -2,6 +2,7 @@ package com.grapefruitmusic.ui;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,8 +23,8 @@ import com.grapefruitmusic.util.Prefs;
 /** The Settings tab, as an iOS-style grouped list. */
 public final class SettingsFragment extends BaseFragment
         implements Sources.Listener, Downloads.Listener, VolumeMatch.Listener {
-    /** Theme names, in Prefs.THEME_* order. */
-    private static final String[] THEMES = {"Match System", "Starlight", "Pitch Black"};
+    /** Theme names, in Prefs.THEME_* order from THEME_STARLIGHT. */
+    private static final String[] THEMES = {"Starlight", "Pitch Black", "Grapefruit"};
 
     private ScrollView page;
     /** "12 of 340" while Volume Match measures songs, else null. */
@@ -82,22 +83,26 @@ public final class SettingsFragment extends BaseFragment
         g.add(Ui.header(c, null, "Settings", null));
 
         g.section("Appearance");
-        g.value("Theme", THEMES[Prefs.theme()], new View.OnClickListener() {
+        final int showing = Ui.theme(c);
+        g.value("Theme", THEMES[showing - Prefs.THEME_STARLIGHT], new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                choose("Theme", THEMES, Prefs.theme(), new Choice() {
+                choose("Theme", THEMES, showing - Prefs.THEME_STARLIGHT, new Choice() {
                     @Override
                     public void chosen(int which) {
-                        if (which != Prefs.theme()) {
-                            Prefs.setTheme(which);
+                        // Picking the theme already showing changes nothing (and keeps following the phone).
+                        int theme = which + Prefs.THEME_STARLIGHT;
+                        if (theme != showing) {
+                            Prefs.setTheme(theme);
                             getActivity().recreate();
                         }
                     }
                 });
             }
         });
-        g.footer("Match System switches between Starlight and Pitch Black with the phone's dark mode "
-                + "(Android 10 and later).");
+        if (Prefs.theme() == Prefs.THEME_SYSTEM && Build.VERSION.SDK_INT >= 29) {
+            g.footer("Follows your phone's dark mode until you pick a theme.");
+        }
 
         g.section("Servers");
         for (final Account a : Sources.get(c).accounts()) {

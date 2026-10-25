@@ -17,6 +17,9 @@
     <color name="light_scrim">#E6FFFFFF</color>
     <color name="light_control">#EEEEF0</color>
     <color name="light_control_pressed">#D9D9DE</color>
+    <color name="light_toggle_off">#E3E3E8</color>
+    <color name="light_toggle_off_segments">#DCDCE0</color>
+    <color name="light_knob">#FFFFFF</color>
 
     <!-- Dark palette -->
     <color name="dark_background">#000000</color>
@@ -32,4 +35,28 @@
     <!-- Lighter than dark_surface, so fields and buttons show on dialogs too. -->
     <color name="dark_control">#2C2C2E</color>
     <color name="dark_control_pressed">#3A3A3C</color>
+    <color name="dark_toggle_off">#39393D</color>
+    <color name="dark_toggle_off_segments">#D1D1D6</color>
+    <color name="dark_knob">#D1D1D6</color>
+
+    <!--
+        Grapefruit palette, from the app icon: cream rind for surfaces, peach pith for the
+        background, ruby flesh for the accent, and its darkest red for text.
+    -->
+    <color name="grapefruit_background">#FFF3EC</color>
+    <color name="grapefruit_grouped">#FCE4D9</color>
+    <color name="grapefruit_surface">#FFFAF6</color>
+    <color name="grapefruit_bar">#FDEAE1</color>
+    <color name="grapefruit_text">#4A1622</color>
+    <color name="grapefruit_text_secondary">#9A5C63</color>
+    <color name="grapefruit_separator">#F0C6B8</color>
+    <color name="grapefruit_accent">#E83850</color>
+    <color name="grapefruit_fill">#FADCCF</color>
+    <color name="grapefruit_pressed">#F6CCBC</color>
+    <color name="grapefruit_scrim">#E6FFF3EC</color>
+    <color name="grapefruit_control">#FADCCF</color>
+    <color name="grapefruit_control_pressed">#F3C5B3</color>
+    <color name="grapefruit_toggle_off">#F7D6C9</color>
+    <color name="grapefruit_toggle_off_segments">#F1C8B9</color>
+    <color name="grapefruit_knob">#FFFFFF</color>
 </resources>
