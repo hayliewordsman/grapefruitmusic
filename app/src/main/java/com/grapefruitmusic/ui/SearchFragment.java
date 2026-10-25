@@ -36,6 +36,10 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
     private EditText field;
     private TextView status;
     private int generation;
+    /** The last search, kept while a page opened from the results is on top. */
+    private String query = "";
+    private List<MediaItem> results;
+    private String statusText;
     private final Runnable debounced = new Runnable() {
         @Override
         public void run() {
@@ -71,6 +75,9 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
         lp.topMargin = Ui.dp(c, 10);
         lp.bottomMargin = Ui.dp(c, 4);
         header.addView(box, lp);
+        // Restore before listening, so coming back doesn't search again.
+        field.setText(query);
+        field.setSelection(field.getText().length());
 
         field.addTextChangedListener(new TextWatcher() {
             @Override
@@ -135,20 +142,38 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
                 return true;
             }
         });
+        show();
+        restoreScroll(list);
         return list;
+    }
+
+    @Override
+    public void onDestroyView() {
+        rememberScroll(list);
+        super.onDestroyView();
+    }
+
+    private void show() {
+        adapter.setItems(results != null ? results : new ArrayList<MediaItem>(), false, true);
+        status.setText(statusText != null ? statusText : "");
+        status.setVisibility(statusText != null ? View.VISIBLE : View.GONE);
     }
 
     private void search() {
         if (field == null) return;
         final String q = field.getText().toString().trim();
         final int gen = ++generation;
+        query = q;
+        resetScroll();
         if (q.length() == 0) {
-            adapter.setItems(new ArrayList<MediaItem>(), false, true);
-            status.setVisibility(View.GONE);
+            results = null;
+            statusText = null;
+            show();
             return;
         }
         final MusicSource s = source();
-        status.setText("Searching…");
+        statusText = "Searching\u2026";
+        status.setText(statusText);
         status.setVisibility(View.VISIBLE);
         bg(new Bg.Work<List<MediaItem>>() {
             @Override
@@ -157,15 +182,15 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
             }
         }, new Bg.Done<List<MediaItem>>() {
             @Override
-            public void done(List<MediaItem> results, Exception error) {
+            public void done(List<MediaItem> found, Exception error) {
                 if (gen != generation) return;
                 if (error != null) {
-                    status.setText(describe(error, s));
-                    return;
+                    statusText = describe(error, s);
+                } else {
+                    results = found;
+                    statusText = found.isEmpty() ? "No results for \u201c" + q + "\u201d" : null;
                 }
-                adapter.setItems(results, false, true);
-                if (results.isEmpty()) status.setText("No results for “" + q + "”");
-                else status.setVisibility(View.GONE);
+                show();
             }
         });
     }

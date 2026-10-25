@@ -41,7 +41,9 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
     private View downloadRow;
     private IconView downloadIcon;
     private TextView downloadLabel;
+    /** Loaded tracks, kept while a page on top of this one (an artist) is open. */
     private List<MediaItem> tracks = new ArrayList<MediaItem>();
+    private boolean loaded;
     private Map<String, Integer> states = new HashMap<String, Integer>();
 
     static AlbumFragment newInstance(String sourceId, MediaItem container, String back) {
@@ -167,8 +169,20 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
                 return true;
             }
         });
-        load();
+        if (loaded) {
+            showTracks();
+            restoreScroll(list);
+            if (!source().isRemote()) load();
+        } else {
+            load();
+        }
         return list;
+    }
+
+    @Override
+    public void onDestroyView() {
+        rememberScroll(list);
+        super.onDestroyView();
     }
 
     private void openArtist() {
@@ -184,7 +198,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
     private void load() {
         final MusicSource s = source();
         final MediaItem album = item();
-        footer.setText("Loading…");
+        if (!loaded) footer.setText("Loading\u2026");
         bg(new Bg.Work<List<MediaItem>>() {
             @Override
             public List<MediaItem> run() throws Exception {
@@ -194,17 +208,22 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
             @Override
             public void done(List<MediaItem> result, Exception error) {
                 if (error != null) {
-                    footer.setText(describe(error, s));
+                    if (!loaded) footer.setText(describe(error, s));
                     return;
                 }
                 tracks = result;
-                long total = 0;
-                for (MediaItem t : result) total += t.durationMs;
-                footer.setText(result.isEmpty() ? "No songs." : Format.songsSummary(result.size(), total));
-                adapter.notifyDataSetChanged();
-                refreshStates();
+                loaded = true;
+                showTracks();
             }
         });
+    }
+
+    private void showTracks() {
+        long total = 0;
+        for (MediaItem t : tracks) total += t.durationMs;
+        footer.setText(tracks.isEmpty() ? "No songs." : Format.songsSummary(tracks.size(), total));
+        adapter.notifyDataSetChanged();
+        refreshStates();
     }
 
     private void refreshStates() {

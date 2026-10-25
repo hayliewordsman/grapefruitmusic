@@ -3,6 +3,7 @@ package com.grapefruitmusic.ui;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ListView;
 
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.net.Http;
@@ -22,6 +23,29 @@ public abstract class BaseFragment extends Fragment {
     static final String ARG_MODE = "mode";
     static final String ARG_BACK = "back";
     static final String ARG_TITLE = "title";
+
+    /*
+     * Pages pushed on top (an album, an artist) destroy this page's views but keep the page,
+     * so loaded content lives in fields and the list's scroll position is remembered here.
+     */
+    private int scrollPosition;
+    private int scrollOffset;
+
+    void rememberScroll(ListView list) {
+        if (list == null) return;
+        scrollPosition = list.getFirstVisiblePosition();
+        View first = list.getChildAt(0);
+        scrollOffset = first != null ? first.getTop() : 0;
+    }
+
+    void restoreScroll(ListView list) {
+        list.setSelectionFromTop(scrollPosition, scrollOffset);
+    }
+
+    void resetScroll() {
+        scrollPosition = 0;
+        scrollOffset = 0;
+    }
 
     MainActivity main() {
         return (MainActivity) getActivity();

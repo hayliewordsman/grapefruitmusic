@@ -32,7 +32,8 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
     private ListView list;
     private RowAdapter adapter;
     private TextView status;
-    private boolean loaded;
+    /** Loaded items, kept while a page on top of this one is open. */
+    private List<MediaItem> items;
 
     static BrowseFragment newInstance(String sourceId, int mode, MediaItem artist, String back) {
         BrowseFragment f = new BrowseFragment();
@@ -111,8 +112,21 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
                 return true;
             }
         });
-        load();
+        if (items != null) {
+            show();
+            restoreScroll(list);
+            // Phone and download lists are cheap to re-read and may have changed meanwhile.
+            if (!source().isRemote()) load();
+        } else {
+            load();
+        }
         return list;
+    }
+
+    @Override
+    public void onDestroyView() {
+        rememberScroll(list);
+        super.onDestroyView();
     }
 
     private void open(MediaItem item, int index) {
@@ -131,8 +145,10 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         final MusicSource s = source();
         final int mode = mode();
         final MediaItem artist = item();
-        status.setText("Loading…");
-        status.setVisibility(View.VISIBLE);
+        if (items == null) {
+            status.setText("Loading\u2026");
+            status.setVisibility(View.VISIBLE);
+        }
         bg(new Bg.Work<List<MediaItem>>() {
             @Override
             public List<MediaItem> run() throws Exception {
@@ -146,27 +162,33 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
             }
         }, new Bg.Done<List<MediaItem>>() {
             @Override
-            public void done(List<MediaItem> items, Exception error) {
+            public void done(List<MediaItem> result, Exception error) {
                 if (error != null) {
-                    status.setText(describe(error, s));
+                    if (items == null) status.setText(describe(error, s));
                     return;
                 }
-                loaded = true;
-                adapter.setItems(items, mode == ALBUMS || mode == ARTIST_ALBUMS, false);
-                if (items.isEmpty()) {
-                    status.setText("Nothing here yet.");
-                } else if (mode == SONGS) {
-                    status.setText(items.size() + (items.size() == 1 ? " song" : " songs"));
-                } else {
-                    status.setVisibility(View.GONE);
-                }
-                refreshStates();
+                items = result;
+                show();
             }
         });
     }
 
+    private void show() {
+        int mode = mode();
+        adapter.setItems(items, mode == ALBUMS || mode == ARTIST_ALBUMS, false);
+        status.setVisibility(View.VISIBLE);
+        if (items.isEmpty()) {
+            status.setText("Nothing here yet.");
+        } else if (mode == SONGS) {
+            status.setText(items.size() + (items.size() == 1 ? " song" : " songs"));
+        } else {
+            status.setVisibility(View.GONE);
+        }
+        refreshStates();
+    }
+
     private void refreshStates() {
-        if (!loaded || mode() != SONGS || !source().canDownload()) return;
+        if (items == null || mode() != SONGS || !source().canDownload()) return;
         final String sourceId = source().id();
         final Context app = getActivity().getApplicationContext();
         bg(new Bg.Work<Map<String, Integer>>() {

@@ -31,8 +31,11 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
     private LinearLayout rows;
     private TextView recentTitle;
     private TextView status;
-    private String loadedFor;
     private int generation;
+    /** Recently Added for recentFor (a source id). Kept while an album page is on top. */
+    private List<MediaItem> recent;
+    private String recentFor;
+    private String error;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
@@ -94,7 +97,15 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
                 adapter.click(position - list.getHeaderViewsCount());
             }
         });
+        showRecent();
+        restoreScroll(list);
         return list;
+    }
+
+    @Override
+    public void onDestroyView() {
+        rememberScroll(list);
+        super.onDestroyView();
     }
 
     private void push(android.app.Fragment f) {
@@ -130,13 +141,17 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         final MusicSource s = Sources.get(getActivity()).current();
         sourceName.setText(s.name());
         buildRows(s);
-        if (!force && s.id().equals(loadedFor)) return;
-        loadedFor = s.id();
-        final int gen = ++generation;
-        if (adapter.getCount() == 0 || !force) {
-            status.setText("Loading…");
-            status.setVisibility(View.VISIBLE);
+        boolean sameSource = s.id().equals(recentFor);
+        // Keep a server's albums; phone and download lists are cheap to re-read (and may have
+        // changed, e.g. after removing a download), so refresh those quietly.
+        if (!force && sameSource && recent != null && s.isRemote()) return;
+        if (!sameSource) {
+            recent = null;
+            error = null;
+            resetScroll();
+            showRecent();
         }
+        final int gen = ++generation;
         bg(new com.grapefruitmusic.util.Bg.Work<List<MediaItem>>() {
             @Override
             public List<MediaItem> run() throws Exception {
@@ -144,27 +159,36 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
             }
         }, new com.grapefruitmusic.util.Bg.Done<List<MediaItem>>() {
             @Override
-            public void done(List<MediaItem> albums, Exception error) {
+            public void done(List<MediaItem> albums, Exception e) {
                 if (gen != generation) return;
-                if (error != null) {
-                    loadedFor = null;
-                    adapter.setItems(new java.util.ArrayList<MediaItem>(), true, false);
-                    status.setText(describe(error, s));
-                    status.setVisibility(View.VISIBLE);
-                    return;
-                }
-                adapter.setItems(albums, true, false);
-                recentTitle.setVisibility(albums.isEmpty() ? View.GONE : View.VISIBLE);
-                if (albums.isEmpty()) {
-                    status.setText(s instanceof DownloadedSource
-                            ? "Nothing downloaded yet. Open an album on your server and tap Download."
-                            : "No music here yet.");
-                    status.setVisibility(View.VISIBLE);
-                } else {
-                    status.setVisibility(View.GONE);
-                }
+                recentFor = s.id();
+                recent = e == null ? albums : null;
+                error = e == null ? null : describe(e, s);
+                showRecent();
             }
         });
+    }
+
+    /** Fills the list from the fields (also used to repopulate a rebuilt view). */
+    private void showRecent() {
+        MusicSource s = Sources.get(getActivity()).current();
+        if (recent == null) {
+            adapter.setItems(new java.util.ArrayList<MediaItem>(), true, false);
+            recentTitle.setVisibility(View.VISIBLE);
+            status.setText(error != null ? error : "Loading\u2026");
+            status.setVisibility(View.VISIBLE);
+            return;
+        }
+        adapter.setItems(recent, true, false);
+        recentTitle.setVisibility(recent.isEmpty() ? View.GONE : View.VISIBLE);
+        if (recent.isEmpty()) {
+            status.setText(s instanceof DownloadedSource
+                    ? "Nothing downloaded yet. Open an album on your server and tap Download."
+                    : "No music here yet.");
+            status.setVisibility(View.VISIBLE);
+        } else {
+            status.setVisibility(View.GONE);
+        }
     }
 
     private void buildRows(final MusicSource s) {
