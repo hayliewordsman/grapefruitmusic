@@ -125,7 +125,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         changed();
     }
 
-    // ---- Volume Boost and Equalizer ----
+    // ---- Volume Boost, Equalizer and Mono Audio ----
 
     /** Is the song playing through Grapefruit's own engine (with effects)? */
     public boolean effectsActive() {
@@ -133,19 +133,27 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     /**
-     * Volume Boost or the Equalizer changed: applies it to the song that's playing, switching
+     * Volume Boost, the Equalizer or Mono Audio changed: applies it to the song that's playing, switching
      * engines (and carrying on from the same spot) when effects go on or off.
      */
     public void audioEffectsChanged() {
         MediaItem item = current();
         if (engine == null || item == null) return;
-        engine.setEffects(Prefs.volumeBoost(), Prefs.equalizer());
+        engine.setEffects(Prefs.volumeBoost(), eqCurve(), Prefs.monoAudio());
         boolean want = wantsEffects(item);
         if (want != engine.hasEffects()) load(playWhenReady, positionMs());
     }
 
     private boolean wantsEffects(MediaItem item) {
-        return Dsp.anyOn(Prefs.volumeBoost(), Prefs.equalizer()) && !item.key().equals(effectsFailedKey);
+        return Dsp.anyOn(Prefs.volumeBoost(), eqCurve(), Prefs.monoAudio()) && !item.key().equals(effectsFailedKey);
+    }
+
+    /** The equalizer curve chosen in Settings: a preset's, or the Custom one. */
+    public static float[] eqCurve() {
+        int preset = Prefs.equalizer();
+        if (preset != Equalizer.CUSTOM) return Equalizer.curve(preset);
+        float[] custom = Prefs.customEq();
+        return custom != null && custom.length == Equalizer.BANDS ? custom : new float[Equalizer.BANDS];
     }
 
     // ---- Recently played ----
@@ -473,7 +481,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         }
         playWhenReady = play && requestFocus();
         engine = wantsEffects(item) ? new DspEngine(context) : new MediaPlayerEngine(context);
-        engine.setEffects(Prefs.volumeBoost(), Prefs.equalizer());
+        engine.setEffects(Prefs.volumeBoost(), eqCurve(), Prefs.monoAudio());
         final Engine player = engine;
         matchVolume = volumeMatch.volumeFor(item);
         measuring = false;

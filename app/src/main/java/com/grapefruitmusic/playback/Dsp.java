@@ -1,8 +1,8 @@
 package com.grapefruitmusic.playback;
 
 /**
- * Grapefruit's own sound processing, for Volume Boost and the Equalizer: an equalizer filter, gain,
- * and a look-ahead limiter that turns peaks down just before they'd clip, so boosted music gets
+ * Grapefruit's own sound processing, for Volume Boost, the Equalizer and Mono Audio: mono mixing,
+ * the 10-band equalizer, gain, and a look-ahead limiter that turns peaks down just before they'd clip, so boosted music gets
  * louder instead of distorting (the idea behind Viper4Android's eXtra-Loud). Pure Java (unit tested).
  *
  * <p>The settings may change from any thread while audio is being processed.
@@ -17,38 +17,29 @@ public final class Dsp {
     /** Gain in dB for each Volume Boost level. */
     static final double[] BOOST_DB = {0, 4, 7, 10, 14};
 
-    public static final int EQ_NONE = 0;
-    public static final int EQ_BASS_BOOSTER = 1;
-    public static final int EQ_BASS_REDUCER = 2;
-    public static final int EQ_VOCAL_BOOSTER = 3;
-    public static final int EQ_VOCAL_REDUCER = 4;
-    public static final String[] EQ_NAMES = {"None", "Bass Booster", "Bass Reducer", "Vocal Booster", "Vocal Reducer"};
-
-    /** Bass Booster / Reducer: a low shelf this many dB up or down, below about this frequency. */
-    static final double BASS_DB = 8;
-    static final double BASS_HZ = 90;
-    /** Vocal Booster / Reducer: a broad bump or dip this many dB, around where voices carry. */
-    static final double VOCAL_DB = 6;
-    static final double VOCAL_HZ = 1500;
-    private static final double VOCAL_Q = 0.5;
-
     /** Peaks are held under this (about -0.5 dBFS). */
     static final double CEILING = 0.944;
     private static final double LOOKAHEAD_S = 0.004;
     private static final double RELEASE_S = 0.15;
 
     private volatile int boostLevel;
-    private volatile int eq;
+    private volatile float[] eq;
+    private volatile boolean mono;
     private volatile float volume = 1f;
 
     private int rate;
     private int channels;
 
-    // Equalizer: one biquad per preset (b0, b1, b2, a1, a2; none for EQ_NONE), run in direct form I
-    // with per-channel state x1, x2, y1, y2.
-    private double[][] eqFilters;
+    // Equalizer: a biquad per band (from Equalizer.design; null for a band with nothing to do), run
+    // in direct form I with per-band state x1, x2, y1, y2 for each channel.
+    private double[][] eqFilters = new double[Equalizer.BANDS][];
     private double[][] eqState;
-    private int eqRunning;
+    /** The curve eqFilters were made for; redesigned when it changes. */
+    private float[] eqDesigned;
+    private boolean eqStale = true;
+    /** Mono: both channels are mixed, then filtered once on the left channel's state. */
+    private boolean monoRunning;
+    private double[] frame;
 
     // Limiter. The sound is delayed by lookahead frames, so the gain can come down before a peak
     // reaches the output. needs holds the gain each delayed frame needs to stay under the ceiling.
@@ -68,16 +59,22 @@ public final class Dsp {
     private int qSize;
 
     /** Is any effect on? (If not, Android's own player plays the music untouched.) */
-    public static boolean anyOn(int boostLevel, int eq) {
-        return boostLevel > BOOST_OFF || eq != EQ_NONE;
+    public static boolean anyOn(int boostLevel, float[] eq, boolean mono) {
+        return boostLevel > BOOST_OFF || Equalizer.isOn(eq) || mono;
     }
 
     public void setBoost(int level) {
         boostLevel = Math.max(BOOST_OFF, Math.min(BOOST_EXTREME, level));
     }
 
-    public void setEq(int preset) {
-        eq = Math.max(EQ_NONE, Math.min(EQ_VOCAL_REDUCER, preset));
+    /** The equalizer curve, dB for each of Equalizer.BANDS (null or flat for none). */
+    public void setEq(float[] curve) {
+        eq = curve != null ? curve.clone() : null;
+    }
+
+    /** Mono Audio: both ears hear the left and right channels mixed together. */
+    public void setMono(boolean on) {
+        mono = on;
     }
 
     /** Volume Match and ducking, 0 to 1, applied before the boost. */
@@ -88,14 +85,11 @@ public final class Dsp {
     public void setFormat(int sampleRate, int channelCount) {
         rate = sampleRate;
         channels = Math.max(1, channelCount);
-        eqFilters = new double[][]{
-                null,
-                lowShelf(BASS_DB, BASS_HZ),
-                lowShelf(-BASS_DB, BASS_HZ),
-                peaking(VOCAL_DB, VOCAL_HZ, VOCAL_Q),
-                peaking(-VOCAL_DB, VOCAL_HZ, VOCAL_Q)};
-        eqState = new double[channels][4];
-        eqRunning = EQ_NONE;
+        eqFilters = new double[Equalizer.BANDS][];
+        eqState = new double[Equalizer.BANDS][channels * 4];
+        eqStale = true;
+        monoRunning = false;
+        frame = new double[channels];
 
         lookahead = Math.max(1, (int) Math.round(LOOKAHEAD_S * rate));
         delay = new double[lookahead * channels];
@@ -114,37 +108,6 @@ public final class Dsp {
         release = Math.exp(-1.0 / (RELEASE_S * rate));
     }
 
-    /** RBJ cookbook low shelf with a slope of 1. */
-    private double[] lowShelf(double db, double hz) {
-        double a = Math.pow(10, db / 40);
-        double w0 = 2 * Math.PI * hz / rate;
-        double cos = Math.cos(w0);
-        double alpha = Math.sin(w0) / 2 * Math.sqrt(2);
-        double k = 2 * Math.sqrt(a) * alpha;
-        double a0 = (a + 1) + (a - 1) * cos + k;
-        return new double[]{
-                a * ((a + 1) - (a - 1) * cos + k) / a0,
-                2 * a * ((a - 1) - (a + 1) * cos) / a0,
-                a * ((a + 1) - (a - 1) * cos - k) / a0,
-                -2 * ((a - 1) + (a + 1) * cos) / a0,
-                ((a + 1) + (a - 1) * cos - k) / a0};
-    }
-
-    /** RBJ cookbook peaking filter: db up or down around hz; a smaller q is broader. */
-    private double[] peaking(double db, double hz, double q) {
-        double a = Math.pow(10, db / 40);
-        double w0 = 2 * Math.PI * hz / rate;
-        double cos = Math.cos(w0);
-        double alpha = Math.sin(w0) / (2 * q);
-        double a0 = 1 + alpha / a;
-        return new double[]{
-                (1 + alpha * a) / a0,
-                -2 * cos / a0,
-                (1 - alpha * a) / a0,
-                -2 * cos / a0,
-                (1 - alpha / a) / a0};
-    }
-
     /** Clears filters and limiter (after a seek). */
     public void reset() {
         if (rate > 0) setFormat(rate, channels);
@@ -158,38 +121,69 @@ public final class Dsp {
     /** Processes interleaved 16-bit samples in place (delayed by latencyFrames()). */
     public void process(short[] pcm, int offset, int count) {
         if (rate == 0) throw new IllegalStateException("setFormat first");
-        int preset = eq;
-        if (preset != eqRunning) {
-            // A different filter: start it from silence rather than another filter's state.
-            for (double[] s : eqState) java.util.Arrays.fill(s, 0);
-            eqRunning = preset;
+        float[] curve = eq;
+        if (eqStale || curve != eqDesigned) {
+            double[][] next = Equalizer.isOn(curve) ? Equalizer.design(curve, rate) : new double[Equalizer.BANDS][];
+            for (int b = 0; b < Equalizer.BANDS; b++) {
+                // A band coming in starts from silence; one being adjusted carries on smoothly.
+                if (eqFilters[b] == null || next[b] == null) java.util.Arrays.fill(eqState[b], 0);
+            }
+            eqFilters = next;
+            eqDesigned = curve;
+            eqStale = false;
         }
-        double[] k = eqFilters[preset];
-        double g = volume * Math.pow(10, BOOST_DB[boostLevel] / 20);
+        int bands = 0;
+        double[][] k = new double[Equalizer.BANDS][];
+        double[][] ks = new double[Equalizer.BANDS][];
+        for (int b = 0; b < Equalizer.BANDS; b++) {
+            if (eqFilters[b] == null) continue;
+            k[bands] = eqFilters[b];
+            ks[bands++] = eqState[b];
+        }
+        boolean together = mono && channels == 2;
+        if (together != monoRunning) {
+            // Mono runs the filters on the left channel's state; the right one picks up from it.
+            if (channels == 2) for (double[] s : eqState) System.arraycopy(s, 0, s, 4, 4);
+            monoRunning = together;
+        }
+        int filtered = together ? 1 : channels;
+        int boost = boostLevel;
+        double g = volume * Math.pow(10, BOOST_DB[boost] / 20);
+        // With no boost or equalizer nothing can get louder than it came in (a mono mix of two
+        // channels can't either), so there's nothing to limit: the sound passes through as it is.
+        double ceiling = boost > BOOST_OFF || bands > 0 ? CEILING : 1;
         int frames = count / channels;
         int i = offset;
         for (int f = 0; f < frames; f++) {
             int base = pos * channels;
             double peak = 0;
-            for (int c = 0; c < channels; c++) {
-                double x = pcm[i + c] / 32768.0;
-                if (k != null) {
-                    double[] s = eqState[c];
-                    double y = k[0] * x + k[1] * s[0] + k[2] * s[1] - k[3] * s[2] - k[4] * s[3];
-                    s[1] = s[0];
-                    s[0] = x;
-                    s[3] = s[2];
-                    s[2] = y;
+            for (int c = 0; c < filtered; c++) {
+                // Mixed at full precision; rounded only once, on the way out.
+                double x = together ? (pcm[i] + pcm[i + 1]) / 65536.0 : pcm[i + c] / 32768.0;
+                int o = c * 4;
+                for (int b = 0; b < bands; b++) {
+                    double[] kb = k[b];
+                    double[] s = ks[b];
+                    double y = kb[0] * x + kb[1] * s[o] + kb[2] * s[o + 1] - kb[3] * s[o + 2] - kb[4] * s[o + 3];
+                    // Fading to silence, the filters would otherwise crawl through tiny (slow) numbers.
+                    if (y < 1e-20 && y > -1e-20) y = 0;
+                    s[o + 1] = s[o];
+                    s[o] = x;
+                    s[o + 3] = s[o + 2];
+                    s[o + 2] = y;
                     x = y;
                 }
-                x *= g;
-                double abs = Math.abs(x);
+                frame[c] = x * g;
+            }
+            if (together) frame[1] = frame[0];
+            for (int c = 0; c < channels; c++) {
+                double abs = Math.abs(frame[c]);
                 if (abs > peak) peak = abs;
                 out[c] = delay[base + c];
-                delay[base + c] = x;
+                delay[base + c] = frame[c];
             }
             double outNeed = needs[pos];
-            double need = peak > CEILING ? CEILING / peak : 1;
+            double need = peak > ceiling ? ceiling / peak : 1;
             needs[pos] = need;
             pos = pos + 1 == lookahead ? 0 : pos + 1;
 
@@ -208,10 +202,8 @@ public final class Dsp {
             gain = target < gain ? target + (gain - target) * attack : target + (gain - target) * release;
             if (gain > outNeed) gain = outNeed; // never let the frame going out clip
             for (int c = 0; c < channels; c++) {
-                double y = out[c] * gain;
-                if (y > 0.9999) y = 0.9999;
-                else if (y < -0.9999) y = -0.9999;
-                pcm[i + c] = (short) Math.round(y * 32767);
+                long y = Math.round(out[c] * gain * 32768);
+                pcm[i + c] = (short) Math.max(-32768, Math.min(32767, y));
             }
             frameNo++;
             i += channels;

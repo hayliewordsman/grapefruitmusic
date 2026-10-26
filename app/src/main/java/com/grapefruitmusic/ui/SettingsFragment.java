@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.playback.Dsp;
+import com.grapefruitmusic.playback.Equalizer;
 import com.grapefruitmusic.playback.Player;
 import com.grapefruitmusic.playback.VolumeMatch;
 import com.grapefruitmusic.source.Account;
@@ -192,23 +193,27 @@ public final class SettingsFragment extends BaseFragment
                 });
             }
         });
-        g.value("Equalizer", Dsp.EQ_NAMES[Prefs.equalizer()], new View.OnClickListener() {
+        g.value("Equalizer", Equalizer.name(Prefs.equalizer()), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                choose("Equalizer", Dsp.EQ_NAMES, Prefs.equalizer(), new Choice() {
-                    @Override
-                    public void chosen(int which) {
-                        Prefs.setEqualizer(which);
-                        Player.get(getActivity()).audioEffectsChanged();
-                        build();
-                    }
-                });
+                main().push(new EqualizerFragment());
             }
         });
         g.footer("Volume Boost makes Grapefruit louder than the phone's own maximum, like eXtra-Loud: a limiter "
                 + "keeps the loudest moments from crackling, and the higher levels squeeze the music more to "
-                + "get louder. The Equalizer turns the bass or the vocals up or down. Both only change "
+                + "get louder. The Equalizer shapes the sound with ten bands and presets. Both only change "
                 + "Grapefruit's sound. Listening loud for a long time can damage your hearing.");
+
+        g.section("Accessibility");
+        g.toggle("Mono Audio", Prefs.monoAudio(), new Toggle.Listener() {
+            @Override
+            public void onToggled(Toggle t, boolean on) {
+                Prefs.setMonoAudio(on);
+                Player.get(getActivity()).audioEffectsChanged();
+            }
+        });
+        g.footer("Plays the left and right channels together in both ears, so you hear everything with one "
+                + "earbud in, or with hearing in one ear. Sound quality stays the same as stereo.");
 
         g.section("Downloads");
         g.value("Download Quality", Prefs.qualityLabel(Prefs.downloadQuality()), new View.OnClickListener() {

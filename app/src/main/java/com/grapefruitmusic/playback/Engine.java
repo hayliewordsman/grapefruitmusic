@@ -4,7 +4,7 @@ import java.io.IOException;
 
 /**
  * Plays one song: Android's MediaPlayer ({@link MediaPlayerEngine}), or Grapefruit's own
- * ({@link DspEngine}) when Volume Boost or the Equalizer is on. Called on the main thread; the
+ * ({@link DspEngine}) when Volume Boost, the Equalizer or Mono Audio is on. Called on the main thread; the
  * callbacks arrive there too.
  */
 interface Engine {
@@ -39,8 +39,8 @@ interface Engine {
     /** Volume Match and ducking, 0 to 1. */
     void setVolume(float volume);
 
-    /** Volume Boost level and Equalizer preset, Dsp.EQ_* (ignored by MediaPlayer). */
-    void setEffects(int boostLevel, int eq);
+    /** Volume Boost level, the equalizer curve (or null) and Mono Audio (ignored by MediaPlayer). */
+    void setEffects(int boostLevel, float[] eq, boolean mono);
 
     /** Whether this engine applies setEffects (and so needs reloading to turn effects on/off). */
     boolean hasEffects();

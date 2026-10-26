@@ -41,11 +41,17 @@ with downloads for offline listening and time-synced lyrics.
   -16 LUFS; Android's player can't turn quiet songs up, so they play as they are.
 - **Volume Boost and Equalizer:** Settings › Sound. Volume Boost (Mild, Medium, Strong, Extreme: +4 to +14 dB)
   makes Grapefruit louder than the phone's maximum, like Viper4Android's eXtra-Loud, with a look-ahead limiter so
-  it doesn't crackle. The Equalizer has Bass Booster / Bass Reducer (a ±8 dB low shelf below about 90 Hz) and
-  Vocal Booster / Vocal Reducer (a broad ±6 dB bump or dip around 1.5 kHz, where voices carry; it turns the voice
-  range down rather than removing the singer). Android 4.2 has no loudness effect to do this, so with either on,
-  Grapefruit decodes and plays the music itself (MediaCodec + AudioTrack); with both off, Android's player plays it
-  untouched. A song Grapefruit's engine can't play falls back to Android's player.
+  it doesn't crackle. The Equalizer page has ten bands (31 Hz to 16 kHz, ±12 dB) to drag, saved as Custom, and
+  presets: Acoustic, Bass Booster / Reducer, Classical, Dance, Deep, Electronic, Hip-Hop, Jazz, Latin, Loudness,
+  Lounge, Piano, Pop, R&B, Rock, Small Speakers, Spoken Word, Treble Booster / Reducer and Vocal Booster /
+  Reducer. Each band is a peaking filter; because neighbouring bands overlap, their gains are solved together so
+  every band's centre lands exactly where its slider is.
+- **Mono Audio:** Settings › Accessibility. Left and right are mixed (averaged at full precision, rounded once)
+  and played in both ears, at the song's own sample rate. Mono alone never needs limiting, so apart from the mix
+  the sound is untouched.
+- **Grapefruit's own audio engine:** Android 4.2 has no loudness or per-app mono effect, so with any of these on
+  Grapefruit decodes and plays the music itself (MediaCodec + AudioTrack); with all of them off, Android's player
+  plays it. A song Grapefruit's engine can't play falls back to Android's player.
 - **Recently Played:** scroll up in Up Next to see the songs you've played (newest just above Now Playing).
   Tap one to play it again, or Clear the list.
 - **Playlist editing:** Edit on a playlist changes its name, description and cover photo (a photo on the phone,

@@ -91,13 +91,45 @@ public final class Prefs {
         prefs.edit().putInt("volume_boost", level).apply();
     }
 
-    /** Equalizer preset; see playback.Dsp. 1.8 to 2.0 had a Bass Boost switch, now Bass Booster (1). */
+    /** Equalizer preset; see playback.Equalizer. 1.8 to 2.0 had a Bass Boost switch, now Bass Booster (1). */
     public static int equalizer() {
         return prefs.getInt("equalizer", prefs.getBoolean("bass_boost", false) ? 1 : 0);
     }
 
     public static void setEqualizer(int preset) {
         prefs.edit().putInt("equalizer", preset).apply();
+    }
+
+    /** Mono Audio: left and right mixed together in both ears. */
+    public static boolean monoAudio() {
+        return prefs.getBoolean("mono_audio", false);
+    }
+
+    public static void setMonoAudio(boolean on) {
+        prefs.edit().putBoolean("mono_audio", on).apply();
+    }
+
+    /** The Custom equalizer curve, dB per band, or null if none was made. */
+    public static float[] customEq() {
+        String s = prefs.getString("eq_custom", null);
+        if (s == null || s.length() == 0) return null;
+        String[] parts = s.split(",");
+        float[] curve = new float[parts.length];
+        try {
+            for (int i = 0; i < parts.length; i++) curve[i] = Float.parseFloat(parts[i]);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        return curve;
+    }
+
+    public static void setCustomEq(float[] curve) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < curve.length; i++) {
+            if (i > 0) sb.append(',');
+            sb.append(curve[i]);
+        }
+        prefs.edit().putString("eq_custom", sb.toString()).apply();
     }
 
     /** Folders hidden from On This Phone (absolute paths, no trailing slash). */

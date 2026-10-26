@@ -19,11 +19,11 @@ public class DspTest {
         return out;
     }
 
-    private static Dsp dsp(int boost, int eq) {
+    private static Dsp dsp(int boost, int preset) {
         Dsp d = new Dsp();
         d.setFormat(RATE, 2);
         d.setBoost(boost);
-        d.setEq(eq);
+        d.setEq(Equalizer.curve(preset));
         return d;
     }
 
@@ -52,13 +52,73 @@ public class DspTest {
         return pcm;
     }
 
+    /** Interleaved stereo: a different tone in each ear, both at full scale if amplitude is 1. */
+    private static short[] stereo(double seconds, double amplitude, double leftHz, double rightHz) {
+        int frames = (int) (RATE * seconds);
+        short[] out = new short[frames * 2];
+        for (int f = 0; f < frames; f++) {
+            out[2 * f] = (short) Math.max(-32768, Math.min(32767,
+                    Math.round(Math.sin(2 * Math.PI * leftHz * f / RATE) * amplitude * 32768)));
+            out[2 * f + 1] = (short) Math.max(-32768, Math.min(32767,
+                    Math.round(Math.sin(2 * Math.PI * rightHz * f / RATE) * amplitude * 32768)));
+        }
+        return out;
+    }
+
     @Test
-    public void everythingOffPassesTheSoundThroughDelayed() {
-        Dsp d = dsp(Dsp.BOOST_OFF, Dsp.EQ_NONE);
-        short[] in = sine(1, 0.5, 440);
+    public void everythingOffPassesTheSoundThroughBitForBit() {
+        // Even at full scale: nothing to limit, so every sample comes out exactly as it went in.
+        Dsp d = dsp(Dsp.BOOST_OFF, Equalizer.OFF);
+        short[] in = stereo(1, 1, 440, 660);
         short[] out = run(d, in);
         int lag = d.latencyFrames() * 2;
-        for (int i = lag; i < in.length; i++) assertEquals(in[i - lag], out[i], 1);
+        for (int i = lag; i < in.length; i++) assertEquals("sample " + i, in[i - lag], out[i]);
+    }
+
+    @Test
+    public void monoPlaysBothChannelsInBothEarsAtFullQuality() {
+        // Different full-scale tones left and right: each ear gets their exact average, unlimited.
+        Dsp d = dsp(Dsp.BOOST_OFF, Equalizer.OFF);
+        d.setMono(true);
+        short[] in = stereo(1, 1, 440, 660);
+        short[] out = run(d, in);
+        int lag = d.latencyFrames() * 2;
+        for (int f = lag / 2; f < in.length / 2; f++) {
+            int left = in[2 * f - lag];
+            int right = in[2 * f + 1 - lag];
+            long mix = Math.round((left + right) / 2.0);
+            assertEquals("left at " + f, mix, out[2 * f]);
+            assertEquals("right at " + f, mix, out[2 * f + 1]);
+        }
+    }
+
+    @Test
+    public void monoCostsNothingWithTheEqualizerOn() {
+        // Mono with Rock sounds exactly like stereo Rock fed the same mix in both channels.
+        short[] in = stereo(1, 0.4, 440, 3000);
+        short[] mixed = new short[in.length];
+        for (int i = 0; i < in.length; i += 2) {
+            mixed[i] = mixed[i + 1] = (short) Math.round((in[i] + in[i + 1]) / 2.0);
+        }
+        Dsp mono = dsp(Dsp.BOOST_OFF, Equalizer.ROCK);
+        mono.setMono(true);
+        short[] a = run(mono, in);
+        short[] b = run(dsp(Dsp.BOOST_OFF, Equalizer.ROCK), mixed);
+        for (int i = 0; i < a.length; i += 2) {
+            assertEquals("both ears the same", a[i], a[i + 1]);
+            assertEquals("as good as stereo at " + i, b[i], a[i], 1);
+        }
+    }
+
+    @Test
+    public void turningMonoOnAndOffWhilePlayingStaysClean() {
+        Dsp d = dsp(Dsp.BOOST_OFF, Equalizer.BASS_BOOSTER);
+        short[] in = stereo(0.5, 0.4, 100, 150);
+        int ceiling = (int) Math.ceil(Dsp.CEILING * 32767) + 1;
+        for (boolean on : new boolean[]{true, false, true}) {
+            d.setMono(on);
+            assertTrue(peak(run(d, in)) <= ceiling);
+        }
     }
 
     @Test
@@ -67,7 +127,7 @@ public class DspTest {
         double before = rmsDb(quiet);
         double[] expected = {0, 4, 7, 10, 14};
         for (int level = Dsp.BOOST_OFF; level <= Dsp.BOOST_EXTREME; level++) {
-            double after = rmsDb(run(dsp(level, Dsp.EQ_NONE), quiet));
+            double after = rmsDb(run(dsp(level, Equalizer.OFF), quiet));
             assertEquals("level " + Dsp.BOOST_NAMES[level], expected[level], after - before, 0.1);
         }
     }
@@ -76,7 +136,7 @@ public class DspTest {
     public void boostedLoudMusicStaysUnderTheCeiling() {
         int ceiling = (int) Math.ceil(Dsp.CEILING * 32767) + 1;
         for (int level = Dsp.BOOST_MILD; level <= Dsp.BOOST_EXTREME; level++) {
-            short[] out = run(dsp(level, Dsp.EQ_BASS_BOOSTER), sine(2, 0.95, 60));
+            short[] out = run(dsp(level, Equalizer.BASS_BOOSTER), sine(2, 0.95, 60));
             assertTrue("peak " + peak(out) + " at " + Dsp.BOOST_NAMES[level], peak(out) <= ceiling);
         }
     }
@@ -90,7 +150,7 @@ public class DspTest {
         System.arraycopy(quiet, 0, in, 0, quiet.length);
         System.arraycopy(burst, 0, in, quiet.length, burst.length);
         System.arraycopy(quiet, 0, in, quiet.length + burst.length, quiet.length);
-        short[] out = run(dsp(Dsp.BOOST_EXTREME, Dsp.EQ_NONE), in);
+        short[] out = run(dsp(Dsp.BOOST_EXTREME, Equalizer.OFF), in);
         int ceiling = (int) Math.ceil(Dsp.CEILING * 32767) + 1;
         assertTrue("peak " + peak(out), peak(out) <= ceiling);
         // And the quiet part afterwards comes back up (the limiter lets go).
@@ -106,49 +166,44 @@ public class DspTest {
     }
 
     /** How many dB the equalizer preset changes a quiet tone at hz by. */
-    private static double eqGainDb(int eq, double hz) {
+    private static double eqGainDb(int preset, double hz) {
         short[] tone = sine(2, 0.05, hz);
-        return rmsDb(run(dsp(Dsp.BOOST_OFF, eq), tone)) - rmsDb(tone);
+        return rmsDb(run(dsp(Dsp.BOOST_OFF, preset), tone)) - rmsDb(tone);
     }
 
     @Test
-    public void bassBoosterAndReducerChangeTheBassAndLeaveTheRest() {
-        assertEquals(8.0, eqGainDb(Dsp.EQ_BASS_BOOSTER, 40), 0.8);
-        assertEquals(0.0, eqGainDb(Dsp.EQ_BASS_BOOSTER, 2000), 0.3);
-        assertEquals(-8.0, eqGainDb(Dsp.EQ_BASS_REDUCER, 40), 0.8);
-        assertEquals(0.0, eqGainDb(Dsp.EQ_BASS_REDUCER, 2000), 0.3);
+    public void presetsShapeTheSoundToTheirCurves() {
+        // Played through the real filters, each band's centre comes out at the preset's value.
+        for (int preset : new int[]{Equalizer.BASS_BOOSTER, Equalizer.BASS_REDUCER, Equalizer.VOCAL_BOOSTER,
+                Equalizer.ROCK, Equalizer.SPOKEN_WORD}) {
+            float[] curve = Equalizer.curve(preset);
+            for (int b = 1; b < Equalizer.BANDS - 1; b += 2) {
+                assertEquals(Equalizer.name(preset) + " at " + Equalizer.FREQUENCIES[b] + " Hz", curve[b],
+                        eqGainDb(preset, Equalizer.FREQUENCIES[b]), 0.3);
+            }
+        }
     }
 
     @Test
-    public void vocalBoosterAndReducerChangeTheVoiceRangeAndLeaveTheBass() {
-        assertEquals(6.0, eqGainDb(Dsp.EQ_VOCAL_BOOSTER, 1500), 0.2);
-        assertTrue(eqGainDb(Dsp.EQ_VOCAL_BOOSTER, 800) > 3);
-        assertTrue(eqGainDb(Dsp.EQ_VOCAL_BOOSTER, 3000) > 3);
-        assertEquals(0.0, eqGainDb(Dsp.EQ_VOCAL_BOOSTER, 40), 0.3);
-        assertEquals(-6.0, eqGainDb(Dsp.EQ_VOCAL_REDUCER, 1500), 0.2);
-        assertEquals(0.0, eqGainDb(Dsp.EQ_VOCAL_REDUCER, 40), 0.3);
+    public void offLeavesEveryFrequencyAlone() {
+        for (double hz : new double[]{40, 200, 1500, 8000}) assertEquals(0.0, eqGainDb(Equalizer.OFF, hz), 0.05);
     }
 
     @Test
-    public void noneLeavesEveryFrequencyAlone() {
-        for (double hz : new double[]{40, 200, 1500, 8000}) assertEquals(0.0, eqGainDb(Dsp.EQ_NONE, hz), 0.05);
-    }
-
-    @Test
-    public void switchingPresetsWhilePlayingStaysClean() {
-        // Changed mid-song (from the Settings screen): no burst from the old filter's state.
-        Dsp d = dsp(Dsp.BOOST_OFF, Dsp.EQ_BASS_BOOSTER);
-        short[] first = run(d, sine(1, 0.5, 60));
-        d.setEq(Dsp.EQ_VOCAL_REDUCER);
-        short[] second = run(d, sine(1, 0.5, 60));
+    public void changingTheCurveWhilePlayingStaysClean() {
+        // Changed mid-song (a preset tapped, a slider dragged): no burst, and the new curve applies.
+        Dsp d = dsp(Dsp.BOOST_OFF, Equalizer.BASS_BOOSTER);
+        short[] first = run(d, sine(1, 0.5, 62));
+        d.setEq(Equalizer.curve(Equalizer.BASS_REDUCER));
+        short[] second = run(d, sine(1, 0.5, 62));
         int ceiling = (int) Math.ceil(Dsp.CEILING * 32767) + 1;
         assertTrue(peak(first) <= ceiling && peak(second) <= ceiling);
-        assertEquals(0.0, rmsDb(second) - rmsDb(sine(1, 0.5, 60)), 0.5);
+        assertEquals(Equalizer.curve(Equalizer.BASS_REDUCER)[1], rmsDb(second) - rmsDb(sine(1, 0.5, 62)), 0.5);
     }
 
     @Test
     public void volumeMatchVolumeStillApplies() {
-        Dsp d = dsp(Dsp.BOOST_MEDIUM, Dsp.EQ_NONE);
+        Dsp d = dsp(Dsp.BOOST_MEDIUM, Equalizer.OFF);
         d.setVolume(0.5f); // -6 dB
         short[] quiet = sine(2, 0.05, 1000);
         assertEquals(7 - 6.02, rmsDb(run(d, quiet)) - rmsDb(quiet), 0.1);
@@ -156,8 +211,10 @@ public class DspTest {
 
     @Test
     public void anyOn() {
-        assertTrue(Dsp.anyOn(Dsp.BOOST_MILD, Dsp.EQ_NONE));
-        for (int eq = Dsp.EQ_BASS_BOOSTER; eq <= Dsp.EQ_VOCAL_REDUCER; eq++) assertTrue(Dsp.anyOn(Dsp.BOOST_OFF, eq));
-        assertTrue(!Dsp.anyOn(Dsp.BOOST_OFF, Dsp.EQ_NONE));
+        assertTrue(Dsp.anyOn(Dsp.BOOST_MILD, null, false));
+        assertTrue(Dsp.anyOn(Dsp.BOOST_OFF, Equalizer.curve(Equalizer.ROCK), false));
+        assertTrue(Dsp.anyOn(Dsp.BOOST_OFF, null, true));
+        assertTrue(!Dsp.anyOn(Dsp.BOOST_OFF, Equalizer.curve(Equalizer.OFF), false));
+        assertTrue(!Dsp.anyOn(Dsp.BOOST_OFF, null, false));
     }
 }
