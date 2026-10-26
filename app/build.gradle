@@ -13,8 +13,8 @@ android {
         // Kept below 23 on purpose: Grapefruit Music is built for Android 4.2.2 and uses
         // install-time permissions. Android 14+ refuses to install apps targeting < 23.
         targetSdk 22
-        versionCode 19
-        versionName "3.0 beta 3"
+        versionCode 20
+        versionName "3.0 beta 4"
 
         ndk {
             // Conscrypt ships native code; these are the ABIs Android 4.2.2 phones use.

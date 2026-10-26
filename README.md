@@ -46,8 +46,12 @@ with downloads for offline listening and time-synced lyrics.
   doesn't insist; it stops only for an unplug Android reports. It keeps playing in the background and with the
   screen off. Android has no public radio API: Grapefruit drives the radio chip the way MediaTek's own FM Radio
   app does (the system's `libfmjni.so` and MediaTek's radio MediaPlayer), which is how most budget tablets'
-  radios work. Radio › Radio Details shows what Grapefruit found on a tablet whose radio it can't use yet, to
-  copy or save to a file.
+  radios work. Radio › Radio Details shows what Grapefruit found on a tablet whose radio it can't use yet:
+  radio libraries (with their JNI classes, functions and strings), devices and who may open them, the
+  tablet's own radio apps read from their files without running them (the native functions they declare
+  with JNI signatures, their AIDL service interfaces, their services and permissions), permission groups
+  and FM audio constants. Save Radio Files zips that with the radio app and libraries themselves, to build
+  support for a new radio from.
 - **Volume Match:** Settings › Volume Match plays every song at about the same loudness, like Apple's Sound Check.
   Grapefruit measures songs on the phone and downloads in the background (EBU R128, the measure ReplayGain 2 uses),
   uses the loudness your server reports for streamed songs (Navidrome ReplayGain tags, Jellyfin 10.9+

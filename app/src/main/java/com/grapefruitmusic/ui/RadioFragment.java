@@ -83,8 +83,9 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
 
         if (radio.unsupported()) {
             content.addView(card(c, Icons.RADIO, "This tablet's radio isn't working with Grapefruit yet",
-                    "Grapefruit couldn't switch on this tablet's FM radio. Radio Details shows what it found, "
-                            + "which helps add support for it.", "Radio Details", new View.OnClickListener() {
+                    "Grapefruit can't switch on this tablet's FM radio yet. In Radio Details, tap Save Radio "
+                            + "Files and send the zip it makes: support for this radio is built from it.",
+                    "Radio Details", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             main().push(new RadioDetailsFragment());

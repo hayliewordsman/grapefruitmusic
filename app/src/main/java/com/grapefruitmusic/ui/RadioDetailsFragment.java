@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.grapefruitmusic.R;
 import com.grapefruitmusic.radio.Radio;
+import com.grapefruitmusic.radio.RadioFiles;
 import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Notice;
@@ -52,8 +53,10 @@ public final class RadioDetailsFragment extends BaseFragment {
 
         TextView intro = Ui.text(c, 15, R.attr.gfTextSecondary, false);
         intro.setSingleLine(false);
-        intro.setText("If the radio doesn't work on this tablet, copy or save these details and send them "
-                + "along with what happened. Nothing here is sent anywhere by Grapefruit.");
+        intro.setText("If the radio doesn't work on this tablet, tap Save Radio Files and send "
+                + "Grapefruit/radio-files.zip: it holds these details and the tablet's own radio app and "
+                + "libraries, which is what support for this radio is built from. Copy or Save Details "
+                + "keeps just the text. Nothing here is sent anywhere by Grapefruit.");
         intro.setPadding(Ui.dp(c, 16), 0, Ui.dp(c, 16), Ui.dp(c, 8));
         content.addView(intro);
 
@@ -71,7 +74,7 @@ public final class RadioDetailsFragment extends BaseFragment {
             }
         });
         actions.addView(copy, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-        LinearLayout save = Ui.pill(c, Icons.DOWNLOAD, "Save to File");
+        LinearLayout save = Ui.pill(c, Icons.DOWNLOAD, "Save Details");
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -82,6 +85,18 @@ public final class RadioDetailsFragment extends BaseFragment {
         lp.leftMargin = Ui.dp(c, 12);
         actions.addView(save, lp);
         content.addView(actions);
+
+        LinearLayout files = Ui.pill(c, Icons.DOWNLOAD, "Save Radio Files");
+        files.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveFiles(c);
+            }
+        });
+        LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        flp.setMargins(Ui.dp(c, 16), 0, Ui.dp(c, 16), Ui.dp(c, 8));
+        content.addView(files, flp);
 
         for (final PackageInfo app : radioApps(c)) {
             CharSequence name = app.applicationInfo != null
@@ -149,6 +164,28 @@ public final class RadioDetailsFragment extends BaseFragment {
             }
         }
         return out;
+    }
+
+    /** The details and the tablet's own radio files, zipped for sending. */
+    private void saveFiles(final Context c) {
+        if (report == null) {
+            Notice.show(c, "Still looking at this tablet's radio…");
+            return;
+        }
+        final String body = report;
+        Notice.show(c, "Saving the radio files…");
+        bg(new Bg.Work<RadioFiles.Saved>() {
+            @Override
+            public RadioFiles.Saved run() throws IOException {
+                return RadioFiles.save(c, body);
+            }
+        }, new Bg.Done<RadioFiles.Saved>() {
+            @Override
+            public void done(RadioFiles.Saved saved, Exception error) {
+                Notice.showLong(c, saved != null ? "Saved " + saved.files + (saved.files == 1 ? " file to " : " files to ")
+                        + saved.zip.getPath() : "Couldn't save: " + error.getMessage());
+            }
+        });
     }
 
     private void save(final Context c) {

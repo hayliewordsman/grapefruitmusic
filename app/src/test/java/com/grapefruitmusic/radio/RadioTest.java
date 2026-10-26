@@ -106,6 +106,51 @@ public class RadioTest {
         assertNull(Radio.programTypeName(40, "US"));
     }
 
+    private static byte[] resource(String name) throws Exception {
+        java.io.InputStream in = RadioTest.class.getClassLoader().getResourceAsStream(name);
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        byte[] buf = new byte[4096];
+        int n;
+        while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+        in.close();
+        return out.toByteArray();
+    }
+
+    @Test
+    public void readsNativeFunctionsAndAidlFromAnAppsCode() throws Exception {
+        // radio/sample.dex: a stand-in for a vendor radio app (see its classes in the assertions).
+        DexInfo dex = DexInfo.read(resource("radio/sample.dex"));
+        List<String> natives = new ArrayList<String>();
+        for (DexInfo.Method m : dex.natives) natives.add(m.className + " " + m);
+        assertEquals(3, natives.size());
+        assertTrue(natives.toString(), natives.contains("com.rk.FmRadio.FmRadioService enableFmFacility_native (Z)Z"));
+        assertTrue(natives.toString(), natives.contains("com.rk.FmRadio.FmRadioService static setFreq_native (I)I"));
+        assertTrue(natives.toString(),
+                natives.contains("com.rk.FmRadio.FmRadioService scan_native (FLjava/lang/String;[J)[I"));
+        // Only interfaces with a Stub (AIDL) count.
+        assertEquals(1, dex.aidl.size());
+        List<String> aidl = new ArrayList<String>();
+        for (DexInfo.Method m : dex.aidl.get("com.rk.FmRadio.IFmRadio")) aidl.add(m.toString());
+        assertTrue(aidl.toString(), aidl.contains("powerUp (F)Z"));
+        assertTrue(aidl.toString(), aidl.contains("seek (IZ)I"));
+        assertTrue(dex.strings.contains("rockchip_radio_jni"));
+        assertTrue(dex.strings.contains("fm_route=on"));
+        assertTrue(dex.classes.contains("com.rk.FmRadio.Plain"));
+    }
+
+    @Test
+    public void readsTheDexInsideAnOdex() throws Exception {
+        byte[] dex = resource("radio/sample.dex");
+        // An optimised dex: "dey\n036\0", then the dex's offset and length, then the dex.
+        byte[] odex = new byte[40 + dex.length];
+        System.arraycopy("dey\n036\0".getBytes("US-ASCII"), 0, odex, 0, 8);
+        odex[8] = 40;
+        odex[12] = (byte) dex.length;
+        odex[13] = (byte) (dex.length >> 8);
+        System.arraycopy(dex, 0, odex, 40, dex.length);
+        assertEquals(3, DexInfo.read(odex).natives.size());
+    }
+
     @Test
     public void findsJniClassesAndFunctionsInALibrary() throws Exception {
         String rodata = "\u0001\u0002\0com/mediatek/FMRadio/FMRadioNative\0opendev\0()Z\0powerup\0(F)Z\0"
