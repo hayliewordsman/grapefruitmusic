@@ -24,13 +24,17 @@ with downloads for offline listening and time-synced lyrics.
 - **iOS 10-style design:** large bold titles, album-art grids, a mini player above the tab bar, and a Now Playing
   card that slides up over a blurred copy of the artwork. The artwork shrinks when paused. Pull the card down to close it.
   Lyrics and Up Next show a condensed header (small artwork and title) above the list.
-- **Themes:** Settings › Theme: *Grapefruit Light* and *Grapefruit Dark* (in the app icon's peach, cream, ruby and
-  coral), *Starlight* (white) or *Pitch Black* (black). Until you pick one, Grapefruit Music uses Grapefruit Light, or
-  Pitch Black while the phone is in dark mode (Android 10+).
-- **Library grids:** every library page (Playlists, Artists, Albums, Songs, Recently Added) shows cards, two
-  across, scrolling down. Turned sideways, the pages scroll sideways instead: the Library's menu is the first
-  column, then Recently Added two cards high; swipe right to left and the menu slides away as more albums come
-  in. Now Playing pops in as a panel on the right, beside the library (swipe it right or tap outside to close it).
+- **Themes:** Settings › Theme: *Grapefruit Dark* (the default) and *Grapefruit Light* (in the app icon's peach,
+  cream, ruby and coral), *Starlight* (white) or *Pitch Black* (black). The app icon matches the theme: each
+  theme has its own launcher entry (an activity-alias) with its own icon, and Grapefruit turns on only the
+  theme's, since Android 4.2 can't change an app's icon. It keeps playing meanwhile (`DONT_KILL_APP`), so
+  Android 4.2 tells the launcher about 10 seconds later; a launcher may take the old icon off the home screen.
+  The icons are drawn by `tools/icons/make_icons.py`.
+- **Library:** Songs is a list with small artwork and Playlists a list with medium artwork; Artists, Albums and
+  Recently Added show cards, two across, scrolling down. Turned sideways, the card pages scroll sideways instead:
+  the Library's menu is the first column, then Recently Added two cards high; swipe right to left and the menu
+  slides away as more albums come in. Now Playing pops in as a panel on the right, beside the library (swipe it
+  right or tap outside to close it).
 - **Looks the same on every Android version:** Grapefruit draws its own switches, dialogs, menus, text fields,
   messages and fast-scroll thumb instead of using Android's (Holo on 4.x, Material later). Settings switches are
   little grapefruit slices that roll across a grapefruit-gradient track.
@@ -41,7 +45,8 @@ with downloads for offline listening and time-synced lyrics.
 - **FM Radio (beta):** the Radio tab shows your presets as station tiles, finds stations (Find Stations) and
   starts the radio; choosing a station opens Now Playing on it, with a dial to drag or tap, seek buttons for the
   next station down or up, 0.1 MHz steps, the station's name, programme type and text from RDS, + to save it as
-  a preset, and a Headphones / Speaker switch. Wired headphones are the antenna, as on any phone radio, and its
+  a preset with a label of your own (or none, to go by the station's name or frequency; touch and hold a preset
+  to edit its label), and a Headphones / Speaker switch. Wired headphones are the antenna, as on any phone radio, and its
   sound can still go to the speaker. Not every tablet tells Android when headphones are in, so the radio
   doesn't insist; it stops only for an unplug Android reports. It keeps playing in the background and with the
   screen off. Android has no public radio API, so Grapefruit uses the two kinds of radio budget tablets have:

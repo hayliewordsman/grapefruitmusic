@@ -39,7 +39,7 @@ public final class AboutFragment extends BaseFragment {
         hero.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 8));
         ImageView icon = new ImageView(c);
         // Drawn at exactly 88dp for each screen density, so it's never scaled up and blurry.
-        icon.setImageResource(R.drawable.ic_about);
+        icon.setImageResource(AppIcon.about(c));
         hero.addView(icon, new LinearLayout.LayoutParams(Ui.dp(c, 88), Ui.dp(c, 88)));
         TextView name = Ui.text(c, 24, R.attr.gfTextPrimary, true);
         name.setText(R.string.app_name);

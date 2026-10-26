@@ -2,7 +2,6 @@ package com.grapefruitmusic.ui;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -27,10 +26,7 @@ public final class Ui {
     /** The theme showing (a Prefs.THEME_* other than THEME_SYSTEM). */
     public static int theme(Context c) {
         int t = Prefs.theme();
-        if (t >= Prefs.THEME_STARLIGHT && t <= Prefs.THEME_GRAPEFRUIT_DARK) return t;
-        // None picked: match the phone's dark mode (Android 10 and later).
-        int night = c.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        return night == Configuration.UI_MODE_NIGHT_YES ? Prefs.THEME_PITCH_BLACK : Prefs.THEME_GRAPEFRUIT_LIGHT;
+        return t >= Prefs.THEME_STARLIGHT && t <= Prefs.THEME_GRAPEFRUIT_DARK ? t : Prefs.THEME_GRAPEFRUIT_DARK;
     }
 
     public static void applyTheme(Activity a) {

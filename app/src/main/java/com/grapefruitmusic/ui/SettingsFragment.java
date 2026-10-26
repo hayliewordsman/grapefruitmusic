@@ -2,7 +2,6 @@ package com.grapefruitmusic.ui;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +17,7 @@ import com.grapefruitmusic.playback.VolumeMatch;
 import com.grapefruitmusic.source.Account;
 import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.ui.widget.Toggle;
+import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Format;
 import com.grapefruitmusic.util.Prefs;
 
@@ -91,19 +91,26 @@ public final class SettingsFragment extends BaseFragment
                 choose("Theme", THEMES, showing - Prefs.THEME_STARLIGHT, new Choice() {
                     @Override
                     public void chosen(int which) {
-                        // Picking the theme already showing changes nothing (and keeps following the phone).
+                        // Picking the theme already showing changes nothing.
                         int theme = which + Prefs.THEME_STARLIGHT;
                         if (theme != showing) {
                             Prefs.setTheme(theme);
+                            final Context app = getActivity().getApplicationContext();
+                            Bg.execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AppIcon.match(app);
+                                }
+                            });
                             getActivity().recreate();
                         }
                     }
                 });
             }
         });
-        if (Prefs.theme() == Prefs.THEME_SYSTEM && Build.VERSION.SDK_INT >= 29) {
-            g.footer("Follows your phone's dark mode until you pick a theme.");
-        }
+
+        g.footer("Grapefruit's icon matches the theme. Your launcher shows the new one within a few seconds; "
+                + "if Grapefruit was on your home screen, you may need to put it back from the app list.");
 
         g.section("Servers");
         for (final Account a : Sources.get(c).accounts()) {

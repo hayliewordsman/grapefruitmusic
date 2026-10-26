@@ -24,6 +24,7 @@ import com.grapefruitmusic.R;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.radio.Radio;
 import com.grapefruitmusic.radio.RadioArt;
+import com.grapefruitmusic.ui.AppIcon;
 import com.grapefruitmusic.ui.MainActivity;
 import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.util.ArtworkLoader;
@@ -166,7 +167,7 @@ public final class PlaybackService extends Service implements Player.Listener, R
         String metadataKey;
         boolean playing;
         if (onRadio) {
-            art = RadioArt.of(radio.frequency(), radio.programName(), ART_SIZE);
+            art = RadioArt.of(radio.frequency(), radio.name(), ART_SIZE);
             artFor = null;
             title = radio.title();
             text = radio.subtitle();
@@ -264,7 +265,7 @@ public final class PlaybackService extends Service implements Player.Listener, R
         v.setTextViewText(R.id.n_text, text);
         Bitmap fitted = fittedArt();
         if (fitted != null) v.setImageViewBitmap(R.id.n_art, fitted);
-        else v.setImageViewResource(R.id.n_art, R.mipmap.ic_launcher);
+        else v.setImageViewResource(R.id.n_art, AppIcon.launcher(this));
         v.setImageViewBitmap(R.id.n_prev, button(Icons.PREVIOUS));
         v.setImageViewBitmap(R.id.n_play, button(playing ? (onRadio ? Icons.STOP : Icons.PAUSE) : Icons.PLAY));
         v.setImageViewBitmap(R.id.n_next, button(Icons.NEXT));

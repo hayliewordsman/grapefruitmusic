@@ -9,7 +9,7 @@ import java.util.TreeSet;
 
 /** App settings. */
 public final class Prefs {
-    /** No theme picked: Grapefruit Light, or Pitch Black while the phone is in dark mode. */
+    /** No theme picked: Grapefruit Dark. */
     public static final int THEME_SYSTEM = 0;
     public static final int THEME_STARLIGHT = 1;
     public static final int THEME_PITCH_BLACK = 2;

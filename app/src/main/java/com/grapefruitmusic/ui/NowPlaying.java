@@ -532,12 +532,12 @@ final class NowPlaying {
             @Override
             public void onClick(View v) {
                 int f = radio.frequency();
-                if (radio.preset(f) != null) {
+                Radio.Preset saved = radio.preset(f);
+                if (saved != null) {
                     radio.removePreset(f);
-                    Notice.show(activity, "Removed " + Radio.format(f) + " FM from Presets");
+                    Notice.show(activity, "Removed " + saved.label() + " from Presets");
                 } else {
-                    radio.addPreset(f);
-                    Notice.show(activity, "Added " + Radio.format(f) + " FM to Presets");
+                    PresetLabel.add(activity, f);
                 }
             }
         });
@@ -758,11 +758,11 @@ final class NowPlaying {
         btnPreset.setColor(saved ? accent : primary);
         btnPreset.setContentDescription(saved ? "Remove from Presets" : "Add to Presets");
         scaleArt(playing);
-        String key = freq + "|" + radio.programName();
+        String key = freq + "|" + radio.name();
         // Not while the dial turns: a new picture (and its blur) for every step would be too slow.
         if (!key.equals(radioArtKey) && !dial.isTurning()) {
             radioArtKey = key;
-            Bitmap b = RadioArt.of(freq, radio.programName(), Math.max(Ui.dp(activity, 300), 512));
+            Bitmap b = RadioArt.of(freq, radio.name(), Math.max(Ui.dp(activity, 300), 512));
             art.setBitmap(b);
             smallArt.setBitmap(b);
             card.setBlurredArtwork(Blur.of(b));

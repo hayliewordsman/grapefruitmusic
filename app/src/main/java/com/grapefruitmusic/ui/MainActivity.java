@@ -324,7 +324,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             miniTitle.setText(radio.title());
             miniPlay.setIcon(radio.wantsToPlay() ? Icons.STOP : Icons.PLAY);
             miniArt.setTag(R.id.art_request, null);
-            miniArt.setBitmap(RadioArt.of(radio.frequency(), radio.programName(), Ui.dp(this, 44)));
+            miniArt.setBitmap(RadioArt.of(radio.frequency(), radio.name(), Ui.dp(this, 44)));
         } else if (item != null) {
             miniTitle.setText(item.title);
             miniPlay.setIcon(player.wantsToPlay() ? Icons.PAUSE : Icons.PLAY);

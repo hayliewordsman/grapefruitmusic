@@ -25,8 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Lists of artists, albums, playlists and songs: as rows (search results), or as a grid of cards
- * (library pages), two across in portrait or stacked in columns for a sideways HorizontalGrid.
+ * Lists of artists, albums, playlists and songs: as rows (search results, and the Songs and
+ * Playlists pages), or as a grid of cards (the other library pages), two across in portrait or
+ * stacked in columns for a sideways HorizontalGrid.
  */
 final class RowAdapter extends BaseAdapter {
     interface Listener {
@@ -281,7 +282,9 @@ final class RowAdapter extends BaseAdapter {
             h = (RowHolder) convertView.getTag();
         }
         MediaItem m = (MediaItem) rows.get(position);
-        int artSize = m.kind == MediaItem.TRACK ? 44 : m.kind == MediaItem.ARTIST ? 48 : 56;
+        // Small for songs; medium for playlists on the Playlists page.
+        int artSize = m.kind == MediaItem.TRACK ? 44 : m.kind == MediaItem.ARTIST ? 48
+                : m.kind == MediaItem.PLAYLIST && !sections ? 72 : 56;
         ViewGroup.LayoutParams lp = h.art.getLayoutParams();
         lp.width = lp.height = Ui.dp(context, artSize);
         h.art.setLayoutParams(lp);

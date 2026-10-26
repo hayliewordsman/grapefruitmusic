@@ -63,25 +63,47 @@ public class RadioTest {
     @Test
     public void presetsRoundTrip() {
         List<Radio.Preset> list = new ArrayList<Radio.Preset>();
-        list.add(new Radio.Preset(9870, "GRAPE FM"));
-        list.add(new Radio.Preset(10110, null));
+        list.add(new Radio.Preset(9870, "Mom's Station", "GRAPE FM"));
+        list.add(new Radio.Preset(8810, null, "KISS FM"));
+        list.add(new Radio.Preset(9000, "Morning News", null));
+        list.add(new Radio.Preset(10110, null, null));
         List<Radio.Preset> back = Radio.parsePresets(Radio.serializePresets(list));
-        assertEquals(2, back.size());
+        assertEquals(4, back.size());
         assertEquals(9870, back.get(0).frequency);
-        assertEquals("GRAPE FM", back.get(0).name);
-        assertEquals("GRAPE FM", back.get(0).label());
-        assertEquals(10110, back.get(1).frequency);
-        assertNull(back.get(1).name);
-        assertEquals("101.1 FM", back.get(1).label());
+        assertEquals("Mom's Station", back.get(0).userLabel);
+        assertEquals("GRAPE FM", back.get(0).stationName);
+        assertEquals("the listener's label comes first", "Mom's Station", back.get(0).label());
+        assertNull(back.get(1).userLabel);
+        assertEquals("KISS FM", back.get(1).label());
+        assertEquals("Morning News", back.get(2).label());
+        assertNull(back.get(2).stationName);
+        assertEquals(10110, back.get(3).frequency);
+        assertNull(back.get(3).name());
+        assertEquals("101.1 FM", back.get(3).label());
     }
 
     @Test
-    public void namesKeepTheirCharactersButNotLineBreaks() {
+    public void presetsFromBeforeLabelsKeepTheirNameAsTheLabel() {
+        List<Radio.Preset> old = Radio.parsePresets("9870\tGRAPE FM\n10110");
+        assertEquals(2, old.size());
+        assertEquals("GRAPE FM", old.get(0).userLabel);
+        assertNull(old.get(0).stationName);
+        assertNull(old.get(1).name());
+    }
+
+    @Test
+    public void labelsKeepTheirCharactersButNotLineBreaks() {
         List<Radio.Preset> list = new ArrayList<Radio.Preset>();
-        list.add(new Radio.Preset(9870, "Rock\tand\nRoll 98.7"));
+        list.add(new Radio.Preset(9870, "  Rock\tand\nRoll 98.7 ", "KISS\tFM"));
         List<Radio.Preset> back = Radio.parsePresets(Radio.serializePresets(list));
         assertEquals(1, back.size());
-        assertEquals("Rock and Roll 98.7", back.get(0).name);
+        assertEquals("Rock and Roll 98.7", back.get(0).userLabel);
+        assertEquals("KISS FM", back.get(0).stationName);
+        // Blank is no label; long ones are cut to fit a tile.
+        assertNull(new Radio.Preset(9870, "   ", null).userLabel);
+        StringBuilder longLabel = new StringBuilder();
+        for (int i = 0; i < 60; i++) longLabel.append('x');
+        assertEquals(Radio.Preset.MAX_LABEL, new Radio.Preset(9870, longLabel.toString(), null).userLabel.length());
     }
 
     @Test
@@ -92,7 +114,7 @@ public class RadioTest {
         assertEquals(0, Radio.parsePresets("500").size());
         List<Radio.Preset> some = Radio.parsePresets("garbage\n9870\tOne\n9870\tTwo\n10110");
         assertEquals(2, some.size());
-        assertEquals("One", some.get(0).name);
+        assertEquals("One", some.get(0).label());
         assertEquals(10110, some.get(1).frequency);
     }
 

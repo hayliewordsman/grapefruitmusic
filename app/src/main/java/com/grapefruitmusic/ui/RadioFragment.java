@@ -3,12 +3,10 @@ package com.grapefruitmusic.ui;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -151,7 +149,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
             addTiles(c, presets);
             TextView hint = Ui.text(c, 13, R.attr.gfTextSecondary, false);
             hint.setSingleLine(false);
-            hint.setText("Touch and hold a preset to rename or remove it.");
+            hint.setText("Touch and hold a preset to edit its label or remove it.");
             hint.setPadding(Ui.dp(c, 16), Ui.dp(c, 4), Ui.dp(c, 16), 0);
             content.addView(hint);
         }
@@ -257,7 +255,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
         tile.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
         ArtworkView art = Ui.artwork(c, 0);
         art.setCornerRadiusDp(8);
-        art.setBitmap(RadioArt.of(p.frequency, p.name, Ui.dp(c, 200)));
+        art.setBitmap(RadioArt.of(p.frequency, p.name(), Ui.dp(c, 200)));
         tile.addView(art, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         boolean current = radio.inSession() && radio.frequency() == p.frequency;
@@ -265,7 +263,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
         name.setText(p.label());
         name.setPadding(0, Ui.dp(c, 6), 0, 0);
         tile.addView(name);
-        if (p.name != null && p.name.length() > 0) {
+        if (p.name() != null) {
             TextView freq = Ui.text(c, 13, R.attr.gfTextSecondary, false);
             freq.setText(Radio.format(p.frequency) + " FM");
             tile.addView(freq);
@@ -290,31 +288,13 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
     private void presetMenu(final Context c, final Radio.Preset p) {
         Ui.dialog(c)
                 .setTitle(p.label())
-                .setItems(new CharSequence[]{"Rename", "Remove"}, new DialogInterface.OnClickListener() {
+                .setItems(new CharSequence[]{"Edit Label", "Remove"}, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (which == 0) rename(c, p);
+                        if (which == 0) PresetLabel.edit(c, p);
                         else radio.removePreset(p.frequency);
                     }
                 })
-                .show();
-    }
-
-    private void rename(Context c, final Radio.Preset p) {
-        final EditText field = Ui.field(c, 16, false, Radio.format(p.frequency) + " FM");
-        field.setSingleLine(true);
-        field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
-        if (p.name != null) field.setText(p.name);
-        Ui.dialog(c)
-                .setTitle("Rename " + Radio.format(p.frequency) + " FM")
-                .setView(field)
-                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        radio.renamePreset(p.frequency, field.getText().toString());
-                    }
-                })
-                .setNegativeButton("Cancel", null)
                 .show();
     }
 
@@ -345,7 +325,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
             @Override
             public void onClick(View v) {
                 if (saved) radio.removePreset(f);
-                else radio.addPreset(f);
+                else PresetLabel.add(c, f);
             }
         });
         row.addView(add, new LinearLayout.LayoutParams(Ui.dp(c, 46), Ui.dp(c, 46)));

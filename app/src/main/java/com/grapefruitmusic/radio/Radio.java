@@ -55,17 +55,38 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
 
     /** A saved station. */
     public static final class Preset {
-        public final int frequency;
-        /** The station's name: from RDS, or typed in. Null until known. */
-        public String name;
+        /** Longest label a listener can give a preset. */
+        public static final int MAX_LABEL = 40;
 
-        Preset(int frequency, String name) {
+        public final int frequency;
+        /** The label the listener gave it, or null. */
+        public String userLabel;
+        /** The station's own name, from RDS; null until it's said it. */
+        public String stationName;
+
+        Preset(int frequency, String userLabel, String stationName) {
             this.frequency = frequency;
-            this.name = name;
+            this.userLabel = clean(userLabel);
+            this.stationName = clean(stationName);
         }
 
+        /** The listener's label, else the station's name; null if it has neither. */
+        public String name() {
+            return userLabel != null ? userLabel : stationName;
+        }
+
+        /** What the preset is called: its name, or its frequency ("98.7 FM"). */
         public String label() {
-            return name != null && name.length() > 0 ? name : format(frequency) + " FM";
+            String n = name();
+            return n != null ? n : format(frequency) + " FM";
+        }
+
+        /** A label as typed: on one line, trimmed, null if empty. */
+        static String clean(String label) {
+            if (label == null) return null;
+            String l = label.replace('\t', ' ').replace('\n', ' ').replace('\r', ' ').trim();
+            if (l.length() > MAX_LABEL) l = l.substring(0, MAX_LABEL).trim();
+            return l.length() > 0 ? l : null;
         }
     }
 
@@ -227,10 +248,6 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         return frequency;
     }
 
-    public String programName() {
-        return programName;
-    }
-
     public String radioText() {
         return radioText;
     }
@@ -290,11 +307,21 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         return canUseSpeaker;
     }
 
+    /**
+     * The station's name: the label the listener gave its preset, else the name it's sending, else
+     * the name it sent last time; null if none.
+     */
+    public String name() {
+        Preset p = preset(frequency);
+        if (p != null && p.userLabel != null) return p.userLabel;
+        if (programName != null && programName.length() > 0) return programName;
+        return p != null ? p.stationName : null;
+    }
+
     /** The station's name, or its frequency ("98.7 FM"). */
     public String title() {
-        if (programName != null && programName.length() > 0) return programName;
-        Preset p = preset(frequency);
-        return p != null ? p.label() : format(frequency) + " FM";
+        String n = name();
+        return n != null ? n : format(frequency) + " FM";
     }
 
     /** What the station says is on, or its frequency and kind of programme. */
@@ -656,8 +683,9 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         if (rds.programName != null && rds.programName.length() > 0 && !rds.programName.equals(programName)) {
             programName = rds.programName;
             Preset p = preset(frequency);
-            if (p != null && p.name == null) {
-                p.name = programName;
+            String station = Preset.clean(programName);
+            if (p != null && station != null && !station.equals(p.stationName)) {
+                p.stationName = station;
                 savePresets();
             }
             change = true;
@@ -683,11 +711,13 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         return findIn(presets, freq);
     }
 
-    /** Saves freq as a preset (named after the station, if it's on and has said its name). */
-    public void addPreset(int freq) {
+    /**
+     * Saves freq as a preset with the listener's label (null or empty for none), remembering the
+     * station's own name if it's on and has said it.
+     */
+    public void addPreset(int freq, String userLabel) {
         if (preset(freq) != null) return;
-        String name = freq == frequency ? programName : null;
-        presets.add(new Preset(freq, name));
+        presets.add(new Preset(freq, userLabel, freq == frequency ? programName : null));
         savePresets();
         changed();
     }
@@ -700,12 +730,11 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         changed();
     }
 
-    /** Names a preset; an empty name goes back to the station's own (or its frequency). */
-    public void renamePreset(int freq, String name) {
+    /** Labels a preset; an empty label goes back to the station's own name (or its frequency). */
+    public void setPresetLabel(int freq, String userLabel) {
         Preset p = preset(freq);
         if (p == null) return;
-        String n = name != null ? name.trim() : "";
-        p.name = n.length() > 0 ? n : (freq == frequency ? programName : null);
+        p.userLabel = Preset.clean(userLabel);
         savePresets();
         changed();
     }
@@ -719,15 +748,21 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         Prefs.setRadioPresets(serializePresets(presets));
     }
 
-    /** Presets saved as lines of "frequency<tab>name" (the name may be missing). */
+    /**
+     * Presets saved as lines of "frequency<tab>label<tab>station name" (either may be empty, and a
+     * station with neither is just its frequency). Before 3.0 beta 6 a line had one name, after
+     * one tab: kept as the label, as the listener saw it.
+     */
     static List<Preset> parsePresets(String saved) {
         List<Preset> out = new ArrayList<Preset>();
         if (saved == null || saved.length() == 0) return out;
         for (String line : saved.split("\n")) {
-            String[] parts = line.split("\t", 2);
+            String[] parts = line.split("\t", 3);
             try {
                 int f = Integer.parseInt(parts[0].trim());
-                if (inBand(f) && findIn(out, f) == null) out.add(new Preset(f, parts.length > 1 ? parts[1] : null));
+                if (inBand(f) && findIn(out, f) == null) {
+                    out.add(new Preset(f, parts.length > 1 ? parts[1] : null, parts.length > 2 ? parts[2] : null));
+                }
             } catch (NumberFormatException e) {
                 // Not a preset: skip the line.
             }
@@ -740,7 +775,10 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         for (Preset p : list) {
             if (sb.length() > 0) sb.append('\n');
             sb.append(p.frequency);
-            if (p.name != null) sb.append('\t').append(p.name.replace('\t', ' ').replace('\n', ' '));
+            if (p.userLabel != null || p.stationName != null) {
+                sb.append('\t').append(p.userLabel != null ? p.userLabel : "")
+                        .append('\t').append(p.stationName != null ? p.stationName : "");
+            }
         }
         return sb.toString();
     }

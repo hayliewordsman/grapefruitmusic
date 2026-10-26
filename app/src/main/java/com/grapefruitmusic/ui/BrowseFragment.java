@@ -33,7 +33,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
     static final int ARTIST_ALBUMS = 5;
 
     private ListView list;
-    /** Landscape: the sideways grid instead of list. */
+    /** Landscape: the sideways grid instead of list (pages of cards only). */
     private HorizontalGrid grid;
     private RowAdapter adapter;
     private TextView status;
@@ -52,6 +52,19 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
 
     private int mode() {
         return getArguments().getInt(ARG_MODE);
+    }
+
+    /**
+     * Songs (small artwork) and playlists (medium artwork) are lists the same way up or sideways;
+     * the other pages are cards.
+     */
+    private boolean listed() {
+        return mode() == SONGS || mode() == PLAYLISTS;
+    }
+
+    /** Items in a ListView row: one in a list, two cards in a grid. */
+    private int perRow() {
+        return listed() ? 1 : 2;
     }
 
     private String title() {
@@ -77,7 +90,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
         Context c = getActivity();
-        boolean sideways = RowAdapter.landscape(c);
+        boolean sideways = RowAdapter.landscape(c) && !listed();
         LinearLayout header = Ui.header(c, backLabel(), title(), goBack());
         if (backLabel() == null) {
             // Used as the Playlists tab: say which source the playlists come from.
@@ -190,7 +203,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
             if (grid != null) {
                 if (firstShown > 0) grid.scrollToColumn(firstShown / grid.getRows());
             } else if (turned) {
-                if (firstShown > 0) list.setSelection(list.getHeaderViewsCount() + firstShown / 2);
+                if (firstShown > 0) list.setSelection(list.getHeaderViewsCount() + firstShown / perRow());
             } else {
                 restoreScroll(list);
             }
@@ -208,7 +221,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         if (list != null) {
             rememberScroll(list);
             int position = list.getFirstVisiblePosition() - list.getHeaderViewsCount();
-            firstShown = position >= 0 ? position * 2 : 0;
+            firstShown = position >= 0 ? position * perRow() : 0;
         } else if (grid != null) {
             firstShown = grid.getFirstVisibleColumn() * grid.getRows();
         }
@@ -263,7 +276,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
 
     private void show() {
         int mode = mode();
-        adapter.setItems(items, true, false);
+        adapter.setItems(items, !listed(), false);
         status.setVisibility(View.VISIBLE);
         if (items.isEmpty()) {
             status.setText("Nothing here yet.");
