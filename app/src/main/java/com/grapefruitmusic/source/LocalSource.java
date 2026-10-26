@@ -64,7 +64,7 @@ public final class LocalSource implements MusicSource {
 
     @Override
     public String name() {
-        return "On This Phone";
+        return "On This Device";
     }
 
     @Override

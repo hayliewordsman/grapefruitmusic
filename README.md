@@ -11,7 +11,7 @@ with downloads for offline listening and time-synced lyrics.
 - **Sources:** music files on the phone, any number of Navidrome/Subsonic and Jellyfin servers, and *Downloaded Music*.
 - **Tabs:** Library, Playlists, Radio, Search and Settings. Library and Playlists show the source picked in Library.
 - **Excluded folders:** Settings › Excluded Folders hides folders (ringtones, voice messages, …) from
-  *On This Phone*. Grapefruit's own download folder is always kept out of it.
+  *On This Device*. Grapefruit's own download folder is always kept out of it.
 - **Offline listening:** download albums, playlists or single songs from a server. Downloads keep their cover art
   and lyrics, play with no connection, and can be limited to Wi‑Fi. Interrupted downloads resume.
 - **Time-synced lyrics:** lyrics scroll with the song and highlight the current line; tap a line to jump to it.
@@ -41,8 +41,9 @@ with downloads for offline listening and time-synced lyrics.
 - **FM Radio (beta):** the Radio tab shows your presets as station tiles, finds stations (Find Stations) and
   starts the radio; choosing a station opens Now Playing on it, with a dial to drag or tap, seek buttons for the
   next station down or up, 0.1 MHz steps, the station's name, programme type and text from RDS, + to save it as
-  a preset, and a Headphones / Speaker switch. Wired headphones are the antenna, as on any phone radio, so the
-  radio needs them in, but its sound can go to the speaker. It keeps playing in the background and with the
+  a preset, and a Headphones / Speaker switch. Wired headphones are the antenna, as on any phone radio, and its
+  sound can still go to the speaker. Not every tablet tells Android when headphones are in, so the radio
+  doesn't insist; it stops only for an unplug Android reports. It keeps playing in the background and with the
   screen off. Android has no public radio API: Grapefruit drives the radio chip the way MediaTek's own FM Radio
   app does (the system's `libfmjni.so` and MediaTek's radio MediaPlayer), which is how most budget tablets'
   radios work. Radio › Radio Details shows what Grapefruit found on a tablet whose radio it can't use yet, to
@@ -66,8 +67,9 @@ with downloads for offline listening and time-synced lyrics.
   sound (a new one every 12 ms) it looks at 96 frequency bands of the middle and sides of the mix, from 46 ms
   back to 23 ms ahead, and estimates how much of each band is lead vocal; that part of the middle is
   subtracted from both channels, so instruments and the stereo picture stay. The sound starts 70 ms later.
-  The model is trained on the MUSDB18 7-second excerpts (CC BY 4.0) by `tools/karaoke`. If a phone can't
-  keep up, Karaoke Mode turns itself off and says so.
+  The model is trained on the MUSDB18 7-second excerpts (CC BY 4.0) by `tools/karaoke`. It's read and run
+  once in the background before it plays (Android 4's JIT compiles code only after it has run a while), so
+  it's fast from the first note.
 - **Mono Audio:** Settings › Accessibility. Left and right are mixed (averaged at full precision, rounded once)
   and played in both ears, at the song's own sample rate. Mono alone never needs limiting, so apart from the mix
   the sound is untouched.

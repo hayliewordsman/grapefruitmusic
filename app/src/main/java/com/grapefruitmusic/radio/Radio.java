@@ -24,8 +24,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * FM radio: the station, its RDS information, presets, and the chip (a Tuner), which works on a
- * thread of its own. Wired headphones are the antenna, so the radio only plays with them in; its
- * sound can still go to the speaker. Main thread only, apart from the worker and RDS threads here.
+ * thread of its own. Wired headphones are the antenna; the sound can still go to the speaker. Not
+ * every tablet tells Android when headphones are plugged in, so the radio plays either way, and
+ * only stops for an unplug Android actually reports. Main thread only, apart from the worker and
+ * RDS threads here.
  *
  * Frequencies are in units of 10 kHz: 9870 is 98.7 MHz.
  */
@@ -97,7 +99,12 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
     private String radioText;
     private int programType = -1;
     private boolean speaker;
+    /** Android says headphones are plugged in (some tablets never say). */
     private boolean headphones;
+    /** What Android last said about the headphone jack, for Radio Details. */
+    private String headsetReport = "no plug broadcast";
+    /** Shown the "headphones are the antenna" tip this time the app runs. */
+    private boolean tippedHeadphones;
     /** No radio this app can use on this tablet (see report()). */
     private boolean unsupported;
     /** Stations from the last scan, or null. */
@@ -125,10 +132,15 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
     private final BroadcastReceiver headset = new BroadcastReceiver() {
         @Override
         public void onReceive(Context c, Intent intent) {
-            boolean in = intent.getIntExtra("state", 0) == 1;
+            int plug = intent.getIntExtra("state", -1);
+            headsetReport = "state " + plug + ", name " + intent.getStringExtra("name") + ", microphone "
+                    + intent.getIntExtra("microphone", -1);
+            // 1 on most tablets; some use other numbers for headphones without a microphone.
+            boolean in = plug > 0 || detectHeadphones();
             if (in == headphones) return;
+            boolean wasIn = headphones;
             headphones = in;
-            if (!in && state != OFF && state != SCANNING) {
+            if (wasIn && !in && state != OFF && state != SCANNING) {
                 stop();
                 Notice.showLong(context, "The radio stopped: headphones are its antenna. Plug them back in to listen.");
             }
@@ -154,14 +166,23 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         wakeLock.setReferenceCounted(false);
         frequency = clamp(Prefs.radioFrequency());
         loadPresets();
-        headphones = wiredHeadsetOn();
+        headphones = detectHeadphones();
         context.registerReceiver(headset, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
         Player.get(context).addListener(this);
     }
 
+    /** Android's own idea, or the kernel's headphone switch (h2w), says headphones are in. */
     @SuppressWarnings("deprecation")
-    private boolean wiredHeadsetOn() {
-        return audio.isWiredHeadsetOn();
+    private boolean detectHeadphones() {
+        return audio.isWiredHeadsetOn() || RadioReport.headphoneSwitch() > 0;
+    }
+
+    /** Headphones aren't known to be in: a tip, once a run, that they're the antenna. */
+    private void tipHeadphones() {
+        if (headphones || (headphones = detectHeadphones()) || tippedHeadphones) return;
+        tippedHeadphones = true;
+        Notice.showLong(context, "Headphones are the radio's antenna: if there's only static, check they're "
+                + "plugged in.");
     }
 
     public void addListener(Listener l) {
@@ -243,16 +264,8 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
 
     // ---- Playing ----
 
-    /** Plays the station at freq. False (with a message) if it can't: no headphones, say. */
+    /** Plays the station at freq. False (with a message) if it can't: another app has the sound, say. */
     public boolean play(int freq) {
-        if (!headphones) {
-            headphones = wiredHeadsetOn();
-            if (!headphones) {
-                Notice.showLong(context, "Plug in headphones to listen to the radio. They're its antenna.");
-                changed();
-                return false;
-            }
-        }
         if (state == SCANNING) return false;
         Player.get(context).pause();
         if (audio.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
@@ -270,6 +283,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
             return true;
         }
         state = STARTING;
+        tipHeadphones();
         changed();
         context.startService(new Intent(context, PlaybackService.class));
         final int gen = ++generation;
@@ -457,11 +471,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
     /** Looks for every station on the band (the radio stays as it was). */
     public void scan() {
         if (state == SCANNING || state == SEEKING || state == STARTING) return;
-        if (!headphones && !(headphones = wiredHeadsetOn())) {
-            Notice.showLong(context, "Plug in headphones to look for stations. They're the radio's antenna.");
-            changed();
-            return;
-        }
+        tipHeadphones();
         final boolean wasPlaying = state == PLAYING;
         final int back = frequency;
         state = SCANNING;
@@ -684,7 +694,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
 
     /** What Grapefruit found out about this tablet's radio, for the details page. Slow: not main thread. */
     public String report() {
-        return RadioReport.collect(context, log.text());
+        return RadioReport.collect(context, log.text(), headsetReport);
     }
 
     // ---- Music and other apps ----

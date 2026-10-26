@@ -136,7 +136,7 @@ public final class SettingsFragment extends BaseFragment
         g.footer("Grapefruit Music plays music from your own Navidrome, Subsonic or Jellyfin server, "
                 + "and from music files on this phone.");
 
-        g.section("On This Phone");
+        g.section("On This Device");
         int excluded = Prefs.excludedFolders().size();
         g.value("Excluded Folders", excluded == 0 ? "None" : excluded == 1 ? "1 folder" : excluded + " folders",
                 new View.OnClickListener() {
@@ -145,7 +145,7 @@ public final class SettingsFragment extends BaseFragment
                         main().push(new ExcludedFoldersFragment());
                     }
                 });
-        g.footer("Hide folders such as ringtones or voice messages from On This Phone.");
+        g.footer("Hide folders such as ringtones or voice messages from On This Device.");
 
         g.section("Playback");
         g.value("Streaming Quality", Prefs.qualityLabel(Prefs.streamQuality()), new View.OnClickListener() {

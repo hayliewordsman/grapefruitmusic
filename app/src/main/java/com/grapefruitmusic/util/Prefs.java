@@ -168,7 +168,7 @@ public final class Prefs {
         prefs.edit().putString("eq_custom", sb.toString()).apply();
     }
 
-    /** Folders hidden from On This Phone (absolute paths, no trailing slash). */
+    /** Folders hidden from On This Device (absolute paths, no trailing slash). */
     public static Set<String> excludedFolders() {
         return new TreeSet<String>(prefs.getStringSet("excluded_folders", new HashSet<String>()));
     }

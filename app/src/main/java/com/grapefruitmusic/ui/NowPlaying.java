@@ -300,6 +300,7 @@ final class NowPlaying {
             public void onClick(View v) {
                 boolean on = !Prefs.karaoke();
                 Prefs.setKaraoke(on);
+                if (on) Player.prepareKaraoke(activity);
                 player.audioEffectsChanged();
                 showKaraoke();
                 Notice.show(activity, on ? "Karaoke Mode on" : "Karaoke Mode off");

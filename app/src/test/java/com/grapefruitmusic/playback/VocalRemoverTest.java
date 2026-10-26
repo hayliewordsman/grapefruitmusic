@@ -59,6 +59,21 @@ public class VocalRemoverTest {
     }
 
     @Test
+    public void warmingUpLeavesTheModelAsItWas() throws IOException {
+        // Karaoke Mode runs the model once before it plays (for the JIT): the song sounds the same.
+        short[] in = samples("golden_in.bin");
+        short[] expected = samples("golden_out.bin");
+        DspEngine.warmUp(model());
+        VocalRemover r = new VocalRemover(model(), 44100);
+        int worst = 0;
+        for (int f = 0; f < in.length / 2; f++) {
+            r.process(in[2 * f] / 32768f, in[2 * f + 1] / 32768f);
+            worst = Math.max(worst, Math.abs(Math.round(r.outL * 32768) - expected[2 * f]));
+        }
+        assertTrue("worst difference " + worst + " LSB", worst <= 3);
+    }
+
+    @Test
     public void matchesTheTrainedModel() throws IOException {
         // A sung-like test signal through Python's reference (tools/export.py) and through the app:
         // the same sound out, to within rounding.

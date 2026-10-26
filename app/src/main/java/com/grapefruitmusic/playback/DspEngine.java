@@ -61,10 +61,6 @@ final class DspEngine implements Engine {
     private int pendingOff;
     private int pendingLen;
     private short[] scratch = new short[0];
-    // How much of real time the processing takes while Karaoke Mode runs (it's the heavy part).
-    private long busyNanos;
-    private long audioFrames;
-    private boolean warnedSlow;
 
     DspEngine(Context context) {
         app = context.getApplicationContext();
@@ -194,17 +190,33 @@ final class DspEngine implements Engine {
         return karaokeModel;
     }
 
-    /** Karaoke Mode's model (assets/karaoke.bin), read once and kept. */
+    /** Karaoke Mode's model (assets/karaoke.bin), read once, warmed up and kept. */
     static synchronized VocalRemover.Model karaokeModel(Context c) throws IOException {
         if (karaokeModel == null) {
             java.io.InputStream in = c.getAssets().open("karaoke.bin");
+            VocalRemover.Model model;
             try {
-                karaokeModel = VocalRemover.Model.read(in);
+                model = VocalRemover.Model.read(in);
             } finally {
                 in.close();
             }
+            warmUp(model);
+            karaokeModel = model;
         }
         return karaokeModel;
+    }
+
+    /**
+     * Runs the model over a second of quiet noise. Android 4's JIT only compiles code once it has
+     * run a while, and until then Karaoke Mode is several times slower: warmed up here, off the
+     * audio thread, it's fast from the first note.
+     */
+    static void warmUp(VocalRemover.Model model) {
+        VocalRemover r = new VocalRemover(model, 44100);
+        java.util.Random random = new java.util.Random(1);
+        for (int i = 0; i < 44100; i++) {
+            r.process(random.nextFloat() * 0.02f - 0.01f, random.nextFloat() * 0.02f - 0.01f);
+        }
     }
 
     @Override
@@ -523,38 +535,8 @@ final class DspEngine implements Engine {
                 pending[o++] = (short) (r / (inChannels / 2));
             }
         }
-        long started = System.nanoTime();
         dsp.process(pending, 0, o);
-        if (dsp.karaokeRunning() && outChannels > 0) {
-            checkSpeed(System.nanoTime() - started, o / outChannels);
-        } else {
-            busyNanos = 0;
-            audioFrames = 0;
-        }
         pendingOff = 0;
         pendingLen = o;
-    }
-
-    /**
-     * Karaoke Mode is the heavy part of the processing. If, over a few seconds, it takes more than
-     * 70% of the time the sound lasts, this phone can't keep up (the sound would stutter): say so.
-     */
-    private void checkSpeed(long nanos, int frames) {
-        busyNanos += nanos;
-        audioFrames += frames;
-        if (rate <= 0 || audioFrames < 3L * rate) return;
-        double share = busyNanos / (audioFrames * 1e9 / rate);
-        busyNanos = 0;
-        audioFrames = 0;
-        if (share > 0.7 && !warnedSlow) {
-            warnedSlow = true;
-            Log.w(TAG, "karaoke takes " + Math.round(share * 100) + "% of real time");
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    if (callback != null) callback.onKaraokeTooSlow(DspEngine.this);
-                }
-            });
-        }
     }
 }

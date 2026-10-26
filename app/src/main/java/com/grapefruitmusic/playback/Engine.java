@@ -14,9 +14,6 @@ interface Engine {
         void onCompletion(Engine engine);
 
         void onError(Engine engine, String what);
-
-        /** Karaoke Mode needs more of the processor than this phone can give it. */
-        void onKaraokeTooSlow(Engine engine);
     }
 
     void setCallback(Callback callback);

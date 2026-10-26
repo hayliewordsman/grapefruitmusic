@@ -24,7 +24,7 @@ import com.grapefruitmusic.util.Prefs;
 import java.util.Map;
 import java.util.Set;
 
-/** Settings › Excluded Folders: hide folders from On This Phone. */
+/** Settings › Excluded Folders: hide folders from On This Device. */
 public final class ExcludedFoldersFragment extends BaseFragment {
     private ScrollView page;
     private Map<String, Integer> folders;
@@ -85,7 +85,7 @@ public final class ExcludedFoldersFragment extends BaseFragment {
             }
         });
         g.footer(excluded.isEmpty()
-                ? "Songs in excluded folders, and in folders inside them, don't appear under On This Phone."
+                ? "Songs in excluded folders, and in folders inside them, don't appear under On This Device."
                 : "Tap a folder to show its songs again.");
 
         g.section("Folders with Music");

@@ -77,7 +77,7 @@ public final class Downloads {
         if (dir == null) dir = new File(context.getFilesDir(), "music");
         if (!dir.exists()) dir.mkdirs();
         // Keep the system media scanner out: downloads would otherwise show up twice under
-        // On This Phone, and cover art in the Gallery.
+        // On This Device, and cover art in the Gallery.
         File noMedia = new File(dir, ".nomedia");
         if (!noMedia.exists()) {
             try {

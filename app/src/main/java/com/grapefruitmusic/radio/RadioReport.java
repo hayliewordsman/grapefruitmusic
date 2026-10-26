@@ -37,7 +37,7 @@ final class RadioReport {
     private RadioReport() {
     }
 
-    static String collect(Context c, String attempts) {
+    static String collect(Context c, String attempts, String headset) {
         StringBuilder sb = new StringBuilder();
         String version = "?";
         try {
@@ -58,7 +58,10 @@ final class RadioReport {
         }
 
         AudioManager audio = (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);
-        sb.append("\nHeadphones in: ").append(wiredHeadsetOn(audio)).append('\n');
+        sb.append("\nHeadphones: Android says ").append(wiredHeadsetOn(audio) ? "in" : "not in")
+                .append("; last plug broadcast: ").append(headset).append('\n');
+        String switches = switches();
+        sb.append("Switches: ").append(switches.length() > 0 ? switches : "(none)").append('\n');
         boolean fmStream = false;
         try {
             AudioManager.class.getField("STREAM_FM");
@@ -126,6 +129,45 @@ final class RadioReport {
             for (String line : logs) sb.append(line).append('\n');
         }
         return sb.toString();
+    }
+
+    /** The kernel's headphone switch (/sys/class/switch/h2w/state: 0 out, 1 or 2 in), or -1. */
+    static int headphoneSwitch() {
+        String s = readLine(new File("/sys/class/switch/h2w/state"));
+        if (s == null) return -1;
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /** Every kernel switch and its state ("h2w=1, hdmi=0"): the headphone jack is usually one. */
+    private static String switches() {
+        File[] dirs = new File("/sys/class/switch").listFiles();
+        if (dirs == null) return "";
+        Arrays.sort(dirs);
+        StringBuilder sb = new StringBuilder();
+        for (File d : dirs) {
+            String state = readLine(new File(d, "state"));
+            if (state == null) continue;
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(d.getName()).append('=').append(state.trim());
+        }
+        return sb.toString();
+    }
+
+    private static String readLine(File f) {
+        try {
+            BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f), "US-ASCII"));
+            try {
+                return r.readLine();
+            } finally {
+                r.close();
+            }
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     @SuppressWarnings("deprecation")

@@ -148,6 +148,23 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         return effects().anyOn() && !item.key().equals(effectsFailedKey);
     }
 
+    /**
+     * Gets Karaoke Mode's model ready in the background (read, and run once so Android has compiled
+     * it), so turning Karaoke Mode on starts it straight away. Any thread.
+     */
+    public static void prepareKaraoke(final Context context) {
+        Bg.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DspEngine.karaokeModel(context.getApplicationContext());
+                } catch (IOException e) {
+                    Log.w(TAG, "karaoke model", e);
+                }
+            }
+        });
+    }
+
     /** The sound settings, for Grapefruit's own engine. */
     public static Effects effects() {
         return new Effects(Prefs.volumeBoost(), eqCurve(), Prefs.monoAudio(), Prefs.karaoke(), Prefs.karaokeAmount());
@@ -535,14 +552,6 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 failed(item, "Couldn't play “" + item.title + "”");
             }
 
-            @Override
-            public void onKaraokeTooSlow(Engine e) {
-                if (e != engine || !Prefs.karaoke()) return;
-                Prefs.setKaraoke(false);
-                Notice.showLong(context, "Karaoke Mode needs more power than this phone has, so it's off. "
-                        + "The music plays on.");
-                audioEffectsChanged();
-            }
         });
         try {
             File file = localFile(item);

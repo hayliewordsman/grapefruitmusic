@@ -90,10 +90,6 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
                             main().push(new RadioDetailsFragment());
                         }
                     }));
-        } else if (!radio.headphones()) {
-            content.addView(card(c, Icons.HEADPHONES, "Plug in headphones",
-                    "The radio uses their wire as its antenna. Once they're in, you can still listen through "
-                            + "the speaker: choose it in Now Playing.", null, null));
         }
 
         LinearLayout actions = new LinearLayout(c);
@@ -124,6 +120,21 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
         lp.leftMargin = Ui.dp(c, 12);
         actions.addView(scan, lp);
         content.addView(actions);
+        if (!radio.headphones()) {
+            // Not every tablet says when headphones are in, so this is a tip, not a block.
+            LinearLayout tip = new LinearLayout(c);
+            tip.setOrientation(LinearLayout.HORIZONTAL);
+            tip.setGravity(Gravity.CENTER_VERTICAL);
+            tip.setPadding(Ui.dp(c, 16), Ui.dp(c, 8), Ui.dp(c, 16), 0);
+            tip.addView(Ui.icon(c, Icons.HEADPHONES, Ui.color(c, R.attr.gfTextSecondary), 18));
+            TextView t = Ui.text(c, 13, R.attr.gfTextSecondary, false);
+            t.setSingleLine(false);
+            t.setText("Headphones are the radio's antenna: keep them plugged in. You can still listen "
+                    + "through the speaker: choose it in Now Playing.");
+            t.setPadding(Ui.dp(c, 8), 0, 0, 0);
+            tip.addView(t, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+            content.addView(tip);
+        }
 
         content.addView(Ui.sectionTitle(c, "Presets"));
         List<Radio.Preset> presets = radio.presets();

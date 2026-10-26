@@ -10,7 +10,7 @@ import java.util.List;
 public interface MusicSource {
     String id();
 
-    /** "On This Phone", "Home" ... */
+    /** "On This Device", "Home" ... */
     String name();
 
     /** "Navidrome / Subsonic", "Jellyfin" ... */

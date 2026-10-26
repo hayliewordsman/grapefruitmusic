@@ -36,6 +36,7 @@ public final class KaraokeFragment extends BaseFragment {
             @Override
             public void onToggled(Toggle t, boolean on) {
                 Prefs.setKaraoke(on);
+                if (on) Player.prepareKaraoke(getActivity());
                 Player.get(getActivity()).audioEffectsChanged();
             }
         });
