@@ -44,13 +44,23 @@ with downloads for offline listening and time-synced lyrics.
   a preset, and a Headphones / Speaker switch. Wired headphones are the antenna, as on any phone radio, and its
   sound can still go to the speaker. Not every tablet tells Android when headphones are in, so the radio
   doesn't insist; it stops only for an unplug Android reports. It keeps playing in the background and with the
-  screen off. Android has no public radio API: Grapefruit drives the radio chip the way MediaTek's own FM Radio
-  app does (the system's `libfmjni.so` and MediaTek's radio MediaPlayer), which is how most budget tablets'
-  radios work. Radio › Radio Details shows what Grapefruit found on a tablet whose radio it can't use yet:
+  screen off. Android has no public radio API, so Grapefruit uses the two kinds of radio budget tablets have:
+  - **Rockchip** tablets (the JP5S): only the tablet's own FM Radio app (`com.rk.FmRadio`, which runs as the
+    system user) may open the radio chip, and its radio service is open to other apps. Grapefruit binds to
+    that service and calls it the way the app's own screen does: switching on, the 87.5–108 MHz band, tuning,
+    seeking a 0.1 MHz step at a time until the chip hears a station, and finding stations. The volume slider
+    and volume keys set the chip's own volume (0 to 15). The chip sends its sound straight to the headphones,
+    so there's no Speaker choice, and it has no RDS, so stations show by frequency. While it's on, Rockchip's
+    service shows its own FM Radio notification beside Grapefruit's.
+  - **MediaTek** tablets: Grapefruit drives the chip the way MediaTek's own FM Radio app does (the system's
+    `libfmjni.so` and MediaTek's radio MediaPlayer), with RDS and the Speaker choice.
+
+  Radio › Radio Details shows what Grapefruit found on a tablet whose radio it can't use yet:
   radio libraries (with their JNI classes, functions and strings), devices and who may open them, the
   tablet's own radio apps read from their files without running them (the native functions they declare
-  with JNI signatures, their AIDL service interfaces, their services and permissions), permission groups
-  and FM audio constants. Save Radio Files zips that with the radio app and libraries themselves, to build
+  with JNI signatures, their AIDL service interfaces, their services and permissions), permission groups,
+  FM audio constants and what the audio driver says about the radio and sound routes. Save Radio Files zips
+  that with the radio app, libraries, audio driver and audio settings themselves, to build
   support for a new radio from.
 - **Volume Match:** Settings › Volume Match plays every song at about the same loudness, like Apple's Sound Check.
   Grapefruit measures songs on the phone and downloads in the background (EBU R128, the measure ReplayGain 2 uses),

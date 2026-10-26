@@ -141,6 +141,25 @@ final class RadioReport {
         }
         if (listed == 0) sb.append("(none readable)\n");
 
+        sb.append("\nAudio driver, about radio and routes:\n");
+        listed = 0;
+        for (File f : audioDrivers()) {
+            listed++;
+            sb.append(f.getPath()).append(" (").append(f.length()).append(" bytes)\n");
+            try {
+                List<String> found = new ArrayList<String>();
+                for (String str : strings(read(f))) {
+                    if (str.length() >= 3 && str.length() <= 100 && AUDIO_ROUTES.matcher(str).find() && found.size() < 150) {
+                        found.add(str);
+                    }
+                }
+                sb.append("  strings: ").append(found.isEmpty() ? "(none)" : join(found)).append('\n');
+            } catch (IOException e) {
+                sb.append("  can't read: ").append(e.getMessage()).append('\n');
+            }
+        }
+        if (listed == 0) sb.append("(none)\n");
+
         sb.append("\nPermission groups (platform.xml):\n").append(permissionGroups());
         sb.append("\nAudio constants about FM:\n").append(audioConstants());
 
@@ -165,6 +184,24 @@ final class RadioReport {
             for (File f : files) {
                 String name = f.getName().toLowerCase(Locale.US);
                 if (name.contains("fm") || name.contains("radio")) out.add(f);
+            }
+        }
+        return out;
+    }
+
+    private static final Pattern AUDIO_ROUTES = Pattern.compile(
+            "(?i)fm|radio|route|speaker|spk|headphone|headset|bypass|line.?in|aux|mixer|playback");
+
+    /** The audio driver (HAL) libraries, up to 2 MB: how the tablet sends sound to the speaker. */
+    static List<File> audioDrivers() {
+        List<File> out = new ArrayList<File>();
+        for (String dir : new String[]{"/system/lib/hw", "/vendor/lib/hw"}) {
+            File[] files = new File(dir).listFiles();
+            if (files == null) continue;
+            Arrays.sort(files);
+            for (File f : files) {
+                String name = f.getName().toLowerCase(Locale.US);
+                if (name.startsWith("audio") && f.length() <= 2 * 1024 * 1024) out.add(f);
             }
         }
         return out;

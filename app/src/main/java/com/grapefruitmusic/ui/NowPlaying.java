@@ -100,6 +100,7 @@ final class NowPlaying {
     private final View musicButtons;
     private final View radioButtons;
     private final Segmented output;
+    private final TextView outputNote;
     private final IconView btnPreset;
     private final VerticalSlider karaokeSlider;
     private final int accent;
@@ -253,7 +254,15 @@ final class NowPlaying {
         btnPreset = (IconView) root.findViewById(R.id.np_btn_preset);
         karaokeSlider = (VerticalSlider) root.findViewById(R.id.np_karaoke);
         output = new Segmented(a, new String[]{"Headphones", "Speaker"}, 0);
-        ((FrameLayout) root.findViewById(R.id.np_output)).addView(output);
+        FrameLayout outputArea = (FrameLayout) root.findViewById(R.id.np_output);
+        outputArea.addView(output);
+        // Where the radio can't be sent to the speaker, a note in the switch's place.
+        outputNote = Ui.text(a, 14, R.attr.gfTextSecondary, false);
+        outputNote.setSingleLine(false);
+        outputNote.setText("On this tablet the radio plays through the headphones.");
+        outputNote.setGravity(Gravity.CENTER_VERTICAL);
+        outputArea.addView(outputNote, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER_VERTICAL));
         buildRadioControls(root);
         buildKaraokeSlider(root);
         IconView volLow = (IconView) root.findViewById(R.id.np_vol_low);
@@ -391,12 +400,12 @@ final class NowPlaying {
 
             @Override
             public void onScrub(long value) {
-                audio.setStreamVolume(volumeStream(), (int) value, 0);
+                setVolume((int) value);
             }
 
             @Override
             public void onScrubEnd(long value) {
-                audio.setStreamVolume(volumeStream(), (int) value, 0);
+                setVolume((int) value);
             }
         });
 
@@ -569,6 +578,12 @@ final class NowPlaying {
         return radioMode ? radio.volumeStream() : AudioManager.STREAM_MUSIC;
     }
 
+    /** The radio's own volume (the chip's, on some tablets), or else the stream's. */
+    private void setVolume(int value) {
+        if (radioMode && radio.ownVolumeMax() > 0) radio.setOwnVolume(value);
+        else audio.setStreamVolume(volumeStream(), value, 0);
+    }
+
     boolean isOpen() {
         return open;
     }
@@ -734,6 +749,9 @@ final class NowPlaying {
         boolean playing = radio.wantsToPlay();
         play.setIcon(playing ? Icons.STOP : Icons.PLAY);
         dial.setFrequency(freq);
+        boolean switchable = radio.canUseSpeaker();
+        output.setVisibility(switchable ? View.VISIBLE : View.GONE);
+        outputNote.setVisibility(switchable ? View.GONE : View.VISIBLE);
         output.select(radio.speaker() ? 1 : 0);
         boolean saved = radio.preset(freq) != null;
         btnPreset.setIcon(saved ? Icons.CHECK : Icons.PLUS);
@@ -914,9 +932,14 @@ final class NowPlaying {
     private void tick() {
         if (!open) return;
         if (!volume.isDragging()) {
-            int stream = volumeStream();
-            volume.setMax(audio.getStreamMaxVolume(stream));
-            volume.setValue(audio.getStreamVolume(stream));
+            if (radioMode && radio.ownVolumeMax() > 0) {
+                volume.setMax(radio.ownVolumeMax());
+                volume.setValue(radio.ownVolume());
+            } else {
+                int stream = volumeStream();
+                volume.setMax(audio.getStreamMaxVolume(stream));
+                volume.setValue(audio.getStreamVolume(stream));
+            }
         }
         if (radioMode || player.current() == null) return;
         long pos = player.positionMs();

@@ -52,6 +52,17 @@ public interface Tuner {
 
     void stopAudio();
 
-    /** The AudioManager stream whose volume the radio follows. */
+    /** Whether setSpeaker() can move the sound to the speaker on this tablet. */
+    boolean canUseSpeaker();
+
+    /** The AudioManager stream whose volume the radio follows (when it has no volume of its own). */
     int volumeStream();
+
+    /** The radio's own volume goes from 0 to this; 0 if it follows volumeStream() instead. */
+    int volumeMax();
+
+    /** The radio's own volume (see volumeMax()). */
+    int volume();
+
+    void setVolume(int volume);
 }

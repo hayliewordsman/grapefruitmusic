@@ -395,7 +395,27 @@ final class MediatekTuner implements Tuner {
     }
 
     @Override
+    public boolean canUseSpeaker() {
+        return true;
+    }
+
+    @Override
     public int volumeStream() {
         return SOUND_KK.equals(sound) ? AudioManager.STREAM_MUSIC : fmStream;
+    }
+
+    @Override
+    public int volumeMax() {
+        // The sound goes through Android: its volume is the stream's.
+        return 0;
+    }
+
+    @Override
+    public int volume() {
+        return 0;
+    }
+
+    @Override
+    public void setVolume(int volume) {
     }
 }

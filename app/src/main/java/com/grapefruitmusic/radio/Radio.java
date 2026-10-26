@@ -73,6 +73,11 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
     private static TunerFactory factory = new TunerFactory() {
         @Override
         public Tuner open(Context context, RadioLog log) {
+            // Rockchip tablets (the JP5S) through their own radio app's service; MediaTek's otherwise.
+            if (RockchipTuner.present(context)) {
+                Tuner t = RockchipTuner.open(context, log);
+                if (t != null) return t;
+            }
             return MediatekTuner.open(context, log);
         }
     };
@@ -117,6 +122,11 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
     /** The thread reading RDS; an old one notices it's been replaced and ends. */
     private volatile Thread rdsThread;
     private int volumeStream = AudioManager.STREAM_MUSIC;
+    /** The radio's own volume, 0 to ownVolumeMax (0: it follows volumeStream instead). */
+    private int ownVolumeMax;
+    private int ownVolume;
+    /** The sound can go to the speaker (until the radio is known, a guess from what's installed). */
+    private boolean canUseSpeaker;
 
     /** The frequency the worker tunes to next (tunes while dragging the dial are merged). */
     private volatile int tuneTo;
@@ -167,6 +177,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         frequency = clamp(Prefs.radioFrequency());
         loadPresets();
         headphones = detectHeadphones();
+        canUseSpeaker = !RockchipTuner.present(context);
         context.registerReceiver(headset, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
         Player.get(context).addListener(this);
     }
@@ -245,6 +256,40 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         return volumeStream;
     }
 
+    /** The radio has a volume of its own from 0 to this (the chip's), or 0 if it follows volumeStream(). */
+    public int ownVolumeMax() {
+        return ownVolumeMax;
+    }
+
+    public int ownVolume() {
+        return ownVolume;
+    }
+
+    /** Sets the radio's own volume (see ownVolumeMax()). */
+    public void setOwnVolume(int v) {
+        if (ownVolumeMax <= 0) return;
+        final int volume = Math.max(0, Math.min(ownVolumeMax, v));
+        if (volume == ownVolume) return;
+        ownVolume = volume;
+        changed();
+        worker.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (tuner != null && poweredUp) tuner.setVolume(volume);
+            }
+        });
+    }
+
+    /** The volume keys, when the radio has a volume of its own. */
+    public void stepVolume(boolean up) {
+        setOwnVolume(ownVolume + (up ? 1 : -1));
+    }
+
+    /** Whether the sound can be sent to the speaker on this tablet (see setSpeaker()). */
+    public boolean canUseSpeaker() {
+        return canUseSpeaker;
+    }
+
     /** The station's name, or its frequency ("98.7 FM"). */
     public String title() {
         if (programName != null && programName.length() > 0) return programName;
@@ -268,11 +313,6 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
     public boolean play(int freq) {
         if (state == SCANNING) return false;
         Player.get(context).pause();
-        if (audio.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-                != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            Notice.show(context, "Another app is playing sound");
-            return false;
-        }
         pausedByFocusLoss = false;
         boolean retune = state != OFF;
         session = true;
@@ -293,12 +333,34 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
             @Override
             public void run() {
                 final String error = startOnWorker(at, toSpeaker);
-                final int stream = tuner != null ? tuner.volumeStream() : AudioManager.STREAM_MUSIC;
+                final Tuner t = tuner;
+                final int stream = t != null ? t.volumeStream() : AudioManager.STREAM_MUSIC;
+                final int max = t != null ? t.volumeMax() : 0;
+                final int volume = max > 0 && error == null ? t.volume() : 0;
                 Bg.main(new Runnable() {
                     @Override
                     public void run() {
                         if (gen != generation) return;
                         volumeStream = stream;
+                        ownVolumeMax = max;
+                        ownVolume = volume;
+                        if (t != null) canUseSpeaker = t.canUseSpeaker();
+                        if (!canUseSpeaker) speaker = false;
+                        // Taken now, not before: Rockchip's radio service takes focus itself as the
+                        // radio comes on, which would otherwise switch Grapefruit's radio off.
+                        if (error == null && audio.requestAudioFocus(Radio.this, AudioManager.STREAM_MUSIC,
+                                AudioManager.AUDIOFOCUS_GAIN) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                            state = OFF;
+                            worker.execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    powerDownOnWorker();
+                                }
+                            });
+                            Notice.show(context, "Another app is playing sound");
+                            changed();
+                            return;
+                        }
                         if (error == null) {
                             unsupported = false;
                             if (state == STARTING) state = PLAYING;
@@ -535,7 +597,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
 
     /** The sound through the speaker (true) or the headphones. The headphones stay the antenna. */
     public void setSpeaker(final boolean on) {
-        if (on == speaker) return;
+        if (on == speaker || (on && !canUseSpeaker)) return;
         speaker = on;
         changed();
         worker.execute(new Runnable() {

@@ -338,6 +338,18 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         if (radio.play(freq)) nowPlaying.open();
     }
 
+    /** The volume keys turn the radio's own volume, on tablets where it has one (the chip's). */
+    @Override
+    public boolean onKeyDown(int keyCode, android.view.KeyEvent event) {
+        if ((keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP || keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN)
+                && radio.inSession() && radio.ownVolumeMax() > 0 && radio.wantsToPlay()) {
+            radio.stepVolume(keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP);
+            Notice.show(this, "Radio volume " + radio.ownVolume() + " of " + radio.ownVolumeMax());
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     @Override
     public void onBackPressed() {
         Fragment page = getFragmentManager().findFragmentById(R.id.content);

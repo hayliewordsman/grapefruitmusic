@@ -130,8 +130,10 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
             tip.addView(Ui.icon(c, Icons.HEADPHONES, Ui.color(c, R.attr.gfTextSecondary), 18));
             TextView t = Ui.text(c, 13, R.attr.gfTextSecondary, false);
             t.setSingleLine(false);
-            t.setText("Headphones are the radio's antenna: keep them plugged in. You can still listen "
-                    + "through the speaker: choose it in Now Playing.");
+            t.setText(radio.canUseSpeaker() ? "Headphones are the radio's antenna: keep them plugged in. You can "
+                    + "still listen through the speaker: choose it in Now Playing."
+                    : "Headphones are the radio's antenna, and on this tablet the radio plays through them: keep "
+                    + "them plugged in.");
             t.setPadding(Ui.dp(c, 8), 0, 0, 0);
             tip.addView(t, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
             content.addView(tip);

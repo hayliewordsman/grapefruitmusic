@@ -55,6 +55,10 @@ public final class RadioFiles {
         for (File f : RadioReport.radioLibraries()) {
             if (f.length() <= 2 * 1024 * 1024) paths.add(f.getPath());
         }
+        // The audio driver and its settings: where the radio's sound can be sent.
+        for (File f : RadioReport.audioDrivers()) paths.add(f.getPath());
+        paths.add("/system/etc/audio_policy.conf");
+        paths.add("/system/etc/asound.conf");
         paths.add("/system/etc/permissions/platform.xml");
         paths.add("/system/build.prop");
         paths.addAll(RadioReport.rcFiles());

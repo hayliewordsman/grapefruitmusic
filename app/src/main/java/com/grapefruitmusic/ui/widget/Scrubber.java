@@ -85,6 +85,14 @@ public class Scrubber extends View {
         return dragging;
     }
 
+    public long getMax() {
+        return max;
+    }
+
+    public long getValue() {
+        return value;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         float pad = dragThumbRadius + density;
