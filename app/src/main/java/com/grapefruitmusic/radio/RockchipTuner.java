@@ -57,8 +57,7 @@ final class RockchipTuner implements Tuner {
     /** Is Rockchip's FM Radio app on this tablet? */
     static boolean present(Context c) {
         try {
-            c.getPackageManager().getServiceInfo(new ComponentName(PACKAGE, SERVICE), 0);
-            return true;
+            return c.getPackageManager().getServiceInfo(new ComponentName(PACKAGE, SERVICE), 0) != null;
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
