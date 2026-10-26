@@ -19,6 +19,8 @@ import android.widget.TextView;
 import com.grapefruitmusic.R;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
+import com.grapefruitmusic.radio.Radio;
+import com.grapefruitmusic.radio.RadioArt;
 import com.grapefruitmusic.ui.widget.ArtworkView;
 import com.grapefruitmusic.ui.widget.IconView;
 import com.grapefruitmusic.ui.widget.Icons;
@@ -26,18 +28,27 @@ import com.grapefruitmusic.util.ArtworkLoader;
 import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Notice;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 /** One activity: tab bar, a stack of pages, the mini player and the Now Playing card. */
-public final class MainActivity extends Activity implements Player.Listener, Notice.Sink {
+public final class MainActivity extends Activity implements Player.Listener, Radio.Listener, Notice.Sink {
     public static final String EXTRA_OPEN_NOW_PLAYING = "open_now_playing";
 
     private static final int TAB_LIBRARY = 0;
     private static final int TAB_PLAYLISTS = 1;
-    private static final int TAB_SEARCH = 2;
-    private static final int TAB_SETTINGS = 3;
-    private static final String[] TAB_NAMES = {"Library", "Playlists", "Search", "Settings"};
-    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.PLAYLIST, Icons.SEARCH, Icons.SETTINGS};
+    private static final int TAB_RADIO = 2;
+    private static final int TAB_SEARCH = 3;
+    private static final int TAB_SETTINGS = 4;
+    private static final String[] TAB_NAMES = {"Library", "Playlists", "Radio", "Search", "Settings"};
+    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.PLAYLIST, Icons.RADIO, Icons.SEARCH, Icons.SETTINGS};
+
+    /** Grapefruit's open windows (normally one), for the notification's close button. Main thread. */
+    private static final Map<MainActivity, Boolean> LIVE = new WeakHashMap<MainActivity, Boolean>();
 
     private Player player;
+    private Radio radio;
     private NowPlaying nowPlaying;
     private int tab = TAB_LIBRARY;
     private final IconView[] tabIcons = new IconView[TAB_NAMES.length];
@@ -70,6 +81,8 @@ public final class MainActivity extends Activity implements Player.Listener, Not
         setContentView(R.layout.activity_main);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         player = Player.get(this);
+        radio = Radio.get(this);
+        LIVE.put(this, Boolean.TRUE);
 
         buildTabBar();
         mini = findViewById(R.id.mini_player);
@@ -94,13 +107,15 @@ public final class MainActivity extends Activity implements Player.Listener, Not
         miniPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                player.togglePlay();
+                if (radio.inSession()) radio.togglePlay();
+                else player.togglePlay();
             }
         });
         miniNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                player.next();
+                if (radio.inSession()) radio.seek(true);
+                else player.next();
             }
         });
 
@@ -163,6 +178,7 @@ public final class MainActivity extends Activity implements Player.Listener, Not
         }
         Fragment root;
         if (index == TAB_PLAYLISTS) root = BrowseFragment.newInstance(null, BrowseFragment.PLAYLISTS, null, null);
+        else if (index == TAB_RADIO) root = new RadioFragment();
         else if (index == TAB_SEARCH) root = new SearchFragment();
         else if (index == TAB_SETTINGS) root = new SettingsFragment();
         else root = new LibraryFragment();
@@ -192,14 +208,28 @@ public final class MainActivity extends Activity implements Player.Listener, Not
     private void handleIntent(Intent intent) {
         if (intent != null && intent.getBooleanExtra(EXTRA_OPEN_NOW_PLAYING, false)) {
             intent.removeExtra(EXTRA_OPEN_NOW_PLAYING);
-            if (player.current() != null) nowPlaying.openImmediately();
+            if (player.current() != null || radio.inSession()) nowPlaying.openImmediately();
         }
+    }
+
+    /** The notification's close button: Grapefruit goes away (playback has already stopped). */
+    public static void closeIfOpen() {
+        for (MainActivity a : new ArrayList<MainActivity>(LIVE.keySet())) {
+            if (!a.isFinishing()) a.finish();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        LIVE.remove(this);
+        super.onDestroy();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         player.addListener(this);
+        radio.addListener(this);
         onPlayerChanged();
         nowPlaying.onStart();
     }
@@ -257,6 +287,7 @@ public final class MainActivity extends Activity implements Player.Listener, Not
     @Override
     protected void onStop() {
         player.removeListener(this);
+        radio.removeListener(this);
         nowPlaying.onStop();
         super.onStop();
     }
@@ -276,17 +307,35 @@ public final class MainActivity extends Activity implements Player.Listener, Not
     }
 
     @Override
+    public void onRadioChanged() {
+        onPlayerChanged();
+    }
+
+    @Override
     public void onPlayerChanged() {
+        boolean onRadio = radio.inSession();
+        // The volume keys turn the radio's own volume while it's on.
+        setVolumeControlStream(onRadio ? radio.volumeStream() : AudioManager.STREAM_MUSIC);
         MediaItem item = player.current();
-        boolean show = item != null;
+        boolean show = item != null || onRadio;
         mini.setVisibility(show ? View.VISIBLE : View.GONE);
         miniSeparator.setVisibility(show ? View.VISIBLE : View.GONE);
-        if (show) {
+        if (onRadio) {
+            miniTitle.setText(radio.title());
+            miniPlay.setIcon(radio.wantsToPlay() ? Icons.STOP : Icons.PLAY);
+            miniArt.setTag(R.id.art_request, null);
+            miniArt.setBitmap(RadioArt.of(radio.frequency(), radio.programName(), Ui.dp(this, 44)));
+        } else if (item != null) {
             miniTitle.setText(item.title);
             miniPlay.setIcon(player.wantsToPlay() ? Icons.PAUSE : Icons.PLAY);
             ArtworkLoader.get(this).into(miniArt, item, Ui.dp(this, 44));
         }
         nowPlaying.update();
+    }
+
+    /** Plays a radio station and shows it in Now Playing. */
+    void playRadio(int freq) {
+        if (radio.play(freq)) nowPlaying.open();
     }
 
     @Override

@@ -9,7 +9,7 @@ with downloads for offline listening and time-synced lyrics.
 ## Features
 
 - **Sources:** music files on the phone, any number of Navidrome/Subsonic and Jellyfin servers, and *Downloaded Music*.
-- **Tabs:** Library, Playlists, Search and Settings. Library and Playlists show the source picked in Library.
+- **Tabs:** Library, Playlists, Radio, Search and Settings. Library and Playlists show the source picked in Library.
 - **Excluded folders:** Settings › Excluded Folders hides folders (ringtones, voice messages, …) from
   *On This Phone*. Grapefruit's own download folder is always kept out of it.
 - **Offline listening:** download albums, playlists or single songs from a server. Downloads keep their cover art
@@ -35,7 +35,18 @@ with downloads for offline listening and time-synced lyrics.
   messages and fast-scroll thumb instead of using Android's (Holo on 4.x, Material later). Settings switches are
   little grapefruit slices that roll across a grapefruit-gradient track.
 - **Playback:** background playback with notification, lock-screen and headset controls, shuffle, repeat (all/one),
-  Up Next (drag the ≡ handle to reorder: the other songs slide aside), Play Next / Add to Up Next.
+  Up Next (drag the ≡ handle to reorder: the other songs slide aside), Play Next / Add to Up Next. The
+  notification shows the whole cover (fitted, not cropped) and has an ✕ at the top right that stops playback,
+  closes Grapefruit and clears the notification.
+- **FM Radio (beta):** the Radio tab shows your presets as station tiles, finds stations (Find Stations) and
+  starts the radio; choosing a station opens Now Playing on it, with a dial to drag or tap, seek buttons for the
+  next station down or up, 0.1 MHz steps, the station's name, programme type and text from RDS, + to save it as
+  a preset, and a Headphones / Speaker switch. Wired headphones are the antenna, as on any phone radio, so the
+  radio needs them in, but its sound can go to the speaker. It keeps playing in the background and with the
+  screen off. Android has no public radio API: Grapefruit drives the radio chip the way MediaTek's own FM Radio
+  app does (the system's `libfmjni.so` and MediaTek's radio MediaPlayer), which is how most budget tablets'
+  radios work. Radio › Radio Details shows what Grapefruit found on a tablet whose radio it can't use yet, to
+  copy or save to a file.
 - **Volume Match:** Settings › Volume Match plays every song at about the same loudness, like Apple's Sound Check.
   Grapefruit measures songs on the phone and downloads in the background (EBU R128, the measure ReplayGain 2 uses),
   uses the loudness your server reports for streamed songs (Navidrome ReplayGain tags, Jellyfin 10.9+
@@ -49,7 +60,8 @@ with downloads for offline listening and time-synced lyrics.
   Reducer. Each band is a peaking filter; because neighbouring bands overlap, their gains are solved together so
   every band's centre lands exactly where its slider is.
 - **Karaoke Mode:** Settings › Sound › Karaoke Mode, or the microphone in Now Playing, turns down the lead vocal
-  of any song, by as much as the Vocal Removal slider says. A small neural network (about 220,000 weights,
+  of any song, by as much as the Vocal Removal slider says (in Settings, or the upright slider beside the
+  artwork in Now Playing while Karaoke Mode is on: slide up to take more away). A small neural network (about 220,000 weights,
   4-bit, 0.11 MB) runs on the phone, offline, inside Grapefruit's own audio engine: for each 46 ms window of
   sound (a new one every 12 ms) it looks at 96 frequency bands of the middle and sides of the mix, from 46 ms
   back to 23 ms ahead, and estimates how much of each band is lead vocal; that part of the middle is

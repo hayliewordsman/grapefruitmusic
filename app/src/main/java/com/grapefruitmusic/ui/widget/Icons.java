@@ -36,6 +36,12 @@ public final class Icons {
     public static final int REMOVE = 26;
     /** A microphone: Karaoke Mode. */
     public static final int MIC = 27;
+    /** A broadcast mast with waves: the Radio tab. */
+    public static final int RADIO = 28;
+    public static final int HEADPHONES = 29;
+    /** A filled square: stop (the radio, which is live, stops rather than pauses). */
+    public static final int STOP = 30;
+    public static final int CLOSE = 31;
 
     private static final Paint PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final Path PATH = new Path();
@@ -297,6 +303,43 @@ public final class Icons {
                 c.drawArc(OVAL, 10, 160, false, p);
                 c.drawLine(12, 17, 12, 21, p);
                 c.drawLine(8.5f, 21, 15.5f, 21, p);
+                break;
+            case RADIO:
+                p.setStyle(Paint.Style.FILL);
+                c.drawCircle(12, 9, 2.1f, p);
+                stroke(p, 1.8f);
+                OVAL.set(7, 4, 17, 14);
+                c.drawArc(OVAL, -45, 90, false, p);
+                c.drawArc(OVAL, 135, 90, false, p);
+                OVAL.set(3, 0, 21, 18);
+                c.drawArc(OVAL, -40, 80, false, p);
+                c.drawArc(OVAL, 140, 80, false, p);
+                path.moveTo(8.5f, 21.5f);
+                path.lineTo(12, 12);
+                path.lineTo(15.5f, 21.5f);
+                c.drawPath(path, p);
+                break;
+            case HEADPHONES:
+                stroke(p, 1.9f);
+                OVAL.set(4, 4, 20, 20);
+                c.drawArc(OVAL, 180, 180, false, p);
+                c.drawLine(4, 12, 4, 15, p);
+                c.drawLine(20, 12, 20, 15, p);
+                p.setStyle(Paint.Style.FILL);
+                OVAL.set(3, 13, 8.5f, 21);
+                c.drawRoundRect(OVAL, 2, 2, p);
+                OVAL.set(15.5f, 13, 21, 21);
+                c.drawRoundRect(OVAL, 2, 2, p);
+                break;
+            case STOP:
+                p.setStyle(Paint.Style.FILL);
+                OVAL.set(6, 6, 18, 18);
+                c.drawRoundRect(OVAL, 1.6f, 1.6f, p);
+                break;
+            case CLOSE:
+                stroke(p, 2.2f);
+                c.drawLine(6, 6, 18, 18, p);
+                c.drawLine(18, 6, 6, 18, p);
                 break;
             case CHECK:
                 stroke(p, 2.4f);

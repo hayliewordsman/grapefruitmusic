@@ -29,23 +29,30 @@ import com.grapefruitmusic.lyrics.Lyrics;
 import com.grapefruitmusic.lyrics.LyricsRepository;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
+import com.grapefruitmusic.radio.Radio;
+import com.grapefruitmusic.radio.RadioArt;
 import com.grapefruitmusic.ui.widget.ArtworkView;
 import com.grapefruitmusic.ui.widget.DragFrame;
 import com.grapefruitmusic.ui.widget.IconView;
 import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.ui.widget.NowPlayingCard;
 import com.grapefruitmusic.ui.widget.Scrubber;
+import com.grapefruitmusic.ui.widget.TuningDial;
+import com.grapefruitmusic.ui.widget.VerticalSlider;
 import com.grapefruitmusic.util.ArtworkLoader;
 import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Blur;
 import com.grapefruitmusic.util.Format;
+import com.grapefruitmusic.util.Notice;
+import com.grapefruitmusic.util.Prefs;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * The Now Playing card: artwork, controls, time-synced lyrics and Up Next. It slides up from the
- * bottom, or in landscape pops in from the right as a panel beside the library.
+ * bottom, or in landscape pops in from the right as a panel beside the library. While the radio
+ * is on it shows the station instead, with a dial, seek buttons and where the sound goes.
  */
 final class NowPlaying {
     private static final int MODE_ART = 0;
@@ -56,6 +63,7 @@ final class NowPlaying {
 
     private final Activity activity;
     private final Player player;
+    private final Radio radio;
     private final AudioManager audio;
     private final View root;
     private final View dim;
@@ -84,8 +92,19 @@ final class NowPlaying {
     private final TextView smallTitle;
     private final TextView smallArtist;
     private final DragFrame listArea;
+    private final IconView prev;
+    private final IconView next;
+    private final View times;
+    private final View tunerRow;
+    private final TuningDial dial;
+    private final View musicButtons;
+    private final View radioButtons;
+    private final Segmented output;
+    private final IconView btnPreset;
+    private final VerticalSlider karaokeSlider;
     private final int accent;
     private final int secondary;
+    private final int primary;
 
     private final LyricsAdapter lyricsAdapter;
     private final QueueAdapter queueAdapter;
@@ -102,6 +121,9 @@ final class NowPlaying {
     private long lastUserScroll;
     private Boolean artPlaying;
     private String queueAnchorKey;
+    /** Showing the radio (not the music queue). */
+    private boolean radioMode;
+    private String radioArtKey;
 
     // Dragging a song in Up Next by its handle. The list's data stays put while dragging: the
     // rows in between slide aside (translationY), and the move is made on release.
@@ -172,10 +194,11 @@ final class NowPlaying {
         activity = a;
         this.root = root;
         player = Player.get(a);
+        radio = Radio.get(a);
         audio = (AudioManager) a.getSystemService(Context.AUDIO_SERVICE);
         accent = Ui.accent(a);
         secondary = Ui.color(a, R.attr.gfTextSecondary);
-        int primary = Ui.color(a, R.attr.gfTextPrimary);
+        primary = Ui.color(a, R.attr.gfTextPrimary);
         int separator = Ui.color(a, R.attr.gfSeparator);
 
         dim = root.findViewById(R.id.np_dim);
@@ -194,8 +217,8 @@ final class NowPlaying {
         scrubber = (Scrubber) root.findViewById(R.id.np_scrubber);
         volume = (Scrubber) root.findViewById(R.id.np_volume);
         play = (IconView) root.findViewById(R.id.np_play);
-        IconView prev = (IconView) root.findViewById(R.id.np_prev);
-        IconView next = (IconView) root.findViewById(R.id.np_next);
+        prev = (IconView) root.findViewById(R.id.np_prev);
+        next = (IconView) root.findViewById(R.id.np_next);
         btnLyrics = (IconView) root.findViewById(R.id.np_btn_lyrics);
         btnShuffle = (IconView) root.findViewById(R.id.np_btn_shuffle);
         btnRepeat = (IconView) root.findViewById(R.id.np_btn_repeat);
@@ -222,6 +245,17 @@ final class NowPlaying {
                 endDrag();
             }
         });
+        times = root.findViewById(R.id.np_times);
+        tunerRow = root.findViewById(R.id.np_tuner);
+        dial = (TuningDial) root.findViewById(R.id.np_dial);
+        musicButtons = root.findViewById(R.id.np_buttons);
+        radioButtons = root.findViewById(R.id.np_radio_buttons);
+        btnPreset = (IconView) root.findViewById(R.id.np_btn_preset);
+        karaokeSlider = (VerticalSlider) root.findViewById(R.id.np_karaoke);
+        output = new Segmented(a, new String[]{"Headphones", "Speaker"}, 0);
+        ((FrameLayout) root.findViewById(R.id.np_output)).addView(output);
+        buildRadioControls(root);
+        buildKaraokeSlider(root);
         IconView volLow = (IconView) root.findViewById(R.id.np_vol_low);
         IconView volHigh = (IconView) root.findViewById(R.id.np_vol_high);
 
@@ -264,11 +298,11 @@ final class NowPlaying {
         btnKaraoke.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean on = !com.grapefruitmusic.util.Prefs.karaoke();
-                com.grapefruitmusic.util.Prefs.setKaraoke(on);
+                boolean on = !Prefs.karaoke();
+                Prefs.setKaraoke(on);
                 player.audioEffectsChanged();
                 showKaraoke();
-                com.grapefruitmusic.util.Notice.show(activity, on ? "Karaoke Mode on" : "Karaoke Mode off");
+                Notice.show(activity, on ? "Karaoke Mode on" : "Karaoke Mode off");
             }
         });
         btnQueue.setContentDescription("Up Next");
@@ -290,19 +324,22 @@ final class NowPlaying {
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                player.togglePlay();
+                if (radioMode) radio.togglePlay();
+                else player.togglePlay();
             }
         });
         prev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                player.previous();
+                if (radioMode) radio.seek(false);
+                else player.previous();
             }
         });
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                player.next();
+                if (radioMode) radio.seek(true);
+                else player.next();
             }
         });
         btnShuffle.setOnClickListener(new View.OnClickListener() {
@@ -353,12 +390,12 @@ final class NowPlaying {
 
             @Override
             public void onScrub(long value) {
-                audio.setStreamVolume(AudioManager.STREAM_MUSIC, (int) value, 0);
+                audio.setStreamVolume(volumeStream(), (int) value, 0);
             }
 
             @Override
             public void onScrubEnd(long value) {
-                audio.setStreamVolume(AudioManager.STREAM_MUSIC, (int) value, 0);
+                audio.setStreamVolume(volumeStream(), (int) value, 0);
             }
         });
 
@@ -438,6 +475,99 @@ final class NowPlaying {
         });
     }
 
+    private void buildRadioControls(View root) {
+        dial.setColors(secondary, accent);
+        dial.setRange(Radio.LOWEST, Radio.HIGHEST, Radio.STEP);
+        dial.setListener(new TuningDial.Listener() {
+            @Override
+            public void onTuning(int freq) {
+                radio.tune(freq);
+            }
+
+            @Override
+            public void onTuned(int freq) {
+                radio.tune(freq);
+                // The artwork waits for the dial to stop.
+                update();
+            }
+        });
+        IconView down = (IconView) root.findViewById(R.id.np_tune_down);
+        IconView up = (IconView) root.findViewById(R.id.np_tune_up);
+        down.setIcon(Icons.CHEVRON_LEFT);
+        up.setIcon(Icons.CHEVRON_RIGHT);
+        down.setColor(secondary);
+        up.setColor(secondary);
+        down.setContentDescription("Tune down 0.1");
+        up.setContentDescription("Tune up 0.1");
+        down.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                radio.step(false);
+            }
+        });
+        up.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                radio.step(true);
+            }
+        });
+        output.setContentDescription("Play the radio through");
+        output.setListener(new Segmented.Listener() {
+            @Override
+            public void onSelected(int index) {
+                radio.setSpeaker(index == 1);
+            }
+        });
+        btnPreset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int f = radio.frequency();
+                if (radio.preset(f) != null) {
+                    radio.removePreset(f);
+                    Notice.show(activity, "Removed " + Radio.format(f) + " FM from Presets");
+                } else {
+                    radio.addPreset(f);
+                    Notice.show(activity, "Added " + Radio.format(f) + " FM to Presets");
+                }
+            }
+        });
+    }
+
+    private void buildKaraokeSlider(View root) {
+        karaokeSlider.setIcon(Icons.MIC);
+        karaokeSlider.setColors((secondary & 0x00ffffff) | 0x40000000, accent, secondary);
+        karaokeSlider.setContentDescription("Vocal removal");
+        karaokeSlider.setListener(new VerticalSlider.Listener() {
+            @Override
+            public void onSlide(float value) {
+                Prefs.setKaraokeAmount(value);
+                player.audioEffectsChanged();
+            }
+
+            @Override
+            public void onSlideEnd(float value) {
+                onSlide(value);
+            }
+        });
+        // As tall as there's room for, up to 240dp.
+        root.findViewById(R.id.np_stage).addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+                int h = Math.min(Ui.dp(activity, 240), (b - t) - Ui.dp(activity, 24));
+                ViewGroup.LayoutParams lp = karaokeSlider.getLayoutParams();
+                if (h > 0 && lp.height != h) {
+                    lp.height = h;
+                    karaokeSlider.setLayoutParams(lp);
+                }
+            }
+        });
+    }
+
+    /** The volume the slider (and the volume keys) control: the radio may have its own. */
+    int volumeStream() {
+        return radioMode ? radio.volumeStream() : AudioManager.STREAM_MUSIC;
+    }
+
     boolean isOpen() {
         return open;
     }
@@ -510,7 +640,7 @@ final class NowPlaying {
     }
 
     void open() {
-        if (open || player.current() == null) return;
+        if (open || (player.current() == null && !radio.inSession())) return;
         open = true;
         update();
         card.setVisibility(View.VISIBLE);
@@ -524,7 +654,7 @@ final class NowPlaying {
     }
 
     void openImmediately() {
-        if (player.current() == null) return;
+        if (player.current() == null && !radio.inSession()) return;
         open = true;
         card.setVisibility(View.VISIBLE);
         dim.setVisibility(View.VISIBLE);
@@ -555,11 +685,101 @@ final class NowPlaying {
     }
 
     private void showKaraoke() {
-        btnKaraoke.setColor(com.grapefruitmusic.util.Prefs.karaoke() ? accent : secondary);
+        btnKaraoke.setColor(Prefs.karaoke() ? accent : secondary);
+        showKaraokeSlider();
     }
 
-    /** Called whenever the player changes. */
+    /** The vocal slider beside the artwork while Karaoke Mode is on (the artwork makes room). */
+    private void showKaraokeSlider() {
+        boolean show = !radioMode && Prefs.karaoke() && mode == MODE_ART;
+        if (!karaokeSlider.isSliding()) karaokeSlider.setValue(Prefs.karaokeAmount());
+        if (show == (karaokeSlider.getVisibility() == View.VISIBLE)) return;
+        karaokeSlider.setVisibility(show ? View.VISIBLE : View.GONE);
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) art.getLayoutParams();
+        int side = Ui.dp(activity, show ? 58 : 12);
+        lp.leftMargin = side;
+        lp.rightMargin = side;
+        art.setLayoutParams(lp);
+    }
+
+    /** Switches the card between the music queue and the radio. */
+    private void setRadioMode(boolean on) {
+        radioMode = on;
+        if (on && mode != MODE_ART) setMode(MODE_ART);
+        scrubber.setVisibility(on ? View.GONE : View.VISIBLE);
+        times.setVisibility(on ? View.GONE : View.VISIBLE);
+        tunerRow.setVisibility(on ? View.VISIBLE : View.GONE);
+        musicButtons.setVisibility(on ? View.GONE : View.VISIBLE);
+        radioButtons.setVisibility(on ? View.VISIBLE : View.GONE);
+        card.setDragLimit(on ? tunerRow : scrubber);
+        prev.setContentDescription(on ? "Previous station" : "Previous");
+        next.setContentDescription(on ? "Next station" : "Next");
+        play.setContentDescription(on ? "Play or stop the radio" : "Play or pause");
+        // The radio's text can be long: let it scroll by.
+        artist.setEllipsize(on ? android.text.TextUtils.TruncateAt.MARQUEE : android.text.TextUtils.TruncateAt.END);
+        artist.setMarqueeRepeatLimit(-1);
+        artist.setSelected(on);
+        trackKey = null;
+        radioArtKey = null;
+        showKaraokeSlider();
+    }
+
+    private void updateRadio() {
+        int freq = radio.frequency();
+        setText(title, radio.title());
+        int state = radio.state();
+        setText(artist, state == Radio.STARTING ? "Tuning in…" : state == Radio.SEEKING ? "Looking for a station…"
+                : radio.subtitle());
+        boolean playing = radio.wantsToPlay();
+        play.setIcon(playing ? Icons.STOP : Icons.PLAY);
+        dial.setFrequency(freq);
+        output.select(radio.speaker() ? 1 : 0);
+        boolean saved = radio.preset(freq) != null;
+        btnPreset.setIcon(saved ? Icons.CHECK : Icons.PLUS);
+        btnPreset.setColor(saved ? accent : primary);
+        btnPreset.setContentDescription(saved ? "Remove from Presets" : "Add to Presets");
+        scaleArt(playing);
+        String key = freq + "|" + radio.programName();
+        // Not while the dial turns: a new picture (and its blur) for every step would be too slow.
+        if (!key.equals(radioArtKey) && !dial.isTurning()) {
+            radioArtKey = key;
+            Bitmap b = RadioArt.of(freq, radio.programName(), Math.max(Ui.dp(activity, 300), 512));
+            art.setBitmap(b);
+            smallArt.setBitmap(b);
+            card.setBlurredArtwork(Blur.of(b));
+        }
+        tick();
+    }
+
+    /** Leaves the text alone when it's the same (so the radio text keeps scrolling). */
+    private static void setText(TextView t, String text) {
+        if (!text.equals(t.getText().toString())) t.setText(text);
+    }
+
+    /** iOS 10: the artwork shrinks back when paused. */
+    private void scaleArt(boolean playing) {
+        if (artPlaying == null || artPlaying != playing) {
+            float scale = playing ? 1f : 0.84f;
+            if (artPlaying == null || !open) {
+                art.setScaleX(scale);
+                art.setScaleY(scale);
+            } else {
+                art.animate().scaleX(scale).scaleY(scale).setDuration(380)
+                        .setInterpolator(playing ? new OvershootInterpolator(1.4f) : new DecelerateInterpolator())
+                        .setListener(null).start();
+            }
+            artPlaying = playing;
+        }
+    }
+
+    /** Called whenever the player or the radio changes. */
     void update() {
+        boolean r = radio.inSession();
+        if (r != radioMode) setRadioMode(r);
+        if (r) {
+            updateRadio();
+            return;
+        }
         MediaItem item = player.current();
         if (item == null) {
             trackKey = null;
@@ -578,20 +798,7 @@ final class NowPlaying {
         btnRepeat.setIcon(player.repeatMode() == Player.REPEAT_ONE ? Icons.REPEAT_ONE : Icons.REPEAT);
         btnRepeat.setColor(player.repeatMode() == Player.REPEAT_OFF ? secondary : accent);
         showKaraoke();
-
-        // iOS 10: the artwork shrinks back when paused.
-        if (artPlaying == null || artPlaying != playing) {
-            float scale = playing ? 1f : 0.84f;
-            if (artPlaying == null || !open) {
-                art.setScaleX(scale);
-                art.setScaleY(scale);
-            } else {
-                art.animate().scaleX(scale).scaleY(scale).setDuration(380)
-                        .setInterpolator(playing ? new OvershootInterpolator(1.4f) : new DecelerateInterpolator())
-                        .setListener(null).start();
-            }
-            artPlaying = playing;
-        }
+        scaleArt(playing);
 
         if (!item.key().equals(trackKey)) {
             trackKey = item.key();
@@ -669,6 +876,7 @@ final class NowPlaying {
         lastUserScroll = 0;
         if (m == MODE_QUEUE) refreshQueue(true);
         showMode();
+        showKaraokeSlider();
         tick();
     }
 
@@ -703,17 +911,19 @@ final class NowPlaying {
     }
 
     private void tick() {
-        if (!open || player.current() == null) return;
+        if (!open) return;
+        if (!volume.isDragging()) {
+            int stream = volumeStream();
+            volume.setMax(audio.getStreamMaxVolume(stream));
+            volume.setValue(audio.getStreamVolume(stream));
+        }
+        if (radioMode || player.current() == null) return;
         long pos = player.positionMs();
         long dur = player.durationMs();
         scrubber.setMax(dur);
         if (!scrubber.isDragging()) {
             scrubber.setValue(pos);
             showTimes(pos, dur);
-        }
-        if (!volume.isDragging()) {
-            volume.setMax(audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
-            volume.setValue(audio.getStreamVolume(AudioManager.STREAM_MUSIC));
         }
         if (mode == MODE_LYRICS && lyrics != null && lyrics.synced) {
             // Highlight a moment early, as the singer starts the line.

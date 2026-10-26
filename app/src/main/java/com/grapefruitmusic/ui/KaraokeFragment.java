@@ -41,7 +41,8 @@ public final class KaraokeFragment extends BaseFragment {
         });
         g.footer("Turns down the lead vocal of any song so you can sing along, with Grapefruit's own AI "
                 + "model, right on this phone. It works offline. The microphone button in Now Playing "
-                + "turns it on and off too.");
+                + "turns it on and off too, and while it's on, a slider beside the artwork sets how much "
+                + "of the vocal to take away.");
 
         g.section("Vocal Removal");
         LinearLayout row = g.row(null);

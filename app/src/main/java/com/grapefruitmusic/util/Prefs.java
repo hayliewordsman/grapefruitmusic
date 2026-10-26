@@ -127,6 +127,24 @@ public final class Prefs {
         prefs.edit().putBoolean("mono_audio", on).apply();
     }
 
+    /** The radio station last tuned, in units of 10 kHz (9870 = 98.7 MHz). */
+    public static int radioFrequency() {
+        return prefs.getInt("radio_frequency", 8750);
+    }
+
+    public static void setRadioFrequency(int freq) {
+        prefs.edit().putInt("radio_frequency", freq).apply();
+    }
+
+    /** Saved radio stations, as JSON (see radio.Radio). */
+    public static String radioPresets() {
+        return prefs.getString("radio_presets", null);
+    }
+
+    public static void setRadioPresets(String json) {
+        prefs.edit().putString("radio_presets", json).apply();
+    }
+
     /** The Custom equalizer curve, dB per band, or null if none was made. */
     public static float[] customEq() {
         String s = prefs.getString("eq_custom", null);
