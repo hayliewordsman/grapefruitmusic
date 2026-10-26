@@ -92,6 +92,7 @@
         android:visibility="gone">
 
         <LinearLayout
+            android:id="@+id/np_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
@@ -359,5 +360,20 @@
                     android:padding="13dp" />
             </LinearLayout>
         </LinearLayout>
+
+        <!-- Landscape: the grab bar runs down the panel's left edge. Tap or swipe right to close. -->
+        <FrameLayout
+            android:id="@+id/np_side_grabber"
+            android:layout_width="22dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            android:visibility="gone">
+
+            <View
+                android:layout_width="5dp"
+                android:layout_height="38dp"
+                android:layout_gravity="center"
+                android:background="@drawable/grabber" />
+        </FrameLayout>
     </com.grapefruitmusic.ui.widget.NowPlayingCard>
 </FrameLayout>

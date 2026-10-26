@@ -45,6 +45,7 @@ public class NowPlayingCard extends FrameLayout {
 
     private DragListener dragListener;
     private View dragLimit;
+    private View dragHandle;
     private AbsListView scrollingChild;
     private boolean side;
     private float downX;
@@ -79,6 +80,11 @@ public class NowPlayingCard extends FrameLayout {
     /** Drags must start above this view (e.g. the scrubber). */
     public void setDragLimit(View limit) {
         dragLimit = limit;
+    }
+
+    /** A child of the card that drags start on wherever it is (the landscape grab bar). */
+    public void setDragHandle(View handle) {
+        dragHandle = handle;
     }
 
     /** A visible list that should scroll instead of dragging the card, unless it's at the top. */
@@ -131,7 +137,11 @@ public class NowPlayingCard extends FrameLayout {
         canvas.drawPath(shape, scrimPaint);
     }
 
-    private boolean startsInDragArea(float y) {
+    private boolean startsInDragArea(float x, float y) {
+        if (dragHandle != null && dragHandle.getVisibility() == VISIBLE && x >= dragHandle.getLeft()
+                && x < dragHandle.getRight() && y >= dragHandle.getTop() && y < dragHandle.getBottom()) {
+            return true;
+        }
         if (dragLimit == null) return true;
         int[] me = new int[2];
         int[] limit = new int[2];
@@ -149,7 +159,7 @@ public class NowPlayingCard extends FrameLayout {
         float across = side ? e.getY() - downY : e.getX() - downX;
         boolean listScrolls = !side && scrollingChild != null && scrollingChild.getVisibility() == VISIBLE
                 && scrollingChild.canScrollVertically(-1);
-        return along > touchSlop && along > Math.abs(across) * 1.5f && startsInDragArea(downY) && !listScrolls;
+        return along > touchSlop && along > Math.abs(across) * 1.5f && startsInDragArea(downX, downY) && !listScrolls;
     }
 
     private void startDrag(MotionEvent e) {

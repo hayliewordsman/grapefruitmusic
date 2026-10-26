@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * Grapefruit's own player, used when Volume Boost or Bass Boost is on: decodes with MediaCodec,
+ * Grapefruit's own player, used when Volume Boost or the Equalizer is on: decodes with MediaCodec,
  * runs the sound through {@link Dsp}, and plays it with AudioTrack (Android 4.1+; the same
  * approach as ExoPlayer on old Android). One audio thread does all the work.
  */
@@ -156,9 +156,9 @@ final class DspEngine implements Engine {
     }
 
     @Override
-    public void setEffects(int boostLevel, boolean bass) {
+    public void setEffects(int boostLevel, int eq) {
         dsp.setBoost(boostLevel);
-        dsp.setBass(bass);
+        dsp.setEq(eq);
     }
 
     @Override

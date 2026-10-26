@@ -60,6 +60,9 @@ final class NowPlaying {
     private final View root;
     private final View dim;
     private final NowPlayingCard card;
+    private final View content;
+    private final View grabber;
+    private final View sideGrabber;
     private final ArtworkView art;
     private final ListView lyricsList;
     private final ListView queueList;
@@ -176,6 +179,9 @@ final class NowPlaying {
 
         dim = root.findViewById(R.id.np_dim);
         card = (NowPlayingCard) root.findViewById(R.id.np_card);
+        content = root.findViewById(R.id.np_content);
+        grabber = root.findViewById(R.id.np_grabber);
+        sideGrabber = root.findViewById(R.id.np_side_grabber);
         art = (ArtworkView) root.findViewById(R.id.np_art);
         lyricsList = (ListView) root.findViewById(R.id.np_lyrics);
         queueList = (ListView) root.findViewById(R.id.np_queue);
@@ -259,12 +265,14 @@ final class NowPlaying {
                 close();
             }
         });
-        root.findViewById(R.id.np_grabber).setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener closeClick = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 close();
             }
-        });
+        };
+        grabber.setOnClickListener(closeClick);
+        sideGrabber.setOnClickListener(closeClick);
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -341,6 +349,7 @@ final class NowPlaying {
         });
 
         card.setDragLimit(scrubber);
+        card.setDragHandle(sideGrabber);
         card.setDragListener(new NowPlayingCard.DragListener() {
             @Override
             public void onDrag(float offset) {
@@ -451,6 +460,10 @@ final class NowPlaying {
         }
         card.setLayoutParams(lp);
         card.setSide(side);
+        // The grab bar goes across the top of the card, or down the left edge of the panel.
+        grabber.setVisibility(side ? View.GONE : View.VISIBLE);
+        sideGrabber.setVisibility(side ? View.VISIBLE : View.GONE);
+        content.setPadding(side ? Ui.dp(activity, 22) : 0, side ? Ui.dp(activity, 12) : 0, 0, 0);
     }
 
     /** How far the card moves to be out of sight: down, or right at the side. */

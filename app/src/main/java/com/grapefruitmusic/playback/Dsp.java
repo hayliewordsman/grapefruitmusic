@@ -1,9 +1,9 @@
 package com.grapefruitmusic.playback;
 
 /**
- * Grapefruit's own sound processing, for Volume Boost and Bass Boost: a bass shelf, gain, and a
- * look-ahead limiter that turns peaks down just before they'd clip, so boosted music gets louder
- * instead of distorting (the idea behind Viper4Android's eXtra-Loud). Pure Java (unit tested).
+ * Grapefruit's own sound processing, for Volume Boost and the Equalizer: an equalizer filter, gain,
+ * and a look-ahead limiter that turns peaks down just before they'd clip, so boosted music gets
+ * louder instead of distorting (the idea behind Viper4Android's eXtra-Loud). Pure Java (unit tested).
  *
  * <p>The settings may change from any thread while audio is being processed.
  */
@@ -17,9 +17,20 @@ public final class Dsp {
     /** Gain in dB for each Volume Boost level. */
     static final double[] BOOST_DB = {0, 4, 7, 10, 14};
 
-    /** Bass Boost: a low shelf this many dB up, below about this frequency. */
+    public static final int EQ_NONE = 0;
+    public static final int EQ_BASS_BOOSTER = 1;
+    public static final int EQ_BASS_REDUCER = 2;
+    public static final int EQ_VOCAL_BOOSTER = 3;
+    public static final int EQ_VOCAL_REDUCER = 4;
+    public static final String[] EQ_NAMES = {"None", "Bass Booster", "Bass Reducer", "Vocal Booster", "Vocal Reducer"};
+
+    /** Bass Booster / Reducer: a low shelf this many dB up or down, below about this frequency. */
     static final double BASS_DB = 8;
     static final double BASS_HZ = 90;
+    /** Vocal Booster / Reducer: a broad bump or dip this many dB, around where voices carry. */
+    static final double VOCAL_DB = 6;
+    static final double VOCAL_HZ = 1500;
+    private static final double VOCAL_Q = 0.5;
 
     /** Peaks are held under this (about -0.5 dBFS). */
     static final double CEILING = 0.944;
@@ -27,15 +38,17 @@ public final class Dsp {
     private static final double RELEASE_S = 0.15;
 
     private volatile int boostLevel;
-    private volatile boolean bass;
+    private volatile int eq;
     private volatile float volume = 1f;
 
     private int rate;
     private int channels;
 
-    // Bass shelf (direct form I); per channel x1, x2, y1, y2.
-    private double b0, b1, b2, a1, a2;
-    private double[][] shelf;
+    // Equalizer: one biquad per preset (b0, b1, b2, a1, a2; none for EQ_NONE), run in direct form I
+    // with per-channel state x1, x2, y1, y2.
+    private double[][] eqFilters;
+    private double[][] eqState;
+    private int eqRunning;
 
     // Limiter. The sound is delayed by lookahead frames, so the gain can come down before a peak
     // reaches the output. needs holds the gain each delayed frame needs to stay under the ceiling.
@@ -55,16 +68,16 @@ public final class Dsp {
     private int qSize;
 
     /** Is any effect on? (If not, Android's own player plays the music untouched.) */
-    public static boolean anyOn(int boostLevel, boolean bass) {
-        return boostLevel > BOOST_OFF || bass;
+    public static boolean anyOn(int boostLevel, int eq) {
+        return boostLevel > BOOST_OFF || eq != EQ_NONE;
     }
 
     public void setBoost(int level) {
         boostLevel = Math.max(BOOST_OFF, Math.min(BOOST_EXTREME, level));
     }
 
-    public void setBass(boolean on) {
-        bass = on;
+    public void setEq(int preset) {
+        eq = Math.max(EQ_NONE, Math.min(EQ_VOCAL_REDUCER, preset));
     }
 
     /** Volume Match and ducking, 0 to 1, applied before the boost. */
@@ -75,19 +88,14 @@ public final class Dsp {
     public void setFormat(int sampleRate, int channelCount) {
         rate = sampleRate;
         channels = Math.max(1, channelCount);
-        // RBJ cookbook low shelf with a slope of 1.
-        double a = Math.pow(10, BASS_DB / 40);
-        double w0 = 2 * Math.PI * BASS_HZ / rate;
-        double cos = Math.cos(w0);
-        double alpha = Math.sin(w0) / 2 * Math.sqrt(2);
-        double k = 2 * Math.sqrt(a) * alpha;
-        double a0 = (a + 1) + (a - 1) * cos + k;
-        b0 = a * ((a + 1) - (a - 1) * cos + k) / a0;
-        b1 = 2 * a * ((a - 1) - (a + 1) * cos) / a0;
-        b2 = a * ((a + 1) - (a - 1) * cos - k) / a0;
-        a1 = -2 * ((a - 1) + (a + 1) * cos) / a0;
-        a2 = ((a + 1) + (a - 1) * cos - k) / a0;
-        shelf = new double[channels][4];
+        eqFilters = new double[][]{
+                null,
+                lowShelf(BASS_DB, BASS_HZ),
+                lowShelf(-BASS_DB, BASS_HZ),
+                peaking(VOCAL_DB, VOCAL_HZ, VOCAL_Q),
+                peaking(-VOCAL_DB, VOCAL_HZ, VOCAL_Q)};
+        eqState = new double[channels][4];
+        eqRunning = EQ_NONE;
 
         lookahead = Math.max(1, (int) Math.round(LOOKAHEAD_S * rate));
         delay = new double[lookahead * channels];
@@ -106,6 +114,37 @@ public final class Dsp {
         release = Math.exp(-1.0 / (RELEASE_S * rate));
     }
 
+    /** RBJ cookbook low shelf with a slope of 1. */
+    private double[] lowShelf(double db, double hz) {
+        double a = Math.pow(10, db / 40);
+        double w0 = 2 * Math.PI * hz / rate;
+        double cos = Math.cos(w0);
+        double alpha = Math.sin(w0) / 2 * Math.sqrt(2);
+        double k = 2 * Math.sqrt(a) * alpha;
+        double a0 = (a + 1) + (a - 1) * cos + k;
+        return new double[]{
+                a * ((a + 1) - (a - 1) * cos + k) / a0,
+                2 * a * ((a - 1) - (a + 1) * cos) / a0,
+                a * ((a + 1) - (a - 1) * cos - k) / a0,
+                -2 * ((a - 1) + (a + 1) * cos) / a0,
+                ((a + 1) + (a - 1) * cos - k) / a0};
+    }
+
+    /** RBJ cookbook peaking filter: db up or down around hz; a smaller q is broader. */
+    private double[] peaking(double db, double hz, double q) {
+        double a = Math.pow(10, db / 40);
+        double w0 = 2 * Math.PI * hz / rate;
+        double cos = Math.cos(w0);
+        double alpha = Math.sin(w0) / (2 * q);
+        double a0 = 1 + alpha / a;
+        return new double[]{
+                (1 + alpha * a) / a0,
+                -2 * cos / a0,
+                (1 - alpha * a) / a0,
+                -2 * cos / a0,
+                (1 - alpha / a) / a0};
+    }
+
     /** Clears filters and limiter (after a seek). */
     public void reset() {
         if (rate > 0) setFormat(rate, channels);
@@ -119,7 +158,13 @@ public final class Dsp {
     /** Processes interleaved 16-bit samples in place (delayed by latencyFrames()). */
     public void process(short[] pcm, int offset, int count) {
         if (rate == 0) throw new IllegalStateException("setFormat first");
-        boolean bassOn = bass;
+        int preset = eq;
+        if (preset != eqRunning) {
+            // A different filter: start it from silence rather than another filter's state.
+            for (double[] s : eqState) java.util.Arrays.fill(s, 0);
+            eqRunning = preset;
+        }
+        double[] k = eqFilters[preset];
         double g = volume * Math.pow(10, BOOST_DB[boostLevel] / 20);
         int frames = count / channels;
         int i = offset;
@@ -128,9 +173,9 @@ public final class Dsp {
             double peak = 0;
             for (int c = 0; c < channels; c++) {
                 double x = pcm[i + c] / 32768.0;
-                if (bassOn) {
-                    double[] s = shelf[c];
-                    double y = b0 * x + b1 * s[0] + b2 * s[1] - a1 * s[2] - a2 * s[3];
+                if (k != null) {
+                    double[] s = eqState[c];
+                    double y = k[0] * x + k[1] * s[0] + k[2] * s[1] - k[3] * s[2] - k[4] * s[3];
                     s[1] = s[0];
                     s[0] = x;
                     s[3] = s[2];

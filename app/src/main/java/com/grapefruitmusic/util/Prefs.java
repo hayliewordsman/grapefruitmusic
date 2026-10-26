@@ -91,12 +91,13 @@ public final class Prefs {
         prefs.edit().putInt("volume_boost", level).apply();
     }
 
-    public static boolean bassBoost() {
-        return prefs.getBoolean("bass_boost", false);
+    /** Equalizer preset; see playback.Dsp. 1.8 to 2.0 had a Bass Boost switch, now Bass Booster (1). */
+    public static int equalizer() {
+        return prefs.getInt("equalizer", prefs.getBoolean("bass_boost", false) ? 1 : 0);
     }
 
-    public static void setBassBoost(boolean on) {
-        prefs.edit().putBoolean("bass_boost", on).apply();
+    public static void setEqualizer(int preset) {
+        prefs.edit().putInt("equalizer", preset).apply();
     }
 
     /** Folders hidden from On This Phone (absolute paths, no trailing slash). */

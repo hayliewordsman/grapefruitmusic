@@ -39,9 +39,11 @@ with downloads for offline listening and time-synced lyrics.
   uses the loudness your server reports for streamed songs (Navidrome ReplayGain tags, Jellyfin 10.9+
   normalization), and otherwise measures a streamed song after its first play. Loud songs are turned down to
   -16 LUFS; Android's player can't turn quiet songs up, so they play as they are.
-- **Volume Boost and Bass Boost:** Settings › Sound. Volume Boost (Mild, Medium, Strong, Extreme: +4 to +14 dB)
+- **Volume Boost and Equalizer:** Settings › Sound. Volume Boost (Mild, Medium, Strong, Extreme: +4 to +14 dB)
   makes Grapefruit louder than the phone's maximum, like Viper4Android's eXtra-Loud, with a look-ahead limiter so
-  it doesn't crackle; Bass Boost adds a low shelf. Android 4.2 has no loudness effect to do this, so with either on,
+  it doesn't crackle. The Equalizer has Bass Booster / Bass Reducer (a ±8 dB low shelf below about 90 Hz) and
+  Vocal Booster / Vocal Reducer (a broad ±6 dB bump or dip around 1.5 kHz, where voices carry; it turns the voice
+  range down rather than removing the singer). Android 4.2 has no loudness effect to do this, so with either on,
   Grapefruit decodes and plays the music itself (MediaCodec + AudioTrack); with both off, Android's player plays it
   untouched. A song Grapefruit's engine can't play falls back to Android's player.
 - **Recently Played:** scroll up in Up Next to see the songs you've played (newest just above Now Playing).

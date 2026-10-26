@@ -19,11 +19,11 @@ public class DspTest {
         return out;
     }
 
-    private static Dsp dsp(int boost, boolean bass) {
+    private static Dsp dsp(int boost, int eq) {
         Dsp d = new Dsp();
         d.setFormat(RATE, 2);
         d.setBoost(boost);
-        d.setBass(bass);
+        d.setEq(eq);
         return d;
     }
 
@@ -54,7 +54,7 @@ public class DspTest {
 
     @Test
     public void everythingOffPassesTheSoundThroughDelayed() {
-        Dsp d = dsp(Dsp.BOOST_OFF, false);
+        Dsp d = dsp(Dsp.BOOST_OFF, Dsp.EQ_NONE);
         short[] in = sine(1, 0.5, 440);
         short[] out = run(d, in);
         int lag = d.latencyFrames() * 2;
@@ -67,7 +67,7 @@ public class DspTest {
         double before = rmsDb(quiet);
         double[] expected = {0, 4, 7, 10, 14};
         for (int level = Dsp.BOOST_OFF; level <= Dsp.BOOST_EXTREME; level++) {
-            double after = rmsDb(run(dsp(level, false), quiet));
+            double after = rmsDb(run(dsp(level, Dsp.EQ_NONE), quiet));
             assertEquals("level " + Dsp.BOOST_NAMES[level], expected[level], after - before, 0.1);
         }
     }
@@ -76,7 +76,7 @@ public class DspTest {
     public void boostedLoudMusicStaysUnderTheCeiling() {
         int ceiling = (int) Math.ceil(Dsp.CEILING * 32767) + 1;
         for (int level = Dsp.BOOST_MILD; level <= Dsp.BOOST_EXTREME; level++) {
-            short[] out = run(dsp(level, true), sine(2, 0.95, 60));
+            short[] out = run(dsp(level, Dsp.EQ_BASS_BOOSTER), sine(2, 0.95, 60));
             assertTrue("peak " + peak(out) + " at " + Dsp.BOOST_NAMES[level], peak(out) <= ceiling);
         }
     }
@@ -90,7 +90,7 @@ public class DspTest {
         System.arraycopy(quiet, 0, in, 0, quiet.length);
         System.arraycopy(burst, 0, in, quiet.length, burst.length);
         System.arraycopy(quiet, 0, in, quiet.length + burst.length, quiet.length);
-        short[] out = run(dsp(Dsp.BOOST_EXTREME, false), in);
+        short[] out = run(dsp(Dsp.BOOST_EXTREME, Dsp.EQ_NONE), in);
         int ceiling = (int) Math.ceil(Dsp.CEILING * 32767) + 1;
         assertTrue("peak " + peak(out), peak(out) <= ceiling);
         // And the quiet part afterwards comes back up (the limiter lets go).
@@ -105,19 +105,50 @@ public class DspTest {
         return Math.sqrt(sum / pcm.length);
     }
 
+    /** How many dB the equalizer preset changes a quiet tone at hz by. */
+    private static double eqGainDb(int eq, double hz) {
+        short[] tone = sine(2, 0.05, hz);
+        return rmsDb(run(dsp(Dsp.BOOST_OFF, eq), tone)) - rmsDb(tone);
+    }
+
     @Test
-    public void bassBoostRaisesTheBassAndLeavesTheRest() {
-        double lowBefore = rmsDb(sine(2, 0.05, 40));
-        double lowAfter = rmsDb(run(dsp(Dsp.BOOST_OFF, true), sine(2, 0.05, 40)));
-        double midBefore = rmsDb(sine(2, 0.05, 2000));
-        double midAfter = rmsDb(run(dsp(Dsp.BOOST_OFF, true), sine(2, 0.05, 2000)));
-        assertEquals(8.0, lowAfter - lowBefore, 0.8);
-        assertEquals(0.0, midAfter - midBefore, 0.3);
+    public void bassBoosterAndReducerChangeTheBassAndLeaveTheRest() {
+        assertEquals(8.0, eqGainDb(Dsp.EQ_BASS_BOOSTER, 40), 0.8);
+        assertEquals(0.0, eqGainDb(Dsp.EQ_BASS_BOOSTER, 2000), 0.3);
+        assertEquals(-8.0, eqGainDb(Dsp.EQ_BASS_REDUCER, 40), 0.8);
+        assertEquals(0.0, eqGainDb(Dsp.EQ_BASS_REDUCER, 2000), 0.3);
+    }
+
+    @Test
+    public void vocalBoosterAndReducerChangeTheVoiceRangeAndLeaveTheBass() {
+        assertEquals(6.0, eqGainDb(Dsp.EQ_VOCAL_BOOSTER, 1500), 0.2);
+        assertTrue(eqGainDb(Dsp.EQ_VOCAL_BOOSTER, 800) > 3);
+        assertTrue(eqGainDb(Dsp.EQ_VOCAL_BOOSTER, 3000) > 3);
+        assertEquals(0.0, eqGainDb(Dsp.EQ_VOCAL_BOOSTER, 40), 0.3);
+        assertEquals(-6.0, eqGainDb(Dsp.EQ_VOCAL_REDUCER, 1500), 0.2);
+        assertEquals(0.0, eqGainDb(Dsp.EQ_VOCAL_REDUCER, 40), 0.3);
+    }
+
+    @Test
+    public void noneLeavesEveryFrequencyAlone() {
+        for (double hz : new double[]{40, 200, 1500, 8000}) assertEquals(0.0, eqGainDb(Dsp.EQ_NONE, hz), 0.05);
+    }
+
+    @Test
+    public void switchingPresetsWhilePlayingStaysClean() {
+        // Changed mid-song (from the Settings screen): no burst from the old filter's state.
+        Dsp d = dsp(Dsp.BOOST_OFF, Dsp.EQ_BASS_BOOSTER);
+        short[] first = run(d, sine(1, 0.5, 60));
+        d.setEq(Dsp.EQ_VOCAL_REDUCER);
+        short[] second = run(d, sine(1, 0.5, 60));
+        int ceiling = (int) Math.ceil(Dsp.CEILING * 32767) + 1;
+        assertTrue(peak(first) <= ceiling && peak(second) <= ceiling);
+        assertEquals(0.0, rmsDb(second) - rmsDb(sine(1, 0.5, 60)), 0.5);
     }
 
     @Test
     public void volumeMatchVolumeStillApplies() {
-        Dsp d = dsp(Dsp.BOOST_MEDIUM, false);
+        Dsp d = dsp(Dsp.BOOST_MEDIUM, Dsp.EQ_NONE);
         d.setVolume(0.5f); // -6 dB
         short[] quiet = sine(2, 0.05, 1000);
         assertEquals(7 - 6.02, rmsDb(run(d, quiet)) - rmsDb(quiet), 0.1);
@@ -125,8 +156,8 @@ public class DspTest {
 
     @Test
     public void anyOn() {
-        assertTrue(Dsp.anyOn(Dsp.BOOST_MILD, false));
-        assertTrue(Dsp.anyOn(Dsp.BOOST_OFF, true));
-        assertTrue(!Dsp.anyOn(Dsp.BOOST_OFF, false));
+        assertTrue(Dsp.anyOn(Dsp.BOOST_MILD, Dsp.EQ_NONE));
+        for (int eq = Dsp.EQ_BASS_BOOSTER; eq <= Dsp.EQ_VOCAL_REDUCER; eq++) assertTrue(Dsp.anyOn(Dsp.BOOST_OFF, eq));
+        assertTrue(!Dsp.anyOn(Dsp.BOOST_OFF, Dsp.EQ_NONE));
     }
 }

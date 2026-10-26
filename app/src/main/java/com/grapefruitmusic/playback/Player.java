@@ -125,7 +125,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         changed();
     }
 
-    // ---- Volume Boost and Bass Boost ----
+    // ---- Volume Boost and Equalizer ----
 
     /** Is the song playing through Grapefruit's own engine (with effects)? */
     public boolean effectsActive() {
@@ -133,19 +133,19 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     /**
-     * Volume Boost or Bass Boost changed: applies it to the song that's playing, switching
+     * Volume Boost or the Equalizer changed: applies it to the song that's playing, switching
      * engines (and carrying on from the same spot) when effects go on or off.
      */
     public void audioEffectsChanged() {
         MediaItem item = current();
         if (engine == null || item == null) return;
-        engine.setEffects(Prefs.volumeBoost(), Prefs.bassBoost());
+        engine.setEffects(Prefs.volumeBoost(), Prefs.equalizer());
         boolean want = wantsEffects(item);
         if (want != engine.hasEffects()) load(playWhenReady, positionMs());
     }
 
     private boolean wantsEffects(MediaItem item) {
-        return Dsp.anyOn(Prefs.volumeBoost(), Prefs.bassBoost()) && !item.key().equals(effectsFailedKey);
+        return Dsp.anyOn(Prefs.volumeBoost(), Prefs.equalizer()) && !item.key().equals(effectsFailedKey);
     }
 
     // ---- Recently played ----
@@ -473,7 +473,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         }
         playWhenReady = play && requestFocus();
         engine = wantsEffects(item) ? new DspEngine(context) : new MediaPlayerEngine(context);
-        engine.setEffects(Prefs.volumeBoost(), Prefs.bassBoost());
+        engine.setEffects(Prefs.volumeBoost(), Prefs.equalizer());
         final Engine player = engine;
         matchVolume = volumeMatch.volumeFor(item);
         measuring = false;

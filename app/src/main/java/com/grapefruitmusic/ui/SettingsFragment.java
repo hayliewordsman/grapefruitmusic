@@ -192,17 +192,23 @@ public final class SettingsFragment extends BaseFragment
                 });
             }
         });
-        g.toggle("Bass Boost", Prefs.bassBoost(), new Toggle.Listener() {
+        g.value("Equalizer", Dsp.EQ_NAMES[Prefs.equalizer()], new View.OnClickListener() {
             @Override
-            public void onToggled(Toggle t, boolean on) {
-                Prefs.setBassBoost(on);
-                Player.get(getActivity()).audioEffectsChanged();
+            public void onClick(View v) {
+                choose("Equalizer", Dsp.EQ_NAMES, Prefs.equalizer(), new Choice() {
+                    @Override
+                    public void chosen(int which) {
+                        Prefs.setEqualizer(which);
+                        Player.get(getActivity()).audioEffectsChanged();
+                        build();
+                    }
+                });
             }
         });
         g.footer("Volume Boost makes Grapefruit louder than the phone's own maximum, like eXtra-Loud: a limiter "
                 + "keeps the loudest moments from crackling, and the higher levels squeeze the music more to "
-                + "get louder. Bass Boost adds low end. Both only change Grapefruit's sound. Listening loud for "
-                + "a long time can damage your hearing.");
+                + "get louder. The Equalizer turns the bass or the vocals up or down. Both only change "
+                + "Grapefruit's sound. Listening loud for a long time can damage your hearing.");
 
         g.section("Downloads");
         g.value("Download Quality", Prefs.qualityLabel(Prefs.downloadQuality()), new View.OnClickListener() {
