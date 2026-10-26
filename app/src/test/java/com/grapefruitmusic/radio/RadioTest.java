@@ -76,11 +76,24 @@ public class RadioTest {
     }
 
     @Test
-    public void unreadablePresetsAreNone() {
-        assertEquals(0, Radio.parsePresets("not json").size());
+    public void namesKeepTheirCharactersButNotLineBreaks() {
+        List<Radio.Preset> list = new ArrayList<Radio.Preset>();
+        list.add(new Radio.Preset(9870, "Rock\tand\nRoll 98.7"));
+        List<Radio.Preset> back = Radio.parsePresets(Radio.serializePresets(list));
+        assertEquals(1, back.size());
+        assertEquals("Rock and Roll 98.7", back.get(0).name);
+    }
+
+    @Test
+    public void unreadablePresetsAreSkipped() {
+        assertEquals(0, Radio.parsePresets("not a preset").size());
         assertEquals(0, Radio.parsePresets(null).size());
-        // Out of the band: dropped.
-        assertEquals(0, Radio.parsePresets("[{\"f\":500}]").size());
+        // Out of the band, or the same station twice: dropped.
+        assertEquals(0, Radio.parsePresets("500").size());
+        List<Radio.Preset> some = Radio.parsePresets("garbage\n9870\tOne\n9870\tTwo\n10110");
+        assertEquals(2, some.size());
+        assertEquals("One", some.get(0).name);
+        assertEquals(10110, some.get(1).frequency);
     }
 
     @Test

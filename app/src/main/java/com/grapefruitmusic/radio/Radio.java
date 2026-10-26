@@ -13,10 +13,6 @@ import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Notice;
 import com.grapefruitmusic.util.Prefs;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -612,10 +608,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
     }
 
     public Preset preset(int freq) {
-        for (Preset p : presets) {
-            if (p.frequency == freq) return p;
-        }
-        return null;
+        return findIn(presets, freq);
     }
 
     /** Saves freq as a preset (named after the station, if it's on and has said its name). */
@@ -654,36 +647,37 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         Prefs.setRadioPresets(serializePresets(presets));
     }
 
-    static List<Preset> parsePresets(String json) {
+    /** Presets saved as lines of "frequency<tab>name" (the name may be missing). */
+    static List<Preset> parsePresets(String saved) {
         List<Preset> out = new ArrayList<Preset>();
-        if (json == null || json.length() == 0) return out;
-        try {
-            JSONArray a = new JSONArray(json);
-            for (int i = 0; i < a.length(); i++) {
-                JSONObject o = a.getJSONObject(i);
-                int f = o.getInt("f");
-                if (!inBand(f)) continue;
-                out.add(new Preset(f, o.has("n") ? o.getString("n") : null));
+        if (saved == null || saved.length() == 0) return out;
+        for (String line : saved.split("\n")) {
+            String[] parts = line.split("\t", 2);
+            try {
+                int f = Integer.parseInt(parts[0].trim());
+                if (inBand(f) && findIn(out, f) == null) out.add(new Preset(f, parts.length > 1 ? parts[1] : null));
+            } catch (NumberFormatException e) {
+                // Not a preset: skip the line.
             }
-        } catch (JSONException e) {
-            // Unreadable: no presets.
         }
         return out;
     }
 
     static String serializePresets(List<Preset> list) {
-        JSONArray a = new JSONArray();
-        try {
-            for (Preset p : list) {
-                JSONObject o = new JSONObject();
-                o.put("f", p.frequency);
-                if (p.name != null) o.put("n", p.name);
-                a.put(o);
-            }
-        } catch (JSONException e) {
-            throw new IllegalStateException(e);
+        StringBuilder sb = new StringBuilder();
+        for (Preset p : list) {
+            if (sb.length() > 0) sb.append('\n');
+            sb.append(p.frequency);
+            if (p.name != null) sb.append('\t').append(p.name.replace('\t', ' ').replace('\n', ' '));
         }
-        return a.toString();
+        return sb.toString();
+    }
+
+    private static Preset findIn(List<Preset> list, int freq) {
+        for (Preset p : list) {
+            if (p.frequency == freq) return p;
+        }
+        return null;
     }
 
     // ---- Diagnostics ----

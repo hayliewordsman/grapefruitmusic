@@ -136,7 +136,7 @@ public final class Prefs {
         prefs.edit().putInt("radio_frequency", freq).apply();
     }
 
-    /** Saved radio stations, as JSON (see radio.Radio). */
+    /** Saved radio stations, one "frequency<tab>name" a line (see radio.Radio). */
     public static String radioPresets() {
         return prefs.getString("radio_presets", null);
     }
