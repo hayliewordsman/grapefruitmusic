@@ -1,7 +1,6 @@
 package com.grapefruitmusic.ui;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -11,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.grapefruitmusic.R;
@@ -19,6 +19,7 @@ import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.source.DownloadedSource;
 import com.grapefruitmusic.source.MusicSource;
 import com.grapefruitmusic.source.Sources;
+import com.grapefruitmusic.ui.widget.HorizontalGrid;
 import com.grapefruitmusic.ui.widget.IconView;
 import com.grapefruitmusic.ui.widget.Icons;
 
@@ -27,6 +28,8 @@ import java.util.List;
 /** The Library tab: source picker, Playlists / Artists / Albums / Songs, and Recently Added. */
 public final class LibraryFragment extends BaseFragment implements Sources.Listener, Downloads.Listener {
     private ListView list;
+    /** Landscape: the sideways page instead of list. */
+    private HorizontalGrid grid;
     private RowAdapter adapter;
     private TextView sourceName;
     private LinearLayout rows;
@@ -44,11 +47,13 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
     }
 
     @Override
+    boolean rebuildsOnRotate() {
+        return true;
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
         final Context c = getActivity();
-        list = new ListView(c);
-        RowAdapter.style(list);
-
         LinearLayout top = new LinearLayout(c);
         top.setOrientation(LinearLayout.VERTICAL);
         top.addView(Ui.header(c, null, "Library", null));
@@ -78,11 +83,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         top.addView(rows);
 
         recentTitle = Ui.sectionTitle(c, "Recently Added");
-        top.addView(recentTitle);
-        list.addHeaderView(top, null, false);
-
         status = Ui.status(c);
-        list.addFooterView(status, null, false);
 
         adapter = new RowAdapter(c, new RowAdapter.Listener() {
             @Override
@@ -96,28 +97,63 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
                 if (s != null) TrackActions.show(LibraryFragment.this, item, s);
             }
         });
-        list.setAdapter(adapter);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.click(position - list.getHeaderViewsCount());
-            }
-        });
+        boolean turned = turnedSinceLastView();
+        View page;
+        if (RowAdapter.landscape(c)) {
+            // Sideways: the menu is the first column, then Recently Added, two high, scrolling on.
+            grid = new HorizontalGrid(c);
+            ScrollView menu = new ScrollView(c);
+            menu.setVerticalScrollBarEnabled(false);
+            menu.addView(top);
+            menu.setLayoutParams(new ViewGroup.LayoutParams(Ui.dp(c, 300), ViewGroup.LayoutParams.MATCH_PARENT));
+            grid.setLeading(menu);
+            LinearLayout heading = new LinearLayout(c);
+            heading.setOrientation(LinearLayout.VERTICAL);
+            heading.addView(recentTitle);
+            heading.addView(status);
+            grid.setTitle(heading);
+            int perColumn = adapter.landscapeRows(50 + 60 + 56);
+            adapter.setStacked(perColumn);
+            grid.setShape(perColumn, adapter.cardTextHeight());
+            grid.setAdapter(adapter);
+            list = null;
+            page = grid;
+        } else {
+            list = new ListView(c);
+            RowAdapter.style(list);
+            top.addView(recentTitle);
+            list.addHeaderView(top, null, false);
+            list.addFooterView(status, null, false);
+            list.setAdapter(adapter);
+            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    adapter.click(position - list.getHeaderViewsCount());
+                }
+            });
+            grid = null;
+            page = list;
+        }
         showRecent();
-        restoreScroll(list);
-        return list;
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // Turned to landscape or back: more or fewer albums a row.
-        if (adapter != null) adapter.configurationChanged();
+        if (grid != null) {
+            if (firstShown >= 0) grid.scrollToColumn(firstShown / grid.getRows());
+        } else if (turned) {
+            if (firstShown >= 0) list.setSelection(list.getHeaderViewsCount() + firstShown / 2);
+        } else {
+            restoreScroll(list);
+        }
+        return page;
     }
 
     @Override
     public void onDestroyView() {
-        rememberScroll(list);
+        if (list != null) {
+            rememberScroll(list);
+            int position = list.getFirstVisiblePosition() - list.getHeaderViewsCount();
+            firstShown = position >= 0 ? position * 2 : -1;
+        } else if (grid != null) {
+            firstShown = grid.isPastLeading() ? grid.getFirstVisibleColumn() * grid.getRows() : -1;
+        }
         super.onDestroyView();
     }
 

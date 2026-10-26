@@ -211,10 +211,11 @@ public class DspTest {
 
     @Test
     public void anyOn() {
-        assertTrue(Dsp.anyOn(Dsp.BOOST_MILD, null, false));
-        assertTrue(Dsp.anyOn(Dsp.BOOST_OFF, Equalizer.curve(Equalizer.ROCK), false));
-        assertTrue(Dsp.anyOn(Dsp.BOOST_OFF, null, true));
-        assertTrue(!Dsp.anyOn(Dsp.BOOST_OFF, Equalizer.curve(Equalizer.OFF), false));
-        assertTrue(!Dsp.anyOn(Dsp.BOOST_OFF, null, false));
+        assertTrue(new Effects(Dsp.BOOST_MILD, null, false, false, 1).anyOn());
+        assertTrue(new Effects(Dsp.BOOST_OFF, Equalizer.curve(Equalizer.ROCK), false, false, 1).anyOn());
+        assertTrue(new Effects(Dsp.BOOST_OFF, null, true, false, 1).anyOn());
+        assertTrue(new Effects(Dsp.BOOST_OFF, null, false, true, 1).anyOn());
+        assertTrue(!new Effects(Dsp.BOOST_OFF, Equalizer.curve(Equalizer.OFF), false, false, 1).anyOn());
+        assertTrue(!new Effects(Dsp.BOOST_OFF, null, false, false, 1).anyOn());
     }
 }

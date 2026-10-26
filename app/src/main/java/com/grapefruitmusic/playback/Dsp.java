@@ -1,8 +1,8 @@
 package com.grapefruitmusic.playback;
 
 /**
- * Grapefruit's own sound processing, for Volume Boost, the Equalizer and Mono Audio: mono mixing,
- * the 10-band equalizer, gain, and a look-ahead limiter that turns peaks down just before they'd clip, so boosted music gets
+ * Grapefruit's own sound processing, for Karaoke Mode, Volume Boost, the Equalizer and Mono Audio:
+ * vocal removal, mono mixing, the 10-band equalizer, gain, and a look-ahead limiter that turns peaks down just before they'd clip, so boosted music gets
  * louder instead of distorting (the idea behind Viper4Android's eXtra-Loud). Pure Java (unit tested).
  *
  * <p>The settings may change from any thread while audio is being processed.
@@ -26,6 +26,9 @@ public final class Dsp {
     private volatile float[] eq;
     private volatile boolean mono;
     private volatile float volume = 1f;
+    private volatile boolean karaoke;
+    private volatile float karaokeAmount = 1f;
+    private volatile VocalRemover.Model karaokeModel;
 
     private int rate;
     private int channels;
@@ -40,6 +43,13 @@ public final class Dsp {
     /** Mono: both channels are mixed, then filtered once on the left channel's state. */
     private boolean monoRunning;
     private double[] frame;
+    private double[] input;
+
+    // Karaoke Mode. Switching it on or off fades the sound out, swaps, then fades back in.
+    private VocalRemover remover;
+    private float switchGain = 1;
+    /** 0 steady, 1 fading out to switch, 2 fading back in. */
+    private int switchPhase;
 
     // Limiter. The sound is delayed by lookahead frames, so the gain can come down before a peak
     // reaches the output. needs holds the gain each delayed frame needs to stay under the ceiling.
@@ -58,11 +68,6 @@ public final class Dsp {
     private int qHead;
     private int qSize;
 
-    /** Is any effect on? (If not, Android's own player plays the music untouched.) */
-    public static boolean anyOn(int boostLevel, float[] eq, boolean mono) {
-        return boostLevel > BOOST_OFF || Equalizer.isOn(eq) || mono;
-    }
-
     public void setBoost(int level) {
         boostLevel = Math.max(BOOST_OFF, Math.min(BOOST_EXTREME, level));
     }
@@ -70,6 +75,20 @@ public final class Dsp {
     /** The equalizer curve, dB for each of Equalizer.BANDS (null or flat for none). */
     public void setEq(float[] curve) {
         eq = curve != null ? curve.clone() : null;
+    }
+
+    /** Karaoke Mode on or off, how much of the vocal to take away (0 to 1), and its model. */
+    public void setKaraoke(boolean on, float amount, VocalRemover.Model model) {
+        karaokeAmount = amount;
+        if (model != null) karaokeModel = model;
+        karaoke = on;
+        VocalRemover r = remover;
+        if (r != null) r.setAmount(amount);
+    }
+
+    /** Is Karaoke Mode taking effect right now (its model loaded and running)? */
+    public boolean karaokeRunning() {
+        return remover != null;
     }
 
     /** Mono Audio: both ears hear the left and right channels mixed together. */
@@ -90,6 +109,10 @@ public final class Dsp {
         eqStale = true;
         monoRunning = false;
         frame = new double[channels];
+        input = new double[channels];
+        if (remover != null) remover = newRemover();
+        switchGain = 1;
+        switchPhase = 0;
 
         lookahead = Math.max(1, (int) Math.round(LOOKAHEAD_S * rate));
         delay = new double[lookahead * channels];
@@ -113,9 +136,16 @@ public final class Dsp {
         if (rate > 0) setFormat(rate, channels);
     }
 
-    /** The delay the limiter adds, in frames. */
+    private VocalRemover newRemover() {
+        VocalRemover r = new VocalRemover(karaokeModel, rate);
+        r.setAmount(karaokeAmount);
+        return r;
+    }
+
+    /** The delay the limiter (and Karaoke Mode) adds, in frames. */
     public int latencyFrames() {
-        return lookahead;
+        VocalRemover r = remover;
+        return lookahead + (r != null ? r.latency() : 0);
     }
 
     /** Processes interleaved 16-bit samples in place (delayed by latencyFrames()). */
@@ -149,17 +179,44 @@ public final class Dsp {
         int filtered = together ? 1 : channels;
         int boost = boostLevel;
         double g = volume * Math.pow(10, BOOST_DB[boost] / 20);
-        // With no boost or equalizer nothing can get louder than it came in (a mono mix of two
-        // channels can't either), so there's nothing to limit: the sound passes through as it is.
-        double ceiling = boost > BOOST_OFF || bands > 0 ? CEILING : 1;
+        boolean wantKaraoke = karaoke && karaokeModel != null;
+        if (wantKaraoke != (remover != null) && switchPhase == 0) switchPhase = 1;
+        float fade = 1f / Math.max(1, rate / 100); // 10 ms
+        // With no boost, equalizer or vocal removal nothing can get louder than it came in (a mono
+        // mix of two channels can't either), so there's nothing to limit: it passes through as is.
+        double ceiling = boost > BOOST_OFF || bands > 0 || remover != null || switchPhase != 0 ? CEILING : 1;
         int frames = count / channels;
         int i = offset;
         for (int f = 0; f < frames; f++) {
             int base = pos * channels;
             double peak = 0;
+            for (int c = 0; c < channels; c++) input[c] = pcm[i + c] / 32768.0;
+            if (remover != null) {
+                remover.process((float) input[0], (float) input[channels - 1]);
+                input[0] = remover.outL;
+                if (channels > 1) input[1] = remover.outR;
+            }
+            if (switchPhase != 0) {
+                if (switchPhase == 1) {
+                    switchGain -= fade;
+                    if (switchGain <= 0) {
+                        switchGain = 0;
+                        boolean want = karaoke && karaokeModel != null;
+                        if (want != (remover != null)) remover = want ? newRemover() : null;
+                        switchPhase = 2;
+                    }
+                } else {
+                    switchGain += fade;
+                    if (switchGain >= 1) {
+                        switchGain = 1;
+                        switchPhase = 0;
+                    }
+                }
+                for (int c = 0; c < channels; c++) input[c] *= switchGain;
+            }
             for (int c = 0; c < filtered; c++) {
                 // Mixed at full precision; rounded only once, on the way out.
-                double x = together ? (pcm[i] + pcm[i + 1]) / 65536.0 : pcm[i + c] / 32768.0;
+                double x = together ? (input[0] + input[1]) * 0.5 : input[c];
                 int o = c * 4;
                 for (int b = 0; b < bands; b++) {
                     double[] kb = k[b];

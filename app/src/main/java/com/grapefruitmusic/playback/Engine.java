@@ -4,7 +4,7 @@ import java.io.IOException;
 
 /**
  * Plays one song: Android's MediaPlayer ({@link MediaPlayerEngine}), or Grapefruit's own
- * ({@link DspEngine}) when Volume Boost, the Equalizer or Mono Audio is on. Called on the main thread; the
+ * ({@link DspEngine}) when Karaoke Mode, Volume Boost, the Equalizer or Mono Audio is on. Called on the main thread; the
  * callbacks arrive there too.
  */
 interface Engine {
@@ -14,6 +14,9 @@ interface Engine {
         void onCompletion(Engine engine);
 
         void onError(Engine engine, String what);
+
+        /** Karaoke Mode needs more of the processor than this phone can give it. */
+        void onKaraokeTooSlow(Engine engine);
     }
 
     void setCallback(Callback callback);
@@ -39,8 +42,8 @@ interface Engine {
     /** Volume Match and ducking, 0 to 1. */
     void setVolume(float volume);
 
-    /** Volume Boost level, the equalizer curve (or null) and Mono Audio (ignored by MediaPlayer). */
-    void setEffects(int boostLevel, float[] eq, boolean mono);
+    /** Karaoke Mode, Volume Boost, the Equalizer and Mono Audio (ignored by MediaPlayer). */
+    void setEffects(Effects effects);
 
     /** Whether this engine applies setEffects (and so needs reloading to turn effects on/off). */
     boolean hasEffects();

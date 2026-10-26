@@ -353,6 +353,13 @@
                     android:padding="13dp" />
 
                 <com.grapefruitmusic.ui.widget.IconView
+                    android:id="@+id/np_btn_karaoke"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:padding="13dp" />
+
+                <com.grapefruitmusic.ui.widget.IconView
                     android:id="@+id/np_btn_queue"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"

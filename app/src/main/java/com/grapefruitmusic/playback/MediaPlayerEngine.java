@@ -98,7 +98,7 @@ final class MediaPlayerEngine implements Engine {
     }
 
     @Override
-    public void setEffects(int boostLevel, float[] eq, boolean mono) {
+    public void setEffects(Effects effects) {
         // MediaPlayer plays the music untouched.
     }
 

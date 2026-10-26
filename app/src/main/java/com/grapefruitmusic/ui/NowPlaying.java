@@ -77,6 +77,7 @@ final class NowPlaying {
     private final IconView btnLyrics;
     private final IconView btnShuffle;
     private final IconView btnRepeat;
+    private final IconView btnKaraoke;
     private final IconView btnQueue;
     private final View condensed;
     private final ArtworkView smallArt;
@@ -198,6 +199,7 @@ final class NowPlaying {
         btnLyrics = (IconView) root.findViewById(R.id.np_btn_lyrics);
         btnShuffle = (IconView) root.findViewById(R.id.np_btn_shuffle);
         btnRepeat = (IconView) root.findViewById(R.id.np_btn_repeat);
+        btnKaraoke = (IconView) root.findViewById(R.id.np_btn_karaoke);
         btnQueue = (IconView) root.findViewById(R.id.np_btn_queue);
         condensed = root.findViewById(R.id.np_condensed);
         smallArt = (ArtworkView) root.findViewById(R.id.np_small_art);
@@ -250,6 +252,7 @@ final class NowPlaying {
         btnLyrics.setIcon(Icons.LYRICS);
         btnShuffle.setIcon(Icons.SHUFFLE);
         btnRepeat.setIcon(Icons.REPEAT);
+        btnKaraoke.setIcon(Icons.MIC);
         btnQueue.setIcon(Icons.QUEUE);
         prev.setContentDescription("Previous");
         next.setContentDescription("Next");
@@ -257,6 +260,17 @@ final class NowPlaying {
         btnLyrics.setContentDescription("Lyrics");
         btnShuffle.setContentDescription("Shuffle");
         btnRepeat.setContentDescription("Repeat");
+        btnKaraoke.setContentDescription("Karaoke Mode");
+        btnKaraoke.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean on = !com.grapefruitmusic.util.Prefs.karaoke();
+                com.grapefruitmusic.util.Prefs.setKaraoke(on);
+                player.audioEffectsChanged();
+                showKaraoke();
+                com.grapefruitmusic.util.Notice.show(activity, on ? "Karaoke Mode on" : "Karaoke Mode off");
+            }
+        });
         btnQueue.setContentDescription("Up Next");
 
         dim.setOnClickListener(new View.OnClickListener() {
@@ -540,6 +554,10 @@ final class NowPlaying {
         }).start();
     }
 
+    private void showKaraoke() {
+        btnKaraoke.setColor(com.grapefruitmusic.util.Prefs.karaoke() ? accent : secondary);
+    }
+
     /** Called whenever the player changes. */
     void update() {
         MediaItem item = player.current();
@@ -559,6 +577,7 @@ final class NowPlaying {
         btnShuffle.setColor(player.isShuffle() ? accent : secondary);
         btnRepeat.setIcon(player.repeatMode() == Player.REPEAT_ONE ? Icons.REPEAT_ONE : Icons.REPEAT);
         btnRepeat.setColor(player.repeatMode() == Player.REPEAT_OFF ? secondary : accent);
+        showKaraoke();
 
         // iOS 10: the artwork shrinks back when paused.
         if (artPlaying == null || artPlaying != playing) {

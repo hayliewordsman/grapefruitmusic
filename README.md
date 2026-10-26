@@ -27,8 +27,10 @@ with downloads for offline listening and time-synced lyrics.
 - **Themes:** Settings › Theme: *Grapefruit Light* and *Grapefruit Dark* (in the app icon's peach, cream, ruby and
   coral), *Starlight* (white) or *Pitch Black* (black). Until you pick one, Grapefruit Music uses Grapefruit Light, or
   Pitch Black while the phone is in dark mode (Android 10+).
-- **Landscape:** turn the phone and album grids show more albums a row; Now Playing pops in as a panel on the right,
-  beside the library (swipe it right or tap outside to close it).
+- **Library grids:** every library page (Playlists, Artists, Albums, Songs, Recently Added) shows cards, two
+  across, scrolling down. Turned sideways, the pages scroll sideways instead: the Library's menu is the first
+  column, then Recently Added two cards high; swipe right to left and the menu slides away as more albums come
+  in. Now Playing pops in as a panel on the right, beside the library (swipe it right or tap outside to close it).
 - **Looks the same on every Android version:** Grapefruit draws its own switches, dialogs, menus, text fields,
   messages and fast-scroll thumb instead of using Android's (Holo on 4.x, Material later). Settings switches are
   little grapefruit slices that roll across a grapefruit-gradient track.
@@ -46,6 +48,14 @@ with downloads for offline listening and time-synced lyrics.
   Lounge, Piano, Pop, R&B, Rock, Small Speakers, Spoken Word, Treble Booster / Reducer and Vocal Booster /
   Reducer. Each band is a peaking filter; because neighbouring bands overlap, their gains are solved together so
   every band's centre lands exactly where its slider is.
+- **Karaoke Mode:** Settings › Sound › Karaoke Mode, or the microphone in Now Playing, turns down the lead vocal
+  of any song, by as much as the Vocal Removal slider says. A small neural network (about 220,000 weights,
+  8-bit, 0.2 MB) runs on the phone, offline, inside Grapefruit's own audio engine: for each 46 ms window of
+  sound (a new one every 12 ms) it looks at 96 frequency bands of the middle and sides of the mix, from 46 ms
+  back to 23 ms ahead, and estimates how much of each band is lead vocal; that part of the middle is
+  subtracted from both channels, so instruments and the stereo picture stay. The sound starts 70 ms later.
+  The model is trained on the MUSDB18 7-second excerpts (CC BY 4.0) by `tools/karaoke`. If a phone can't
+  keep up, Karaoke Mode turns itself off and says so.
 - **Mono Audio:** Settings › Accessibility. Left and right are mixed (averaged at full precision, rounded once)
   and played in both ears, at the song's own sample rate. Mono alone never needs limiting, so apart from the mix
   the sound is untouched.

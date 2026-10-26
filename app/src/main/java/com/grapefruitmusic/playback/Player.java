@@ -125,7 +125,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         changed();
     }
 
-    // ---- Volume Boost, Equalizer and Mono Audio ----
+    // ---- Karaoke Mode, Volume Boost, Equalizer and Mono Audio ----
 
     /** Is the song playing through Grapefruit's own engine (with effects)? */
     public boolean effectsActive() {
@@ -133,19 +133,24 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     /**
-     * Volume Boost, the Equalizer or Mono Audio changed: applies it to the song that's playing, switching
+     * Karaoke Mode, Volume Boost, the Equalizer or Mono Audio changed: applies it to the song that's playing, switching
      * engines (and carrying on from the same spot) when effects go on or off.
      */
     public void audioEffectsChanged() {
         MediaItem item = current();
         if (engine == null || item == null) return;
-        engine.setEffects(Prefs.volumeBoost(), eqCurve(), Prefs.monoAudio());
+        engine.setEffects(effects());
         boolean want = wantsEffects(item);
         if (want != engine.hasEffects()) load(playWhenReady, positionMs());
     }
 
     private boolean wantsEffects(MediaItem item) {
-        return Dsp.anyOn(Prefs.volumeBoost(), eqCurve(), Prefs.monoAudio()) && !item.key().equals(effectsFailedKey);
+        return effects().anyOn() && !item.key().equals(effectsFailedKey);
+    }
+
+    /** The sound settings, for Grapefruit's own engine. */
+    public static Effects effects() {
+        return new Effects(Prefs.volumeBoost(), eqCurve(), Prefs.monoAudio(), Prefs.karaoke(), Prefs.karaokeAmount());
     }
 
     /** The equalizer curve chosen in Settings: a preset's, or the Custom one. */
@@ -481,7 +486,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         }
         playWhenReady = play && requestFocus();
         engine = wantsEffects(item) ? new DspEngine(context) : new MediaPlayerEngine(context);
-        engine.setEffects(Prefs.volumeBoost(), eqCurve(), Prefs.monoAudio());
+        engine.setEffects(effects());
         final Engine player = engine;
         matchVolume = volumeMatch.volumeFor(item);
         measuring = false;
@@ -528,6 +533,15 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                     return;
                 }
                 failed(item, "Couldn't play “" + item.title + "”");
+            }
+
+            @Override
+            public void onKaraokeTooSlow(Engine e) {
+                if (e != engine || !Prefs.karaoke()) return;
+                Prefs.setKaraoke(false);
+                Notice.showLong(context, "Karaoke Mode needs more power than this phone has, so it's off. "
+                        + "The music plays on.");
+                audioEffectsChanged();
             }
         });
         try {

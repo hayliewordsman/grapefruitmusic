@@ -34,6 +34,8 @@ public final class Icons {
     public static final int HANDLE = 25;
     /** Filled circle with a white minus (the color is the circle's). */
     public static final int REMOVE = 26;
+    /** A microphone: Karaoke Mode. */
+    public static final int MIC = 27;
 
     private static final Paint PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final Path PATH = new Path();
@@ -286,6 +288,15 @@ public final class Icons {
                 stroke(p, 2.4f);
                 p.setStrokeCap(Paint.Cap.SQUARE);
                 c.drawLine(7, 12, 17, 12, p);
+                break;
+            case MIC:
+                stroke(p, 1.8f);
+                OVAL.set(9, 2.5f, 15, 14);
+                c.drawRoundRect(OVAL, 3, 3, p);
+                OVAL.set(5.5f, 4.5f, 18.5f, 17);
+                c.drawArc(OVAL, 10, 160, false, p);
+                c.drawLine(12, 17, 12, 21, p);
+                c.drawLine(8.5f, 21, 15.5f, 21, p);
                 break;
             case CHECK:
                 stroke(p, 2.4f);

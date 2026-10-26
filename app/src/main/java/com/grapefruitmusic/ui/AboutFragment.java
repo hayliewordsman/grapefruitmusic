@@ -66,8 +66,11 @@ public final class AboutFragment extends BaseFragment {
         g.section("Acknowledgements");
         g.value("Conscrypt", "Apache License 2.0", null);
         g.value("Synced lyrics", "LRCLIB", null);
+        g.value("Karaoke Mode", "MUSDB18, CC BY 4.0", null);
         g.footer("Conscrypt (github.com/google/conscrypt) provides secure connections on older Android "
-                + "versions. Online lyrics come from LRCLIB (lrclib.net), a community database.");
+                + "versions. Online lyrics come from LRCLIB (lrclib.net), a community database. Karaoke "
+                + "Mode's model was trained by Grapefruit on the MUSDB18 7-second excerpts (Rafii, Liutkus, "
+                + "Stöter, Mimilakis and Bittner, zenodo.org/records/3270814), licensed CC BY 4.0.");
         return page;
     }
 

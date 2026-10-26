@@ -1,7 +1,6 @@
 package com.grapefruitmusic.ui;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +17,7 @@ import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
 import com.grapefruitmusic.source.MusicSource;
 import com.grapefruitmusic.ui.widget.FastScrollListView;
+import com.grapefruitmusic.ui.widget.HorizontalGrid;
 import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.util.Bg;
 
@@ -33,6 +33,8 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
     static final int ARTIST_ALBUMS = 5;
 
     private ListView list;
+    /** Landscape: the sideways grid instead of list. */
+    private HorizontalGrid grid;
     private RowAdapter adapter;
     private TextView status;
     /** Loaded items, kept while a page on top of this one is open. */
@@ -68,11 +70,14 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
     }
 
     @Override
+    boolean rebuildsOnRotate() {
+        return true;
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
         Context c = getActivity();
-        boolean longList = mode() == SONGS || mode() == ARTISTS;
-        list = longList ? new FastScrollListView(c) : new ListView(c);
-        RowAdapter.style(list);
+        boolean sideways = RowAdapter.landscape(c);
         LinearLayout header = Ui.header(c, backLabel(), title(), goBack());
         if (backLabel() == null) {
             // Used as the Playlists tab: say which source the playlists come from.
@@ -80,13 +85,9 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
             from.setText(source().name());
             header.addView(from);
         }
+        LinearLayout shuffle = null;
         if (mode() == SONGS) {
-            LinearLayout shuffle = Ui.pill(c, Icons.SHUFFLE, "Shuffle All");
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.topMargin = Ui.dp(c, 10);
-            lp.bottomMargin = Ui.dp(c, 6);
-            header.addView(shuffle, lp);
+            shuffle = Ui.pill(c, Icons.SHUFFLE, "Shuffle All");
             shuffle.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -94,9 +95,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
                 }
             });
         }
-        list.addHeaderView(header, null, false);
         status = Ui.status(c);
-        list.addFooterView(status, null, false);
         adapter = new RowAdapter(c, new RowAdapter.Listener() {
             @Override
             public void onItem(MediaItem item, int index) {
@@ -108,58 +107,111 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
                 TrackActions.show(BrowseFragment.this, item, source());
             }
         });
-        list.setAdapter(adapter);
-        if (longList) {
-            FastScrollListView fast = (FastScrollListView) list;
-            fast.setThumbColor(Ui.accent(c));
-            fast.setLabeler(new FastScrollListView.Labeler() {
+        boolean turned = turnedSinceLastView();
+        View page;
+        if (sideways) {
+            // Sideways: the header stays put and the cards scroll sideways under it.
+            LinearLayout column = new LinearLayout(c);
+            column.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout bar = new LinearLayout(c);
+            bar.setOrientation(LinearLayout.HORIZONTAL);
+            bar.setGravity(android.view.Gravity.BOTTOM);
+            bar.addView(header, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+            if (shuffle != null) {
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                lp.rightMargin = Ui.dp(c, 16);
+                lp.bottomMargin = Ui.dp(c, 10);
+                bar.addView(shuffle, lp);
+            }
+            column.addView(bar);
+            android.widget.FrameLayout area = new android.widget.FrameLayout(c);
+            grid = new HorizontalGrid(c);
+            grid.setPadding(0, Ui.dp(c, 4), 0, Ui.dp(c, 8));
+            int perColumn = adapter.landscapeRows(50 + 60 + 72);
+            adapter.setStacked(perColumn);
+            grid.setShape(perColumn, adapter.cardTextHeight());
+            grid.setAdapter(adapter);
+            area.addView(grid);
+            area.addView(status, new android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            column.addView(area, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+            list = null;
+            page = column;
+        } else {
+            boolean longList = mode() == SONGS || mode() == ARTISTS;
+            list = longList ? new FastScrollListView(c) : new ListView(c);
+            RowAdapter.style(list);
+            if (shuffle != null) {
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                lp.topMargin = Ui.dp(c, 10);
+                lp.bottomMargin = Ui.dp(c, 6);
+                header.addView(shuffle, lp);
+            }
+            list.addHeaderView(header, null, false);
+            list.addFooterView(status, null, false);
+            list.setAdapter(adapter);
+            if (longList) {
+                FastScrollListView fast = (FastScrollListView) list;
+                fast.setThumbColor(Ui.accent(c));
+                fast.setLabeler(new FastScrollListView.Labeler() {
+                    @Override
+                    public String label(int position) {
+                        int i = position - list.getHeaderViewsCount();
+                        if (i < 0 || i >= adapter.getCount()) return null;
+                        Object row = adapter.getItem(i);
+                        if (row instanceof MediaItem[]) row = ((MediaItem[]) row)[0];
+                        String title = row instanceof MediaItem ? ((MediaItem) row).title : null;
+                        if (title == null || title.trim().length() == 0) return null;
+                        char first = Character.toUpperCase(title.trim().charAt(0));
+                        return Character.isLetter(first) ? String.valueOf(first) : "#";
+                    }
+                });
+            }
+            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
-                public String label(int position) {
-                    int i = position - list.getHeaderViewsCount();
-                    if (i < 0 || i >= adapter.getCount()) return null;
-                    Object row = adapter.getItem(i);
-                    String title = row instanceof MediaItem ? ((MediaItem) row).title : null;
-                    if (title == null || title.trim().length() == 0) return null;
-                    char first = Character.toUpperCase(title.trim().charAt(0));
-                    return Character.isLetter(first) ? String.valueOf(first) : "#";
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    adapter.click(position - list.getHeaderViewsCount());
                 }
             });
+            list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                    adapter.longClick(position - list.getHeaderViewsCount());
+                    return true;
+                }
+            });
+            grid = null;
+            page = list;
         }
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.click(position - list.getHeaderViewsCount());
-            }
-        });
-        list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.longClick(position - list.getHeaderViewsCount());
-                return true;
-            }
-        });
         if (items != null) {
             show();
-            restoreScroll(list);
+            if (grid != null) {
+                if (firstShown > 0) grid.scrollToColumn(firstShown / grid.getRows());
+            } else if (turned) {
+                if (firstShown > 0) list.setSelection(list.getHeaderViewsCount() + firstShown / 2);
+            } else {
+                restoreScroll(list);
+            }
             // Phone and download lists are cheap to re-read and may have changed meanwhile, and
             // playlists change when one is edited.
             if (!source().isRemote() || (mode() == PLAYLISTS && loadedMeta != PlaylistMeta.version())) load();
         } else {
             load();
         }
-        return list;
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // Turned to landscape or back: more or fewer albums a row.
-        if (adapter != null) adapter.configurationChanged();
+        return page;
     }
 
     @Override
     public void onDestroyView() {
-        rememberScroll(list);
+        if (list != null) {
+            rememberScroll(list);
+            int position = list.getFirstVisiblePosition() - list.getHeaderViewsCount();
+            firstShown = position >= 0 ? position * 2 : 0;
+        } else if (grid != null) {
+            firstShown = grid.getFirstVisibleColumn() * grid.getRows();
+        }
         super.onDestroyView();
     }
 
@@ -211,11 +263,11 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
 
     private void show() {
         int mode = mode();
-        adapter.setItems(items, mode == ALBUMS || mode == ARTIST_ALBUMS, false);
+        adapter.setItems(items, true, false);
         status.setVisibility(View.VISIBLE);
         if (items.isEmpty()) {
             status.setText("Nothing here yet.");
-        } else if (mode == SONGS) {
+        } else if (mode == SONGS && grid == null) {
             status.setText(items.size() + (items.size() == 1 ? " song" : " songs"));
         } else {
             status.setVisibility(View.GONE);

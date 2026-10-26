@@ -100,6 +100,24 @@ public final class Prefs {
         prefs.edit().putInt("equalizer", preset).apply();
     }
 
+    /** Karaoke Mode: the lead vocal turned down. */
+    public static boolean karaoke() {
+        return prefs.getBoolean("karaoke", false);
+    }
+
+    public static void setKaraoke(boolean on) {
+        prefs.edit().putBoolean("karaoke", on).apply();
+    }
+
+    /** How much of the vocal Karaoke Mode takes away, 0 to 1. */
+    public static float karaokeAmount() {
+        return prefs.getFloat("karaoke_amount", 1f);
+    }
+
+    public static void setKaraokeAmount(float amount) {
+        prefs.edit().putFloat("karaoke_amount", Math.max(0, Math.min(1, amount))).apply();
+    }
+
     /** Mono Audio: left and right mixed together in both ears. */
     public static boolean monoAudio() {
         return prefs.getBoolean("mono_audio", false);

@@ -1,6 +1,7 @@
 package com.grapefruitmusic.ui;
 
 import android.app.Fragment;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -30,6 +31,39 @@ public abstract class BaseFragment extends Fragment {
      */
     private int scrollPosition;
     private int scrollOffset;
+    /**
+     * The first item showing, to keep the place when the screen turns and a page swaps between
+     * its portrait and landscape layouts (-1: the top).
+     */
+    int firstShown = -1;
+    /** Orientation the view was last built for (0: not built yet). */
+    private int builtFor;
+
+    /** Pages laid out differently sideways rebuild their view when the screen turns. */
+    boolean rebuildsOnRotate() {
+        return false;
+    }
+
+    /** Did the screen turn since the view was last built (so a saved scroll position won't fit)? */
+    boolean turnedSinceLastView() {
+        return builtFor != 0 && builtFor != getResources().getConfiguration().orientation;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle saved) {
+        super.onViewCreated(view, saved);
+        builtFor = getResources().getConfiguration().orientation;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (rebuildsOnRotate() && getView() != null && newConfig.orientation != builtFor && isAdded()
+                && getFragmentManager() != null) {
+            // Detach and attach: the page keeps its loaded content, only its view is rebuilt.
+            getFragmentManager().beginTransaction().detach(this).attach(this).commitAllowingStateLoss();
+        }
+    }
 
     void rememberScroll(ListView list) {
         if (list == null) return;

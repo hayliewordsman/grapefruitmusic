@@ -180,6 +180,13 @@ public final class SettingsFragment extends BaseFragment
                 + "measures them the first time they play).");
 
         g.section("Sound");
+        g.value("Karaoke Mode", Prefs.karaoke() ? Math.round(Prefs.karaokeAmount() * 100) + "%" : "Off",
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        main().push(new KaraokeFragment());
+                    }
+                });
         g.value("Volume Boost", Dsp.BOOST_NAMES[Prefs.volumeBoost()], new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -201,8 +208,9 @@ public final class SettingsFragment extends BaseFragment
         });
         g.footer("Volume Boost makes Grapefruit louder than the phone's own maximum, like eXtra-Loud: a limiter "
                 + "keeps the loudest moments from crackling, and the higher levels squeeze the music more to "
-                + "get louder. The Equalizer shapes the sound with ten bands and presets. Both only change "
-                + "Grapefruit's sound. Listening loud for a long time can damage your hearing.");
+                + "get louder. The Equalizer shapes the sound with ten bands and presets. Karaoke Mode turns "
+                + "down the lead vocal. They only change Grapefruit's sound. Listening loud for a long time "
+                + "can damage your hearing.");
 
         g.section("Accessibility");
         g.toggle("Mono Audio", Prefs.monoAudio(), new Toggle.Listener() {

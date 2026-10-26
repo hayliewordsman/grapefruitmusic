@@ -29,7 +29,11 @@ final class DspEngine implements Engine {
     private static final String TAG = "DspEngine";
     private static final long TIMEOUT_US = 5000;
 
+    /** Karaoke Mode's model, read from the app once. */
+    private static VocalRemover.Model karaokeModel;
+
     private final Handler main = new Handler(Looper.getMainLooper());
+    private final Context app;
     private final Dsp dsp = new Dsp();
     private final PowerManager.WakeLock wakeLock;
     private final Object lock = new Object();
@@ -57,8 +61,13 @@ final class DspEngine implements Engine {
     private int pendingOff;
     private int pendingLen;
     private short[] scratch = new short[0];
+    // How much of real time the processing takes while Karaoke Mode runs (it's the heavy part).
+    private long busyNanos;
+    private long audioFrames;
+    private boolean warnedSlow;
 
     DspEngine(Context context) {
+        app = context.getApplicationContext();
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "grapefruit:effects");
         wakeLock.setReferenceCounted(false);
@@ -136,7 +145,9 @@ final class DspEngine implements Engine {
         int r = rate;
         if (t != null && r > 0) {
             try {
-                us += (t.getPlaybackHeadPosition() & 0xffffffffL) * 1000000L / r;
+                // What's heard now went in latencyFrames() earlier (Karaoke Mode's 70 ms, mostly).
+                long heard = (t.getPlaybackHeadPosition() & 0xffffffffL) - dsp.latencyFrames();
+                us += Math.max(0, heard) * 1000000L / r;
             } catch (IllegalStateException e) {
                 // The audio thread just let go of the track (stopping, or an error on its way).
             }
@@ -156,10 +167,44 @@ final class DspEngine implements Engine {
     }
 
     @Override
-    public void setEffects(int boostLevel, float[] eq, boolean mono) {
-        dsp.setBoost(boostLevel);
-        dsp.setEq(eq);
-        dsp.setMono(mono);
+    public void setEffects(final Effects e) {
+        dsp.setBoost(e.boost);
+        dsp.setEq(e.eq);
+        dsp.setMono(e.mono);
+        VocalRemover.Model model = loadedKaraokeModel();
+        if (e.karaoke && model == null) {
+            // Read the model off the main thread; Karaoke Mode starts once it's in.
+            com.grapefruitmusic.util.Bg.run(new com.grapefruitmusic.util.Bg.Work<VocalRemover.Model>() {
+                @Override
+                public VocalRemover.Model run() throws Exception {
+                    return karaokeModel(app);
+                }
+            }, new com.grapefruitmusic.util.Bg.Done<VocalRemover.Model>() {
+                @Override
+                public void done(VocalRemover.Model m, Exception error) {
+                    if (m != null) dsp.setKaraoke(e.karaoke, e.karaokeAmount, m);
+                    else Log.w(TAG, "karaoke model", error);
+                }
+            });
+        }
+        dsp.setKaraoke(e.karaoke, e.karaokeAmount, model);
+    }
+
+    private static synchronized VocalRemover.Model loadedKaraokeModel() {
+        return karaokeModel;
+    }
+
+    /** Karaoke Mode's model (assets/karaoke.bin), read once and kept. */
+    static synchronized VocalRemover.Model karaokeModel(Context c) throws IOException {
+        if (karaokeModel == null) {
+            java.io.InputStream in = c.getAssets().open("karaoke.bin");
+            try {
+                karaokeModel = VocalRemover.Model.read(in);
+            } finally {
+                in.close();
+            }
+        }
+        return karaokeModel;
     }
 
     @Override
@@ -478,8 +523,38 @@ final class DspEngine implements Engine {
                 pending[o++] = (short) (r / (inChannels / 2));
             }
         }
+        long started = System.nanoTime();
         dsp.process(pending, 0, o);
+        if (dsp.karaokeRunning() && outChannels > 0) {
+            checkSpeed(System.nanoTime() - started, o / outChannels);
+        } else {
+            busyNanos = 0;
+            audioFrames = 0;
+        }
         pendingOff = 0;
         pendingLen = o;
+    }
+
+    /**
+     * Karaoke Mode is the heavy part of the processing. If, over a few seconds, it takes more than
+     * 70% of the time the sound lasts, this phone can't keep up (the sound would stutter): say so.
+     */
+    private void checkSpeed(long nanos, int frames) {
+        busyNanos += nanos;
+        audioFrames += frames;
+        if (rate <= 0 || audioFrames < 3L * rate) return;
+        double share = busyNanos / (audioFrames * 1e9 / rate);
+        busyNanos = 0;
+        audioFrames = 0;
+        if (share > 0.7 && !warnedSlow) {
+            warnedSlow = true;
+            Log.w(TAG, "karaoke takes " + Math.round(share * 100) + "% of real time");
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    if (callback != null) callback.onKaraokeTooSlow(DspEngine.this);
+                }
+            });
+        }
     }
 }
