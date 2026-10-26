@@ -39,7 +39,7 @@ public final class VocalRemover {
 
         private Model(DataInputStream in) throws IOException {
             if (in.readInt() != 0x47464b4d) throw new IOException("not a Grapefruit karaoke model");
-            if (in.readInt() != 2) throw new IOException("unknown karaoke model version");
+            if (in.readInt() != 3) throw new IOException("unknown karaoke model version");
             n = in.readInt();
             hop = in.readInt();
             bands = in.readInt();
@@ -69,7 +69,10 @@ public final class VocalRemover {
         }
     }
 
-    /** A dense layer with 8-bit weights, one scale per output: y = scale * (W x) + bias. */
+    /**
+     * A dense layer, one scale per output: y = scale * (W x) + bias. The file holds 4-bit weights
+     * (-7 to 7, two a byte, low nibble first); they're unpacked to a byte each here.
+     */
     static final class Layer {
         final int outs;
         final int ins;
@@ -83,7 +86,12 @@ public final class VocalRemover {
             scale = floats(in, outs);
             bias = floats(in, outs);
             weights = new byte[outs * ins];
-            in.readFully(weights);
+            byte[] packed = new byte[(weights.length + 1) / 2];
+            in.readFully(packed);
+            for (int i = 0; i < weights.length; i++) {
+                int nibble = (i & 1) == 0 ? packed[i >> 1] & 0xf : (packed[i >> 1] >> 4) & 0xf;
+                weights[i] = (byte) (nibble >= 8 ? nibble - 16 : nibble);
+            }
         }
 
         void apply(float[] x, float[] y, boolean relu) {

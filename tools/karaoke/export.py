@@ -19,12 +19,24 @@ from train import Net, RATE  # noqa: E402
 FADE = 441
 
 
+LEVELS = 7  # 4-bit weights, -7 .. 7: as good as 8-bit here (see bits_eval.py), half the size
+
+
 def quantize(w):
-    """Per output row symmetric int8. w: (out, in) -> (scale (out,), q (out, in) int8)."""
+    """Per output row symmetric 4-bit. w: (out, in) -> (scale (out,), q (out, in) int8 in -7..7)."""
     peak = np.abs(w).max(axis=1)
-    scale = np.where(peak > 0, peak / 127.0, 1.0).astype(np.float32)
-    q = np.clip(np.round(w / scale[:, None]), -127, 127).astype(np.int8)
+    scale = np.where(peak > 0, peak / LEVELS, 1.0).astype(np.float32)
+    q = np.clip(np.round(w / scale[:, None]), -LEVELS, LEVELS).astype(np.int8)
     return scale, q
+
+
+def pack(q):
+    """Two weights a byte, low nibble first (two's complement nibbles); odd counts pad a zero."""
+    flat = q.reshape(-1).astype(np.int16)
+    if len(flat) % 2:
+        flat = np.append(flat, 0)
+    nib = (flat & 0xF).astype(np.uint8)
+    return (nib[0::2] | (nib[1::2] << 4)).astype(np.uint8).tobytes()
 
 
 def layers(net):
@@ -53,7 +65,7 @@ def quantized_layers(net):
 
 def write_model(path, net, mean, std):
     with open(path, "wb") as f:
-        f.write(struct.pack(">ii", 0x47464B4D, 2))
+        f.write(struct.pack(">ii", 0x47464B4D, 3))
         f.write(struct.pack(">iiiii", kdsp.N, kdsp.HOP, kdsp.BANDS, kdsp.PAST, kdsp.FUTURE))
         f.write(struct.pack(">fff", kdsp.FMIN, kdsp.FMAX, kdsp.EPS))
         f.write(np.asarray(mean, dtype=">f4").tobytes())
@@ -62,7 +74,7 @@ def write_model(path, net, mean, std):
             f.write(struct.pack(">ii", q.shape[0], q.shape[1]))
             f.write(scale.astype(">f4").tobytes())
             f.write(b.astype(">f4").tobytes())
-            f.write(q.tobytes())
+            f.write(pack(q))
 
 
 def vocal_estimate(x, lays, mean, std, rate=RATE):
@@ -159,7 +171,7 @@ def main():
     quant = quantized_layers(net)
     g_full = evaluate(full, mean, std, npz)
     g_q = evaluate(quant, mean, std, npz)
-    print("test songs %d: vocal error reduced by median %.2f dB (mean %.2f, worst %.2f, best %.2f); 8-bit: median %.2f dB"
+    print("test songs %d: vocal error reduced by median %.2f dB (mean %.2f, worst %.2f, best %.2f); as shipped (4-bit): median %.2f dB"
           % (len(g_full), np.median(g_full), g_full.mean(), g_full.min(), g_full.max(), np.median(g_q)))
     write_model(os.path.join(out, "karaoke.bin"), net, mean, std)
     print("model bytes", os.path.getsize(os.path.join(out, "karaoke.bin")))

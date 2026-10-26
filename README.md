@@ -50,7 +50,7 @@ with downloads for offline listening and time-synced lyrics.
   every band's centre lands exactly where its slider is.
 - **Karaoke Mode:** Settings › Sound › Karaoke Mode, or the microphone in Now Playing, turns down the lead vocal
   of any song, by as much as the Vocal Removal slider says. A small neural network (about 220,000 weights,
-  8-bit, 0.2 MB) runs on the phone, offline, inside Grapefruit's own audio engine: for each 46 ms window of
+  4-bit, 0.11 MB) runs on the phone, offline, inside Grapefruit's own audio engine: for each 46 ms window of
   sound (a new one every 12 ms) it looks at 96 frequency bands of the middle and sides of the mix, from 46 ms
   back to 23 ms ahead, and estimates how much of each band is lead vocal; that part of the middle is
   subtracted from both channels, so instruments and the stereo picture stay. The sound starts 70 ms later.

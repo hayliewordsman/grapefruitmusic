@@ -3,7 +3,7 @@
 Grapefruit's Karaoke Mode (`app/src/main/java/com/grapefruitmusic/playback/VocalRemover.java`) runs a
 small neural network that estimates, for each 46 ms window of sound, how much of each of 96 frequency
 bands of the middle of the mix is lead vocal. The model ships as `app/src/main/assets/karaoke.bin`
-(8-bit weights, about 0.2 MB). These scripts make it.
+(4-bit weights, about 0.11 MB). These scripts make it.
 
 ## Data
 
@@ -24,7 +24,8 @@ other tracks. Download `MUSDB18-7-STEMS.zip`, unzip it to `raw/`, then:
 `train.py` holds 10 training clips back for validation and keeps the best checkpoint by validation
 loss. `export.py` reports how much the model reduces the vocal on the 50 test clips (only meaningful
 for a model that didn't train on them), quantizes the
-weights to 8 bits (one scale per output row), writes `out/karaoke.bin`, and writes `golden_in.bin` /
+weights to 4 bits (one scale per output row, two weights a byte; `bits_eval.py` shows 4 bits score
+the same as 8 here), writes `out/karaoke.bin`, and writes `golden_in.bin` /
 `golden_out.bin`: a synthetic sung-like signal (`voice_synth.py`) and what Python's reference of the
 app's processing makes of it. Copy `karaoke.bin` to `app/src/main/assets/` and the golden files to
 `app/src/test/resources/karaoke/`; `VocalRemoverTest` checks the app gives the same sound.
