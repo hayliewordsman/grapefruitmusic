@@ -42,7 +42,7 @@ with downloads for offline listening and time-synced lyrics.
   Up Next (drag the ≡ handle to reorder: the other songs slide aside), Play Next / Add to Up Next. The
   notification shows the whole cover (fitted, not cropped) and has an ✕ at the top right that stops playback,
   closes Grapefruit and clears the notification.
-- **FM Radio (beta):** the Radio tab shows your presets as station tiles, finds stations (Find Stations) and
+- **FM Radio:** the Radio tab shows your presets as station tiles, finds stations (Find Stations) and
   starts the radio; choosing a station opens Now Playing on it, with a dial to drag or tap, seek buttons for the
   next station down or up, 0.1 MHz steps, the station's name, programme type and text from RDS, + to save it as
   a preset with a label of your own (or none, to go by the station's name or frequency; touch and hold a preset
@@ -57,8 +57,12 @@ with downloads for offline listening and time-synced lyrics.
     and volume keys set the chip's own volume (0 to 15). The chip sends its sound straight to the headphones,
     so there's no Speaker choice, and it has no RDS, so stations show by frequency. While it's on, Rockchip's
     service shows its own FM Radio notification beside Grapefruit's.
-  - **MediaTek** tablets: Grapefruit drives the chip the way MediaTek's own FM Radio app does (the system's
-    `libfmjni.so` and MediaTek's radio MediaPlayer), with RDS and the Speaker choice.
+  - **MediaTek** tablets on Android 4.x: Grapefruit drives the chip the way MediaTek's own FM Radio app does
+    (the system's `libfmjni.so` and MediaTek's radio MediaPlayer), with RDS and the Speaker choice. Written to
+    MediaTek's Jelly Bean and KitKat interface, but not yet tried on a MediaTek tablet.
+
+  Other radios aren't supported: Qualcomm, Broadcom and Spreadtrum chips, and MediaTek's Android 5+ radio
+  (from Android 7 on, apps can't load the system's radio library at all). There the Radio tab says so.
 
   Radio › Radio Details shows what Grapefruit found on a tablet whose radio it can't use yet:
   radio libraries (with their JNI classes, functions and strings), devices and who may open them, the
