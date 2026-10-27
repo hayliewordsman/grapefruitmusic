@@ -32,7 +32,8 @@ with downloads for offline listening and time-synced lyrics.
   The icons are drawn by `tools/icons/make_icons.py`.
 - **Library:** Songs is a list with small artwork and Playlists a list with medium artwork; Artists, Albums and
   Recently Added show cards, two across, scrolling down. Recently Added mixes in playlists by the date they were
-  made (as Navidrome/Subsonic, Jellyfin and the phone report it), newest first. Turned sideways, the card pages scroll sideways instead:
+  made (as Navidrome/Subsonic, Jellyfin and the phone report it), newest first, each labelled Playlist where an
+  album shows its artist. Turned sideways, the card pages scroll sideways instead:
   the Library's menu is the first column, then Recently Added two cards high; swipe right to left and the menu
   slides away as more albums come in. Now Playing pops in as a panel on the right, beside the library (swipe it
   right or tap outside to close it).
@@ -45,8 +46,8 @@ with downloads for offline listening and time-synced lyrics.
   closes Grapefruit and clears the notification.
 - **Internet radio:** the Radio tab, on every device, plays live stations from
   [Radio Browser](https://www.radio-browser.info), a free, open directory run by volunteers: popular stations where
-  you are, sixteen genres, a search, and My Stations (keep a station with + or its menu; touch and hold its tile to
-  remove it). Add by Link adds a station the directory doesn't have, from its stream's address (or its .pls or .m3u
+  you are, sixteen genres, a search, and My Stations (keep a station with + beside it, + in Now Playing or its
+  menu; touch and hold its tile to remove it). Add by Link adds a station the directory doesn't have, from its stream's address (or its .pls or .m3u
   playlist). Stations play through the music player: next and previous step through the list you chose from,
   and Stop replaces Pause (a paused stream falls behind). Now Playing shows LIVE in place of the song position,
   and the song and artist the station sends (SHOUTcast/Icecast titles), as do the notification and lock screen.

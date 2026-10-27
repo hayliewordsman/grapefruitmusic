@@ -427,7 +427,8 @@ final class RowAdapter extends BaseAdapter {
         c.title.setText(m.title);
         boolean track = m.kind == MediaItem.TRACK;
         c.title.setTextColor(track && m.key().equals(playingKey) ? accent : primary);
-        c.artist.setText(subtitle(m));
+        // Among album cards (Recently Added), a playlist says what it is where an album has its artist.
+        c.artist.setText(m.kind == MediaItem.PLAYLIST ? "Playlist" : subtitle(m));
         c.art.setCircle(m.kind == MediaItem.ARTIST);
         c.more.setTag(m);
         c.more.setVisibility(track ? View.VISIBLE : View.GONE);

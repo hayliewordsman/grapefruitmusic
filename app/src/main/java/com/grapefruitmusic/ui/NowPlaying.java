@@ -29,6 +29,7 @@ import com.grapefruitmusic.lyrics.Lyrics;
 import com.grapefruitmusic.lyrics.LyricsRepository;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
+import com.grapefruitmusic.radio.MyStations;
 import com.grapefruitmusic.radio.Radio;
 import com.grapefruitmusic.radio.RadioArt;
 import com.grapefruitmusic.radio.StationText;
@@ -88,6 +89,8 @@ final class NowPlaying {
     private final IconView btnRepeat;
     private final IconView btnKaraoke;
     private final IconView btnQueue;
+    /** A live station: + keeps it in My Stations (✓ when it's there; tap again to let it go). */
+    private final IconView btnStation;
     private final View condensed;
     private final ArtworkView smallArt;
     private final TextView smallTitle;
@@ -232,6 +235,12 @@ final class NowPlaying {
         btnRepeat = (IconView) root.findViewById(R.id.np_btn_repeat);
         btnKaraoke = (IconView) root.findViewById(R.id.np_btn_karaoke);
         btnQueue = (IconView) root.findViewById(R.id.np_btn_queue);
+        btnStation = new IconView(a);
+        int buttonPad = Ui.dp(a, 13);
+        btnStation.setPadding(buttonPad, buttonPad, buttonPad, buttonPad);
+        btnStation.setVisibility(View.GONE);
+        ((LinearLayout) root.findViewById(R.id.np_buttons)).addView(btnStation,
+                new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
         condensed = root.findViewById(R.id.np_condensed);
         smallArt = (ArtworkView) root.findViewById(R.id.np_small_art);
         smallTitle = (TextView) root.findViewById(R.id.np_small_title);
@@ -388,6 +397,22 @@ final class NowPlaying {
             @Override
             public void onClick(View v) {
                 setMode(mode == MODE_QUEUE ? MODE_ART : MODE_QUEUE);
+            }
+        });
+        btnStation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MediaItem station = player.current();
+                if (station == null || !station.live) return;
+                MyStations mine = MyStations.get(activity);
+                if (mine.contains(station)) {
+                    mine.remove(station);
+                    Notice.show(activity, "Removed " + station.title + " from My Stations");
+                } else {
+                    mine.add(station);
+                    Notice.show(activity, "Added " + station.title + " to My Stations");
+                }
+                showStationButton(station);
             }
         });
 
@@ -757,7 +782,16 @@ final class NowPlaying {
         btnLyrics.setVisibility(View.VISIBLE);
         btnShuffle.setVisibility(View.VISIBLE);
         btnRepeat.setVisibility(View.VISIBLE);
+        btnStation.setVisibility(View.GONE);
         showKaraokeSlider();
+    }
+
+    /** + or ✓: whether the station playing is in My Stations. */
+    private void showStationButton(MediaItem station) {
+        boolean kept = MyStations.get(activity).contains(station);
+        btnStation.setIcon(kept ? Icons.CHECK : Icons.PLUS);
+        btnStation.setColor(kept ? accent : secondary);
+        btnStation.setContentDescription(kept ? "Remove from My Stations" : "Add to My Stations");
     }
 
     /** Switches the controls between songs and a live internet station. */
@@ -771,6 +805,7 @@ final class NowPlaying {
         btnLyrics.setVisibility(on ? View.GONE : View.VISIBLE);
         btnShuffle.setVisibility(on ? View.GONE : View.VISIBLE);
         btnRepeat.setVisibility(on ? View.GONE : View.VISIBLE);
+        btnStation.setVisibility(on ? View.VISIBLE : View.GONE);
         card.setDragLimit(on ? liveLabel : scrubber);
         prev.setContentDescription(on ? "Previous station" : "Previous");
         next.setContentDescription(on ? "Next station" : "Next");
@@ -865,6 +900,7 @@ final class NowPlaying {
         setText(smallArtist, line);
         boolean playing = player.wantsToPlay();
         play.setIcon(playing ? (item.live ? Icons.STOP : Icons.PAUSE) : Icons.PLAY);
+        if (item.live) showStationButton(item);
         btnShuffle.setColor(player.isShuffle() ? accent : secondary);
         btnRepeat.setIcon(player.repeatMode() == Player.REPEAT_ONE ? Icons.REPEAT_ONE : Icons.REPEAT);
         btnRepeat.setColor(player.repeatMode() == Player.REPEAT_OFF ? secondary : accent);
