@@ -53,9 +53,26 @@ public class VocalRemoverTest {
     }
 
     @Test
-    public void latencyIsAWindowAndTwoHops() throws IOException {
+    public void latencyIsAWindowAndAHop() throws IOException {
         VocalRemover r = new VocalRemover(model(), 44100);
-        assertEquals(2048 + 2 * 512, r.latency());
+        assertEquals(2048 + 1024, r.latency());
+    }
+
+    @Test
+    public void fastPowersAreCloseEnough() {
+        java.util.Random random = new java.util.Random(3);
+        double worst = 0;
+        for (int i = 0; i < 100000; i++) {
+            float x = random.nextFloat() * 0.999999f + 1e-6f;
+            float s = random.nextFloat() * 8;
+            double want = Math.pow(x, s);
+            double got = VocalRemover.exp2(s * VocalRemover.log2(x));
+            worst = Math.max(worst, Math.abs(got - want) / Math.max(want, 1e-30));
+        }
+        assertTrue("worst relative error " + worst, worst < 2e-3);
+        assertEquals(1f, VocalRemover.exp2(0), 1e-5f);
+        assertEquals(0f, VocalRemover.log2(1), 3e-4f);
+        assertTrue(VocalRemover.exp2(-1000) > 0);
     }
 
     @Test

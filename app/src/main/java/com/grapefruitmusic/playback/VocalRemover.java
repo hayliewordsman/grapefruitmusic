@@ -8,16 +8,22 @@ import java.io.InputStream;
  * Karaoke Mode: turns a song's lead vocal down with a small neural network that runs on the
  * phone, offline.
  *
- * <p>The sound is cut into overlapping windows (2048 samples, a new one every 512). For each, the
- * model looks at the loudness of 96 frequency bands of the middle (L+R)/2 and the sides (L-R)/2,
- * from four windows back to two ahead, and estimates how much of each band is lead vocal, and how
+ * <p>The sound is cut into overlapping windows (2048 samples, a new one every 1024, under a sine
+ * window). For each, the model looks at the loudness of 96 frequency bands of the middle (L+R)/2
+ * and the sides (L-R)/2, from three windows back to one ahead, plus slowly-moving averages of
+ * what it has heard (a longer memory), and estimates how much of each band is lead vocal, and how
  * strongly to favour sound right in the middle within the band (lead vocals sit in the middle of
  * a mix). That share of the middle is the vocal; it's subtracted from both channels, scaled by the
  * amount, so instruments and the stereo picture stay as they were. The sound comes out
  * {@link #latency()} samples late.
  *
- * <p>The model is trained on the MUSDB18 7-second excerpts (CC BY 4.0) by tools/karaoke, which also
- * holds a Python reference of this processing. One instance per stream; call from one thread.
+ * <p>Version 2 (Grapefruit 3.2) does a quarter of version 1's work: half as many windows, a
+ * smaller network, and no exp or log per frequency bin (a fast power on float bits instead).
+ *
+ * <p>The model is trained by tools/karaoke on the MUSDB18 7-second excerpts (CC BY 4.0) and on Free
+ * Music Archive songs (CC BY, CC0 and public domain) split into voice and backing by Demucs;
+ * tools/karaoke also holds a Python reference of this processing. One instance per stream; call
+ * from one thread.
  */
 public final class VocalRemover {
     /** A trained model, read from the app's karaoke.bin. Shared, read-only. */
@@ -30,6 +36,8 @@ public final class VocalRemover {
         final float fmin;
         final float fmax;
         final float eps;
+        /** Per-frame decays of the encoding's moving averages. */
+        final float[] emas;
         final float[] mean;
         final float[] std;
         final Layer enc;
@@ -39,7 +47,7 @@ public final class VocalRemover {
 
         private Model(DataInputStream in) throws IOException {
             if (in.readInt() != 0x47464b4d) throw new IOException("not a Grapefruit karaoke model");
-            if (in.readInt() != 3) throw new IOException("unknown karaoke model version");
+            if (in.readInt() != 4) throw new IOException("unknown karaoke model version");
             n = in.readInt();
             hop = in.readInt();
             bands = in.readInt();
@@ -48,13 +56,14 @@ public final class VocalRemover {
             fmin = in.readFloat();
             fmax = in.readFloat();
             eps = in.readFloat();
+            emas = floats(in, in.readInt());
             mean = floats(in, 2 * bands);
             std = floats(in, 2 * bands);
             enc = new Layer(in);
             ctx = new Layer(in);
             mid = new Layer(in);
             out = new Layer(in);
-            if (enc.ins != 2 * bands || ctx.ins != (past + 1 + future) * enc.outs || mid.ins != ctx.outs
+            if (enc.ins != 2 * bands || ctx.ins != (past + 1 + future + emas.length) * enc.outs || mid.ins != ctx.outs
                     || out.ins != mid.outs || out.outs != 2 * bands) {
                 throw new IOException("karaoke model layers don't fit together");
             }
@@ -96,11 +105,24 @@ public final class VocalRemover {
 
         void apply(float[] x, float[] y, boolean relu) {
             byte[] w = weights;
+            int n = ins;
+            int four = n & ~3;
             int k = 0;
             for (int o = 0; o < outs; o++) {
-                float acc = 0;
-                for (int i = 0; i < ins; i++) acc += w[k++] * x[i];
-                float v = acc * scale[o] + bias[o];
+                // Four at a time: fewer loop checks for Android 4's JIT.
+                float a0 = 0;
+                float a1 = 0;
+                float a2 = 0;
+                float a3 = 0;
+                int i = 0;
+                for (; i < four; i += 4, k += 4) {
+                    a0 += w[k] * x[i];
+                    a1 += w[k + 1] * x[i + 1];
+                    a2 += w[k + 2] * x[i + 2];
+                    a3 += w[k + 3] * x[i + 3];
+                }
+                for (; i < n; i++) a0 += w[k++] * x[i];
+                float v = ((a0 + a1) + (a2 + a3)) * scale[o] + bias[o];
                 y[o] = relu && v < 0 ? 0 : v;
             }
         }
@@ -136,12 +158,15 @@ public final class VocalRemover {
     private long frames;
     private final float[] re;
     private final float[] im;
+    private final float[] synth;
     private final float[] powerMid;
     private final float[] powerSide;
     private final float[] features;
     private final float[] encoded;
     // The encoded frames from past back to future ahead (a ring), and each one's mid spectrum.
     private final float[] history;
+    /** The encoding's moving averages, one after another (up to the newest frame). */
+    private final float[] averages;
     private final float[][] spectraRe;
     private final float[][] spectraIm;
     /** Per bin, how much of the power is in the middle: |M|^2 / (|M|^2 + |S|^2). */
@@ -174,8 +199,9 @@ public final class VocalRemover {
         hop = model.hop;
         latency = n + model.future * hop;
         fft = new Fft(n);
+        // A sine window, in and out: at half-overlap the two together add up to exactly 1.
         window = new float[n];
-        for (int i = 0; i < n; i++) window[i] = (float) (0.5 - 0.5 * Math.cos(2 * Math.PI * i / n));
+        for (int i = 0; i < n; i++) window[i] = (float) Math.sin(Math.PI * i / n);
 
         // Mel-spaced band centres from fmin to fmax (or just under half the sample rate).
         int bins = n / 2 + 1;
@@ -233,11 +259,13 @@ public final class VocalRemover {
         anaSide = new float[n];
         re = new float[n];
         im = new float[n];
+        synth = new float[n];
         powerMid = new float[bins];
         powerSide = new float[bins];
         features = new float[2 * model.bands];
         encoded = new float[model.enc.outs];
         history = new float[model.context() * model.enc.outs];
+        averages = new float[model.emas.length * model.enc.outs];
         spectraRe = new float[model.future + 1][bins];
         spectraIm = new float[model.future + 1][bins];
         spectraCentred = new float[model.future + 1][bins];
@@ -250,6 +278,37 @@ public final class VocalRemover {
         vocal = new float[hop];
         dryL = new float[latency];
         dryR = new float[latency];
+    }
+
+    // x^s as 2^(s log2 x), on float bits: no exp or log per frequency bin. tools/karaoke/kdsp.py
+    // has the same, and fitted these.
+    private static final float L0 = -0.07915037f;
+    private static final float L1 = 0.31221426f;
+    private static final float L2 = -0.6695152f;
+    private static final float L3 = 1.4360981f;
+    private static final float L4 = 0.00020415891f;
+    private static final float E0 = 0.013676531f;
+    private static final float E1 = 0.051666877f;
+    private static final float E2 = 0.24171026f;
+    private static final float E3 = 0.6929313f;
+    private static final float E4 = 1.0000073f;
+
+    /** log2 of a positive float, to within 2e-4. */
+    static float log2(float x) {
+        int bits = Float.floatToRawIntBits(x);
+        int e = ((bits >> 23) & 0xff) - 127;
+        float m = Float.intBitsToFloat((bits & 0x7fffff) | 0x3f800000) - 1f;
+        float p = (((L0 * m + L1) * m + L2) * m + L3) * m + L4;
+        return e + p;
+    }
+
+    /** 2^y for y <= 0 (down to 2^-126), to within 7e-6. */
+    static float exp2(float y) {
+        if (y < -126f) y = -126f;
+        int i = (int) Math.floor(y);
+        float f = y - i;
+        float p = (((E0 * f + E1) * f + E2) * f + E3) * f + E4;
+        return Float.intBitsToFloat((i + 127) << 23) * p;
     }
 
     private static double mel(double f) {
@@ -344,6 +403,14 @@ public final class VocalRemover {
         int ring = m.context();
         m.enc.apply(features, encoded, true);
         System.arraycopy(encoded, 0, history, (int) (j % ring) * enc, enc);
+        for (int e = 0; e < m.emas.length; e++) {
+            float a = m.emas[e];
+            float b = 1 - a;
+            int at = e * enc;
+            for (int i = 0; i < enc; i++) {
+                averages[at + i] = j == 0 ? encoded[i] : a * averages[at + i] + b * encoded[i];
+            }
+        }
 
         // The frame whose context is now complete.
         long t = j - m.future;
@@ -356,6 +423,8 @@ public final class VocalRemover {
                     System.arraycopy(history, (int) (f % ring) * enc, context, c * enc, enc);
                 }
             }
+            // Then the moving averages, up to the newest frame.
+            System.arraycopy(averages, 0, context, ring * enc, averages.length);
             m.ctx.apply(context, hidden1, true);
             m.mid.apply(hidden1, hidden2, true);
             m.out.apply(hidden2, mask, false);
@@ -376,20 +445,15 @@ public final class VocalRemover {
                 float g = mask[b] * lo + (hi != 0 ? mask[b + 1] * hi : 0);
                 float s = sharp[b] * lo + (hi != 0 ? sharp[b + 1] * hi : 0);
                 // Within the band, favour what's in the middle: centred^sharpness.
-                g *= (float) Math.exp(s * Math.log(middle[k] + 1e-12));
+                float c = middle[k];
+                g *= exp2(s * log2(c < 1e-12f ? 1e-12f : c));
                 re[k] = sr[k] * g;
                 im[k] = si[k] * g;
             }
-            for (int k = 1; k < n / 2; k++) {
-                re[n - k] = re[k];
-                im[n - k] = -im[k];
-            }
-            im[0] = 0;
-            im[n / 2] = 0;
-            fft.transform(re, im, true);
-            // Hann in and out at a quarter-window hop overlap-adds to 1.5: scale it back.
-            float scale = 1f / n / 1.5f;
-            for (int i = 0; i < n; i++) ola[i] += re[i] * window[i] * scale;
+            // A real signal back: half the work of a full inverse transform.
+            fft.inverseReal(re, im, synth);
+            float scale = 1f / n;
+            for (int i = 0; i < n; i++) ola[i] += synth[i] * window[i] * scale;
         }
         System.arraycopy(ola, 0, vocal, 0, hop);
         System.arraycopy(ola, hop, ola, 0, n - hop);

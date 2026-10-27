@@ -207,14 +207,14 @@ final class DspEngine implements Engine {
     }
 
     /**
-     * Runs the model over a second of quiet noise. Android 4's JIT only compiles code once it has
+     * Runs the model over two seconds of quiet noise. Android 4's JIT only compiles code once it has
      * run a while, and until then Karaoke Mode is several times slower: warmed up here, off the
      * audio thread, it's fast from the first note.
      */
     static void warmUp(VocalRemover.Model model) {
         VocalRemover r = new VocalRemover(model, 44100);
         java.util.Random random = new java.util.Random(1);
-        for (int i = 0; i < 44100; i++) {
+        for (int i = 0; i < 2 * 44100; i++) {
             r.process(random.nextFloat() * 0.02f - 0.01f, random.nextFloat() * 0.02f - 0.01f);
         }
     }
@@ -328,8 +328,9 @@ final class DspEngine implements Engine {
         int config = outChannels == 1 ? AudioFormat.CHANNEL_OUT_MONO : AudioFormat.CHANNEL_OUT_STEREO;
         int min = AudioTrack.getMinBufferSize(sampleRate, config, AudioFormat.ENCODING_PCM_16BIT);
         if (min <= 0) throw new IOException("Can't play " + sampleRate + " Hz audio");
-        // At least a quarter second, so a busy moment doesn't make the sound stutter.
-        int bytes = Math.max(min * 2, sampleRate * outChannels * 2 / 4);
+        // Half a second ahead, so a busy moment (the tablet doing something else for a while, or
+        // Karaoke Mode's work arriving all at once) doesn't make the sound stutter.
+        int bytes = Math.max(min * 2, sampleRate * outChannels * 2 / 2);
         AudioTrack t = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, config, AudioFormat.ENCODING_PCM_16BIT,
                 bytes, AudioTrack.MODE_STREAM);
         if (t.getState() != AudioTrack.STATE_INITIALIZED) {

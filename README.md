@@ -99,14 +99,18 @@ with downloads for offline listening and time-synced lyrics.
   every band's centre lands exactly where its slider is.
 - **Karaoke Mode:** Settings › Sound › Karaoke Mode, or the microphone in Now Playing, turns down the lead vocal
   of any song, by as much as the Vocal Removal slider says (in Settings, or the upright slider beside the
-  artwork in Now Playing while Karaoke Mode is on: slide up to take more away). A small neural network (about 220,000 weights,
-  4-bit, 0.11 MB) runs on the phone, offline, inside Grapefruit's own audio engine: for each 46 ms window of
-  sound (a new one every 12 ms) it looks at 96 frequency bands of the middle and sides of the mix, from 46 ms
-  back to 23 ms ahead, and estimates how much of each band is lead vocal; that part of the middle is
-  subtracted from both channels, so instruments and the stereo picture stay. The sound starts 70 ms later.
-  The model is trained on the MUSDB18 7-second excerpts (CC BY 4.0) by `tools/karaoke`. It's read and run
-  once in the background before it plays (Android 4's JIT compiles code only after it has run a while), so
-  it's fast from the first note.
+  artwork in Now Playing while Karaoke Mode is on: slide up to take more away). A small neural network (about
+  110,000 weights, 4-bit, 0.06 MB) runs on the phone, offline, inside Grapefruit's own audio engine: for each
+  46 ms window of sound (a new one every 23 ms) it looks at 96 frequency bands of the middle and sides of the
+  mix, from 70 ms back to 23 ms ahead plus a longer memory, and estimates how much of each band is lead vocal;
+  that part of the middle is subtracted from both channels, so instruments and the stereo picture stay. The
+  sound starts 70 ms later. Version 2 (3.2) does about a third of version 1's work, so it keeps up on a 2013
+  tablet, and Grapefruit's engine keeps half a second of sound ready so a busy moment doesn't stutter. It was
+  trained by `tools/karaoke` on the MUSDB18 7-second excerpts (CC BY 4.0) and on 459 Free Music Archive songs
+  (CC BY, CC0 and public domain; credited in Settings › About) that Demucs, a much larger separation model,
+  split into voice and backing; on songs it didn't learn from it takes the lead vocal down 3.9 to 4.6 dB
+  (median), against version 1's 3.6. It's read and run once in the background before it plays (Android 4's
+  JIT compiles code only after it has run a while), so it's fast from the first note.
 - **Mono Audio:** Settings › Accessibility. Left and right are mixed (averaged at full precision, rounded once)
   and played in both ears, at the song's own sample rate. Mono alone never needs limiting, so apart from the mix
   the sound is untouched.

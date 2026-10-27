@@ -1,8 +1,8 @@
 """Exports a trained Karaoke Mode model for the app, checks it, and writes test vectors.
 
 Usage: export.py run_dir npz_dir out_dir
-Writes out_dir/karaoke.bin (8-bit weights), out_dir/golden_in.bin, out_dir/golden_out.bin and
-prints how much vocal each model removes on the 50 MUSDB18 test excerpts.
+Writes out_dir/karaoke.bin (4-bit weights), out_dir/golden_in.bin, out_dir/golden_out.bin and
+prints how much vocal the model removes on the 50 MUSDB18 test excerpts.
 """
 import glob
 import os
@@ -48,7 +48,11 @@ def layers(net):
         sd["out.bias"][kdsp.BANDS:] = -40
     enc = (sd["enc.weight"][:, :, 0], sd["enc.bias"])
     w = sd["ctx.weight"]                       # (out, enc, context): app wants [out][frame][enc]
-    ctx = (w.transpose(0, 2, 1).reshape(w.shape[0], -1), sd["ctx.bias"])
+    wc = w.transpose(0, 2, 1).reshape(w.shape[0], -1)
+    if "ema.weight" in sd:
+        # The moving averages come after the frames: [out][average][enc].
+        wc = np.concatenate([wc, sd["ema.weight"][:, :, 0]], axis=1)
+    ctx = (wc, sd["ctx.bias"])
     mid = (sd["mid.weight"][:, :, 0], sd["mid.bias"])
     out = (sd["out.weight"][:, :, 0], sd["out.bias"])
     return [enc, ctx, mid, out]
@@ -65,9 +69,11 @@ def quantized_layers(net):
 
 def write_model(path, net, mean, std):
     with open(path, "wb") as f:
-        f.write(struct.pack(">ii", 0x47464B4D, 3))
+        f.write(struct.pack(">ii", 0x47464B4D, kdsp.VERSION))
         f.write(struct.pack(">iiiii", kdsp.N, kdsp.HOP, kdsp.BANDS, kdsp.PAST, kdsp.FUTURE))
         f.write(struct.pack(">fff", kdsp.FMIN, kdsp.FMAX, kdsp.EPS))
+        f.write(struct.pack(">i", len(kdsp.EMAS)))
+        f.write(np.asarray(kdsp.EMAS, dtype=">f4").tobytes())
         f.write(np.asarray(mean, dtype=">f4").tobytes())
         f.write(np.asarray(std, dtype=">f4").tobytes())
         for _, _, scale, q, b in quantized_layers(net):
@@ -77,17 +83,21 @@ def write_model(path, net, mean, std):
             f.write(pack(q))
 
 
-def vocal_estimate(x, lays, mean, std, rate=RATE):
-    """x: (samples, 2). The vocal estimate on the app's timeline: v[s] for s = 0..len-1."""
-    N, H, B, P, F = kdsp.N, kdsp.HOP, kdsp.BANDS, kdsp.PAST, kdsp.FUTURE
+def spectra(x):
+    """x: (samples, 2) on the app's timeline -> mid and side spectra (J, K), frame j ending at (j+1)*HOP."""
+    N, H = kdsp.N, kdsp.HOP
     xx = np.concatenate([np.zeros((N - H, 2)), x.astype(np.float64)])
     mid = (xx[:, 0] + xx[:, 1]) * 0.5
     side = (xx[:, 0] - xx[:, 1]) * 0.5
     J = len(x) // H
     w = kdsp.window()
     idx = np.arange(N)[None, :] + H * np.arange(J)[:, None]
-    M = np.fft.rfft(mid[idx] * w, axis=1)
-    S = np.fft.rfft(side[idx] * w, axis=1)
+    return np.fft.rfft(mid[idx] * w, axis=1), np.fft.rfft(side[idx] * w, axis=1)
+
+
+def masks(M, S, lays, mean, std, rate=RATE):
+    """Bin masks (T, K) for the frames the app finishes (all but the last FUTURE), as the app makes them."""
+    B, P, F = kdsp.BANDS, kdsp.PAST, kdsp.FUTURE
     tri = kdsp.triangles(rate)
     em = (np.abs(M) ** 2) @ tri.T
     es = (np.abs(S) ** 2) @ tri.T
@@ -95,26 +105,50 @@ def vocal_estimate(x, lays, mean, std, rate=RATE):
     feats = (feats - mean[None, :]) / std[None, :]
     (we, be), (wc, bc), (wm, bm), (wo, bo) = [(l[0], l[1]) for l in lays]
     enc = np.maximum(feats @ we.T + be, 0)                      # (J, E)
-    E = enc.shape[1]
+    J, E = enc.shape
     padded = np.concatenate([np.zeros((P, E)), enc, np.zeros((F, E))])
     T = J - F                                                   # frames the app finishes
     ctx = np.stack([padded[t:t + P + 1 + F].reshape(-1) for t in range(T)])
+    if kdsp.EMAS:
+        avgs = []
+        for a in kdsp.EMAS:
+            e = enc[0].copy()
+            seq = np.zeros_like(enc)
+            for j in range(J):
+                e = a * e + (1 - a) * enc[j]
+                seq[j] = e
+            avgs.append(seq[F:F + T])                           # frame t: the average at t + FUTURE
+        ctx = np.concatenate([ctx] + avgs, axis=1)
     h = np.maximum(ctx @ wc.T + bc, 0)
     h = np.maximum(h @ wm.T + bm, 0)
     o = h @ wo.T + bo
     bands = 1 / (1 + np.exp(-o[:, :B]))
     sharp = np.logaddexp(0, o[:, B:])                           # softplus
     spread = kdsp.spread(rate).T
-    pm = np.abs(M[:T]) ** 2
-    centred = pm / (pm + np.abs(S[:T]) ** 2 + kdsp.EPS)
-    mask = (bands @ spread) * np.exp((sharp @ spread) * np.log(centred + 1e-12))   # (T, K)
-    v = np.fft.irfft(M[:T] * mask, n=N, axis=1) * w[None, :] / 1.5
-    out = np.zeros(len(x) + N)
+    pm = (np.abs(M[:T]) ** 2).astype(np.float32)
+    ps = (np.abs(S[:T]) ** 2).astype(np.float32)
+    centred = pm / (pm + ps + np.float32(kdsp.EPS))
+    return (bands @ spread) * kdsp.fast_pow(np.maximum(centred, np.float32(1e-12)), (sharp @ spread).astype(np.float32))
+
+
+def overlap_add(X, length):
+    """Masked spectra (T, K) back to sound on the app's timeline (sine window again: adds up to 1)."""
+    N, H = kdsp.N, kdsp.HOP
+    T = X.shape[0]
+    v = np.fft.irfft(X, n=N, axis=1) * kdsp.window()[None, :]
+    out = np.zeros(length + N)
     for t in range(T):
         start = (t + 1) * H - N
         a = max(start, 0)
         out[a:start + N] += v[t, a - start:]
-    return out[:len(x)]
+    return out[:length]
+
+
+def vocal_estimate(x, lays, mean, std, rate=RATE):
+    """x: (samples, 2). The vocal estimate on the app's timeline: v[s] for s = 0..len-1."""
+    M, S = spectra(x)
+    mask = masks(M, S, lays, mean, std, rate)
+    return overlap_add(M[:mask.shape[0]] * mask, len(x))
 
 
 def app_output(x, lays, mean, std, amount=1.0, rate=RATE):

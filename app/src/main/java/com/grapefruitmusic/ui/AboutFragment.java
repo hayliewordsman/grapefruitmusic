@@ -66,11 +66,20 @@ public final class AboutFragment extends BaseFragment {
         g.section("Acknowledgements");
         g.value("Conscrypt", "Apache License 2.0", null);
         g.value("Synced lyrics", "LRCLIB", null);
-        g.value("Karaoke Mode", "MUSDB18, CC BY 4.0", null);
+        g.value("Internet radio", "Radio Browser", null);
+        g.value("Karaoke Mode", "MUSDB18, Free Music Archive", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                main().push(KaraokeCreditsFragment.newInstance("About"));
+            }
+        });
         g.footer("Conscrypt (github.com/google/conscrypt) provides secure connections on older Android "
-                + "versions. Online lyrics come from LRCLIB (lrclib.net), a community database. Karaoke "
+                + "versions. Online lyrics come from LRCLIB (lrclib.net), a community database, and internet "
+                + "radio stations from Radio Browser (radio-browser.info), a free, open directory. Karaoke "
                 + "Mode's model was trained by Grapefruit on the MUSDB18 7-second excerpts (Rafii, Liutkus, "
-                + "Stöter, Mimilakis and Bittner, zenodo.org/records/3270814), licensed CC BY 4.0.");
+                + "Stöter, Mimilakis and Bittner, zenodo.org/records/3270814; CC BY 4.0) and on songs from "
+                + "the Free Music Archive (CC BY, CC0 and public domain) split into voice and backing by "
+                + "Demucs (MIT License): tap Karaoke Mode for the songs and their artists.");
         return page;
     }
 
