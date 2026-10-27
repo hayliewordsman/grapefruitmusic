@@ -79,16 +79,15 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
         content.removeAllViews();
         content.addView(Ui.header(c, null, "Radio", null));
 
+        if (!radio.known()) {
+            // The first time the tab opens: a moment while Grapefruit looks for the radio.
+            radio.find();
+            addCentered(c, false);
+            return;
+        }
         if (radio.unsupported()) {
-            content.addView(card(c, Icons.RADIO, "This tablet's radio isn't working with Grapefruit yet",
-                    "Grapefruit can't switch on this tablet's FM radio yet. In Radio Details, tap Save Radio "
-                            + "Files and send the zip it makes: support for this radio is built from it.",
-                    "Radio Details", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            main().push(new RadioDetailsFragment());
-                        }
-                    }));
+            addCentered(c, true);
+            return;
         }
 
         LinearLayout actions = new LinearLayout(c);
@@ -184,39 +183,44 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
     }
 
     /** A rounded note with an icon, a bold line, some text and maybe a button. */
-    private static View card(Context c, int icon, String title, String text, String action, View.OnClickListener click) {
+    /**
+     * In the middle of the page under the title: that no radio Grapefruit can use was found (with
+     * who to tell, and Radio Details for what was found), or that it's still looking.
+     */
+    private void addCentered(Context c, boolean noRadio) {
         LinearLayout box = new LinearLayout(c);
-        box.setOrientation(LinearLayout.HORIZONTAL);
-        box.setBackground(GrapefruitDialog.rounded(Ui.color(c, R.attr.gfFill), Ui.dp(c, 12)));
-        box.setPadding(Ui.dp(c, 14), Ui.dp(c, 14), Ui.dp(c, 14), Ui.dp(c, 14));
-        IconView i = Ui.icon(c, icon, Ui.accent(c), 30);
-        box.addView(i);
-        LinearLayout texts = new LinearLayout(c);
-        texts.setOrientation(LinearLayout.VERTICAL);
-        texts.setPadding(Ui.dp(c, 14), 0, 0, 0);
-        TextView t = Ui.text(c, 17, R.attr.gfTextPrimary, true);
-        t.setSingleLine(false);
-        t.setText(title);
-        texts.addView(t);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setGravity(Gravity.CENTER);
+        box.setPadding(Ui.dp(c, 32), Ui.dp(c, 16), Ui.dp(c, 32), Ui.dp(c, 48));
+        if (noRadio) {
+            box.addView(Ui.icon(c, Icons.RADIO, Ui.color(c, R.attr.gfTextSecondary), 56));
+            TextView title = Ui.text(c, 20, R.attr.gfTextPrimary, true);
+            title.setText("No FM Radio Found");
+            title.setPadding(0, Ui.dp(c, 14), 0, 0);
+            box.addView(title);
+        }
         TextView body = Ui.text(c, 15, R.attr.gfTextSecondary, false);
         body.setSingleLine(false);
-        body.setText(text);
-        body.setPadding(0, Ui.dp(c, 4), 0, 0);
-        texts.addView(body);
-        if (action != null) {
-            TextView a = Ui.text(c, 16, R.attr.gfAccent, true);
-            a.setText(action);
-            a.setPadding(0, Ui.dp(c, 10), Ui.dp(c, 10), Ui.dp(c, 2));
-            a.setOnClickListener(click);
-            texts.addView(a, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
+        body.setGravity(Gravity.CENTER_HORIZONTAL);
+        body.setText(noRadio ? "Grapefruit couldn't find an FM radio it can use on this device. If we got it "
+                + "wrong, go to Settings › About and contact " + AboutFragment.DEVELOPER
+                + ", and we'll add support for it in a future release." : "Looking for this device's radio…");
+        body.setPadding(0, Ui.dp(c, noRadio ? 6 : 0), 0, 0);
+        box.addView(body, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        if (noRadio) {
+            TextView details = Ui.text(c, 15, R.attr.gfAccent, false);
+            details.setText("Radio Details");
+            details.setPadding(Ui.dp(c, 12), Ui.dp(c, 16), Ui.dp(c, 12), Ui.dp(c, 8));
+            details.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    main().push(new RadioDetailsFragment());
+                }
+            });
+            box.addView(details);
         }
-        box.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(Ui.dp(c, 16), Ui.dp(c, 6), Ui.dp(c, 16), Ui.dp(c, 6));
-        box.setLayoutParams(lp);
-        return box;
+        content.addView(box, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
     }
 
     /** Presets as artwork tiles: three or more across, more when the screen is wider. */

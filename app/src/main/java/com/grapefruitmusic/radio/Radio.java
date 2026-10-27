@@ -133,12 +133,16 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
     private boolean tippedHeadphones;
     /** No radio this app can use on this tablet (see report()). */
     private boolean unsupported;
+    /** Looked for the radio (see find()), or started to. */
+    private boolean looked;
+    /** Whether a radio Grapefruit can use has been found, or found missing. */
+    private boolean known;
     /** Stations from the last scan, or null. */
     private int[] found;
     private boolean pausedByFocusLoss;
     /** Bumped by stop(): results of work started before it are dropped. */
     private int generation;
-    /** Bumped on every tune: RDS information read before it belongs to the old station. */
+    /** Bumped on every change of station (a seek finding the dial turned meanwhile goes back to it). */
     private volatile int station;
     /** The thread reading RDS; an old one notices it's been replaced and ends. */
     private volatile Thread rdsThread;
@@ -156,9 +160,24 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         @Override
         public void run() {
             tunePending.set(false);
-            if (tuner != null && poweredUp) tuner.tune(tuneTo);
+            if (tuner != null && poweredUp) tuneChip(tuneTo);
         }
     };
+
+    /**
+     * The frequency the chip is on (set on the worker; -1 while it moves through the band), so RDS
+     * is put down to the station it came from, even if the screen hasn't caught up yet.
+     */
+    private volatile int chipFrequency = -1;
+    /** RDS for the frequency a seek is just landing on, before the screen has moved there. */
+    private Tuner.Rds earlyRds;
+    private int earlyRdsFor = -1;
+
+    /** Tunes the chip (worker thread). */
+    private void tuneChip(int freq) {
+        tuner.tune(freq);
+        chipFrequency = freq;
+    }
 
     private final BroadcastReceiver headset = new BroadcastReceiver() {
         @Override
@@ -264,6 +283,38 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         return unsupported;
     }
 
+    /** Whether Grapefruit knows yet if this tablet has a radio it can use (see find()). */
+    public boolean known() {
+        return known;
+    }
+
+    /**
+     * Looks for this tablet's radio (without switching it on), once, so the Radio tab can say
+     * straight away when there's none Grapefruit can use. Listeners hear when it's known.
+     */
+    public void find() {
+        if (looked || known()) return;
+        looked = true;
+        worker.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (tuner == null) {
+                    log.add("looking for the radio");
+                    tuner = factory.open(context, log);
+                }
+                final boolean none = tuner == null;
+                Bg.main(new Runnable() {
+                    @Override
+                    public void run() {
+                        known = true;
+                        unsupported = none;
+                        changed();
+                    }
+                });
+            }
+        });
+    }
+
     public int[] found() {
         return found;
     }
@@ -367,6 +418,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
                 Bg.main(new Runnable() {
                     @Override
                     public void run() {
+                        known = true;
                         if (gen != generation) return;
                         volumeStream = stream;
                         ownVolumeMax = max;
@@ -418,16 +470,18 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
             if (tuner == null) return "This tablet's FM radio isn't one Grapefruit can use yet. See Radio for details.";
         }
         if (!poweredUp) {
+            chipFrequency = -1;
             if (!tuner.powerUp(freq)) {
                 tuner.powerDown();
                 return "The radio didn't switch on. Try again in a moment.";
             }
             poweredUp = true;
+            chipFrequency = freq;
             tuner.useHeadphoneAntenna(true);
             boolean rds = tuner.setRds(true);
             log.add("RDS: " + (rds ? "on" : "not available"));
         } else {
-            tuner.tune(freq);
+            tuneChip(freq);
         }
         if (!tuner.startAudio(toSpeaker)) {
             powerDownOnWorker();
@@ -509,6 +563,10 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         }
         frequency = f;
         Prefs.setRadioFrequency(f);
+        Tuner.Rds early = earlyRdsFor == f ? earlyRds : null;
+        earlyRds = null;
+        earlyRdsFor = -1;
+        if (early != null) applyRds(early);
     }
 
     private void queueTune() {
@@ -531,9 +589,10 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
                 int f = -1;
                 if (tuner != null && poweredUp) {
                     tuner.setMute(true);
+                    chipFrequency = -1;
                     f = tuner.seek(from, up);
                     // Some chips stay on the station they found; others need telling.
-                    tuner.tune(f > 0 ? f : from);
+                    tuneChip(f > 0 ? f : from);
                     tuner.setMute(false);
                 }
                 final int foundAt = f;
@@ -584,9 +643,10 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
                     }
                     if (poweredUp) {
                         tuner.setMute(true);
+                        chipFrequency = -1;
                         result = tuner.scan();
                         if (wasUp) {
-                            tuner.tune(back);
+                            tuneChip(back);
                             tuner.setMute(false);
                         } else {
                             powerDownOnWorker();
@@ -600,6 +660,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
                 Bg.main(new Runnable() {
                     @Override
                     public void run() {
+                        known = true;
                         unsupported = none;
                         if (worked && stations != null) found = stations;
                         if (gen == generation) {
@@ -645,7 +706,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
             @Override
             public void run() {
                 while (rdsThread == this) {
-                    final int at = station;
+                    final int at = chipFrequency;
                     Tuner.Rds r = null;
                     try {
                         r = t.pollRds();
@@ -657,7 +718,14 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
                         Bg.main(new Runnable() {
                             @Override
                             public void run() {
-                                if (at == station && state != OFF) applyRds(rds);
+                                if (at < 0 || state == OFF) return;
+                                if (at == frequency) {
+                                    applyRds(rds);
+                                } else {
+                                    // A seek landing: the screen moves there in a moment.
+                                    earlyRds = rds;
+                                    earlyRdsFor = at;
+                                }
                             }
                         });
                     }

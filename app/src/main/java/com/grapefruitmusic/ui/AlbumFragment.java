@@ -44,7 +44,8 @@ import java.util.Map;
 
 /**
  * An album or playlist: artwork, Play / Shuffle, Download, and the track list. Playlists have an
- * Edit mode for the name, description and cover photo, and for removing songs; Done saves it all.
+ * Edit mode for the name, description and cover photo, for removing songs and for adding them
+ * (Add Songs); Done saves it all.
  */
 public final class AlbumFragment extends BaseFragment implements Downloads.Listener, Player.Listener {
     private static final int RED = 0xffff3b30;
@@ -65,6 +66,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
     private TextView descriptionView;
     private EditText descriptionField;
     private TextView editNote;
+    private View addSongsButton;
     private View playButtons;
     /** Loaded tracks, kept while a page on top of this one (an artist) is open. */
     private List<MediaItem> tracks = new ArrayList<MediaItem>();
@@ -78,15 +80,26 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
     /** The songs left; removed ones go to removedTracks. */
     private List<MediaItem> editTracks = new ArrayList<MediaItem>();
     private final List<MediaItem> removedTracks = new ArrayList<MediaItem>();
+    /** Songs added with Add Songs (also in editTracks, at the end), saved after the removals. */
+    private final List<MediaItem> addedTracks = new ArrayList<MediaItem>();
     /** Text typed so far, kept if the page's views are rebuilt. */
     private String editName;
     private String editDescription;
     /** A new cover file, "" to remove the cover photo, or null for no change. */
     private String pendingCover;
 
+    private static final String ARG_EDIT = "edit";
+
     static AlbumFragment newInstance(String sourceId, MediaItem container, String back) {
         AlbumFragment f = new AlbumFragment();
         f.setArguments(args(sourceId, container, back));
+        return f;
+    }
+
+    /** A playlist that opens in edit mode (a new one, ready for Add Songs). */
+    static AlbumFragment editing(String sourceId, MediaItem playlist, String back) {
+        AlbumFragment f = newInstance(sourceId, playlist, back);
+        f.getArguments().putBoolean(ARG_EDIT, true);
         return f;
     }
 
@@ -169,6 +182,19 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         editNote.setSingleLine(false);
         editNote.setPadding(Ui.dp(c, 4), Ui.dp(c, 8), Ui.dp(c, 4), Ui.dp(c, 4));
         header.addView(editNote);
+        LinearLayout addSongs = Ui.pill(c, Icons.PLUS, "Add Songs");
+        addSongs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (editing && !saving) AddSongsSheet.show(getActivity(), source(), addTarget);
+            }
+        });
+        LinearLayout.LayoutParams al = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        al.topMargin = Ui.dp(c, 12);
+        al.bottomMargin = Ui.dp(c, 4);
+        header.addView(addSongs, al);
+        addSongsButton = addSongs;
 
         LinearLayout buttons = new LinearLayout(c);
         buttons.setOrientation(LinearLayout.HORIZONTAL);
@@ -370,6 +396,9 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         coverLabel.setVisibility(e ? View.VISIBLE : View.GONE);
         ((View) art.getParent()).setClickable(e);
         playButtons.setVisibility(e ? View.GONE : View.VISIBLE);
+        addSongsButton.setVisibility(e ? View.VISIBLE : View.GONE);
+        addSongsButton.setEnabled(!saving);
+        addSongsButton.setAlpha(saving ? 0.5f : 1f);
         if (e) {
             downloadRow.setVisibility(View.GONE);
             if (editName != null) nameField.setText(editName);
@@ -443,6 +472,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         editing = true;
         editTracks = new ArrayList<MediaItem>(tracks);
         removedTracks.clear();
+        addedTracks.clear();
         pendingCover = null;
         nameField.setText(album.title);
         descriptionField.setText(album.description != null ? album.description : "");
@@ -456,13 +486,18 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         discardPendingCover();
         editing = false;
         removedTracks.clear();
+        addedTracks.clear();
         showHeader();
         showTracks();
     }
 
     private void remove(MediaItem track) {
         if (!editing || saving) return;
-        if (editTracks.remove(track)) {
+        if (addedTracks.remove(track)) {
+            // Added while editing: not on the source yet, so nothing to remove there.
+            editTracks.remove(track);
+            showTracks();
+        } else if (editTracks.remove(track)) {
             removedTracks.add(track);
             showTracks();
         }
@@ -480,8 +515,9 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         final String newName = name.length() > 0 && !name.equals(album.title) ? name : null;
         final String newDescription = description.equals(oldDescription) ? null : description;
         final List<MediaItem> removed = new ArrayList<MediaItem>(removedTracks);
+        final List<MediaItem> added = new ArrayList<MediaItem>(addedTracks);
         final String cover = pendingCover;
-        if (newName == null && newDescription == null && removed.isEmpty() && cover == null) {
+        if (newName == null && newDescription == null && removed.isEmpty() && added.isEmpty() && cover == null) {
             editing = false;
             showHeader();
             showTracks();
@@ -501,6 +537,8 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
                 if (newName != null || newDescription != null || !removed.isEmpty()) {
                     sourceKeptDescription = s.editPlaylist(saved, newName, newDescription, removed);
                 }
+                // After the removals: Subsonic removes by position, counted before anything's added.
+                if (!added.isEmpty()) s.addToPlaylist(saved, added);
                 PlaylistMeta.get(app).save(saved, sourceKeptDescription ? null : newDescription, cover);
                 if (newDescription != null) saved.description = newDescription;
                 return null;
@@ -525,12 +563,54 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
                 editing = false;
                 tracks = new ArrayList<MediaItem>(editTracks);
                 removedTracks.clear();
+                addedTracks.clear();
                 showHeader();
                 showTracks();
-                // Fresh entry ids (Subsonic counts them by position).
-                if (!removed.isEmpty()) load();
+                // Fresh entry ids (Subsonic counts them by position), and the added songs as the source has them.
+                if (!removed.isEmpty() || !added.isEmpty()) load();
             }
         });
+    }
+
+    /** Add Songs' view of the playlist being edited. */
+    private final AddSongsSheet.Target addTarget = new AddSongsSheet.Target() {
+        @Override
+        public boolean has(MediaItem track) {
+            return indexOf(editTracks, track) >= 0;
+        }
+
+        @Override
+        public boolean added(MediaItem track) {
+            return indexOf(addedTracks, track) >= 0;
+        }
+
+        @Override
+        public void add(List<MediaItem> songs) {
+            if (!editing || saving) return;
+            editTracks.addAll(songs);
+            addedTracks.addAll(songs);
+            showTracks();
+        }
+
+        @Override
+        public void takeBack(MediaItem track) {
+            int i = indexOf(addedTracks, track);
+            if (i < 0) return;
+            remove(addedTracks.get(i));
+        }
+
+        @Override
+        public int addedCount() {
+            return addedTracks.size();
+        }
+    };
+
+    /** The last song in list that's the same song as track, or -1. */
+    private static int indexOf(List<MediaItem> list, MediaItem track) {
+        for (int i = list.size() - 1; i >= 0; i--) {
+            if (list.get(i).sameAs(track)) return i;
+        }
+        return -1;
     }
 
     private void hideKeyboard() {
@@ -577,6 +657,11 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
                 tracks = result;
                 loaded = true;
                 if (!editing) showTracks();
+                // A new playlist: straight into edit mode, for Add Songs.
+                if (getArguments().getBoolean(ARG_EDIT)) {
+                    getArguments().putBoolean(ARG_EDIT, false);
+                    startEditing();
+                }
             }
         });
     }

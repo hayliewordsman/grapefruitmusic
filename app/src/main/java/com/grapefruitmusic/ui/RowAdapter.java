@@ -89,10 +89,22 @@ final class RowAdapter extends BaseAdapter {
         build();
     }
 
-    /** Height of the text under a card's picture (for sizing a HorizontalGrid). */
+    /**
+     * Height of the text under a card's picture, with a little room below it (for sizing a
+     * HorizontalGrid). Measured, not worked out from line heights: a real line of text is a few
+     * pixels taller than that (the font's padding), which pushed the lower card's second line out
+     * of the bottom of the column.
+     */
     int cardTextHeight() {
         Card c = card();
-        return c.title.getLineHeight() + c.artist.getLineHeight() + c.title.getPaddingTop() + Ui.dp(context, 2);
+        c.title.setText("Ag");
+        c.artist.setText("Ag");
+        int width = View.MeasureSpec.makeMeasureSpec(Ui.dp(context, 200), View.MeasureSpec.AT_MOST);
+        int any = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        View top = (View) c.title.getParent();
+        top.measure(width, any);
+        c.artist.measure(width, any);
+        return top.getMeasuredHeight() + c.artist.getMeasuredHeight() + Ui.dp(context, 6);
     }
 
     /** Styles a page's ListView: inset hairlines, no Holo highlight. */

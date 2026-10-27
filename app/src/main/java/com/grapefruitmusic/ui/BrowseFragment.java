@@ -1,11 +1,14 @@
 package com.grapefruitmusic.ui;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -20,9 +23,13 @@ import com.grapefruitmusic.ui.widget.FastScrollListView;
 import com.grapefruitmusic.ui.widget.HorizontalGrid;
 import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.util.Bg;
+import com.grapefruitmusic.util.Notice;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Playlists, Artists, Albums, Songs, or one artist's albums. */
 public final class BrowseFragment extends BaseFragment implements Downloads.Listener, Player.Listener {
@@ -98,6 +105,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
             from.setText(source().name());
             header.addView(from);
         }
+        // Under the title: Shuffle All for songs, New Playlist for playlists that can be made.
         LinearLayout shuffle = null;
         if (mode() == SONGS) {
             shuffle = Ui.pill(c, Icons.SHUFFLE, "Shuffle All");
@@ -105,6 +113,14 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
                 @Override
                 public void onClick(View v) {
                     if (!adapter.tracks().isEmpty()) Player.get(getActivity()).play(adapter.tracks(), -1, true);
+                }
+            });
+        } else if (mode() == PLAYLISTS && source().canEditPlaylists()) {
+            shuffle = Ui.pill(c, Icons.PLUS, "New Playlist");
+            shuffle.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    askNewPlaylist();
                 }
             });
         }
@@ -238,6 +254,60 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         } else {
             main().push(AlbumFragment.newInstance(s.id(), item, title()));
         }
+    }
+
+    /** New Playlist: asks its name, makes it (empty), and opens it ready for Add Songs. */
+    private void askNewPlaylist() {
+        final Context c = getActivity();
+        final EditText field = Ui.field(c, 16, false, "Playlist name");
+        field.setSingleLine(true);
+        field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        Ui.dialog(c)
+                .setTitle("New Playlist")
+                .setView(field)
+                .setPositiveButton("Create", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String name = field.getText().toString().trim();
+                        if (name.length() > 0) createPlaylist(name);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void createPlaylist(final String name) {
+        final MusicSource s = source();
+        final PlaylistMeta meta = PlaylistMeta.get(getActivity());
+        final Set<String> before = new HashSet<String>();
+        if (items != null) {
+            for (MediaItem m : items) before.add(m.id);
+        }
+        final Context app = getActivity().getApplicationContext();
+        bg(new Bg.Work<List<MediaItem>>() {
+            @Override
+            public List<MediaItem> run() throws Exception {
+                s.createPlaylist(name, new ArrayList<MediaItem>());
+                return meta.apply(s.playlists());
+            }
+        }, new Bg.Done<List<MediaItem>>() {
+            @Override
+            public void done(List<MediaItem> result, Exception error) {
+                if (error != null) {
+                    Notice.showLong(app, describe(error, s));
+                    return;
+                }
+                items = result;
+                loadedMeta = PlaylistMeta.version();
+                show();
+                MediaItem created = null;
+                for (MediaItem m : result) {
+                    if (name.equals(m.title) && !before.contains(m.id)) created = m;
+                }
+                if (created != null) main().push(AlbumFragment.editing(s.id(), created, title()));
+                else Notice.show(app, "Created “" + name + "”");
+            }
+        });
     }
 
     private void load() {

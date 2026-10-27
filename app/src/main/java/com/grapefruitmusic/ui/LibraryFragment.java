@@ -102,6 +102,8 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         if (RowAdapter.landscape(c)) {
             // Sideways: the menu is the first column, then Recently Added, two high, scrolling on.
             grid = new HorizontalGrid(c);
+            // Clear of the mini player and tab bar below, like the other sideways pages.
+            grid.setPadding(0, 0, 0, Ui.dp(c, 8));
             ScrollView menu = new ScrollView(c);
             menu.setVerticalScrollBarEnabled(false);
             menu.addView(top);
