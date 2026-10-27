@@ -77,8 +77,8 @@ with downloads for offline listening and time-synced lyrics.
   Settings › Developer Options › Radio Sound Test finds out whether Grapefruit can hear the radio, the first
   step to cleaning up a noisy station. On the JP5S the radio's sound runs from the chip to the headphone jack in
   hardware, past Android, so Grapefruit can't filter what's in the headphones; but Rockchip's own FM app records
-  the radio through the microphone input, so the sound may reach Android there, to be cleaned and played through
-  the speaker. With the radio playing, the test records a moment from each audio input with the chip playing and
+  the radio through the microphone input, so the sound may reach Android there, which any hum filter would need
+  first. With the radio playing, the test records a moment from each audio input with the chip playing and
   muted: where muting makes an input clearly quieter (6 dB or more), the input carries the radio. Only then does
   it record 10 seconds of the station (`Grapefruit/radio-sound-test.wav`, also in Save Radio Files) and look for
   mains hum (50 or 60 Hz and harmonics) and other narrow peaks, and the level of the noise between words. This is

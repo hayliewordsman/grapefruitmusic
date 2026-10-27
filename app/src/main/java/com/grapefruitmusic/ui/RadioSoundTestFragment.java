@@ -42,10 +42,10 @@ public final class RadioSoundTestFragment extends BaseFragment {
         TextView intro = Ui.text(c, 15, R.attr.gfTextSecondary, false);
         intro.setSingleLine(false);
         intro.setText("Can Grapefruit hear this tablet's radio? On tablets like the JP5S, the radio's sound goes "
-                + "straight from the radio chip to the headphones, so Grapefruit can't filter it there. To clean up "
-                + "a noisy station, it would have to record the radio inside the tablet (the way the tablet's own FM "
-                + "Radio app records) and play the cleaned sound through the speaker. This test finds out whether "
-                + "that works here. If it does, it records 10 seconds of the station to tune a hum filter to.\n\n"
+                + "straight from the radio chip to the headphones, so Grapefruit can't filter it on its way there. To "
+                + "do anything about a station's hum, Grapefruit first has to be able to hear the radio inside the "
+                + "tablet (the way the tablet's own FM Radio app records it). This test finds out whether that works "
+                + "here. If it does, it records 10 seconds of the station, to work out a filter for its hum.\n\n"
                 + "Tune to the station with the noise, keep the headphones plugged in, then tap Start Test. It takes "
                 + "about 20 seconds, and the radio goes quiet a few times. Grapefruit only keeps a recording if it's "
                 + "the radio's sound, never the room's.");

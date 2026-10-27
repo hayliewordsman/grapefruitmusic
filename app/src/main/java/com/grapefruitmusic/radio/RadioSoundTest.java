@@ -12,7 +12,7 @@ import java.util.Locale;
  * Can Grapefruit hear this tablet's radio? On the JP5S the radio's sound goes from the chip to the
  * headphone jack in hardware, past Android, so Grapefruit can't filter it there. But Rockchip's own
  * FM Radio app records the radio through the microphone input, so its sound may reach Android
- * that way, which is what cleaning a station up (and playing it through the speaker) would need.
+ * that way, which is what doing anything about a station's hum would need first.
  *
  * <p>With the radio playing, each audio input is recorded twice, the chip playing and muted; where
  * muting makes the input clearly quieter, that input carries the radio. Only then is a clip of the
