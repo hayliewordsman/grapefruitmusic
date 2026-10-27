@@ -75,38 +75,58 @@ public class DspTest {
         for (int i = lag; i < in.length; i++) assertEquals("sample " + i, in[i - lag], out[i]);
     }
 
-    @Test
-    public void monoPlaysBothChannelsInBothEarsAtFullQuality() {
-        // Different full-scale tones left and right: each ear gets their exact average, unlimited.
-        Dsp d = dsp(Dsp.BOOST_OFF, Equalizer.OFF);
+    /** Mono Audio on from the start, as the player sets it before the song's format is known. */
+    private static Dsp monoDsp(int preset) {
+        Dsp d = new Dsp();
         d.setMono(true);
-        short[] in = stereo(1, 1, 440, 660);
+        d.setFormat(RATE, 2);
+        d.setEq(Equalizer.curve(preset));
+        return d;
+    }
+
+    /** The same tones in both channels: sound in the middle. */
+    private static short[] centred(double seconds, double amplitude, double hz1, double hz2) {
+        short[] out = stereo(seconds, amplitude / 2, hz1, hz1);
+        short[] two = stereo(seconds, amplitude / 2, hz2, hz2);
+        for (int i = 0; i < out.length; i++) out[i] += two[i];
+        return out;
+    }
+
+    @Test
+    public void monoLeavesSoundInTheMiddleAsItIs() {
+        // Loud, but nothing to limit: what's the same in both ears comes out as it went in.
+        Dsp d = monoDsp(Equalizer.OFF);
+        short[] in = centred(1, 0.98, 440, 3000);
         short[] out = run(d, in);
         int lag = d.latencyFrames() * 2;
-        for (int f = lag / 2; f < in.length / 2; f++) {
-            int left = in[2 * f - lag];
-            int right = in[2 * f + 1 - lag];
-            long mix = Math.round((left + right) / 2.0);
-            assertEquals("left at " + f, mix, out[2 * f]);
-            assertEquals("right at " + f, mix, out[2 * f + 1]);
+        for (int f = lag / 2 + 441; f < in.length / 2; f++) {
+            assertEquals("left at " + f, in[2 * f - lag], out[2 * f], 1);
+            assertEquals("right at " + f, out[2 * f], out[2 * f + 1]);
         }
     }
 
     @Test
+    public void monoKeepsTheSidesThatPlainMixingWouldLose() {
+        // Different tones left and right: both ears hear the two at their full combined power
+        // (plain (L+R)/2 is 3 dB down), and nothing clips.
+        Dsp d = monoDsp(Equalizer.OFF);
+        short[] in = stereo(2, 0.5, 440, 660);
+        short[] out = run(d, in);
+        assertEquals(rmsDb(in), rmsDb(out), 0.2);
+        for (int i = out.length / 2; i < out.length; i += 2) assertEquals(out[i], out[i + 1]);
+    }
+
+    @Test
     public void monoCostsNothingWithTheEqualizerOn() {
-        // Mono with Rock sounds exactly like stereo Rock fed the same mix in both channels.
-        short[] in = stereo(1, 0.4, 440, 3000);
-        short[] mixed = new short[in.length];
-        for (int i = 0; i < in.length; i += 2) {
-            mixed[i] = mixed[i + 1] = (short) Math.round((in[i] + in[i + 1]) / 2.0);
-        }
-        Dsp mono = dsp(Dsp.BOOST_OFF, Equalizer.ROCK);
-        mono.setMono(true);
+        // Mono with Rock sounds exactly like stereo Rock when the music is the same in both ears.
+        short[] in = centred(1, 0.4, 440, 3000);
+        Dsp mono = monoDsp(Equalizer.ROCK);
         short[] a = run(mono, in);
-        short[] b = run(dsp(Dsp.BOOST_OFF, Equalizer.ROCK), mixed);
-        for (int i = 0; i < a.length; i += 2) {
+        short[] b = run(dsp(Dsp.BOOST_OFF, Equalizer.ROCK), in);
+        // Once the filters have settled after the mix's 10 ms fade-in.
+        for (int i = a.length / 2; i < a.length; i += 2) {
             assertEquals("both ears the same", a[i], a[i + 1]);
-            assertEquals("as good as stereo at " + i, b[i], a[i], 1);
+            assertEquals("as good as stereo at " + i, b[i - MonoMix.N * 2], a[i], 1);
         }
     }
 
@@ -119,6 +139,24 @@ public class DspTest {
             d.setMono(on);
             assertTrue(peak(run(d, in)) <= ceiling);
         }
+    }
+
+    @Test
+    public void switchingMonoMidSongFadesInsteadOfClicking() {
+        // A low tone moves at most a few hundred steps a sample; a cut would jump thousands.
+        Dsp d = dsp(Dsp.BOOST_OFF, Equalizer.OFF);
+        short[] in = centred(3, 0.5, 100, 100);
+        int step = 0;
+        for (int i = 2; i < in.length; i += 2) step = Math.max(step, Math.abs(in[i] - in[i - 2]));
+        short[] pcm = in.clone();
+        boolean on = false;
+        for (int off = 0, chunk = 0; off < pcm.length; off += 4096, chunk++) {
+            if (chunk % 5 == 4) d.setMono(on = !on);
+            d.process(pcm, off, Math.min(4096, pcm.length - off));
+        }
+        int jump = 0;
+        for (int i = 2; i < pcm.length; i += 2) jump = Math.max(jump, Math.abs(pcm[i] - pcm[i - 2]));
+        assertTrue("jump " + jump + " against " + step, jump <= step + 60);
     }
 
     @Test

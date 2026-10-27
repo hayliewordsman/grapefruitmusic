@@ -112,9 +112,14 @@ with downloads for offline listening and time-synced lyrics.
   split into voice and backing; on songs it didn't learn from it takes the lead vocal down 3.9 to 4.6 dB
   (median), against version 1's 3.6. It's read and run once in the background before it plays (Android 4's
   JIT compiles code only after it has run a while), so it's fast from the first note.
-- **Mono Audio:** Settings › Accessibility. Left and right are mixed (averaged at full precision, rounded once)
-  and played in both ears, at the song's own sample rate. Mono alone never needs limiting, so apart from the mix
-  the sound is untouched.
+- **Mono Audio:** Settings › Accessibility. Left and right are mixed and played in both ears, at the song's own
+  sample rate, keeping everything that's in either channel. A plain average, (L+R)/2, loses sound: whatever is out
+  of phase between the channels (reverb, room sound, stereo-widened parts) cancels, a time difference between them
+  cuts notches into the sound, and an instrument on one side drops 6 dB. So since 3.2.1 each frequency (1024-sample
+  windows, half-overlapped) gets the two channels' combined power, (|L|²+|R|²)/2, with the plain mix's phase,
+  pulled toward one channel's where the two would cancel. What's in the middle comes out exactly as the plain
+  average; on test songs plain mixing lost up to 6.6 dB in a frequency range, this at most about 1.7. It adds 23 ms
+  of delay (the clock allows for it) and costs about a quarter of what Karaoke Mode does.
 - **Grapefruit's own audio engine:** Android 4.2 has no loudness or per-app mono effect, so with any of these on
   Grapefruit decodes and plays the music itself (MediaCodec + AudioTrack); with all of them off, Android's player
   plays it. A song Grapefruit's engine can't play falls back to Android's player.

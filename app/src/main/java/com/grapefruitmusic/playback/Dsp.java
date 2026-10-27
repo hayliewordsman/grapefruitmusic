@@ -40,12 +40,13 @@ public final class Dsp {
     /** The curve eqFilters were made for; redesigned when it changes. */
     private float[] eqDesigned;
     private boolean eqStale = true;
-    /** Mono: both channels are mixed, then filtered once on the left channel's state. */
-    private boolean monoRunning;
+    /** Mono: both channels are mixed (keeping all of each), then filtered once on the left channel's state. */
+    private MonoMix mixer;
     private double[] frame;
     private double[] input;
 
-    // Karaoke Mode. Switching it on or off fades the sound out, swaps, then fades back in.
+    // Karaoke Mode and Mono Audio. Switching either on or off fades the sound out, swaps, then fades
+    // back in.
     private VocalRemover remover;
     private float switchGain = 1;
     /** 0 steady, 1 fading out to switch, 2 fading back in. */
@@ -91,7 +92,7 @@ public final class Dsp {
         return remover != null;
     }
 
-    /** Mono Audio: both ears hear the left and right channels mixed together. */
+    /** Mono Audio: both ears hear the left and right channels mixed together ({@link MonoMix}). */
     public void setMono(boolean on) {
         mono = on;
     }
@@ -107,7 +108,8 @@ public final class Dsp {
         eqFilters = new double[Equalizer.BANDS][];
         eqState = new double[Equalizer.BANDS][channels * 4];
         eqStale = true;
-        monoRunning = false;
+        // Nothing's playing through the old state, so the mix starts as wanted, without a fade.
+        mixer = mono && channels == 2 ? new MonoMix() : null;
         frame = new double[channels];
         input = new double[channels];
         if (remover != null) remover = newRemover();
@@ -142,10 +144,11 @@ public final class Dsp {
         return r;
     }
 
-    /** The delay the limiter (and Karaoke Mode) adds, in frames. */
+    /** The delay the limiter (and Karaoke Mode and Mono Audio) adds, in frames. */
     public int latencyFrames() {
         VocalRemover r = remover;
-        return lookahead + (r != null ? r.latency() : 0);
+        MonoMix m = mixer;
+        return lookahead + (r != null ? r.latency() : 0) + (m != null ? m.latency() : 0);
     }
 
     /** Processes interleaved 16-bit samples in place (delayed by latencyFrames()). */
@@ -170,20 +173,15 @@ public final class Dsp {
             k[bands] = eqFilters[b];
             ks[bands++] = eqState[b];
         }
-        boolean together = mono && channels == 2;
-        if (together != monoRunning) {
-            // Mono runs the filters on the left channel's state; the right one picks up from it.
-            if (channels == 2) for (double[] s : eqState) System.arraycopy(s, 0, s, 4, 4);
-            monoRunning = together;
-        }
-        int filtered = together ? 1 : channels;
         int boost = boostLevel;
         double g = volume * Math.pow(10, BOOST_DB[boost] / 20);
         boolean wantKaraoke = karaoke && karaokeModel != null;
-        if (wantKaraoke != (remover != null) && switchPhase == 0) switchPhase = 1;
+        boolean wantMono = mono && channels == 2;
+        if ((wantKaraoke != (remover != null) || wantMono != (mixer != null)) && switchPhase == 0) switchPhase = 1;
         float fade = 1f / Math.max(1, rate / 100); // 10 ms
-        // With no boost, equalizer or vocal removal nothing can get louder than it came in (a mono
-        // mix of two channels can't either), so there's nothing to limit: it passes through as is.
+        // With no boost, equalizer or vocal removal nothing can get louder than it came in, so it
+        // passes through as is. (The mono mix very rarely peaks a little higher than the music
+        // did: the limiter still catches anything over full scale.)
         double ceiling = boost > BOOST_OFF || bands > 0 || remover != null || switchPhase != 0 ? CEILING : 1;
         int frames = count / channels;
         int i = offset;
@@ -196,6 +194,10 @@ public final class Dsp {
                 input[0] = remover.outL;
                 if (channels > 1) input[1] = remover.outR;
             }
+            if (mixer != null) {
+                mixer.process((float) input[0], (float) input[1]);
+                input[0] = mixer.out;
+            }
             if (switchPhase != 0) {
                 if (switchPhase == 1) {
                     switchGain -= fade;
@@ -203,6 +205,12 @@ public final class Dsp {
                         switchGain = 0;
                         boolean want = karaoke && karaokeModel != null;
                         if (want != (remover != null)) remover = want ? newRemover() : null;
+                        boolean together = mono && channels == 2;
+                        if (together != (mixer != null)) {
+                            mixer = together ? new MonoMix() : null;
+                            // Mono runs the filters on the left channel's state; the right one picks up from it.
+                            for (double[] s : eqState) System.arraycopy(s, 0, s, 4, 4);
+                        }
                         switchPhase = 2;
                     }
                 } else {
@@ -214,9 +222,10 @@ public final class Dsp {
                 }
                 for (int c = 0; c < channels; c++) input[c] *= switchGain;
             }
+            boolean together = mixer != null;
+            int filtered = together ? 1 : channels;
             for (int c = 0; c < filtered; c++) {
-                // Mixed at full precision; rounded only once, on the way out.
-                double x = together ? (input[0] + input[1]) * 0.5 : input[c];
+                double x = input[c];
                 int o = c * 4;
                 for (int b = 0; b < bands; b++) {
                     double[] kb = k[b];

@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.ScrollView;
 
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.net.Http;
@@ -31,6 +32,8 @@ public abstract class BaseFragment extends Fragment {
      */
     private int scrollPosition;
     private int scrollOffset;
+    /** How far a scrolling page (Settings and the like) was scrolled; kept the same way, for Back. */
+    private int pageScrollY;
     /**
      * The first item showing, to keep the place when the screen turns and a page swaps between
      * its portrait and landscape layouts (-1: the top).
@@ -53,6 +56,27 @@ public abstract class BaseFragment extends Fragment {
     public void onViewCreated(View view, Bundle saved) {
         super.onViewCreated(view, saved);
         builtFor = getResources().getConfiguration().orientation;
+        if (view instanceof ScrollView && pageScrollY > 0) restorePageScroll((ScrollView) view, pageScrollY);
+    }
+
+    @Override
+    public void onDestroyView() {
+        View view = getView();
+        if (view instanceof ScrollView) pageScrollY = view.getScrollY();
+        super.onDestroyView();
+    }
+
+    /** Back at a scrolling page: once its content is laid out (it can't scroll before), back to where it was. */
+    private static void restorePageScroll(final ScrollView page, final int y) {
+        page.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                                       int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                if (page.getChildCount() == 0 || page.getChildAt(0).getHeight() == 0) return;
+                page.removeOnLayoutChangeListener(this);
+                page.scrollTo(0, y);
+            }
+        });
     }
 
     @Override
@@ -81,11 +105,11 @@ public abstract class BaseFragment extends Fragment {
         scrollOffset = 0;
     }
 
-    /** Handles the Back key itself (returns true), e.g. to leave edit mode. */
     /** A playlist was deleted (or made): pages listing playlists reload. */
     void onPlaylistsChanged() {
     }
 
+    /** Handles the Back key itself (returns true), e.g. to leave edit mode. */
     boolean onBackPressed() {
         return false;
     }

@@ -228,7 +228,8 @@ public final class SettingsFragment extends BaseFragment
             }
         });
         g.footer("Plays the left and right channels together in both ears, so you hear everything with one "
-                + "earbud in, or with hearing in one ear. Sound quality stays the same as stereo.");
+                + "earbud in, or with hearing in one ear. Nothing is lost in the mix: reverb, room sound and "
+                + "instruments on one side stay as full as in stereo.");
 
         g.section("Downloads");
         g.value("Download Quality", Prefs.qualityLabel(Prefs.downloadQuality()), new View.OnClickListener() {
