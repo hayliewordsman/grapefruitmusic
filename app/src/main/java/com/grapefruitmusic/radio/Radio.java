@@ -283,36 +283,6 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         return unsupported;
     }
 
-    /**
-     * Mutes or unmutes the chip and waits until it has (the Radio Sound Test compares an input with
-     * the radio playing and muted). Not on the main thread.
-     */
-    public void muteChip(final boolean mute) {
-        final java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
-        worker.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (tuner != null && poweredUp) tuner.setMute(mute);
-                } finally {
-                    done.countDown();
-                }
-            }
-        });
-        try {
-            done.await(3, java.util.concurrent.TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    /** What the last Radio Sound Test found, for Radio Details. */
-    private volatile String soundTest;
-
-    public void setSoundTest(String summary) {
-        soundTest = summary;
-    }
-
     /** Whether Grapefruit knows yet if this tablet has a radio it can use (see find()). */
     public boolean known() {
         return known;
@@ -892,7 +862,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
 
     /** What Grapefruit found out about this tablet's radio, for the details page. Slow: not main thread. */
     public String report() {
-        return RadioReport.collect(context, log.text(), headsetReport, soundTest);
+        return RadioReport.collect(context, log.text(), headsetReport);
     }
 
     // ---- Music and other apps ----

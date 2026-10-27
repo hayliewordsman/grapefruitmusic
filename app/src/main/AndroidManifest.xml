@@ -8,11 +8,6 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- FM radio on MediaTek tablets: lets Grapefruit open the radio chip (/dev/fm). -->
     <uses-permission android:name="android.permission.ACCESS_MTK_MMHW" />
-    <!--
-        Settings › Developer Options › Radio Sound Test: records a moment from each audio input to
-        find out whether the radio's sound reaches Android (as Rockchip's own FM app records it).
-    -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- Android 4.2/4.3 need this to write downloads to the app's folder on the SD card. -->
     <uses-permission

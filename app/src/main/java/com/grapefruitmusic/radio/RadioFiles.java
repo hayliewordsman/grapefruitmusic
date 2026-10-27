@@ -62,8 +62,6 @@ public final class RadioFiles {
         paths.add("/system/etc/permissions/platform.xml");
         paths.add("/system/build.prop");
         paths.addAll(RadioReport.rcFiles());
-        // The Radio Sound Test's clip of a station, if it recorded one.
-        paths.add(RadioSoundTest.clipFile().getPath());
 
         File zip = new File(dir, "radio-files.zip");
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip));

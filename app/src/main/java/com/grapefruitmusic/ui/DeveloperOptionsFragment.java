@@ -9,7 +9,7 @@ import android.widget.ScrollView;
 
 /**
  * Settings › Developer Options: tools for working out what this tablet's hardware lets Grapefruit
- * do, for sending to the developer (Radio Details, the Radio Sound Test).
+ * do, for sending to the developer (Radio Details).
  */
 public final class DeveloperOptionsFragment extends BaseFragment {
     @Override
@@ -26,14 +26,8 @@ public final class DeveloperOptionsFragment extends BaseFragment {
                 main().push(new RadioDetailsFragment());
             }
         });
-        g.value("Radio Sound Test", "", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                main().push(new RadioSoundTestFragment());
-            }
-        });
-        g.footer("For radios Grapefruit doesn't support yet, and for what it could do with this tablet's radio. "
-                + AboutFragment.DEVELOPER + " may ask you to send what these find.");
+        g.footer("For radios Grapefruit doesn't support yet: " + AboutFragment.DEVELOPER
+                + " may ask you to send what it finds.");
         return page;
     }
 }
