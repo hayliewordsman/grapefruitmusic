@@ -31,7 +31,8 @@ with downloads for offline listening and time-synced lyrics.
   Android 4.2 tells the launcher about 10 seconds later; a launcher may take the old icon off the home screen.
   The icons are drawn by `tools/icons/make_icons.py`.
 - **Library:** Songs is a list with small artwork and Playlists a list with medium artwork; Artists, Albums and
-  Recently Added show cards, two across, scrolling down. Turned sideways, the card pages scroll sideways instead:
+  Recently Added show cards, two across, scrolling down. Recently Added mixes in playlists by the date they were
+  made (as Navidrome/Subsonic, Jellyfin and the phone report it), newest first. Turned sideways, the card pages scroll sideways instead:
   the Library's menu is the first column, then Recently Added two cards high; swipe right to left and the menu
   slides away as more albums come in. Now Playing pops in as a panel on the right, beside the library (swipe it
   right or tap outside to close it).
@@ -42,7 +43,19 @@ with downloads for offline listening and time-synced lyrics.
   Up Next (drag the ≡ handle to reorder: the other songs slide aside), Play Next / Add to Up Next. The
   notification shows the whole cover (fitted, not cropped) and has an ✕ at the top right that stops playback,
   closes Grapefruit and clears the notification.
-- **FM Radio:** the Radio tab shows your presets as station tiles, finds stations (Find Stations) and
+- **Internet radio:** the Radio tab, on every device, plays live stations from
+  [Radio Browser](https://www.radio-browser.info), a free, open directory run by volunteers: popular stations where
+  you are, sixteen genres, a search, and My Stations (keep a station with + or its menu; touch and hold its tile to
+  remove it). Add by Link adds a station the directory doesn't have, from its stream's address (or its .pls or .m3u
+  playlist). Stations play through the music player: next and previous step through the list you chose from,
+  and Stop replaces Pause (a paused stream falls behind). Now Playing shows LIVE in place of the song position,
+  and the song and artist the station sends (SHOUTcast/Icecast titles), as do the notification and lock screen.
+  Grapefruit's relay opens SHOUTcast streams by hand (Android 4.2 refuses their "ICY 200 OK"), follows redirects
+  between http and https, takes the song titles out of the sound, and tunes in again if a stream drops. Android
+  4.2 plays MP3, AAC and Ogg Vorbis stations; HLS, Opus and FLAC ones are left out of the lists. Stations without a
+  usable logo get artwork made from their name.
+- **FM Radio:** where the tablet has a radio Grapefruit can use, an FM Radio / Internet Radio switch sits at the
+  top of the Radio tab. FM shows your presets as station tiles, finds stations (Find Stations) and
   starts the radio; choosing a station opens Now Playing on it, with a dial to drag or tap, seek buttons for the
   next station down or up, 0.1 MHz steps, the station's name, programme type and text from RDS, + to save it as
   a preset with a label of your own (or none, to go by the station's name or frequency; touch and hold a preset
@@ -63,8 +76,7 @@ with downloads for offline listening and time-synced lyrics.
 
   Other radios aren't supported: Qualcomm, Broadcom and Spreadtrum chips, and MediaTek's Android 5+ radio
   (from Android 7 on, apps can't load the system's radio library at all). Grapefruit looks for the radio when
-  the Radio tab opens; with none it can use, the tab is just a notice in the middle saying so, and who to
-  contact (Settings › About) if that's wrong.
+  the Radio tab opens; with none it can use, the tab is internet radio alone.
 
   Settings › Developer Options › Radio Details shows what Grapefruit found on a tablet whose radio it can't use yet:
   radio libraries (with their JNI classes, functions and strings), devices and who may open them, the
@@ -110,7 +122,17 @@ with downloads for offline listening and time-synced lyrics.
   album for its songs). Done saves; Cancel or Back leaves it as it was. Names, added and removed songs and
   (on Navidrome/Subsonic) descriptions are saved on the server; cover photos are kept on the phone.
 - **Song menu:** the ⋯ button on any song (or a long press) offers Play Next, Add to Up Next, Add to Playlist
-  (an existing playlist or a new one, on your server or the phone), Go to Album, Go to Artist and Download.
+  (an existing playlist or a new one, on your server or the phone), Go to Album, Go to Artist, Edit Tags and
+  Download. A playlist's long press also has Delete Playlist, which asks first (the songs stay).
+- **Edit Tags:** a song's title, artist, album, album artist, genre, year, track and disc numbers, and artwork
+  (a photo, album art or a picture from another app, or none). Songs on the phone are changed in their files: MP3
+  (ID3v2.3/2.4, keeping ID3v1 in step), M4A (iTunes-style tags; when the tags grow and the audio comes after them,
+  the audio's chunk offsets move with it) and FLAC (Vorbis comments and pictures); other tags, such as ReplayGain,
+  are kept, the sound itself is never rewritten, and some room is left so the next edit is written in place.
+  Android's music library then reads the file again. Jellyfin songs are changed on the server (its API keeps them
+  in Jellyfin's library; Jellyfin only lets administrators edit). Navidrome and Subsonic have no way for apps to
+  change songs, so there Edit Tags changes a song's downloaded copy, and says so. Lists, the queue and Now
+  Playing show the change at once.
 - **Streaming quality:** stream original files when the phone can play them (MP3, AAC/M4A, FLAC, Ogg Vorbis, WAV),
   otherwise the server converts to MP3. You can also pick a fixed MP3 bitrate.
 - **Modern HTTPS on old phones:** bundles [Conscrypt](https://github.com/google/conscrypt) for TLS 1.2/1.3 and a few
