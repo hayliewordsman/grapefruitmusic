@@ -3,6 +3,7 @@ package com.grapefruitmusic.source;
 import com.grapefruitmusic.lyrics.Lyrics;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.net.Http;
+import com.grapefruitmusic.tags.Tags;
 import com.grapefruitmusic.util.Dates;
 import com.grapefruitmusic.util.Prefs;
 
@@ -301,6 +302,107 @@ public final class JellyfinSource implements MusicSource {
                     + Http.enc(ids.toString()), headers(), null, null).disconnect();
         }
         return false;
+    }
+
+    // ---- Tags ----
+
+    /** A song's details as Jellyfin has them, with its own picture (or its album's). Blocking. */
+    public Tags readTags(MediaItem song) throws IOException {
+        JSONObject o = get("/Users/" + Http.enc(account.userId) + "/Items/" + Http.enc(song.id));
+        Tags t = new Tags();
+        t.title = text(o, "Name");
+        t.artist = join(o.optJSONArray("Artists"));
+        t.album = text(o, "Album");
+        t.albumArtist = text(o, "AlbumArtist");
+        t.genre = join(o.optJSONArray("Genres"));
+        t.year = o.optInt("ProductionYear");
+        t.track = o.optInt("IndexNumber");
+        t.disc = o.optInt("ParentIndexNumber");
+        JSONObject images = o.optJSONObject("ImageTags");
+        String picture = null;
+        if (images != null && Json.str(images, "Primary") != null) {
+            picture = "/Items/" + Http.enc(song.id) + "/Images/Primary";
+        } else if (Json.str(o, "AlbumPrimaryImageTag") != null && Json.str(o, "AlbumId") != null) {
+            picture = "/Items/" + Http.enc(Json.str(o, "AlbumId")) + "/Images/Primary";
+        }
+        if (picture != null) {
+            try {
+                t.picture = Http.getBytes(account.url + picture + "?maxWidth=600&quality=90", headers());
+            } catch (IOException e) {
+                // Shown without its picture.
+            }
+        }
+        return t;
+    }
+
+    /**
+     * Saves a song's details on the server (Jellyfin keeps them in its library; the file stays
+     * as it is), and its picture when picture is true. Needs an account that may edit. Blocking.
+     */
+    public void writeTags(MediaItem song, Tags t, boolean picture) throws IOException {
+        String item = account.url + "/Items/" + Http.enc(song.id);
+        JSONObject o = get("/Users/" + Http.enc(account.userId) + "/Items/" + Http.enc(song.id));
+        try {
+            o.put("Name", t.title.trim());
+            o.put("Album", t.album.trim());
+            o.put("AlbumArtist", t.albumArtist.trim());
+            JSONArray albumArtists = new JSONArray();
+            if (!Tags.empty(t.albumArtist)) albumArtists.put(new JSONObject().put("Name", t.albumArtist.trim()));
+            o.put("AlbumArtists", albumArtists);
+            // A list of artists stays a list unless it was changed.
+            if (!t.artist.trim().equals(join(o.optJSONArray("Artists")))) {
+                JSONArray artists = new JSONArray();
+                JSONArray artistItems = new JSONArray();
+                if (!Tags.empty(t.artist)) {
+                    artists.put(t.artist.trim());
+                    artistItems.put(new JSONObject().put("Name", t.artist.trim()));
+                }
+                o.put("Artists", artists);
+                o.put("ArtistItems", artistItems);
+            }
+            if (!t.genre.trim().equals(join(o.optJSONArray("Genres")))) {
+                JSONArray genres = new JSONArray();
+                for (String g : t.genre.split(",")) {
+                    if (g.trim().length() > 0) genres.put(g.trim());
+                }
+                o.put("Genres", genres);
+            }
+            o.put("ProductionYear", t.year > 0 ? (Object) t.year : JSONObject.NULL);
+            o.put("IndexNumber", t.track > 0 ? (Object) t.track : JSONObject.NULL);
+            o.put("ParentIndexNumber", t.disc > 0 ? (Object) t.disc : JSONObject.NULL);
+        } catch (JSONException e) {
+            throw new IllegalStateException(e);
+        }
+        Http.post(item, headers(), "application/json", o.toString());
+        if (!picture) return;
+        if (t.picture != null) {
+            // Jellyfin takes the picture as base64 text.
+            Http.post(item + "/Images/Primary", headers(), Tags.mimeOf(t.picture),
+                    android.util.Base64.encodeToString(t.picture, android.util.Base64.NO_WRAP));
+        } else {
+            try {
+                Http.delete(item + "/Images/Primary", headers());
+            } catch (Http.StatusException e) {
+                if (e.code != 404) throw e;
+            }
+        }
+    }
+
+    private static String text(JSONObject o, String key) {
+        String s = Json.str(o, key);
+        return s == null ? "" : s;
+    }
+
+    private static String join(JSONArray a) {
+        if (a == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < a.length(); i++) {
+            String s = a.optString(i, "").trim();
+            if (s.length() == 0) continue;
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(s);
+        }
+        return sb.toString();
     }
 
     private MediaItem item(JSONObject o) {

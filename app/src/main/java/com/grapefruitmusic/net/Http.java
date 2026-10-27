@@ -112,6 +112,20 @@ public final class Http {
         }
     }
 
+    public static byte[] getBytes(String url, Map<String, String> headers) throws IOException {
+        HttpURLConnection c = open("GET", url, headers, null, null);
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            InputStream in = c.getInputStream();
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+            return out.toByteArray();
+        } finally {
+            c.disconnect();
+        }
+    }
+
     public static void delete(String url, Map<String, String> headers) throws IOException {
         open("DELETE", url, headers, null, null).disconnect();
     }

@@ -129,6 +129,8 @@ final class NowPlaying {
     private boolean radioMode;
     /** A live internet station is playing (no position; stop, not pause). */
     private boolean liveMode;
+    /** ArtworkLoader.generation() when the artwork was loaded. */
+    private int artGeneration;
     private String radioArtKey;
 
     // Dragging a song in Up Next by its handle. The list's data stays put while dragging: the
@@ -871,8 +873,13 @@ final class NowPlaying {
 
         if (!item.key().equals(trackKey)) {
             trackKey = item.key();
+            artGeneration = ArtworkLoader.generation();
             loadArtwork(item);
             loadLyrics(item);
+        } else if (artGeneration != ArtworkLoader.generation()) {
+            // Its picture was changed (Edit Tags).
+            artGeneration = ArtworkLoader.generation();
+            loadArtwork(item);
         }
         if (mode == MODE_QUEUE) refreshQueue(false);
         tick();

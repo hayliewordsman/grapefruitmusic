@@ -75,6 +75,37 @@ public final class ArtworkLoader {
         return item.sourceId + "|" + item.artKey + "|" + size;
     }
 
+    private static volatile int generation;
+
+    /** Goes up whenever some artwork changed (so pages showing a big copy can load it again). */
+    public static int generation() {
+        return generation;
+    }
+
+    /** Forgets item's artwork (at every size), after it changed. */
+    public void forget(MediaItem item) {
+        generation++;
+        if (item == null || item.artKey == null) return;
+        String prefix = item.sourceId + "|" + item.artKey + "|";
+        for (String k : memory.snapshot().keySet()) {
+            if (k.startsWith(prefix)) memory.remove(k);
+        }
+        for (String k : missing.snapshot().keySet()) {
+            if (k.startsWith(prefix)) missing.remove(k);
+        }
+        final String key = prefix;
+        Bg.execute(new Runnable() {
+            @Override
+            public void run() {
+                // Downloaded copies are named by a hash of the same key and their size.
+                for (int size = 16; size <= 2048; size++) {
+                    File f = new File(diskDir, Hashes.md5(key + size));
+                    if (f.exists()) f.delete();
+                }
+            }
+        });
+    }
+
     public Bitmap cached(MediaItem item, int sizePx) {
         if (item == null || item.artKey == null) return null;
         return memory.get(key(item, sizePx));

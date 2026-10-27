@@ -196,6 +196,13 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         return isLive() ? liveTitle : null;
     }
 
+    /** Songs' tags (or pictures) were changed: the queue and Recently Played show the new ones. */
+    public void songsEdited() {
+        com.grapefruitmusic.tags.SongEdits.apply(queue);
+        com.grapefruitmusic.tags.SongEdits.apply(history.items());
+        changed();
+    }
+
     // ---- Recently played ----
 
     public List<MediaItem> history() {

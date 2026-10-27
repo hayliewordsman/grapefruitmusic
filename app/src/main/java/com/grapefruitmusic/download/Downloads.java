@@ -9,6 +9,7 @@ import android.os.Environment;
 
 import com.grapefruitmusic.data.Db;
 import com.grapefruitmusic.model.MediaItem;
+import com.grapefruitmusic.tags.Tags;
 import com.grapefruitmusic.util.Bg;
 
 import java.io.File;
@@ -334,6 +335,26 @@ public final class Downloads {
         } finally {
             c.close();
         }
+    }
+
+    /** A downloaded song's tags were changed in its file: lists show the new ones. */
+    public void tagsChanged(MediaItem t, Tags tags, boolean picture) {
+        ContentValues v = new ContentValues();
+        v.put("title", tags.title.trim().length() > 0 ? tags.title.trim() : t.title);
+        v.put("artist", blankToNull(tags.artist));
+        v.put("album", blankToNull(tags.album));
+        v.put("album_artist", blankToNull(tags.albumArtist));
+        v.put("track_no", tags.track);
+        v.put("disc_no", tags.disc);
+        v.put("year", tags.year);
+        // Its own picture now, rather than the album cover saved beside it.
+        if (picture) v.putNull("art_path");
+        update(t, v);
+        Bg.main(notifier);
+    }
+
+    private static String blankToNull(String s) {
+        return s == null || s.trim().length() == 0 ? null : s.trim();
     }
 
     private boolean update(MediaItem t, ContentValues v) {

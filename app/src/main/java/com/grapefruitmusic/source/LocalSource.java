@@ -366,6 +366,11 @@ public final class LocalSource implements MusicSource {
         return folders;
     }
 
+    /** Looks up album artwork afresh (after a song's picture changed). */
+    public synchronized void forgetArtwork() {
+        artCache.clear();
+    }
+
     @Override
     public synchronized String artworkUrl(String artKey, int sizePx) {
         if (artKey == null || !artKey.startsWith("album:")) return artKey;
@@ -380,16 +385,25 @@ public final class LocalSource implements MusicSource {
             } finally {
                 c.close();
             }
-            if (result == null || !new File(result).exists()) {
-                // No cached album art: read the picture embedded in one of the album's files.
-                result = null;
-                Cursor t = query(MEDIA, new String[]{DATA},
-                        MediaStore.Audio.Media.ALBUM_ID + " = ?", new String[]{albumId}, null);
-                try {
-                    if (t.moveToFirst() && t.getString(0) != null) result = "embedded:" + t.getString(0);
-                } finally {
-                    t.close();
+            long cachedAt = result != null ? new File(result).lastModified() : 0;
+            // No cached album art, or a song's picture changed since Android made it: read the
+            // picture embedded in the album's most recently changed file.
+            Cursor t = query(MEDIA, new String[]{DATA},
+                    MediaStore.Audio.Media.ALBUM_ID + " = ?", new String[]{albumId}, null);
+            try {
+                String newest = null;
+                long newestAt = 0;
+                while (t.moveToNext()) {
+                    String path = t.getString(0);
+                    long at = path != null ? new File(path).lastModified() : 0;
+                    if (path != null && (newest == null || at > newestAt)) {
+                        newest = path;
+                        newestAt = at;
+                    }
                 }
+                if (newest != null && (cachedAt == 0 || newestAt > cachedAt + 1000)) result = "embedded:" + newest;
+            } finally {
+                t.close();
             }
         } catch (IOException ignored) {
             // No art.

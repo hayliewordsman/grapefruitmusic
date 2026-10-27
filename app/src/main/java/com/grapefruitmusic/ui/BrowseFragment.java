@@ -387,6 +387,8 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         super.onResume();
         Downloads.get(getActivity()).addListener(this);
         Player.get(getActivity()).addListener(this);
+        // Songs whose tags were just changed show the new ones.
+        if (items != null && adapter != null && com.grapefruitmusic.tags.SongEdits.apply(items)) show();
         onPlayerChanged();
         refreshStates();
     }

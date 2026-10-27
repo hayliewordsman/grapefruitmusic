@@ -86,7 +86,7 @@ public final class Tags {
         return ((b[at] & 0xff) << 24) | ((b[at + 1] & 0xff) << 16) | ((b[at + 2] & 0xff) << 8) | (b[at + 3] & 0xff);
     }
 
-    static boolean empty(String s) {
+    public static boolean empty(String s) {
         return s == null || s.trim().length() == 0;
     }
 }

@@ -80,6 +80,15 @@ final class TrackActions {
                     }
                 });
             }
+            if (com.grapefruitmusic.tags.SongTags.target(c, item) != null) {
+                labels.add("Edit Tags\u2026");
+                actions.add(new Runnable() {
+                    @Override
+                    public void run() {
+                        page.main().push(TagEditorFragment.newInstance(item, page.backTitle()));
+                    }
+                });
+            }
             Map<String, Integer> states = downloads.states(item.sourceId);
             Integer state = states.get(item.id);
             if (state != null && state != Downloads.FAILED) {

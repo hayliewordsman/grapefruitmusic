@@ -775,6 +775,8 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         super.onResume();
         Downloads.get(getActivity()).addListener(this);
         Player.get(getActivity()).addListener(this);
+        // Songs whose tags were just changed show the new ones.
+        com.grapefruitmusic.tags.SongEdits.apply(tracks);
         adapter.notifyDataSetChanged();
         if (!tracks.isEmpty()) refreshStates();
     }

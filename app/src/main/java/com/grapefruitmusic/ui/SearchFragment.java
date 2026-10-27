@@ -204,6 +204,7 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
     public void onResume() {
         super.onResume();
         Player.get(getActivity()).addListener(this);
+        if (com.grapefruitmusic.tags.SongEdits.apply(results)) show();
         onPlayerChanged();
         field.setHint("Search " + source().name());
     }

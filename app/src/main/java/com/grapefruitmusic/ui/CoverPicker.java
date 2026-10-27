@@ -55,7 +55,13 @@ final class CoverPicker {
     private CoverPicker() {
     }
 
-    static void show(final Fragment fragment, List<MediaItem> tracks, boolean hasCover, final Listener listener) {
+    static void show(Fragment fragment, List<MediaItem> tracks, boolean hasCover, Listener listener) {
+        show(fragment, tracks, hasCover, "Cover Photo", "Remove Cover Photo", listener);
+    }
+
+    /** With other words: a song's "Artwork" and "Remove Artwork", say. */
+    static void show(final Fragment fragment, List<MediaItem> tracks, boolean hasCover, String title,
+                     String removeLabel, final Listener listener) {
         final Context c = fragment.getActivity();
         final List<MediaItem> art = distinctArt(tracks);
         final Intent pick = pickIntent();
@@ -87,7 +93,7 @@ final class CoverPicker {
             });
         }
         if (hasCover) {
-            labels.add("Remove Cover Photo");
+            labels.add(removeLabel);
             actions.add(new Runnable() {
                 @Override
                 public void run() {
@@ -96,7 +102,7 @@ final class CoverPicker {
             });
         }
         Ui.dialog(c)
-                .setTitle("Cover Photo")
+                .setTitle(title)
                 .setItems(labels.toArray(new String[labels.size()]), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
