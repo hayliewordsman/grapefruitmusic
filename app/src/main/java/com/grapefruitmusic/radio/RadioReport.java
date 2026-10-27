@@ -43,7 +43,7 @@ final class RadioReport {
     private RadioReport() {
     }
 
-    static String collect(Context c, String attempts, String headset) {
+    static String collect(Context c, String attempts, String headset, String soundTest) {
         StringBuilder sb = new StringBuilder();
         String version = "?";
         try {
@@ -86,6 +86,7 @@ final class RadioReport {
         sb.append("Superuser (su): ").append(superuser()).append('\n');
 
         sb.append("\nWhat happened:\n").append(attempts.length() > 0 ? attempts : "(the radio wasn't tried yet)\n");
+        sb.append("\nRadio Sound Test:\n").append(soundTest != null ? soundTest : "(not run)\n");
 
         sb.append("\nRadio libraries:\n");
         int listed = 0;

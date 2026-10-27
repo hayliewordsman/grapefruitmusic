@@ -1,13 +1,13 @@
 package com.grapefruitmusic.playback;
 
 /** In-place radix-2 complex FFT of a fixed size (a power of two). Not thread-safe per call. */
-final class Fft {
+public final class Fft {
     private final int n;
     private final int[] reverse;
     private final float[] cos;
     private final float[] sin;
 
-    Fft(int n) {
+    public Fft(int n) {
         if (Integer.bitCount(n) != 1) throw new IllegalArgumentException("size must be a power of two: " + n);
         this.n = n;
         int bits = Integer.numberOfTrailingZeros(n);
@@ -25,7 +25,7 @@ final class Fft {
      * Forward: X[k] = sum x[j] e^(-2 pi i jk/n). Inverse: x[j] = sum X[k] e^(+2 pi i jk/n), without
      * the 1/n (the caller scales).
      */
-    void transform(float[] re, float[] im, boolean inverse) {
+    public void transform(float[] re, float[] im, boolean inverse) {
         for (int i = 0; i < n; i++) {
             int j = reverse[i];
             if (j > i) {

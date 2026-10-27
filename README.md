@@ -62,15 +62,27 @@ with downloads for offline listening and time-synced lyrics.
     MediaTek's Jelly Bean and KitKat interface, but not yet tried on a MediaTek tablet.
 
   Other radios aren't supported: Qualcomm, Broadcom and Spreadtrum chips, and MediaTek's Android 5+ radio
-  (from Android 7 on, apps can't load the system's radio library at all). There the Radio tab says so.
+  (from Android 7 on, apps can't load the system's radio library at all). Grapefruit looks for the radio when
+  the Radio tab opens; with none it can use, the tab is just a notice in the middle saying so, and who to
+  contact (Settings › About) if that's wrong.
 
-  Radio › Radio Details shows what Grapefruit found on a tablet whose radio it can't use yet:
+  Settings › Developer Options › Radio Details shows what Grapefruit found on a tablet whose radio it can't use yet:
   radio libraries (with their JNI classes, functions and strings), devices and who may open them, the
   tablet's own radio apps read from their files without running them (the native functions they declare
   with JNI signatures, their AIDL service interfaces, their services and permissions), permission groups,
   FM audio constants and what the audio driver says about the radio and sound routes. Save Radio Files zips
   that with the radio app, libraries, audio driver and audio settings themselves, to build
   support for a new radio from.
+
+  Settings › Developer Options › Radio Sound Test finds out whether Grapefruit can hear the radio, the first
+  step to cleaning up a noisy station. On the JP5S the radio's sound runs from the chip to the headphone jack in
+  hardware, past Android, so Grapefruit can't filter what's in the headphones; but Rockchip's own FM app records
+  the radio through the microphone input, so the sound may reach Android there, to be cleaned and played through
+  the speaker. With the radio playing, the test records a moment from each audio input with the chip playing and
+  muted: where muting makes an input clearly quieter (6 dB or more), the input carries the radio. Only then does
+  it record 10 seconds of the station (`Grapefruit/radio-sound-test.wav`, also in Save Radio Files) and look for
+  mains hum (50 or 60 Hz and harmonics) and other narrow peaks, and the level of the noise between words. This is
+  what the microphone permission (`RECORD_AUDIO`) is for.
 - **Volume Match:** Settings › Volume Match plays every song at about the same loudness, like Apple's Sound Check.
   Grapefruit measures songs on the phone and downloads in the background (EBU R128, the measure ReplayGain 2 uses),
   uses the loudness your server reports for streamed songs (Navidrome ReplayGain tags, Jellyfin 10.9+
@@ -101,10 +113,12 @@ with downloads for offline listening and time-synced lyrics.
   plays it. A song Grapefruit's engine can't play falls back to Android's player.
 - **Recently Played:** scroll up in Up Next to see the songs you've played (newest just above Now Playing).
   Tap one to play it again, or Clear the list.
-- **Playlist editing:** Edit on a playlist changes its name, description and cover photo (a photo on the phone,
-  album art from the playlist, or a picture from another app), and removes songs. Done saves; Cancel or Back
-  leaves it as it was. Names, removed songs and (on Navidrome/Subsonic) descriptions are saved on the server;
-  cover photos are kept on the phone.
+- **Playlist editing:** New Playlist at the top of the Playlists page makes one and opens it in edit mode. Edit on
+  a playlist changes its name, description and cover photo (a photo on the phone, album art from the playlist,
+  or a picture from another app), removes songs, and adds them: Add Songs opens the library's albums and songs in
+  a popup with a filter (+ adds a song, or an album's songs not in the playlist yet; ✓ takes them back; tap an
+  album for its songs). Done saves; Cancel or Back leaves it as it was. Names, added and removed songs and
+  (on Navidrome/Subsonic) descriptions are saved on the server; cover photos are kept on the phone.
 - **Song menu:** the ⋯ button on any song (or a long press) offers Play Next, Add to Up Next, Add to Playlist
   (an existing playlist or a new one, on your server or the phone), Go to Album, Go to Artist and Download.
 - **Streaming quality:** stream original files when the phone can play them (MP3, AAC/M4A, FLAC, Ogg Vorbis, WAV),

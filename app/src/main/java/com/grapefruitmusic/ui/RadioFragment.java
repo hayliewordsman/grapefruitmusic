@@ -167,25 +167,12 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
             content.addView(Ui.separator(c, 16));
             for (int f : found) addFoundRow(c, f);
         }
-
-        TextView details = Ui.text(c, 15, R.attr.gfAccent, false);
-        details.setText("Radio Details");
-        details.setPadding(Ui.dp(c, 16), Ui.dp(c, 22), Ui.dp(c, 16), Ui.dp(c, 8));
-        details.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
-        details.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                main().push(new RadioDetailsFragment());
-            }
-        });
-        content.addView(details, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     /** A rounded note with an icon, a bold line, some text and maybe a button. */
     /**
-     * In the middle of the page under the title: that no radio Grapefruit can use was found (with
-     * who to tell, and Radio Details for what was found), or that it's still looking.
+     * In the middle of the page under the title: that no radio Grapefruit can use was found (and
+     * who to tell), or that it's still looking. What was found is in Settings › Developer Options.
      */
     private void addCentered(Context c, boolean noRadio) {
         LinearLayout box = new LinearLayout(c);
@@ -208,18 +195,6 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener 
         body.setPadding(0, Ui.dp(c, noRadio ? 6 : 0), 0, 0);
         box.addView(body, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
-        if (noRadio) {
-            TextView details = Ui.text(c, 15, R.attr.gfAccent, false);
-            details.setText("Radio Details");
-            details.setPadding(Ui.dp(c, 12), Ui.dp(c, 16), Ui.dp(c, 12), Ui.dp(c, 8));
-            details.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    main().push(new RadioDetailsFragment());
-                }
-            });
-            box.addView(details);
-        }
         content.addView(box, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
     }
 

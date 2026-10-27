@@ -303,6 +303,12 @@ public final class SettingsFragment extends BaseFragment
                 main().push(new AboutFragment());
             }
         });
+        g.value("Developer Options", "", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                main().push(new DeveloperOptionsFragment());
+            }
+        });
     }
 
     static String versionName(Context c) {

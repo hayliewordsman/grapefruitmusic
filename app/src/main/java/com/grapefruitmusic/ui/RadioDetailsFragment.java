@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Radio › Radio Details: what Grapefruit found out about this tablet's FM radio, to copy or save
- * and send on, so a radio that doesn't work yet can be supported. Also opens the tablet's own
- * radio app, if it has one.
+ * Settings › Developer Options › Radio Details: what Grapefruit found out about this tablet's FM
+ * radio, to copy or save and send on, so a radio that doesn't work yet can be supported. Also
+ * opens the tablet's own radio app, if it has one.
  */
 public final class RadioDetailsFragment extends BaseFragment {
     private String report;
@@ -49,7 +49,7 @@ public final class RadioDetailsFragment extends BaseFragment {
         content.setOrientation(LinearLayout.VERTICAL);
         content.setPadding(0, 0, 0, Ui.dp(c, 24));
         page.addView(content);
-        content.addView(Ui.header(c, "Radio", "Radio Details", goBack()));
+        content.addView(Ui.header(c, "Developer Options", "Radio Details", goBack()));
 
         TextView intro = Ui.text(c, 15, R.attr.gfTextSecondary, false);
         intro.setSingleLine(false);
