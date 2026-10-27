@@ -82,6 +82,10 @@ public abstract class BaseFragment extends Fragment {
     }
 
     /** Handles the Back key itself (returns true), e.g. to leave edit mode. */
+    /** A playlist was deleted (or made): pages listing playlists reload. */
+    void onPlaylistsChanged() {
+    }
+
     boolean onBackPressed() {
         return false;
     }

@@ -3,6 +3,7 @@ package com.grapefruitmusic.ui;
 import android.content.Context;
 import android.content.DialogInterface;
 
+import com.grapefruitmusic.data.PlaylistMeta;
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
@@ -139,6 +140,15 @@ final class TrackActions {
                     }
                 }));
             }
+            if (item.kind == MediaItem.PLAYLIST && listSource.canEditPlaylists()) {
+                labels.add("Delete Playlist");
+                actions.add(new Runnable() {
+                    @Override
+                    public void run() {
+                        confirmDelete(page, item, listSource);
+                    }
+                });
+            }
         } else {
             return;
         }
@@ -151,6 +161,42 @@ final class TrackActions {
                         actions.get(which).run();
                     }
                 })
+                .show();
+    }
+
+    /** Delete Playlist: asks first, then deletes it from its source (the songs stay). */
+    private static void confirmDelete(final BaseFragment page, final MediaItem playlist, final MusicSource source) {
+        final Context c = page.getActivity();
+        final Context app = c.getApplicationContext();
+        Ui.dialog(c)
+                .setTitle("Delete “" + playlist.title + "”?")
+                .setMessage(source.isRemote() ? "It's deleted from " + source.name() + " too. The songs in it stay."
+                        : "The songs in it stay on this device.")
+                .setDestructive(true)
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Bg.run(new Bg.Work<Void>() {
+                            @Override
+                            public Void run() throws Exception {
+                                source.deletePlaylist(playlist);
+                                PlaylistMeta.get(app).forget(playlist);
+                                return null;
+                            }
+                        }, new Bg.Done<Void>() {
+                            @Override
+                            public void done(Void result, Exception error) {
+                                if (error != null) {
+                                    Notice.showLong(app, BaseFragment.describe(error, source));
+                                    return;
+                                }
+                                Notice.show(app, "Deleted “" + playlist.title + "”");
+                                if (page.getActivity() != null) page.onPlaylistsChanged();
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 

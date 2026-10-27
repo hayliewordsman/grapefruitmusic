@@ -391,6 +391,7 @@ public final class Downloads {
                 m.count = c.getInt(5);
                 m.artKey = c.getString(6) != null ? c.getString(6)
                         : (c.getString(7) != null ? "embedded:" + c.getString(7) : null);
+                m.added = c.getLong(8);
                 out.add(m);
             }
         } finally {
@@ -424,7 +425,7 @@ public final class Downloads {
                 + " WHERE t.source_id = p.source_id AND t.playlist_id = p.playlist_id), "
                 + "(SELECT d.art_path FROM dl_playlist_tracks t JOIN downloads d ON d.source_id = t.source_id "
                 + "AND d.track_id = t.track_id WHERE t.source_id = p.source_id AND t.playlist_id = p.playlist_id "
-                + "AND d.art_path IS NOT NULL ORDER BY t.position LIMIT 1) "
+                + "AND d.art_path IS NOT NULL ORDER BY t.position LIMIT 1), p.added_at "
                 + "FROM dl_playlists p ORDER BY p.name COLLATE NOCASE", null);
         try {
             while (c.moveToNext()) {
@@ -432,6 +433,7 @@ public final class Downloads {
                         c.getString(0) + SEP + c.getString(1), c.getString(2));
                 m.count = c.getInt(3);
                 m.artKey = c.getString(4);
+                m.added = c.getLong(5);
                 out.add(m);
             }
         } finally {

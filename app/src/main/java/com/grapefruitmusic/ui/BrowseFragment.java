@@ -376,6 +376,11 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
     }
 
     @Override
+    void onPlaylistsChanged() {
+        if (mode() == PLAYLISTS) load();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         Downloads.get(getActivity()).addListener(this);

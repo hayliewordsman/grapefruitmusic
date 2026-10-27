@@ -126,6 +126,22 @@ public final class PlaylistMeta {
         version++;
     }
 
+    /** Forgets a deleted playlist's description and cover photo (deleting the photo). Blocking. */
+    public synchronized void forget(MediaItem playlist) {
+        SQLiteDatabase w = db.getWritableDatabase();
+        String[] where = {playlist.sourceId, playlist.id};
+        Cursor c = w.query("playlist_meta", new String[]{"cover_path"}, "source_id = ? AND playlist_id = ?", where,
+                null, null, null);
+        try {
+            if (c.moveToFirst() && c.getString(0) != null) new File(c.getString(0)).delete();
+        } finally {
+            c.close();
+        }
+        w.delete("playlist_meta", "source_id = ? AND playlist_id = ?", where);
+        sourceArt.remove(playlist.key());
+        version++;
+    }
+
     /** Notes that a playlist changed on its source (renamed, songs removed). */
     public static void changed() {
         version++;

@@ -112,6 +112,10 @@ public final class Http {
         }
     }
 
+    public static void delete(String url, Map<String, String> headers) throws IOException {
+        open("DELETE", url, headers, null, null).disconnect();
+    }
+
     public static JSONObject getJson(String url, Map<String, String> headers) throws IOException {
         return parseObject(get(url, headers));
     }

@@ -41,6 +41,8 @@ public class MediaItem implements Serializable {
     public String entryId;
     /** Track gain in dB reported by the server (ReplayGain, relative to -18 LUFS), or null. */
     public Float replayGain;
+    /** When an album was added to the library or a playlist made (ms since 1970), or 0 if unknown. */
+    public long added;
 
     public MediaItem() {
     }

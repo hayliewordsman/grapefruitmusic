@@ -3,6 +3,7 @@ package com.grapefruitmusic.source;
 import com.grapefruitmusic.lyrics.Lyrics;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.net.Http;
+import com.grapefruitmusic.util.Dates;
 import com.grapefruitmusic.util.Prefs;
 
 import org.json.JSONArray;
@@ -109,7 +110,7 @@ public final class JellyfinSource implements MusicSource {
     @Override
     public List<MediaItem> playlists() throws IOException {
         List<MediaItem> out = new ArrayList<MediaItem>();
-        for (MediaItem m : items(itemsQuery("Playlist", "ChildCount,Overview", "SortBy=SortName"))) {
+        for (MediaItem m : items(itemsQuery("Playlist", "ChildCount,Overview,DateCreated", "SortBy=SortName"))) {
             if (m.kind == MediaItem.PLAYLIST) out.add(m);
         }
         return out;
@@ -143,7 +144,8 @@ public final class JellyfinSource implements MusicSource {
 
     @Override
     public List<MediaItem> recentAlbums(int limit) throws IOException {
-        return items(itemsQuery("MusicAlbum", "SortBy=DateCreated&SortOrder=Descending&Limit=" + limit));
+        return items(itemsQuery("MusicAlbum", "ChildCount,DateCreated", "SortBy=DateCreated&SortOrder=Descending&Limit="
+                + limit));
     }
 
     @Override
@@ -264,6 +266,11 @@ public final class JellyfinSource implements MusicSource {
     }
 
     @Override
+    public void deletePlaylist(MediaItem playlist) throws IOException {
+        Http.delete(account.url + "/Items/" + Http.enc(playlist.id), headers());
+    }
+
+    @Override
     public boolean editPlaylist(MediaItem playlist, String name, String description, List<MediaItem> removed)
             throws IOException {
         // Jellyfin only lets admins change descriptions, so Grapefruit keeps them on the phone.
@@ -335,6 +342,7 @@ public final class JellyfinSource implements MusicSource {
         m.count = o.optInt("ChildCount");
         m.durationMs = o.optLong("RunTimeTicks") / TICKS_PER_MS;
         m.suffix = Json.str(o, "Container");
+        m.added = Dates.parseIso(Json.str(o, "DateCreated"));
         // Jellyfin 10.9+ measures loudness itself (relative to -18 LUFS, like ReplayGain).
         if (o.has("NormalizationGain") && !o.isNull("NormalizationGain")) {
             m.replayGain = (float) o.optDouble("NormalizationGain");

@@ -4,6 +4,7 @@ import com.grapefruitmusic.lyrics.LrcParser;
 import com.grapefruitmusic.lyrics.Lyrics;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.net.Http;
+import com.grapefruitmusic.util.Dates;
 import com.grapefruitmusic.util.Hashes;
 import com.grapefruitmusic.util.Prefs;
 
@@ -101,6 +102,7 @@ public final class SubsonicSource implements MusicSource {
             m.artKey = Json.str(p, "coverArt");
             m.artist = Json.str(p, "owner");
             m.description = Json.str(p, "comment");
+            m.added = Dates.parseIso(Json.str(p, "created"));
             out.add(m);
         }
         return out;
@@ -278,6 +280,11 @@ public final class SubsonicSource implements MusicSource {
     }
 
     @Override
+    public void deletePlaylist(MediaItem playlist) throws IOException {
+        call("deletePlaylist", "id=" + Http.enc(playlist.id));
+    }
+
+    @Override
     public boolean editPlaylist(MediaItem playlist, String name, String description, List<MediaItem> removed)
             throws IOException {
         // One request, so the server applies all of it or none of it.
@@ -306,6 +313,7 @@ public final class SubsonicSource implements MusicSource {
         m.year = a.optInt("year");
         m.durationMs = a.optLong("duration") * 1000L;
         m.artKey = Json.str(a, "coverArt");
+        m.added = Dates.parseIso(Json.str(a, "created"));
         return m;
     }
 

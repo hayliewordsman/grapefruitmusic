@@ -61,6 +61,9 @@ public interface MusicSource {
     /** Makes a new playlist holding tracks (from this source). Blocking. */
     void createPlaylist(String name, List<MediaItem> tracks) throws IOException;
 
+    /** Deletes one of its playlists (the songs stay). Blocking. */
+    void deletePlaylist(MediaItem playlist) throws IOException;
+
     /**
      * Changes a playlist: renames it (name not null), sets its description (description not
      * null), and removes tracks (as loaded by tracks(), identified by their entryId). Blocking.

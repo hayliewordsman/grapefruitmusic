@@ -14,6 +14,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.grapefruitmusic.R;
+import com.grapefruitmusic.data.PlaylistMeta;
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.source.DownloadedSource;
@@ -184,6 +185,11 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
     }
 
     @Override
+    void onPlaylistsChanged() {
+        refresh(true);
+    }
+
+    @Override
     public void onDownloadsChanged() {
         if (Sources.get(getActivity()).current() instanceof DownloadedSource) refresh(true);
     }
@@ -203,10 +209,19 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
             showRecent();
         }
         final int gen = ++generation;
+        final PlaylistMeta meta = PlaylistMeta.get(getActivity());
         bg(new com.grapefruitmusic.util.Bg.Work<List<MediaItem>>() {
             @Override
             public List<MediaItem> run() throws Exception {
-                return s.recentAlbums(20);
+                List<MediaItem> albums = s.recentAlbums(20);
+                List<MediaItem> playlists;
+                try {
+                    playlists = meta.apply(s.playlists());
+                } catch (Exception e) {
+                    // Albums alone, rather than nothing.
+                    playlists = null;
+                }
+                return com.grapefruitmusic.util.Lists.recentlyAdded(albums, playlists, 20);
             }
         }, new com.grapefruitmusic.util.Bg.Done<List<MediaItem>>() {
             @Override

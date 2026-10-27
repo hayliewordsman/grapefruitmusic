@@ -185,7 +185,8 @@ public final class LocalSource implements MusicSource {
      */
     private List<MediaItem> albumsFromSongs(String extra, String[] args, String order) throws IOException {
         Cursor c = media(new String[]{MediaStore.Audio.Media.ALBUM_ID, MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.YEAR}, extra, args, order);
+                MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.YEAR, MediaStore.Audio.Media.DATE_ADDED},
+                extra, args, order);
         Map<String, MediaItem> albums = new LinkedHashMap<String, MediaItem>();
         try {
             while (c.moveToNext()) {
@@ -202,6 +203,8 @@ public final class LocalSource implements MusicSource {
                 }
                 m.count++;
                 m.year = Math.max(m.year, c.getInt(3));
+                // Added when its newest song was (MediaStore counts in seconds).
+                m.added = Math.max(m.added, c.getLong(4) * 1000L);
             }
         } finally {
             c.close();
@@ -245,12 +248,14 @@ public final class LocalSource implements MusicSource {
 
     @Override
     public List<MediaItem> playlists() throws IOException {
-        Cursor c = query(PLAYLISTS, new String[]{MediaStore.Audio.Playlists._ID, MediaStore.Audio.Playlists.NAME},
-                null, null, MediaStore.Audio.Playlists.NAME);
+        Cursor c = query(PLAYLISTS, new String[]{MediaStore.Audio.Playlists._ID, MediaStore.Audio.Playlists.NAME,
+                MediaStore.Audio.Playlists.DATE_ADDED}, null, null, MediaStore.Audio.Playlists.NAME);
         List<MediaItem> out = new ArrayList<MediaItem>();
         try {
             while (c.moveToNext()) {
-                out.add(new MediaItem(MediaItem.PLAYLIST, ID, c.getString(0), c.getString(1)));
+                MediaItem m = new MediaItem(MediaItem.PLAYLIST, ID, c.getString(0), c.getString(1));
+                m.added = c.getLong(2) * 1000L;
+                out.add(m);
             }
         } finally {
             c.close();
@@ -433,6 +438,17 @@ public final class LocalSource implements MusicSource {
         }
         if (created == null) throw new IOException("This phone didn't let Grapefruit make a playlist");
         addMembers(ContentUris.parseId(created), tracks);
+    }
+
+    @Override
+    public void deletePlaylist(MediaItem playlist) throws IOException {
+        int deleted;
+        try {
+            deleted = resolver.delete(ContentUris.withAppendedId(PLAYLISTS, Long.parseLong(playlist.id)), null, null);
+        } catch (RuntimeException e) {
+            throw new IOException("This device didn't let Grapefruit delete the playlist");
+        }
+        if (deleted == 0) throw new IOException("This device didn't let Grapefruit delete the playlist");
     }
 
     @Override
