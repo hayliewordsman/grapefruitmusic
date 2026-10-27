@@ -24,6 +24,7 @@ import com.grapefruitmusic.R;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.radio.Radio;
 import com.grapefruitmusic.radio.RadioArt;
+import com.grapefruitmusic.radio.StationText;
 import com.grapefruitmusic.ui.AppIcon;
 import com.grapefruitmusic.ui.MainActivity;
 import com.grapefruitmusic.ui.widget.Icons;
@@ -175,6 +176,14 @@ public final class PlaybackService extends Service implements Player.Listener, R
             text2 = text.equals(freq) ? "FM Radio" : freq;
             playing = radio.wantsToPlay();
             metadataKey = "radio|" + title + "|" + text;
+        } else if (item.live) {
+            loadArt(item);
+            String[] lines = StationText.nowPlaying(item.title, item.artist, player.liveTitle());
+            title = lines[0];
+            text = lines[1];
+            text2 = "Internet Radio";
+            playing = player.wantsToPlay();
+            metadataKey = item.key() + "|" + title + "|" + text;
         } else {
             loadArt(item);
             title = item.title;
@@ -184,7 +193,8 @@ public final class PlaybackService extends Service implements Player.Listener, R
             metadataKey = item.key();
         }
 
-        Notification n = buildNotification(title, text, text2, playing, onRadio);
+        // A live station stops rather than pauses, and steps between stations, like FM.
+        Notification n = buildNotification(title, text, text2, playing, onRadio || item.live);
         if (playing) {
             startForeground(NOTIFICATION_ID, n);
             foreground = true;
@@ -200,9 +210,10 @@ public final class PlaybackService extends Service implements Player.Listener, R
             metadataFor = metadataKey;
             RemoteControlClient.MetadataEditor ed = remote.editMetadata(true);
             ed.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, title);
-            ed.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, onRadio ? text : item.artist);
-            ed.putString(MediaMetadataRetriever.METADATA_KEY_ALBUM, onRadio ? text2 : item.album);
-            if (!onRadio) ed.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, item.durationMs);
+            boolean live = onRadio || item.live;
+            ed.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, live ? text : item.artist);
+            ed.putString(MediaMetadataRetriever.METADATA_KEY_ALBUM, live ? text2 : item.album);
+            if (!live) ed.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, item.durationMs);
             if (art != null) {
                 // The lock screen recycles bitmaps it's given, so hand it a copy.
                 Bitmap copy = art.copy(Bitmap.Config.ARGB_8888, false);

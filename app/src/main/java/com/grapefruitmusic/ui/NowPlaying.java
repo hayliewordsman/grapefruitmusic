@@ -31,6 +31,7 @@ import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
 import com.grapefruitmusic.radio.Radio;
 import com.grapefruitmusic.radio.RadioArt;
+import com.grapefruitmusic.radio.StationText;
 import com.grapefruitmusic.ui.widget.ArtworkView;
 import com.grapefruitmusic.ui.widget.DragFrame;
 import com.grapefruitmusic.ui.widget.IconView;
@@ -95,6 +96,8 @@ final class NowPlaying {
     private final IconView prev;
     private final IconView next;
     private final View times;
+    /** In the song position's place while a live station plays. */
+    private final TextView liveLabel;
     private final View tunerRow;
     private final TuningDial dial;
     private final View musicButtons;
@@ -124,6 +127,8 @@ final class NowPlaying {
     private String queueAnchorKey;
     /** Showing the radio (not the music queue). */
     private boolean radioMode;
+    /** A live internet station is playing (no position; stop, not pause). */
+    private boolean liveMode;
     private String radioArtKey;
 
     // Dragging a song in Up Next by its handle. The list's data stays put while dragging: the
@@ -281,6 +286,13 @@ final class NowPlaying {
         });
         scrubber.setColors(separator, secondary, secondary);
         scrubber.setThumb(3.5f, 9, false);
+        liveLabel = Ui.text(a, 12, R.attr.gfAccent, true);
+        liveLabel.setText("\u25cf  LIVE");
+        liveLabel.setGravity(Gravity.CENTER);
+        liveLabel.setVisibility(View.GONE);
+        ViewGroup scrubberRow = (ViewGroup) scrubber.getParent();
+        scrubberRow.addView(liveLabel, scrubberRow.indexOfChild(scrubber) + 1,
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(a, 30)));
         volume.setColors(separator, secondary, Ui.color(a, R.attr.gfKnob));
         volume.setThumb(8, 10, true);
         prev.setIcon(Icons.PREVIOUS);
@@ -737,7 +749,33 @@ final class NowPlaying {
         artist.setSelected(on);
         trackKey = null;
         radioArtKey = null;
+        // Live mode is worked out afresh for the next song or station.
+        liveMode = false;
+        liveLabel.setVisibility(View.GONE);
+        btnLyrics.setVisibility(View.VISIBLE);
+        btnShuffle.setVisibility(View.VISIBLE);
+        btnRepeat.setVisibility(View.VISIBLE);
         showKaraokeSlider();
+    }
+
+    /** Switches the controls between songs and a live internet station. */
+    private void setLiveMode(boolean on) {
+        liveMode = on;
+        if (on && mode == MODE_LYRICS) setMode(MODE_ART);
+        scrubber.setVisibility(on ? View.GONE : View.VISIBLE);
+        times.setVisibility(on ? View.GONE : View.VISIBLE);
+        liveLabel.setVisibility(on ? View.VISIBLE : View.GONE);
+        // No lyrics, shuffle or repeat for a station.
+        btnLyrics.setVisibility(on ? View.GONE : View.VISIBLE);
+        btnShuffle.setVisibility(on ? View.GONE : View.VISIBLE);
+        btnRepeat.setVisibility(on ? View.GONE : View.VISIBLE);
+        card.setDragLimit(on ? liveLabel : scrubber);
+        prev.setContentDescription(on ? "Previous station" : "Previous");
+        next.setContentDescription(on ? "Next station" : "Next");
+        play.setContentDescription(on ? "Play or stop the station" : "Play or pause");
+        artist.setEllipsize(on ? android.text.TextUtils.TruncateAt.MARQUEE : android.text.TextUtils.TruncateAt.END);
+        artist.setMarqueeRepeatLimit(-1);
+        artist.setSelected(on);
     }
 
     private void updateRadio() {
@@ -772,6 +810,7 @@ final class NowPlaying {
 
     /** Leaves the text alone when it's the same (so the radio text keeps scrolling). */
     private static void setText(TextView t, String text) {
+        if (text == null) text = "";
         if (!text.equals(t.getText().toString())) t.setText(text);
     }
 
@@ -805,14 +844,25 @@ final class NowPlaying {
             if (open) close();
             return;
         }
-        title.setText(item.title);
-        String line = item.artist != null ? item.artist : "";
-        if (item.album != null) line = line.length() == 0 ? item.album : line + " — " + item.album;
-        artist.setText(line);
-        smallTitle.setText(item.title);
-        smallArtist.setText(line);
+        if (item.live != liveMode) setLiveMode(item.live);
+        String heading;
+        String line;
+        if (item.live) {
+            String[] lines = StationText.nowPlaying(item.title, item.artist, player.liveTitle());
+            heading = lines[0];
+            line = player.isBuffering() ? "Tuning in\u2026" : lines[1];
+        } else {
+            heading = item.title;
+            line = item.artist != null ? item.artist : "";
+            if (item.album != null) line = line.length() == 0 ? item.album : line + " — " + item.album;
+        }
+        // Unchanged text is left alone, so a long station line keeps scrolling.
+        setText(title, heading);
+        setText(artist, line);
+        setText(smallTitle, heading);
+        setText(smallArtist, line);
         boolean playing = player.wantsToPlay();
-        play.setIcon(playing ? Icons.PAUSE : Icons.PLAY);
+        play.setIcon(playing ? (item.live ? Icons.STOP : Icons.PAUSE) : Icons.PLAY);
         btnShuffle.setColor(player.isShuffle() ? accent : secondary);
         btnRepeat.setIcon(player.repeatMode() == Player.REPEAT_ONE ? Icons.REPEAT_ONE : Icons.REPEAT);
         btnRepeat.setColor(player.repeatMode() == Player.REPEAT_OFF ? secondary : accent);
@@ -864,6 +914,13 @@ final class NowPlaying {
 
     private void loadLyrics(final MediaItem item) {
         final String key = item.key();
+        if (item.live) {
+            lyrics = null;
+            lyricsLoading = false;
+            lyricsAdapter.setLyrics(null);
+            showMode();
+            return;
+        }
         lyrics = null;
         lyricsLoading = true;
         lyricIndex = -2;
@@ -941,7 +998,7 @@ final class NowPlaying {
                 volume.setValue(audio.getStreamVolume(stream));
             }
         }
-        if (radioMode || player.current() == null) return;
+        if (radioMode || liveMode || player.current() == null) return;
         long pos = player.positionMs();
         long dur = player.durationMs();
         scrubber.setMax(dur);

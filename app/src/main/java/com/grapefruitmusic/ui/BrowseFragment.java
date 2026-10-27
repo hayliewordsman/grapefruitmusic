@@ -297,6 +297,8 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
                     Notice.showLong(app, describe(error, s));
                     return;
                 }
+                // Recently Added lists new playlists too.
+                PlaylistMeta.changed();
                 items = result;
                 loadedMeta = PlaylistMeta.version();
                 show();

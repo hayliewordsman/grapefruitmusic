@@ -7,6 +7,7 @@ import com.grapefruitmusic.data.PlaylistMeta;
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
+import com.grapefruitmusic.radio.MyStations;
 import com.grapefruitmusic.source.DownloadedSource;
 import com.grapefruitmusic.source.JellyfinSource;
 import com.grapefruitmusic.source.MusicSource;
@@ -31,7 +32,9 @@ final class TrackActions {
         final List<String> labels = new ArrayList<String>();
         final List<Runnable> actions = new ArrayList<Runnable>();
 
-        if (item.kind == MediaItem.TRACK) {
+        if (item.kind == MediaItem.TRACK && item.live) {
+            stationActions(c, player, item, labels, actions);
+        } else if (item.kind == MediaItem.TRACK) {
             labels.add("Play Next");
             actions.add(new Runnable() {
                 @Override
@@ -162,6 +165,39 @@ final class TrackActions {
                     }
                 })
                 .show();
+    }
+
+    /** An internet radio station: queue it, keep it in My Stations or let it go. */
+    private static void stationActions(final Context c, final Player player, final MediaItem station,
+                                       List<String> labels, List<Runnable> actions) {
+        labels.add("Play Next");
+        actions.add(new Runnable() {
+            @Override
+            public void run() {
+                player.playNext(station);
+            }
+        });
+        labels.add("Add to Up Next");
+        actions.add(new Runnable() {
+            @Override
+            public void run() {
+                player.addToQueue(station);
+            }
+        });
+        final MyStations mine = MyStations.get(c);
+        final boolean kept = mine.contains(station);
+        labels.add(kept ? "Remove from My Stations" : "Add to My Stations");
+        actions.add(new Runnable() {
+            @Override
+            public void run() {
+                if (kept) {
+                    mine.remove(station);
+                } else {
+                    mine.add(station);
+                    Notice.show(c, "Added to My Stations");
+                }
+            }
+        });
     }
 
     /** Delete Playlist: asks first, then deletes it from its source (the songs stay). */

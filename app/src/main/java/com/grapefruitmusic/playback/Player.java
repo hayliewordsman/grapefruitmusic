@@ -83,6 +83,11 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     /** A song Grapefruit's own engine couldn't play; Android's plays it, without effects. */
     private String effectsFailedKey;
 
+    // A live station: what it says is playing, and how often it's dropped out lately.
+    private String liveTitle;
+    private int liveDrops;
+    private long liveSince;
+
     public static synchronized Player get(Context context) {
         if (instance == null) instance = new Player(context.getApplicationContext());
         return instance;
@@ -141,7 +146,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         if (engine == null || item == null) return;
         engine.setEffects(effects());
         boolean want = wantsEffects(item);
-        if (want != engine.hasEffects()) load(playWhenReady, positionMs());
+        if (want != engine.hasEffects()) load(playWhenReady, item.live ? 0 : positionMs());
     }
 
     private boolean wantsEffects(MediaItem item) {
@@ -176,6 +181,19 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         if (preset != Equalizer.CUSTOM) return Equalizer.curve(preset);
         float[] custom = Prefs.customEq();
         return custom != null && custom.length == Equalizer.BANDS ? custom : new float[Equalizer.BANDS];
+    }
+
+    // ---- Live radio ----
+
+    /** Is the current item a live station (no length, no seeking; stop rather than pause)? */
+    public boolean isLive() {
+        MediaItem c = current();
+        return c != null && c.live;
+    }
+
+    /** What the live station playing says is on ("Artist - Song"), or null. */
+    public String liveTitle() {
+        return isLive() ? liveTitle : null;
     }
 
     // ---- Recently played ----
@@ -418,7 +436,14 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     public void pause() {
         playWhenReady = false;
         pausedByFocusLoss = false;
-        if (engine != null && prepared && engine.isPlaying()) engine.pause();
+        if (isLive()) {
+            // A paused stream falls behind and gets cut off: stop, and tune in afresh to resume.
+            // What was on is no longer known.
+            release();
+            liveTitle = null;
+        } else if (engine != null && prepared && engine.isPlaying()) {
+            engine.pause();
+        }
         if (wifiLock.isHeld()) wifiLock.release();
         changed();
     }
@@ -438,6 +463,11 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     /** Restarts the track if more than 3 seconds in, otherwise goes back one. */
     public void previous() {
         if (order.isEmpty()) return;
+        if (isLive() && position > 0) {
+            position--;
+            load(playWhenReady);
+            return;
+        }
         if (positionMs() > 3000 || position == 0) {
             seekTo(0);
             return;
@@ -447,7 +477,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     public void seekTo(long ms) {
-        if (engine != null && prepared) {
+        if (engine != null && prepared && !isLive()) {
             engine.seekTo((int) ms);
             changed();
         }
@@ -461,6 +491,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         }
         loadedItem = null;
         loadedItemStarted = false;
+        liveTitle = null;
         release();
         queue.clear();
         order.clear();
@@ -495,6 +526,10 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
             history.add(loadedItem);
             saveHistory();
         }
+        if (item != loadedItem) {
+            liveTitle = null;
+            liveDrops = 0;
+        }
         loadedItem = item;
         loadedItemStarted = false;
         if (item == null) {
@@ -515,6 +550,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 prepared = true;
                 buffering = false;
                 consecutiveErrors = 0;
+                liveSince = android.os.SystemClock.elapsedRealtime();
                 if (startAtMs > 0) e.seekTo((int) startAtMs);
                 startAtMs = 0;
                 if (playWhenReady && !measuring) {
@@ -527,6 +563,10 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
             @Override
             public void onCompletion(Engine e) {
                 if (e != engine) return;
+                if (item.live) {
+                    reconnect(item);
+                    return;
+                }
                 if (repeat == REPEAT_ONE) {
                     e.seekTo(0);
                     e.start();
@@ -543,6 +583,11 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
             public void onError(Engine e, String what) {
                 if (e != engine) return;
                 Log.w(TAG, "playback error (" + what + ") for " + item.title);
+                if (item.live && prepared) {
+                    // It was playing: the station dropped out, rather than can't be played.
+                    reconnect(item);
+                    return;
+                }
                 if (e.hasEffects()) {
                     // Grapefruit's engine can't play this one: Android's plays it, without effects.
                     effectsFailedKey = item.key();
@@ -578,7 +623,11 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 MusicSource source = Sources.get(context).byId(item.sourceId);
                 StreamRequest req = source != null ? source.stream(item, Prefs.streamQuality()) : null;
                 if (req == null) throw new IOException("This song is no longer available");
-                player.setDataSource(StreamProxy.get().register(req.url, req.headers, volumeMatch.captureFor(item)));
+                if (item.live) {
+                    player.setDataSource(StreamProxy.get().registerLive(req.url, req.headers, titlesFor(player)));
+                } else {
+                    player.setDataSource(StreamProxy.get().register(req.url, req.headers, volumeMatch.captureFor(item)));
+                }
                 wifiLock.acquire();
                 buffering = true;
             }
@@ -594,6 +643,44 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         changed();
     }
 
+    /** Shows what the station says is on, while this engine is the one playing. */
+    private StreamProxy.TitleListener titlesFor(final Engine player) {
+        return new StreamProxy.TitleListener() {
+            @Override
+            public void onTitle(final String title) {
+                Bg.main(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (engine != player) return;
+                        if (title == null ? liveTitle == null : title.equals(liveTitle)) return;
+                        liveTitle = title;
+                        changed();
+                    }
+                });
+            }
+        };
+    }
+
+    /** A live station's stream ended (the connection dropped): tune in again, a few times. */
+    private void reconnect(final MediaItem item) {
+        // A good long listen since the last drop starts the count again.
+        if (android.os.SystemClock.elapsedRealtime() - liveSince > 60000) liveDrops = 0;
+        if (++liveDrops > 3) {
+            failed(item, "\u201c" + item.title + "\u201d stopped broadcasting");
+            return;
+        }
+        final boolean play = playWhenReady;
+        release();
+        buffering = true;
+        changed();
+        Bg.mainDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (current() == item && engine == null) load(play);
+            }
+        }, 1000);
+    }
+
     private File localFile(MediaItem item) {
         if (item.path != null) {
             File f = new File(item.path);
@@ -607,7 +694,8 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         boolean wasPlaying = playWhenReady;
         release();
         consecutiveErrors++;
-        if (consecutiveErrors < Math.min(5, order.size()) && position + 1 < order.size()) {
+        // A station that won't play isn't skipped for another one: the listener picks.
+        if (!item.live && consecutiveErrors < Math.min(5, order.size()) && position + 1 < order.size()) {
             position++;
             final boolean play = wasPlaying;
             Bg.mainDelayed(new Runnable() {

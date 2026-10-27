@@ -39,10 +39,18 @@ public final class StreamProxy {
         void complete();
     }
 
+    /** Hears what a live stream says is playing. */
+    public interface TitleListener {
+        /** The station's current title ("Artist - Song"), or null. Called on a relay thread. */
+        void onTitle(String title);
+    }
+
     private static final class Target {
         final String url;
         final Map<String, String> headers;
         final Capture capture;
+        /** A live stream: song titles taken out, no ranges. Null for files. */
+        TitleListener live;
         /** Bytes saved so far, all from the start of the stream without gaps. */
         long captured;
         boolean capturing;
@@ -87,6 +95,21 @@ public final class StreamProxy {
             targets.put(token, new Target(url, headers == null ? new HashMap<String, String>() : headers, capture));
         }
         return "http://127.0.0.1:" + server.getLocalPort() + "/s/" + token;
+    }
+
+    /**
+     * Like register, for a live radio stream: SHOUTcast's replies are made plain HTTP, and the
+     * song titles the station sends go to titles instead of into the sound.
+     */
+    public String registerLive(String url, Map<String, String> headers, TitleListener titles) throws IOException {
+        ensureStarted();
+        String token = Hashes.randomHex(8);
+        Target t = new Target(url, headers == null ? new HashMap<String, String>() : headers, null);
+        t.live = titles;
+        synchronized (targets) {
+            targets.put(token, t);
+        }
+        return "http://127.0.0.1:" + server.getLocalPort() + "/l/" + token;
     }
 
     public synchronized void ensureStarted() throws IOException {
@@ -135,13 +158,18 @@ public final class StreamProxy {
             String path = parts.length > 1 ? parts[1] : "/";
             Target target;
             synchronized (targets) {
-                target = path.startsWith("/s/") ? targets.get(path.substring(3)) : null;
+                // "/s/" for files, "/l/" for live streams (the same either way to the relay).
+                target = path.startsWith("/s/") || path.startsWith("/l/") ? targets.get(path.substring(3)) : null;
             }
             OutputStream out = new BufferedOutputStream(client.getOutputStream(), 16384);
             if (target == null) {
                 out.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
                         .getBytes("US-ASCII"));
                 out.flush();
+                return;
+            }
+            if (target.live != null) {
+                serveLive(target, method, out);
                 return;
             }
 
@@ -218,6 +246,53 @@ public final class StreamProxy {
             } catch (IOException ignored) {
                 // Already closed.
             }
+        }
+    }
+
+    /** Relays a live stream from its start (there are no ranges in a live stream). */
+    private static void serveLive(Target target, String method, OutputStream out) throws IOException {
+        LiveStream stream;
+        try {
+            stream = LiveStream.open(target.url, target.headers);
+        } catch (IOException e) {
+            Log.w(TAG, "can't open live stream: " + e.getMessage());
+            out.write("HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+                    .getBytes("US-ASCII"));
+            out.flush();
+            return;
+        }
+        try {
+            if (stream.code >= 400 || stream.body == null) {
+                out.write(("HTTP/1.1 " + stream.code + " " + reason(stream.code)
+                        + "\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").getBytes("US-ASCII"));
+                out.flush();
+                return;
+            }
+            // An audio type lets Android's player start at once, rather than fill its cache first.
+            String type = stream.contentType();
+            if (type == null || !type.toLowerCase(java.util.Locale.US).startsWith("audio/")) type = "audio/mpeg";
+            out.write(("HTTP/1.1 200 OK\r\nContent-Type: " + type + "\r\nConnection: close\r\n\r\n")
+                    .getBytes("US-ASCII"));
+            out.flush();
+            if ("HEAD".equalsIgnoreCase(method)) return;
+            int interval = stream.metaInterval();
+            final TitleListener titles = target.live;
+            IcyFilter filter = interval > 0 ? new IcyFilter(interval, new IcyFilter.Listener() {
+                @Override
+                public void onTitle(String title) {
+                    titles.onTitle(title);
+                }
+            }) : null;
+            byte[] buf = new byte[16384];
+            int n;
+            while ((n = stream.body.read(buf)) > 0) {
+                if (filter != null) filter.write(buf, 0, n, out);
+                else out.write(buf, 0, n);
+                // Live: hand the player each piece as it comes.
+                out.flush();
+            }
+        } finally {
+            stream.close();
         }
     }
 

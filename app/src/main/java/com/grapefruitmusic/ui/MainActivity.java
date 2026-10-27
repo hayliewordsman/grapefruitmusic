@@ -21,6 +21,7 @@ import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
 import com.grapefruitmusic.radio.Radio;
 import com.grapefruitmusic.radio.RadioArt;
+import com.grapefruitmusic.radio.StationText;
 import com.grapefruitmusic.ui.widget.ArtworkView;
 import com.grapefruitmusic.ui.widget.IconView;
 import com.grapefruitmusic.ui.widget.Icons;
@@ -326,8 +327,9 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             miniArt.setTag(R.id.art_request, null);
             miniArt.setBitmap(RadioArt.of(radio.frequency(), radio.name(), Ui.dp(this, 44)));
         } else if (item != null) {
-            miniTitle.setText(item.title);
-            miniPlay.setIcon(player.wantsToPlay() ? Icons.PAUSE : Icons.PLAY);
+            miniTitle.setText(item.live ? StationText.nowPlaying(item.title, item.artist, player.liveTitle())[0]
+                    : item.title);
+            miniPlay.setIcon(player.wantsToPlay() ? (item.live ? Icons.STOP : Icons.PAUSE) : Icons.PLAY);
             ArtworkLoader.get(this).into(miniArt, item, Ui.dp(this, 44));
         }
         nowPlaying.update();

@@ -23,6 +23,7 @@ public final class Sources {
 
     private final LocalSource local;
     private final DownloadedSource downloaded;
+    private final InternetRadioSource internetRadio = new InternetRadioSource();
     private final List<Account> accounts = new ArrayList<Account>();
     private volatile List<MusicSource> all = new ArrayList<MusicSource>();
     private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
@@ -93,11 +94,12 @@ public final class Sources {
         return Collections.unmodifiableList(new ArrayList<Account>(accounts));
     }
 
+    /** A source by id: one in all(), or internet radio. */
     public MusicSource byId(String id) {
         for (MusicSource s : all) {
             if (s.id().equals(id)) return s;
         }
-        return null;
+        return InternetRadioSource.ID.equals(id) ? internetRadio : null;
     }
 
     public LocalSource local() {

@@ -8,6 +8,8 @@ import android.util.LruCache;
 
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.net.Http;
+import com.grapefruitmusic.radio.RadioArt;
+import com.grapefruitmusic.source.InternetRadioSource;
 import com.grapefruitmusic.source.MusicSource;
 import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.ui.widget.ArtworkView;
@@ -121,21 +123,37 @@ public final class ArtworkLoader {
         }
         final String sourceId = item.sourceId;
         final String artKey = item.artKey;
+        final String title = item.title;
         pool.execute(new Runnable() {
             @Override
             public void run() {
                 Bitmap result = null;
                 boolean definitive = false;
+                boolean failed = false;
                 try {
                     result = fetch(sourceId, artKey, sizePx);
                     definitive = Http.isOnline(context);
+                } catch (Http.StatusException e) {
+                    // The server says there's none (a station's logo link gone stale, say).
+                    definitive = true;
                 } catch (IOException ignored) {
                     // Treated as "no artwork" for now; retried next time.
+                    failed = true;
                 } catch (OutOfMemoryError e) {
                     memory.evictAll();
+                    failed = true;
+                }
+                if (InternetRadioSource.ID.equals(sourceId)) {
+                    // Stations' logos are often missing or tiny: always a full picture.
+                    try {
+                        result = RadioArt.station(artKey, title, result, sizePx);
+                    } catch (OutOfMemoryError e) {
+                        memory.evictAll();
+                    }
                 }
                 final Bitmap r = result;
-                if (r != null) memory.put(k, r);
+                // A made-up picture after a failed download isn't kept: the logo may come next time.
+                if (r != null && !failed) memory.put(k, r);
                 else if (definitive) missing.put(k, Boolean.TRUE);
                 Bg.main(new Runnable() {
                     @Override

@@ -43,6 +43,10 @@ public class MediaItem implements Serializable {
     public Float replayGain;
     /** When an album was added to the library or a playlist made (ms since 1970), or 0 if unknown. */
     public long added;
+    /** A live stream (an internet radio station): no length, no seeking. */
+    public boolean live;
+    /** Where a live stream plays from. */
+    public String streamUrl;
 
     public MediaItem() {
     }

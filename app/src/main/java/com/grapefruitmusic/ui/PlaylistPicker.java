@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.text.InputType;
 import android.widget.EditText;
 
+import com.grapefruitmusic.data.PlaylistMeta;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.source.MusicSource;
 import com.grapefruitmusic.util.Bg;
@@ -90,6 +91,7 @@ final class PlaylistPicker {
                         }, new Bg.Done<Void>() {
                             @Override
                             public void done(Void result, Exception error) {
+                                if (error == null) PlaylistMeta.changed();
                                 Notice.show(app, error != null ? BaseFragment.describe(error, source)
                                         : "Created “" + name + "”");
                             }

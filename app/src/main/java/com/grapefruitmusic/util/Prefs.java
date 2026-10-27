@@ -136,6 +136,15 @@ public final class Prefs {
         prefs.edit().putInt("radio_frequency", freq).apply();
     }
 
+    /** Whether the Radio tab shows internet radio rather than FM (when there's FM to show). */
+    public static boolean radioShowsInternet() {
+        return prefs.getBoolean("radio_internet", false);
+    }
+
+    public static void setRadioShowsInternet(boolean internet) {
+        prefs.edit().putBoolean("radio_internet", internet).apply();
+    }
+
     /** Saved radio stations, one "frequency<tab>name" a line (see radio.Radio). */
     public static String radioPresets() {
         return prefs.getString("radio_presets", null);

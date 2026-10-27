@@ -41,6 +41,8 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
     private List<MediaItem> recent;
     private String recentFor;
     private String error;
+    /** PlaylistMeta.version() when Recently Added was loaded (it lists playlists too). */
+    private int loadedMeta = -1;
 
     @Override
     String backTitle() {
@@ -201,7 +203,8 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         boolean sameSource = s.id().equals(recentFor);
         // Keep a server's albums; phone and download lists are cheap to re-read (and may have
         // changed, e.g. after removing a download), so refresh those quietly.
-        if (!force && sameSource && recent != null && s.isRemote()) return;
+        boolean playlistsChanged = loadedMeta != PlaylistMeta.version();
+        if (!force && sameSource && recent != null && s.isRemote() && !playlistsChanged) return;
         if (!sameSource) {
             recent = null;
             error = null;
@@ -210,6 +213,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         }
         final int gen = ++generation;
         final PlaylistMeta meta = PlaylistMeta.get(getActivity());
+        loadedMeta = PlaylistMeta.version();
         bg(new com.grapefruitmusic.util.Bg.Work<List<MediaItem>>() {
             @Override
             public List<MediaItem> run() throws Exception {
