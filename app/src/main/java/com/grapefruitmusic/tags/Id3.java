@@ -344,7 +344,8 @@ final class Id3 {
         }
         int nul = s.indexOf('\0');
         if (nul >= 0) s = s.substring(0, nul);
-        return s.replace("﻿", "").trim();
+        // A byte-order mark starting a later value isn't part of the text.
+        return s.replace(String.valueOf((char) 0xfeff), "").trim();
     }
 
     /** "(17)" or "17" (an ID3v1 genre number) as its name; anything else as it is. */
