@@ -1,0 +1,1 @@
+Music player for your own files and Navidrome, Subsonic and Jellyfin servers

@@ -25,6 +25,7 @@ public final class AboutFragment extends BaseFragment {
     static final String DEVELOPER = "Haylie";
     static final String TELEGRAM = "afishinauto";
     static final String PAYPAL = "paypal.me/fishglub";
+    static final String SOURCE = "github.com/hayliewordsman/grapefruitmusic";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
@@ -56,6 +57,12 @@ public final class AboutFragment extends BaseFragment {
                     ViewGroup.LayoutParams.WRAP_CONTENT));
         }
         g.add(hero);
+
+        g.section("License");
+        linkRow(g, "GNU GPL", "Version 3 or later", "https://www.gnu.org/licenses/gpl-3.0.html");
+        linkRow(g, "Source Code", SOURCE, "https://" + SOURCE);
+        g.footer("Grapefruit Music is free software: you can share and change it under the GNU General "
+                + "Public License, version 3 or any later version. It comes with no warranty.");
 
         g.section("Developer");
         g.value("Developer", DEVELOPER, null);

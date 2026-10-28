@@ -7,14 +7,16 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.grapefruitmusic"
+        // From the developer's GitHub Pages address (hayliewordsman.github.io), as F-Droid asks. The
+        // code stays in the com.grapefruitmusic package (namespace above).
+        applicationId "io.github.hayliewordsman.grapefruitmusic"
         // Android 4.2.2 (Jelly Bean MR1).
         minSdk 17
         // Kept below 23 on purpose: Grapefruit Music is built for Android 4.2.2 and uses
         // install-time permissions. Android 14+ refuses to install apps targeting < 23.
         targetSdk 22
-        versionCode 29
-        versionName "3.2.1"
+        versionCode 30
+        versionName "3.2.2"
 
         ndk {
             // Conscrypt ships native code; these are the ABIs Android 4.2.2 phones use.
@@ -40,15 +42,33 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            // Without the release key (forks, pull requests) the debug key still makes an
-            // installable APK, but it can't update copies signed with the release key.
-            signingConfig System.getenv("GRAPEFRUIT_KEYSTORE") ? signingConfigs.release : signingConfigs.debug
+            // Signed with the release key when the build has it. Without it (F-Droid's build server,
+            // forks, pull requests) the release APK is left unsigned, as F-Droid expects; the debug
+            // APK still installs for testing.
+            if (System.getenv("GRAPEFRUIT_KEYSTORE")) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packaging {
+        jniLibs {
+            // Conscrypt's native library goes in exactly as published, never stripped: whether a build
+            // machine happens to have the NDK to strip it must not change the APK (reproducible builds).
+            keepDebugSymbols += "**/libconscrypt_jni.so"
+        }
+    }
+
+    dependenciesInfo {
+        // No dependency list encrypted for Google in the APK: nothing reads it outside Google Play,
+        // and F-Droid asks apps to leave it out.
+        includeInApk = false
+        includeInBundle = false
     }
 
     lint {

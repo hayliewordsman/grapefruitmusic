@@ -9,14 +9,13 @@ Actions and deploys it to GitHub Pages.
 | --- | --- |
 | `config.yml` | The repository's name, description, icon, address and signing-key settings |
 | `config/categories.yml` | The categories apps here can use |
-| `metadata/com.grapefruitmusic.yml` | Grapefruit Music's listing: summary, description, categories, links |
-| `metadata/com.grapefruitmusic/en-US/icon.png` | The listing's icon (512 × 512) |
-| `metadata/com.grapefruitmusic/en-US/changelogs/<versionCode>.txt` | Each version's "What's new" (500 characters at most) |
+| `metadata/io.github.hayliewordsman.grapefruitmusic.yml` | Grapefruit Music's licence, categories and links |
+| `../fastlane/metadata/android/en-US/` | Its name, summary, description, icon (`images/icon.png`) and each version's "What's new" (`changelogs/<versionCode>.txt`, 500 characters at most): the same files f-droid.org reads |
 
 ## How a version gets to F-Droid
 
 1. Raise `versionCode` and `versionName` in `app/build.gradle`, and write
-   `metadata/com.grapefruitmusic/en-US/changelogs/<versionCode>.txt`.
+   `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
 2. Push to the default branch. The workflow builds the release APK, refuses it unless it is
    signed with the permanent app key (SHA-256 `85cac0ef…e795`), publishes it as GitHub release
    `v<versionName>` with the changelog as its notes, then rebuilds the F-Droid repository from
@@ -24,7 +23,7 @@ Actions and deploys it to GitHub Pages.
 3. F-Droid shows the update the next time it refreshes its repositories.
 
 A versionName with alpha, beta or rc in it becomes a GitHub prerelease, which stays out of the
-F-Droid repository. Editing anything in `fdroid/` (or running the workflow by hand: Actions ›
+F-Droid repository. Editing anything in `fdroid/` or `fastlane/` (or running the workflow by hand: Actions ›
 F-Droid repo › Run workflow) redeploys the repository without making a release.
 
 ## One-time setup
@@ -132,8 +131,6 @@ Repositories › + and paste the link (with `?fingerprint=…`).
   Music does for Android 4.2, so F-Droid can't install it there.
 - "What's new" reaches F-Droid apps that read `index-v1`, and every GitHub release. fdroidserver
   2.4 leaves it out of `index-v2` for repositories of prebuilt APKs.
-- The app certificate's name reads "Android Debug": it is the key the very first versions were
-  signed with, kept so updates install over them. Android and F-Droid check its fingerprint, not
-  its name.
-- No licence is listed, because the repository has no LICENSE file yet. Add one, then add
-  `License:` with its SPDX identifier to `metadata/com.grapefruitmusic.yml`.
+- The app certificate's name reads "Android Debug": it is the key Grapefruit has been signed with
+  since version 1.0. Android and F-Droid check its fingerprint, not its name.
+- Grapefruit Music is also being submitted to f-droid.org itself: see `official/README.md`.

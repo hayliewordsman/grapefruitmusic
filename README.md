@@ -162,7 +162,11 @@ To keep music on the phone, use files you own (for example DRM-free purchases) o
 - **The APK:** download `grapefruit-music-<version>.apk` from the latest release on the repository's *Releases*
   page. On the phone, allow *Unknown sources* (Settings › Security) and install it.
 - **A test build:** every push's APKs are in the `grapefruit-music-apk` artifact of its **Build APK** run, under
-  the *Actions* tab.
+  the *Actions* tab (`app-debug.apk` installs; the release APK is signed only when the build has the release key).
+
+Since 3.2.2 the app ID is `io.github.hayliewordsman.grapefruitmusic` (it was `com.grapefruitmusic`), so Android
+treats it as a new app: install it beside an older Grapefruit, sign in to your servers and download offline music
+again, then uninstall the old one.
 
 The app targets Android 4.2.2 and uses install-time permissions (`targetSdk 22`). It installs on Android 4.2–13.
 Android 14 and later block apps built for old Android versions; to install there anyway, use
@@ -209,10 +213,27 @@ the repository. Builds use it when these are set:
 - `GRAPEFRUIT_KEYSTORE_PASSWORD`: its password
 
 On GitHub, add two repository secrets (Settings › Secrets and variables › Actions): `GRAPEFRUIT_KEYSTORE_BASE64`
-(the keystore, base64-encoded) and `GRAPEFRUIT_KEYSTORE_PASSWORD`. Without them, the release APK is signed with
-a debug key and won't install over a release-signed copy.
+(the keystore, base64-encoded) and `GRAPEFRUIT_KEYSTORE_PASSWORD`. Without them (F-Droid's build server, forks,
+pull requests) the release APK is left unsigned (`app-release-unsigned.apk`); `app-debug.apk` still installs.
+
+Release builds are reproducible: Conscrypt's native library is packaged unstripped and the APK carries no
+dependency blob, so the same commit builds the same APK on GitHub Actions and on F-Droid's build server, which
+lets f-droid.org ship the APK signed with this key.
 
 ## About
 
 Copyright © 2026 MagicFlute LLC. Developer: Haylie (Telegram [@afishinauto](https://t.me/afishinauto)).
 Donate: [paypal.me/fishglub](https://paypal.me/fishglub).
+
+## License
+
+Grapefruit Music is free software: you can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
+any later version (`GPL-3.0-or-later`; see [LICENSE](LICENSE)). It is distributed in the hope that it will be
+useful, but without any warranty; without even the implied warranty of merchantability or fitness for a particular
+purpose.
+
+It includes [Conscrypt](https://github.com/google/conscrypt) (Apache License 2.0). Karaoke Mode's model
+(`app/src/main/assets/karaoke.bin`) was trained by `tools/karaoke` on the MUSDB18 7-second excerpts (CC BY 4.0)
+and Free Music Archive songs under CC BY, CC0 or public domain, credited in `app/src/main/assets/karaoke_credits.txt`
+and in the app.

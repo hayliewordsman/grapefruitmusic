@@ -1,0 +1,17 @@
+# Grapefruit Music's listing in its own F-Droid repository. The name, summary, description, icon
+# and each version's "What's new" come from fastlane/metadata/android/en-US (the same files
+# f-droid.org reads), which the workflow copies beside this file as
+# io.github.hayliewordsman.grapefruitmusic/en-US before running fdroid update. It also adds
+# CurrentVersionCode (the newest APK in the repo). Categories are defined in config/categories.yml.
+
+License: GPL-3.0-or-later
+Categories:
+  - Local Media Player
+  - Online Media Player
+  - Radio
+
+AuthorName: MagicFlute LLC
+SourceCode: https://github.com/hayliewordsman/grapefruitmusic
+IssueTracker: https://github.com/hayliewordsman/grapefruitmusic/issues
+Changelog: https://github.com/hayliewordsman/grapefruitmusic/releases
+Donate: https://paypal.me/fishglub

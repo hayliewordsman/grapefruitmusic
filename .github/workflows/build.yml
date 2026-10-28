@@ -28,7 +28,7 @@ jobs:
             echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/grapefruit.p12"
             echo "GRAPEFRUIT_KEYSTORE=$RUNNER_TEMP/grapefruit.p12" >> "$GITHUB_ENV"
           else
-            echo "No release key; the release APK is signed with the debug key."
+            echo "No release key; the release APK is left unsigned."
           fi
 
       - name: Build, test and lint

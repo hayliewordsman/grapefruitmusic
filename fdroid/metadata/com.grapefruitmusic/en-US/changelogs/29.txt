@@ -1,3 +1,0 @@
-Mono Audio now keeps everything in the song: reverb, room sound, wide stereo parts and instruments panned to one side no longer cancel out or go quiet when left and right are mixed. Sound in the middle comes out exactly as before, and switching Mono Audio on or off mid-song doesn't click.
-
-Back now returns to the same spot in Settings (and About, Developer Options, the Radio tab and the other scrolling pages) instead of jumping to the top.
