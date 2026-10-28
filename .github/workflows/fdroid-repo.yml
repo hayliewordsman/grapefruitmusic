@@ -91,11 +91,13 @@ jobs:
           COMMIT: ${{ steps.version.outputs.commit }}
         run: git checkout --quiet "$COMMIT"
 
+      # JDK 21, as f-droid.org's build recipe installs: javac's output differs between JDK versions, and
+      # f-droid.org only ships this APK if its own build of the same commit matches it.
       - uses: actions/setup-java@v5
         if: steps.version.outputs.exists == 'false'
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - name: App signing key
         if: steps.version.outputs.exists == 'false'
@@ -190,7 +192,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - name: Install fdroidserver
         run: |
