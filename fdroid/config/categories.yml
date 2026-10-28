@@ -1,0 +1,8 @@
+# The categories apps in this repository can use (metadata/*.yml "Categories:"), with the names
+# F-Droid clients show for them.
+Multimedia:
+  name: Multimedia
+  description: Music, video and audio players and tools
+Internet:
+  name: Internet
+  description: Apps that stream from or connect to services online

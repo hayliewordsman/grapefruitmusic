@@ -156,10 +156,13 @@ To keep music on the phone, use files you own (for example DRM-free purchases) o
 
 ## Install
 
-1. Open the latest successful run of the **Build APK** workflow under the repository's *Actions* tab and download
-   the `grapefruit-music-apk` artifact.
-2. On the phone, allow *Unknown sources* (Settings › Security) and install `app-release.apk`
-   (or `app-debug.apk`).
+- **F-Droid:** add Grapefruit Music's own repository, https://hayliewordsman.github.io/grapefruitmusic/repo (the
+  link with its key fingerprint is in the summary of the latest **F-Droid repo** workflow run), and F-Droid keeps
+  the app up to date. How the repository is built and set up: [`fdroid/README.md`](fdroid/README.md).
+- **The APK:** download `grapefruit-music-<version>.apk` from the latest release on the repository's *Releases*
+  page. On the phone, allow *Unknown sources* (Settings › Security) and install it.
+- **A test build:** every push's APKs are in the `grapefruit-music-apk` artifact of its **Build APK** run, under
+  the *Actions* tab.
 
 The app targets Android 4.2.2 and uses install-time permissions (`targetSdk 22`). It installs on Android 4.2–13.
 Android 14 and later block apps built for old Android versions; to install there anyway, use

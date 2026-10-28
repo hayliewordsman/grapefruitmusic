@@ -1,0 +1,278 @@
+name: F-Droid repo
+
+# Publishes Grapefruit Music as an F-Droid repository on GitHub Pages:
+# https://hayliewordsman.github.io/grapefruitmusic/repo (setting it up: fdroid/README.md).
+#
+# 1. Release: if the default branch's version (app/build.gradle) has no GitHub release yet, builds
+#    the release APK, checks it is signed with the permanent app key, and publishes it as release
+#    v<versionName>. An alpha, beta or rc versionName makes a prerelease, which stays out of the
+#    F-Droid repo.
+# 2. Publish: puts every release's APK into the F-Droid repo, signs the repo's index with the repo
+#    key (fdroid/config.yml) and deploys it to GitHub Pages.
+#
+# It runs when the version, the listing (fdroid/) or this file changes on the default branch, and
+# by hand: Actions › F-Droid repo › Run workflow.
+
+on:
+  push:
+    branches: ["**"] # not tags
+    paths:
+      - app/build.gradle
+      - fdroid/**
+      - .github/workflows/fdroid-repo.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One run at a time, and a run that has started always finishes (no half-published repo).
+concurrency:
+  group: fdroid-repo
+  cancel-in-progress: false
+
+env:
+  # SHA-256 of the certificate every Grapefruit Music release is signed with. An APK signed with
+  # anything else is never released or published.
+  APP_CERT_SHA256: 85cac0ef72777211d99e2bbe4ad09a3815c6cf313e5fa18f401ec8da0ae0e795
+  FDROIDSERVER_VERSION: 2.4.5
+
+jobs:
+  release:
+    name: Release the APK
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # creates the release and its tag
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Read the version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          code=$(sed -n 's/^ *versionCode \([0-9][0-9]*\) *$/\1/p' app/build.gradle)
+          name=$(sed -n 's/^ *versionName "\([^"]*\)" *$/\1/p' app/build.gradle)
+          if [ -z "$code" ] || [ -z "$name" ]; then
+            echo "::error file=app/build.gradle::Can't read versionCode and versionName."
+            exit 1
+          fi
+          tag="v${name// /-}"
+          if [[ "${name,,}" =~ (alpha|beta|rc) ]]; then prerelease=true; else prerelease=false; fi
+          if out=$(gh release view "$tag" --json tagName 2>&1); then
+            exists=true
+          elif grep -q "release not found" <<<"$out"; then
+            exists=false
+          else
+            echo "$out"
+            exit 1
+          fi
+          echo "Version $name ($code), tag $tag, prerelease $prerelease, already released: $exists"
+          {
+            echo "code=$code"
+            echo "name=$name"
+            echo "tag=$tag"
+            echo "prerelease=$prerelease"
+            echo "exists=$exists"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v5
+        if: steps.version.outputs.exists == 'false'
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: App signing key
+        if: steps.version.outputs.exists == 'false'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.GRAPEFRUIT_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.GRAPEFRUIT_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::error::Add the GRAPEFRUIT_KEYSTORE_BASE64 and GRAPEFRUIT_KEYSTORE_PASSWORD secrets (see fdroid/README.md): releases must carry the permanent app key."
+            exit 1
+          fi
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/grapefruit.p12"
+          echo "GRAPEFRUIT_KEYSTORE=$RUNNER_TEMP/grapefruit.p12" >> "$GITHUB_ENV"
+
+      - name: Build and test
+        if: steps.version.outputs.exists == 'false'
+        env:
+          GRAPEFRUIT_KEYSTORE_PASSWORD: ${{ secrets.GRAPEFRUIT_KEYSTORE_PASSWORD }}
+        run: ./gradlew --no-daemon assembleRelease testDebugUnitTest
+
+      - name: Remove the app signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/grapefruit.p12"
+
+      - name: Check the APK
+        id: apk
+        if: steps.version.outputs.exists == 'false'
+        env:
+          CODE: ${{ steps.version.outputs.code }}
+          NAME: ${{ steps.version.outputs.name }}
+        run: |
+          apk=app/build/outputs/apk/release/app-release.apk
+          tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          certs=$("$tools/apksigner" verify --print-certs --min-sdk-version 17 "$apk")
+          signers=$(grep -c '^Signer #[0-9]* certificate SHA-256 digest:' <<<"$certs" || true)
+          digest=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' <<<"$certs")
+          if [ "$signers" != 1 ] || [ "$digest" != "$APP_CERT_SHA256" ]; then
+            echo "$certs"
+            echo "::error::The APK isn't signed with the permanent app key ($APP_CERT_SHA256)."
+            exit 1
+          fi
+          badging=$("$tools/aapt2" dump badging "$apk" | head -n 1)
+          if ! grep -qF "package: name='com.grapefruitmusic' versionCode='$CODE' versionName='$NAME'" <<<"$badging"; then
+            echo "$badging"
+            echo "::error::The APK's package or version doesn't match app/build.gradle."
+            exit 1
+          fi
+          out="$RUNNER_TEMP/grapefruit-music-${NAME// /-}.apk"
+          cp "$apk" "$out"
+          echo "path=$out" >> "$GITHUB_OUTPUT"
+
+      - name: Publish the release
+        if: steps.version.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK: ${{ steps.apk.outputs.path }}
+          CODE: ${{ steps.version.outputs.code }}
+          NAME: ${{ steps.version.outputs.name }}
+          TAG: ${{ steps.version.outputs.tag }}
+          PRERELEASE: ${{ steps.version.outputs.prerelease }}
+        run: |
+          # The release notes are the F-Droid changelog for this version, when there is one.
+          notes=fdroid/metadata/com.grapefruitmusic/en-US/changelogs/$CODE.txt
+          if [ -f "$notes" ]; then
+            cp "$notes" "$RUNNER_TEMP/notes.md"
+          else
+            echo "Grapefruit Music $NAME" > "$RUNNER_TEMP/notes.md"
+          fi
+          flags=()
+          if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
+          gh release create "$TAG" "$APK" --target "$GITHUB_SHA" --title "Grapefruit Music $NAME" \
+            --notes-file "$RUNNER_TEMP/notes.md" "${flags[@]}"
+
+  publish:
+    name: Publish the F-Droid repo
+    needs: release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write # deploys to GitHub Pages
+      id-token: write # proves the deployment comes from this workflow
+      actions: read # deploy-pages reads the uploaded site
+    # The repo key's secrets live in this environment, which only the default branch can use.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}repo/
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install fdroidserver
+        run: |
+          python3 -m venv "$RUNNER_TEMP/fdroidserver"
+          "$RUNNER_TEMP/fdroidserver/bin/pip" install --quiet "fdroidserver==$FDROIDSERVER_VERSION"
+          echo "$RUNNER_TEMP/fdroidserver/bin" >> "$GITHUB_PATH"
+
+      - name: Collect the released APKs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p fdroid/repo "$RUNNER_TEMP/apks"
+          gh release list --exclude-drafts --exclude-pre-releases --limit 1000 \
+            --json tagName,publishedAt --jq '.[] | "\(.tagName) \(.publishedAt)"' > "$RUNNER_TEMP/releases.txt"
+          tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          while read -r tag published; do
+            dir="$RUNNER_TEMP/apks/$tag"
+            if ! gh release download "$tag" --pattern '*.apk' --dir "$dir"; then
+              echo "::warning::Release $tag has no APK, so it's left out."
+              continue
+            fi
+            for apk in "$dir"/*.apk; do
+              digest=$("$tools/apksigner" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')
+              if [ "$digest" != "$APP_CERT_SHA256" ]; then
+                echo "::error::$tag: $(basename "$apk") isn't signed with the permanent app key."
+                exit 1
+              fi
+              # The day the release came out becomes the version's date in F-Droid.
+              touch -d "$published" "$apk"
+              mv -n "$apk" fdroid/repo/
+            done
+          done < "$RUNNER_TEMP/releases.txt"
+          if ! ls fdroid/repo/*.apk >/dev/null 2>&1; then
+            echo "::error::No release has an APK yet."
+            exit 1
+          fi
+          ls -l fdroid/repo
+
+      - name: Point the listing at the newest version
+        run: |
+          # Clients suggest this version, and its changelogs/<versionCode>.txt is the "What's new".
+          code=$(python -c 'import sys; from fdroidserver import common; print(max(common.get_apk_id(f)[1] for f in sys.argv[1:]))' fdroid/repo/*.apk)
+          printf '\nCurrentVersionCode: %s\n' "$code" >> fdroid/metadata/com.grapefruitmusic.yml
+
+      - name: Repo signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::error::Add the FDROID_KEYSTORE_BASE64 and FDROID_KEYSTORE_PASSWORD secrets to the github-pages environment (see fdroid/README.md)."
+            exit 1
+          fi
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > fdroid/keystore.p12
+          chmod 600 fdroid/config.yml
+
+      - name: Build and sign the repo index
+        working-directory: fdroid
+        env:
+          FDROID_KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
+        run: |
+          cp ../docs/icon.png icon.png
+          fdroid update --rename-apks --use-date-from-apk --pretty
+          jarsigner -verify repo/entry.jar | grep -q '^jar verified'
+          fingerprint=$(keytool -list -v -keystore keystore.p12 -storetype PKCS12 -alias grapefruit-repo \
+            -storepass:env FDROID_KEYSTORE_PASSWORD | sed -n 's/^[[:space:]]*SHA256: //p' | tr -d ':')
+          {
+            echo "### F-Droid repo"
+            echo
+            echo "Add it in F-Droid with this link (the fingerprint pins the repo signing key):"
+            echo
+            echo "https://hayliewordsman.github.io/grapefruitmusic/repo?fingerprint=$fingerprint"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the repo signing key
+        if: always()
+        run: rm -f fdroid/keystore.p12
+
+      - name: Assemble the site
+        run: |
+          site="$RUNNER_TEMP/site"
+          mkdir -p "$site"
+          cp -r fdroid/repo "$site/repo"
+          if [ -d fdroid/archive ]; then cp -r fdroid/archive "$site/archive"; fi
+          # The front page sends visitors to the repo's own page (QR code and "add to F-Droid" link).
+          cat > "$site/index.html" <<'EOF'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>Grapefruit Music F-Droid repo</title>
+          <meta http-equiv="refresh" content="0; url=repo/">
+          <a href="repo/">Grapefruit Music F-Droid repo</a>
+          EOF
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ runner.temp }}/site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

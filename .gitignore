@@ -10,3 +10,10 @@ captures/
 *.p12
 *.jks
 __pycache__/
+# F-Droid repository, built by .github/workflows/fdroid-repo.yml
+fdroid/repo/
+fdroid/archive/
+fdroid/tmp/
+fdroid/srclibs/
+fdroid/icon.png
+fdroid/keystore.p12

@@ -1,0 +1,28 @@
+# Settings for Grapefruit Music's F-Droid repository, read by `fdroid update` (fdroidserver),
+# which .github/workflows/fdroid-repo.yml runs in this folder. The app's own listing (summary,
+# description, categories, icon) is in metadata/. See README.md here for setting it up.
+
+repo_url: https://hayliewordsman.github.io/grapefruitmusic/repo
+repo_name: Grapefruit Music
+# A file in this folder (the workflow copies docs/icon.png here); shown beside the repo's name.
+repo_icon: icon.png
+repo_description: >-
+  Releases of Grapefruit Music, a music player for your own files, Navidrome, Subsonic
+  and Jellyfin servers and internet radio, made for Android 4.2.2 and later. Built from
+  https://github.com/hayliewordsman/grapefruitmusic and signed by its developer.
+
+# Keep the three newest versions in the main repo; older ones move to the archive repo.
+archive_older: 3
+archive_url: https://hayliewordsman.github.io/grapefruitmusic/archive
+archive_name: Grapefruit Music Archive
+archive_icon: icon.png
+archive_description: >-
+  Older releases of Grapefruit Music, for going back to a previous version.
+
+# The repo signing key, which signs the index (never the APKs: those carry the app's own key).
+# The keystore is written here by the workflow from the FDROID_KEYSTORE_BASE64 secret, and the
+# password comes from the FDROID_KEYSTORE_PASSWORD secret; neither is ever committed.
+keystore: keystore.p12
+repo_keyalias: grapefruit-repo
+keystorepass: {env: FDROID_KEYSTORE_PASSWORD}
+keypass: {env: FDROID_KEYSTORE_PASSWORD}
