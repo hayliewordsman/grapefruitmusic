@@ -1,0 +1,48 @@
+Categories:
+  - Local Media Player
+  - Online Media Player
+  - Radio
+License: GPL-3.0-or-later
+AuthorName: MagicFlute LLC
+SourceCode: https://github.com/hayliewordsman/grapefruitmusic
+IssueTracker: https://github.com/hayliewordsman/grapefruitmusic/issues
+Changelog: https://github.com/hayliewordsman/grapefruitmusic/releases
+Donate: https://paypal.me/fishglub
+
+AutoName: Grapefruit Music
+
+RepoType: git
+Repo: https://github.com/hayliewordsman/grapefruitmusic.git
+Binaries: https://github.com/hayliewordsman/grapefruitmusic/releases/download/v%v/grapefruit-music-%v.apk
+
+Builds:
+  - versionName: 3.2.2
+    versionCode: 30
+    commit: b8652117f0551408059038cfd4c69dcbcdf08e23
+    subdir: app
+    sudo:
+      - apt-get update
+      - apt-get install -y -t trixie openjdk-21-jdk-headless
+      - update-alternatives --auto java
+    gradle:
+      - yes
+    scanignore:
+      - app/src/main/assets/karaoke.bin
+    scandelete:
+      - app/src/test/resources
+
+AllowedAPKSigningKeys: 85cac0ef72777211d99e2bbe4ad09a3815c6cf313e5fa18f401ec8da0ae0e795
+
+MaintainerNotes: |-
+  app/src/main/assets/karaoke.bin (SHA-256 c5f4e22b06c0e3ce7011b0daa290f1ff7ff22b2a3c1b24cb7fa2ba3495cf1e3a)
+  is the weights of Karaoke Mode's small vocal-removal network: data read by
+  VocalRemover.Model.read, not executable code. tools/karaoke in the source repository trained it on
+  the MUSDB18 7-second excerpts (CC BY 4.0, https://zenodo.org/records/3270814) and Free Music
+  Archive songs under CC BY, CC0 or public domain, split into voice and backing by Demucs (MIT);
+  tools/karaoke/README.md explains how to rebuild it, and the app credits the songs.
+  app/src/test/resources holds unit-test fixtures only.
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^v[0-9.]+$
+CurrentVersion: 3.2.2
+CurrentVersionCode: 30
