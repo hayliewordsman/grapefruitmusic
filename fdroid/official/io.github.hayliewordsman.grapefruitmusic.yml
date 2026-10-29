@@ -18,7 +18,7 @@ Binaries: https://github.com/hayliewordsman/grapefruitmusic/releases/download/v%
 Builds:
   - versionName: 3.2.2
     versionCode: 30
-    commit: b8652117f0551408059038cfd4c69dcbcdf08e23
+    commit: 7c1cfe27ffd23a23f463702fe731f0ae8705655e
     subdir: app
     sudo:
       - apt-get update

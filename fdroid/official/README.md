@@ -12,26 +12,26 @@ here; submitting means proposing that file to fdroiddata.
 - **Store listing** in `fastlane/metadata/android/en-US`: name, summary, description, icon and
   changelogs.
 - **The recipe builds with F-Droid's own tool.** `fdroid build` (fdroidserver 2.4.5, Gradle 8.14.3,
-  JDK 21) builds version 3.2.2 from commit `b8652117`, and `fdroid lint` and `fdroid rewritemeta`
+  JDK 21) builds version 3.2.2 from commit `7c1cfe27`, and `fdroid lint` and `fdroid rewritemeta`
   are clean. F-Droid's scanner finds no non-free code, trackers or extra signing blocks. The one
   binary it flags, Karaoke Mode's model `app/src/main/assets/karaoke.bin`, is let through with
   `scanignore` and explained under `MaintainerNotes`, as other apps that ship model data do. The
   unit-test fixtures are removed before the build (`scandelete`).
 - **Reproducible builds.** The same commit builds byte-for-byte the same APK on GitHub Actions as in
-  an F-Droid-style build (checked on 2026-10-28). `fdroid build` then compared its own APK with one
-  signed by the app key and accepted it ("compared built binary to supplied reference binary
-  successfully"). So f-droid.org will ship the APK signed with Grapefruit's own key: copies from
+  an F-Droid-style build. `fdroid build` of the recipe downloaded the APK of GitHub release v3.2.2,
+  compared its own build with it and accepted it ("compared built binary to supplied reference
+  binary successfully", checked on 2026-10-29). So f-droid.org will ship the APK signed with Grapefruit's own key: copies from
   f-droid.org, GitHub releases and Grapefruit's own F-Droid repository all update each other.
   F-Droid only allows this at submission time; it can't be added later.
 
 ## Before submitting
 
-1. **Publish release v3.2.2 on GitHub.** f-droid.org downloads the signed APK from
-   `https://github.com/hayliewordsman/grapefruitmusic/releases/download/v3.2.2/grapefruit-music-3.2.2.apk`
-   (the recipe's `Binaries:` line) to compare with its own build. The **F-Droid repo** workflow makes
-   that release once the repository has the app key's secrets (`../README.md`, step 1). Then run it:
-   Actions › F-Droid repo › Run workflow. Its release job builds and tags commit `b8652117`, the
-   commit the recipe names.
+1. **Release v3.2.2 is published** (done 2026-10-29, tagged on commit `7c1cfe27`, the commit the
+   recipe names). f-droid.org downloads its signed APK
+   (`https://github.com/hayliewordsman/grapefruitmusic/releases/download/v3.2.2/grapefruit-music-3.2.2.apk`,
+   the recipe's `Binaries:` line) to compare with its own build. Later versions are released the same
+   way: the **F-Droid repo** workflow builds, signs and tags the commit it runs on when the version
+   in `app/build.gradle` goes up.
 2. **Wait for the three-month mark.** F-Droid's inclusion policy (quality point 6, which the
    merge-request template points out) asks for at least three months of development before
    inclusion, unless the app already has users or the author maintains other F-Droid apps. This
