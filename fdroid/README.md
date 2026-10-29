@@ -3,13 +3,16 @@
 Grapefruit Music can be installed and updated through F-Droid from its own repository:
 **https://hayliewordsman.github.io/grapefruitmusic/repo**. The workflow
 [`.github/workflows/fdroid-repo.yml`](../.github/workflows/fdroid-repo.yml) builds it on GitHub
-Actions and deploys it to GitHub Pages.
+Actions and deploys it to GitHub Pages, with a front page to share,
+**https://hayliewordsman.github.io/grapefruitmusic/**: its *Add to F-Droid* button adds the
+repository in F-Droid or Droid-ify in one tap, and it links the APK for devices too old for them.
 
 | File | What it is |
 | --- | --- |
 | `config.yml` | The repository's name, description, icon, address and signing-key settings |
 | `config/categories.yml` | The categories apps here can use |
 | `metadata/io.github.hayliewordsman.grapefruitmusic.yml` | Grapefruit Music's licence, categories and links |
+| `site/index.html`, `site/render.py` | The front page, filled in with the repository fingerprint and the newest APK when the workflow runs |
 | `../fastlane/metadata/android/en-US/` | Its name, summary, description, icon (`images/icon.png`) and each version's "What's new" (`changelogs/<versionCode>.txt`, 500 characters at most): the same files f-droid.org reads |
 
 ## How a version gets to F-Droid
@@ -117,9 +120,9 @@ step 2 before you share the link.
 
 ### 6. Add the repository in F-Droid
 
-Open the link from the summary on the device, or scan the QR code on
-https://hayliewordsman.github.io/grapefruitmusic/repo/, or in F-Droid go to Settings ›
-Repositories › + and paste the link (with `?fingerprint=…`).
+Open https://hayliewordsman.github.io/grapefruitmusic/ on the device and tap **Add to F-Droid**
+(on a computer, the page shows a QR code to scan). Or open the link from the summary on the
+device, or in F-Droid go to Settings › Repositories › + and paste the link (with `?fingerprint=…`).
 
 ## Good to know
 

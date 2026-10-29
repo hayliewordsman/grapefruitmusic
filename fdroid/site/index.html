@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grapefruit Music</title>
+<meta name="description" content="{{SUMMARY}}">
+<link rel="icon" href="icon.png">
+<style>
+  :root {
+    --bg: #FFF3EC; --surface: #FFFAF6; --text: #4A1622; --muted: #9A5C63;
+    --line: #F0C6B8; --accent: #E83850; --on-accent: #FFFFFF; --soft: #FADCCF;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1C0A0E; --surface: #2E1218; --text: #FFF1E8; --muted: #B88A8F;
+      --line: #4A2229; --accent: #FF7F6B; --on-accent: #1C0A0E; --soft: #421C24;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 16px 48px;
+    background: #FFF3EC; background: var(--bg); color: #4A1622; color: var(--text);
+    font: 17px/1.5 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  main { max-width: 34rem; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 24px; }
+  header img { width: 112px; height: 112px; border-radius: 26px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 14px 0 6px; }
+  h2 { font-size: 19px; margin: 0 0 8px; }
+  p { margin: 0 0 12px; }
+  .lede { color: #9A5C63; color: var(--muted); margin: 0; }
+  .card {
+    background: #FFFAF6; background: var(--surface); border: 1px solid #F0C6B8; border: 1px solid var(--line);
+    border-radius: 18px; padding: 20px; margin-bottom: 16px;
+  }
+  .button {
+    display: block; text-align: center; text-decoration: none; font-weight: 700; font-size: 20px;
+    padding: 16px 20px; border-radius: 14px; border: 0; width: 100%; cursor: pointer;
+    background: #E83850; background: var(--accent); color: #FFFFFF; color: var(--on-accent);
+  }
+  .button.secondary {
+    font-size: 18px; background: #FADCCF; background: var(--soft); color: #4A1622; color: var(--text);
+  }
+  .note { color: #9A5C63; color: var(--muted); font-size: 15px; text-align: center; margin: 10px 0 0; }
+  ol { margin: 16px 0 0; padding-left: 1.4em; }
+  li { margin-bottom: 6px; }
+  details { margin-top: 16px; border-top: 1px solid #F0C6B8; border-top: 1px solid var(--line); padding-top: 12px; }
+  summary { cursor: pointer; font-weight: 600; }
+  details.attention summary { color: #E83850; color: var(--accent); }
+  details p { margin-top: 10px; }
+  a { color: #E83850; color: var(--accent); }
+  .copy { display: flex; gap: 8px; margin-top: 8px; }
+  .copy input {
+    flex: 1; min-width: 0; font: 14px ui-monospace, Menlo, Consolas, monospace; padding: 10px;
+    border-radius: 10px; border: 1px solid #F0C6B8; border: 1px solid var(--line);
+    background: #FFF3EC; background: var(--bg); color: inherit;
+  }
+  .copy button {
+    font: inherit; font-weight: 600; padding: 10px 14px; border-radius: 10px; border: 0; cursor: pointer;
+    background: #FADCCF; background: var(--soft); color: inherit;
+  }
+  .qr { display: none; text-align: center; }
+  .qr img { width: 180px; height: 180px; background: #FFFFFF; padding: 10px; border-radius: 12px; }
+  @media (min-width: 720px) and (hover: hover) { .qr { display: block; } }
+  footer { color: #9A5C63; color: var(--muted); font-size: 13px; text-align: center; margin-top: 28px; }
+  footer code { word-break: break-all; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icon.png" alt="">
+    <h1>Grapefruit Music</h1>
+    <p class="lede">{{SUMMARY}}</p>
+  </header>
+
+  <section class="card">
+    <a class="button" id="add" href="fdroidrepos://hayliewordsman.github.io/grapefruitmusic/repo?fingerprint={{FINGERPRINT}}">Add to F-Droid</a>
+    <p class="note">Works with F-Droid and Droid-ify, on Android 6 to 13. Android 14 and newer can't install
+      Grapefruit Music: it's made for older phones and tablets.</p>
+    <ol>
+      <li>Tap <strong>Add to F-Droid</strong>.</li>
+      <li>Your app store asks to add Grapefruit's repository: tap <strong>Add</strong>.</li>
+      <li>Search for <strong>Grapefruit Music</strong> and tap <strong>Install</strong>. Updates arrive there from then on.</li>
+    </ol>
+    <details id="help">
+      <summary>Nothing happened?</summary>
+      <p>You need F-Droid or Droid-ify on this phone first. Get F-Droid from
+        <a href="https://f-droid.org/">f-droid.org</a>, open it once, then come back and tap the button again.</p>
+      <p>Or add it by hand: in F-Droid, go to Settings › Repositories › <strong>+</strong> and paste this address.</p>
+      <div class="copy">
+        <input id="address" readonly aria-label="Repository address"
+          value="https://hayliewordsman.github.io/grapefruitmusic/repo?fingerprint={{FINGERPRINT}}">
+        <button type="button" id="copy">Copy</button>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>Older phone or tablet?</h2>
+    <p>F-Droid and Droid-ify need Android 6 or newer. On Android 4.2 to 5.1, download the app and open the
+      file to install it (allow installing from unknown sources if your phone asks).</p>
+    <a class="button secondary" href="repo/{{APK}}">Download Grapefruit Music {{VERSION}}</a>
+    <p class="note">APK, {{APK_SIZE}} MB</p>
+  </section>
+
+  <section class="card qr">
+    <img src="qr.svg" alt="QR code for this page">
+    <p class="note">On a computer? Scan this with your phone's camera to open this page there.</p>
+  </section>
+
+  <footer>
+    <p>Repository fingerprint: <code>{{FINGERPRINT}}</code><br>
+      F-Droid checks it, so the app can only come from Grapefruit Music's developer.</p>
+    <p><a href="https://github.com/hayliewordsman/grapefruitmusic">Source code</a> ·
+      <a href="repo/">Repository details</a> ·
+      Free software under the GNU GPL, version 3 or later</p>
+  </footer>
+</main>
+<script>
+  (function () {
+    var help = document.getElementById('help');
+    // If no app store opened (the page is still showing a moment later), offer help.
+    document.getElementById('add').addEventListener('click', function () {
+      setTimeout(function () {
+        if (!document.hidden) {
+          help.open = true;
+          help.className = 'attention';
+        }
+      }, 2000);
+    });
+    document.getElementById('copy').addEventListener('click', function () {
+      var field = document.getElementById('address');
+      var button = this;
+      function done() { button.textContent = 'Copied'; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(field.value).then(done, function () {
+          field.select();
+        });
+      } else {
+        field.select();
+        try { if (document.execCommand('copy')) done(); } catch (e) {}
+      }
+    });
+  })();
+</script>
+</body>
+</html>

@@ -156,9 +156,9 @@ To keep music on the phone, use files you own (for example DRM-free purchases) o
 
 ## Install
 
-- **F-Droid:** add Grapefruit Music's own repository, https://hayliewordsman.github.io/grapefruitmusic/repo (the
-  link with its key fingerprint is in the summary of the latest **F-Droid repo** workflow run), and F-Droid keeps
-  the app up to date. How the repository is built and set up: [`fdroid/README.md`](fdroid/README.md).
+- **F-Droid:** open https://hayliewordsman.github.io/grapefruitmusic/ on the phone and tap **Add to F-Droid**. It
+  adds Grapefruit Music's own repository in F-Droid or Droid-ify, which then keep the app up to date. How the
+  repository is built and set up: [`fdroid/README.md`](fdroid/README.md).
 - **The APK:** download `grapefruit-music-<version>.apk` from the latest release on the repository's *Releases*
   page. On the phone, allow *Unknown sources* (Settings › Security) and install it.
 - **A test build:** every push's APKs are in the `grapefruit-music-apk` artifact of its **Build APK** run, under
