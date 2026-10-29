@@ -133,9 +133,10 @@ jobs:
           apk=app/build/outputs/apk/release/app-release.apk
           tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
           certs=$("$tools/apksigner" verify --print-certs --min-sdk-version 17 "$apk")
-          signers=$(grep -c '^Signer #[0-9]* certificate SHA-256 digest:' <<<"$certs" || true)
-          digest=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' <<<"$certs")
-          if [ "$signers" != 1 ] || [ "$digest" != "$APP_CERT_SHA256" ]; then
+          # Every signer's certificate, however this apksigner labels it ("Signer #1", "V2 Signer"):
+          # there must be exactly one, the app key.
+          digests=$(sed -n 's/^.*certificate SHA-256 digest: *//p' <<<"$certs" | sort -u)
+          if [ "$digests" != "$APP_CERT_SHA256" ]; then
             echo "$certs"
             echo "::error::The APK isn't signed with the permanent app key ($APP_CERT_SHA256)."
             exit 1
@@ -215,8 +216,8 @@ jobs:
               continue
             fi
             for apk in "$dir"/*.apk; do
-              digest=$("$tools/apksigner" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')
-              if [ "$digest" != "$APP_CERT_SHA256" ]; then
+              digests=$("$tools/apksigner" verify --print-certs "$apk" | sed -n 's/^.*certificate SHA-256 digest: *//p' | sort -u)
+              if [ "$digests" != "$APP_CERT_SHA256" ]; then
                 echo "::error::$tag: $(basename "$apk") isn't signed with the permanent app key."
                 exit 1
               fi
