@@ -4,10 +4,10 @@ name: F-Droid repo
 # https://hayliewordsman.github.io/grapefruitmusic/repo (setting it up: fdroid/README.md).
 #
 # 1. Release: if the default branch's version (app/build.gradle) has no GitHub release yet, builds
-#    the release APK from the commit that set that version, checks it is signed with the permanent
-#    app key, and publishes it as release v<versionName> tagged on that commit (the commit f-droid.org
-#    builds too, so its build can be compared with this APK: reproducible builds). An alpha, beta or rc versionName makes a prerelease, which stays out of the
-#    F-Droid repo.
+#    the release APK from the commit this run is on, checks it is signed with the permanent app key,
+#    and publishes it as release v<versionName> tagged on that commit. f-droid.org's recipe builds
+#    the same commit and compares its APK with this one (reproducible builds). An alpha, beta or rc
+#    versionName makes a prerelease, which stays out of the F-Droid repo.
 # 2. Publish: puts every release's APK into the F-Droid repo, signs the repo's index with the repo
 #    key (fdroid/config.yml) and deploys it to GitHub Pages.
 #
@@ -48,8 +48,6 @@ jobs:
       contents: write # creates the release and its tag
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0 # to find the commit that set the version
 
       - name: Read the version
         id: version
@@ -72,24 +70,14 @@ jobs:
             echo "$out"
             exit 1
           fi
-          # The release is the commit that last changed versionCode: later commits that don't raise
-          # the version (documentation, the F-Droid recipe) aren't part of it.
-          commit=$(git log -1 --format=%H -G '^ *versionCode ' -- app/build.gradle)
-          echo "Version $name ($code) from $commit, tag $tag, prerelease $prerelease, already released: $exists"
+          echo "Version $name ($code), tag $tag, prerelease $prerelease, already released: $exists"
           {
-            echo "commit=$commit"
             echo "code=$code"
             echo "name=$name"
             echo "tag=$tag"
             echo "prerelease=$prerelease"
             echo "exists=$exists"
           } >> "$GITHUB_OUTPUT"
-
-      - name: Check out the version's commit
-        if: steps.version.outputs.exists == 'false'
-        env:
-          COMMIT: ${{ steps.version.outputs.commit }}
-        run: git checkout --quiet "$COMMIT"
 
       # JDK 21, as f-droid.org's build recipe installs: javac's output differs between JDK versions, and
       # f-droid.org only ships this APK if its own build of the same commit matches it.
@@ -159,7 +147,6 @@ jobs:
           CODE: ${{ steps.version.outputs.code }}
           NAME: ${{ steps.version.outputs.name }}
           TAG: ${{ steps.version.outputs.tag }}
-          COMMIT: ${{ steps.version.outputs.commit }}
           PRERELEASE: ${{ steps.version.outputs.prerelease }}
         run: |
           # The release notes are the F-Droid changelog for this version, when there is one.
@@ -171,7 +158,9 @@ jobs:
           fi
           flags=()
           if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
-          gh release create "$TAG" "$APK" --target "$COMMIT" --title "Grapefruit Music $NAME" \
+          # Tagged on the commit this run built. (GitHub doesn't let a workflow's token tag an older
+          # commit whose workflow files differ from the current ones.)
+          gh release create "$TAG" "$APK" --target "$GITHUB_SHA" --title "Grapefruit Music $NAME" \
             --notes-file "$RUNNER_TEMP/notes.md" "${flags[@]}"
 
   publish:
