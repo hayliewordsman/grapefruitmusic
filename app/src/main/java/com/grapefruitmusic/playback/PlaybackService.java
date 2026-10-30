@@ -49,6 +49,7 @@ public final class PlaybackService extends Service implements Player.Listener, R
     private static final int ART_SIZE = 256;
 
     private Player player;
+    private com.grapefruitmusic.compat.ModernSession modern;
     private Radio radio;
     private AudioManager audio;
     private NotificationManager notifications;
@@ -76,14 +77,17 @@ public final class PlaybackService extends Service implements Player.Listener, R
         super.onCreate();
         player = Player.get(this);
         radio = Radio.get(this);
+        if (Build.VERSION.SDK_INT >= 21) modern = new com.grapefruitmusic.compat.ModernSession(this, player, radio);
         audio = (AudioManager) getSystemService(AUDIO_SERVICE);
         notifications = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        registerReceiver(noisy, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
+        if (android.os.Build.VERSION.SDK_INT >= 33)
+            registerReceiver(noisy, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), Context.RECEIVER_NOT_EXPORTED);
+        else registerReceiver(noisy, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
 
         mediaButtons = new ComponentName(this, MediaButtonReceiver.class);
         audio.registerMediaButtonEventReceiver(mediaButtons);
         Intent buttonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON).setComponent(mediaButtons);
-        remote = new RemoteControlClient(PendingIntent.getBroadcast(this, 0, buttonIntent, 0));
+        remote = new RemoteControlClient(PendingIntent.getBroadcast(this, 0, buttonIntent, com.grapefruitmusic.compat.Platform.pendingFlags(0)));
         remote.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
                 | RemoteControlClient.FLAG_KEY_MEDIA_PLAY | RemoteControlClient.FLAG_KEY_MEDIA_PAUSE
                 | RemoteControlClient.FLAG_KEY_MEDIA_NEXT | RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS);
@@ -95,6 +99,9 @@ public final class PlaybackService extends Service implements Player.Listener, R
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        foreground = true;
+        startForeground(1, com.grapefruitmusic.compat.Platform.notification(this, "playback", "Playback")
+                .setSmallIcon(R.drawable.ic_stat_grapefruit).setContentTitle("Grapefruit Music").build());
         String action = intent != null ? intent.getAction() : null;
         if (ACTION_CLOSE.equals(action)) {
             close();
@@ -194,6 +201,7 @@ public final class PlaybackService extends Service implements Player.Listener, R
         }
 
         // A live station stops rather than pauses, and steps between stations, like FM.
+        if (modern != null) modern.update(title, text, text2, playing);
         Notification n = buildNotification(title, text, text2, playing, onRadio || item.live);
         if (playing) {
             startForeground(NOTIFICATION_ID, n);
@@ -242,7 +250,7 @@ public final class PlaybackService extends Service implements Player.Listener, R
 
     private PendingIntent action(String action, int requestCode) {
         Intent i = new Intent(this, PlaybackService.class).setAction(action);
-        return PendingIntent.getService(this, requestCode, i, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getService(this, requestCode, i, com.grapefruitmusic.compat.Platform.pendingFlags(PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     private Notification buildNotification(String title, String text, String text2, boolean playing, boolean onRadio) {
@@ -256,7 +264,7 @@ public final class PlaybackService extends Service implements Player.Listener, R
         fill(small, title, line, playing, onRadio);
         fill(big, title, text, playing, onRadio);
         big.setTextViewText(R.id.n_text2, text2);
-        Notification.Builder b = new Notification.Builder(this)
+        Notification.Builder b = com.grapefruitmusic.compat.Platform.notification(this, "playback", "Playback")
                 .setSmallIcon(R.drawable.ic_stat_grapefruit)
                 .setContentTitle(title)
                 .setContentText(line)
@@ -264,8 +272,9 @@ public final class PlaybackService extends Service implements Player.Listener, R
                 .setOngoing(playing)
                 .setShowWhen(false)
                 .setPriority(Notification.PRIORITY_DEFAULT)
-                .setContentIntent(PendingIntent.getActivity(this, 0, open, PendingIntent.FLAG_UPDATE_CURRENT))
+                .setContentIntent(PendingIntent.getActivity(this, 0, open, com.grapefruitmusic.compat.Platform.pendingFlags(PendingIntent.FLAG_UPDATE_CURRENT)))
                 .setDeleteIntent(action(ACTION_STOP, 5));
+        if (modern != null) modern.style(b);
         Notification n = b.build();
         n.bigContentView = big;
         return n;
@@ -327,6 +336,7 @@ public final class PlaybackService extends Service implements Player.Listener, R
 
     @Override
     public void onDestroy() {
+        if (modern != null) modern.close();
         Bg.cancelMain(radioUpdate);
         player.removeListener(this);
         radio.removeListener(this);

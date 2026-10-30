@@ -30,14 +30,17 @@ final class Segmented extends LinearLayout {
             TextView t = Ui.text(c, 15, R.attr.gfTextPrimary, true);
             t.setText(labels[i]);
             t.setGravity(Gravity.CENTER);
-            t.setPadding(Ui.dp(c, 6), 0, Ui.dp(c, 6), 0);
+            t.setSingleLine(false);
+            t.setMaxLines(2);
+            t.setMinHeight(Ui.dp(c, 48));
+            t.setPadding(Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 6));
             t.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     select(index);
                 }
             });
-            addView(t, new LayoutParams(0, Ui.dp(c, 38), 1));
+            addView(t, new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1));
             segments[i] = t;
         }
         select(initial);

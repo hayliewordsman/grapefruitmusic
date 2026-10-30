@@ -40,6 +40,11 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
     private String query = "";
     private List<MediaItem> results;
     private String statusText;
+    private final List<MediaItem> music = new ArrayList<MediaItem>();
+    private final List<MediaItem> stations = new ArrayList<MediaItem>();
+    private final List<MediaItem> podcasts = new ArrayList<MediaItem>();
+    private final List<String> errors = new ArrayList<String>();
+    private int pending;
     private final Runnable debounced = new Runnable() {
         @Override
         public void run() {
@@ -73,7 +78,7 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
         field.setPadding(Ui.dp(c, 8), Ui.dp(c, 2), 0, Ui.dp(c, 2));
         field.setInputType(InputType.TYPE_CLASS_TEXT);
         field.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
-        field.setHint("Search " + source().name());
+        field.setHint("Music, stations and podcasts");
         box.addView(field, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -117,6 +122,8 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
         adapter = new RowAdapter(c, new RowAdapter.Listener() {
             @Override
             public void onItem(MediaItem item, int index) {
+                if (item.kind == MediaItem.PODCAST) { main().push(PodcastsFragment.show(item)); return; }
+                if (item.live) { StationsFragment.play(getActivity(), java.util.Collections.singletonList(item), 0); return; }
                 MusicSource s = source();
                 if (item.kind == MediaItem.TRACK) {
                     Player p = Player.get(getActivity());
@@ -130,7 +137,9 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
 
             @Override
             public void onLongItem(MediaItem item) {
-                TrackActions.show(SearchFragment.this, item, source());
+                if (item.kind == MediaItem.PODCAST) { main().push(PodcastsFragment.show(item)); return; }
+                MusicSource s = com.grapefruitmusic.source.Sources.get(getActivity()).byId(item.sourceId);
+                if (s != null) TrackActions.show(SearchFragment.this, item, s);
             }
         });
         list.setAdapter(adapter);
@@ -154,6 +163,7 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
 
     @Override
     public void onDestroyView() {
+        generation++;
         rememberScroll(list);
         super.onDestroyView();
     }
@@ -177,25 +187,28 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
             return;
         }
         final MusicSource s = source();
-        statusText = "Searching\u2026";
-        status.setText(statusText);
-        status.setVisibility(View.VISIBLE);
-        bg(new Bg.Work<List<MediaItem>>() {
-            @Override
-            public List<MediaItem> run() throws Exception {
-                return s.search(q);
-            }
-        }, new Bg.Done<List<MediaItem>>() {
-            @Override
-            public void done(List<MediaItem> found, Exception error) {
-                if (gen != generation) return;
-                if (error != null) {
-                    statusText = describe(error, s);
-                } else {
-                    results = found;
-                    statusText = found.isEmpty() ? "No results for \u201c" + q + "\u201d" : null;
-                }
-                show();
+        music.clear(); stations.clear(); podcasts.clear(); errors.clear(); pending = 3;
+        results = new ArrayList<MediaItem>();
+        statusText = "Searching…"; show();
+        provider(gen, "Music", music, () -> s.search(q));
+        provider(gen, "Stations", stations, () -> com.grapefruitmusic.radio.RadioBrowser.search(q));
+        provider(gen, "Podcasts", podcasts, () -> com.grapefruitmusic.podcast.PodcastDirectory.search(q));
+    }
+
+    private void provider(final int gen, final String name, final List<MediaItem> destination,
+                          Bg.Work<List<MediaItem>> work) {
+        bg(work, new Bg.Done<List<MediaItem>>() {
+            @Override public void done(List<MediaItem> found, Exception error) {
+                if (gen != generation || adapter == null || getView() == null) return;
+                pending--;
+                if (error != null) errors.add(name + " unavailable");
+                else if (found != null) destination.addAll(found);
+                results = new ArrayList<MediaItem>();
+                results.addAll(music); results.addAll(stations); results.addAll(podcasts);
+                StringBuilder message = new StringBuilder(pending > 0 ? "Searching…" : "");
+                for (String e : errors) { if (message.length() > 0) message.append(" · "); message.append(e); }
+                if (pending == 0 && results.isEmpty() && errors.isEmpty()) message.append("No results");
+                statusText = message.length() == 0 ? null : message.toString(); show();
             }
         });
     }
@@ -206,7 +219,7 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
         Player.get(getActivity()).addListener(this);
         if (com.grapefruitmusic.tags.SongEdits.apply(results)) show();
         onPlayerChanged();
-        field.setHint("Search " + source().name());
+        field.setHint("Music, stations and podcasts");
     }
 
     @Override

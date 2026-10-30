@@ -35,7 +35,7 @@ public final class MediaButtonReceiver extends BroadcastReceiver {
             default:
                 return;
         }
-        context.startService(new Intent(context, PlaybackService.class).setAction(action));
+        com.grapefruitmusic.compat.Platform.service(context, new Intent(context, PlaybackService.class).setAction(action));
         if (isOrderedBroadcast()) abortBroadcast();
     }
 }

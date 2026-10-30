@@ -133,15 +133,17 @@ final class RowAdapter extends BaseAdapter {
     private void build() {
         rows.clear();
         tracks.clear();
-        int lastKind = -1;
+        String lastSection = null;
         MediaItem[] grid = null;
         int filled = 0;
         for (MediaItem m : items) {
-            if (sections && m.kind != lastKind) {
+            String section = m.kind == MediaItem.ARTIST ? "Artists" : m.kind == MediaItem.ALBUM ? "Albums"
+                    : m.kind == MediaItem.PLAYLIST ? "Playlists" : m.kind == MediaItem.PODCAST ? "Podcasts"
+                    : m.live ? "Stations" : "Songs";
+            if (sections && !section.equals(lastSection)) {
                 grid = null;
-                rows.add(m.kind == MediaItem.ARTIST ? "Artists" : m.kind == MediaItem.ALBUM ? "Albums"
-                        : m.kind == MediaItem.PLAYLIST ? "Playlists" : "Songs");
-                lastKind = m.kind;
+                rows.add(section);
+                lastSection = section;
             }
             if (m.kind == MediaItem.TRACK) tracks.add(m);
             if (this.grid) {
@@ -328,6 +330,8 @@ final class RowAdapter extends BaseAdapter {
 
     static String subtitle(MediaItem m) {
         switch (m.kind) {
+            case MediaItem.PODCAST:
+                return "Podcast" + (m.artist != null && m.artist.length() > 0 ? " · " + m.artist : "");
             case MediaItem.ARTIST:
                 return m.count > 0 ? m.count + (m.count == 1 ? " album" : " albums") : "";
             case MediaItem.ALBUM:

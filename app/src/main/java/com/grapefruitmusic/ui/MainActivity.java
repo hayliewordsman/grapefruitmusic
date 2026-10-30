@@ -40,10 +40,11 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     private static final int TAB_LIBRARY = 0;
     private static final int TAB_PLAYLISTS = 1;
     private static final int TAB_RADIO = 2;
-    private static final int TAB_SEARCH = 3;
-    private static final int TAB_SETTINGS = 4;
-    private static final String[] TAB_NAMES = {"Library", "Playlists", "Radio", "Search", "Settings"};
-    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.PLAYLIST, Icons.RADIO, Icons.SEARCH, Icons.SETTINGS};
+    private static final int TAB_PODCASTS = 3;
+    private static final int TAB_SEARCH = 4;
+    private static final int TAB_SETTINGS = 5;
+    private static final String[] TAB_NAMES = {"Library", "Playlists", "Radio", "Podcasts", "Search", "Settings"};
+    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.PLAYLIST, Icons.RADIO, Icons.HEADPHONES, Icons.SEARCH, Icons.SETTINGS};
 
     /** Grapefruit's open windows (normally one), for the notification's close button. Main thread. */
     private static final Map<MainActivity, Boolean> LIVE = new WeakHashMap<MainActivity, Boolean>();
@@ -80,6 +81,32 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         Ui.applyTheme(this);
         super.onCreate(saved);
         setContentView(R.layout.activity_main);
+        if (android.os.Build.VERSION.SDK_INT >= 35) {
+            findViewById(R.id.root).setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+                @Override public android.view.WindowInsets onApplyWindowInsets(View v, android.view.WindowInsets insets) {
+                    android.graphics.Insets bars = insets.getInsets(android.view.WindowInsets.Type.systemBars()
+                            | android.view.WindowInsets.Type.displayCutout());
+                    v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+                    return insets;
+                }
+            });
+        }
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
+            java.util.List<String> needed = new java.util.ArrayList<String>();
+            String media = android.os.Build.VERSION.SDK_INT >= 33 ? "android.permission.READ_MEDIA_AUDIO"
+                    : "android.permission.READ_EXTERNAL_STORAGE";
+            if (checkSelfPermission(media) != android.content.pm.PackageManager.PERMISSION_GRANTED) needed.add(media);
+            if (android.os.Build.VERSION.SDK_INT >= 33 && checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) needed.add("android.permission.POST_NOTIFICATIONS");
+            if (!needed.isEmpty()) requestPermissions(needed.toArray(new String[needed.size()]), 40);
+        }
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
+            boolean light = Ui.theme(this) == com.grapefruitmusic.util.Prefs.THEME_STARLIGHT
+                    || Ui.theme(this) == com.grapefruitmusic.util.Prefs.THEME_GRAPEFRUIT_LIGHT;
+            int flags = light ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : 0;
+            if (android.os.Build.VERSION.SDK_INT >= 26 && light) flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            getWindow().getDecorView().setSystemUiVisibility(flags);
+        }
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         player = Player.get(this);
         radio = Radio.get(this);
@@ -180,6 +207,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         Fragment root;
         if (index == TAB_PLAYLISTS) root = BrowseFragment.newInstance(null, BrowseFragment.PLAYLISTS, null, null);
         else if (index == TAB_RADIO) root = new RadioFragment();
+        else if (index == TAB_PODCASTS) root = new PodcastsFragment();
         else if (index == TAB_SEARCH) root = new SearchFragment();
         else if (index == TAB_SETTINGS) root = new SettingsFragment();
         else root = new LibraryFragment();
@@ -207,6 +235,9 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     }
 
     private void handleIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra("open_podcasts", false)) {
+            intent.removeExtra("open_podcasts"); showTab(TAB_PODCASTS);
+        }
         if (intent != null && intent.getBooleanExtra(EXTRA_OPEN_NOW_PLAYING, false)) {
             intent.removeExtra(EXTRA_OPEN_NOW_PLAYING);
             if (player.current() != null || radio.inSession()) nowPlaying.openImmediately();
@@ -239,6 +270,13 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     protected void onResume() {
         super.onResume();
         Notice.setSink(this);
+        com.grapefruitmusic.download.Downloads.get(this).startWorker();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode == 40) com.grapefruitmusic.source.Sources.get(this).notifyChanged();
     }
 
     @Override

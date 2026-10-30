@@ -82,7 +82,8 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         top.addView(Ui.separator(c, 16));
 
         rows = new LinearLayout(c);
-        rows.setOrientation(LinearLayout.VERTICAL);
+        rows.setOrientation(LinearLayout.HORIZONTAL);
+        rows.setPadding(Ui.dp(c, 12), 0, Ui.dp(c, 12), 0);
         top.addView(rows);
 
         recentTitle = Ui.sectionTitle(c, "Recently Added");
@@ -91,11 +92,13 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         adapter = new RowAdapter(c, new RowAdapter.Listener() {
             @Override
             public void onItem(MediaItem item, int index) {
-                push(AlbumFragment.newInstance(item.sourceId, item, "Library"));
+                if (item.kind == MediaItem.PODCAST) push(PodcastsFragment.show(item));
+                else push(AlbumFragment.newInstance(item.sourceId, item, "Library"));
             }
 
             @Override
             public void onLongItem(MediaItem item) {
+                if (item.kind == MediaItem.PODCAST) { push(PodcastsFragment.show(item)); return; }
                 MusicSource s = Sources.get(getActivity()).byId(item.sourceId);
                 if (s != null) TrackActions.show(LibraryFragment.this, item, s);
             }
@@ -212,12 +215,16 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
             showRecent();
         }
         final int gen = ++generation;
-        final PlaylistMeta meta = PlaylistMeta.get(getActivity());
+        final android.content.Context app = getActivity().getApplicationContext();
+        final PlaylistMeta meta = PlaylistMeta.get(app);
         loadedMeta = PlaylistMeta.version();
         bg(new com.grapefruitmusic.util.Bg.Work<List<MediaItem>>() {
             @Override
             public List<MediaItem> run() throws Exception {
-                List<MediaItem> albums = s.recentAlbums(20);
+                List<MediaItem> albums = new java.util.ArrayList<MediaItem>();
+                try { albums.addAll(s.recentAlbums(20)); }
+                catch (Exception e) { if (com.grapefruitmusic.podcast.PodcastStore.get(app).subscriptions().isEmpty()) throw e; }
+                albums.addAll(com.grapefruitmusic.podcast.PodcastStore.get(app).subscriptions());
                 List<MediaItem> playlists;
                 try {
                     playlists = meta.apply(s.playlists());
@@ -268,38 +275,17 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         addRow(c, "Artists", BrowseFragment.ARTISTS, s);
         addRow(c, "Albums", BrowseFragment.ALBUMS, s);
         addRow(c, "Songs", BrowseFragment.SONGS, s);
-        if (!(s instanceof DownloadedSource)) {
-            TextView t = rowText(c, "Downloaded Music");
-            t.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Sources sources = Sources.get(getActivity());
-                    sources.setCurrent(sources.downloaded());
-                }
-            });
-            rows.addView(t);
-            rows.addView(Ui.separator(c, 16));
-        }
     }
 
     private void addRow(Context c, String label, final int mode, final MusicSource s) {
-        TextView t = rowText(c, label);
-        t.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        TextView t = Ui.button(c, label, new View.OnClickListener() {
+            @Override public void onClick(View v) {
                 push(BrowseFragment.newInstance(s.id(), mode, null, "Library"));
             }
         });
-        rows.addView(t);
-        rows.addView(Ui.separator(c, 16));
-    }
-
-    private TextView rowText(Context c, String label) {
-        TextView t = Ui.text(c, 21, R.attr.gfAccent, false);
-        t.setText(label);
-        t.setPadding(Ui.dp(c, 16), Ui.dp(c, 11), Ui.dp(c, 16), Ui.dp(c, 11));
-        t.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
-        return t;
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+        lp.setMargins(Ui.dp(c, 3), Ui.dp(c, 6), Ui.dp(c, 3), Ui.dp(c, 6));
+        rows.addView(t, lp);
     }
 
     private void pickSource() {

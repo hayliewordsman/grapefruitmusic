@@ -91,6 +91,29 @@ public final class SongTags {
                 });
     }
 
+    /** Edit a private copy, then write it through the MediaStore grant approved by the owner. */
+    public static void writeDocument(Context c, Target target, MediaItem song, Tags tags, boolean picture, Uri uri) throws IOException {
+        File copy = File.createTempFile("tag-edit-", "." + song.suffix, c.getCacheDir());
+        try {
+            java.io.InputStream in = new java.io.FileInputStream(target.file);
+            if (in == null) throw new IOException("Couldn't open the selected song");
+            try { java.io.OutputStream out = new java.io.FileOutputStream(copy);
+                try { transfer(in, out); } finally { out.close(); }
+            } finally { in.close(); }
+            TagFile.write(copy, tags, picture);
+            java.io.OutputStream out = c.getContentResolver().openOutputStream(uri, "wt");
+            if (out == null) throw new IOException("The selected file is not writable");
+            try { in = new java.io.FileInputStream(copy); try { transfer(in, out); } finally { in.close(); } }
+            finally { out.close(); }
+            MediaScannerConnection.scanFile(c, new String[]{target.file.getPath()}, null, null);
+        } finally { copy.delete(); }
+    }
+
+    private static void transfer(java.io.InputStream in, java.io.OutputStream out) throws IOException {
+        byte[] buffer = new byte[65536]; int count;
+        while ((count = in.read(buffer)) != -1) out.write(buffer, 0, count);
+    }
+
     /** After a save, on the main thread: the queue, lists and artwork show the change. */
     public static void saved(Context c, MediaItem song, Tags tags, boolean picture) {
         SongEdits.record(song, tags);

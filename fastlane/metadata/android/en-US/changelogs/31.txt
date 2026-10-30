@@ -1,0 +1,6 @@
+4.0 beta 1
+Podcasts: discovery, subscriptions, RSS feeds, episode downloads and listening progress. Periodic new-episode notifications.
+Search music, radio and podcasts together.
+A shared Now Playing design with bottom action buttons adapts to portrait, square and landscape screens.
+Refreshed Library buttons and consistent typography. Fixed clipped server labels.
+Targets modern Android while keeping Android 4.2.2 support.

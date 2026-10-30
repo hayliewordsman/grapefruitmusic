@@ -19,6 +19,7 @@ public final class GrapefruitApp extends Application {
         super.onCreate();
         Prefs.init(this);
         Tls.install(this);
+        com.grapefruitmusic.podcast.PodcastRefresh.schedule(this);
         // The launcher icon in the theme's colours (after an update, or a theme picked last time).
         Bg.execute(new Runnable() {
             @Override
@@ -37,7 +38,7 @@ public final class GrapefruitApp extends Application {
             }
         });
         // Pick up downloads interrupted last time.
-        Downloads.get(this).startWorker();
+        // Queued downloads resume when the activity is visible.
         // Karaoke Mode left on: have it ready before the first song.
         if (Prefs.karaoke()) Player.prepareKaraoke(this);
     }

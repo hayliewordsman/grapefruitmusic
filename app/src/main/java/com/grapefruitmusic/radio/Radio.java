@@ -403,7 +403,7 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         state = STARTING;
         tipHeadphones();
         changed();
-        context.startService(new Intent(context, PlaybackService.class));
+        com.grapefruitmusic.compat.Platform.service(context, new Intent(context, PlaybackService.class));
         final int gen = ++generation;
         final int at = frequency;
         final boolean toSpeaker = speaker;

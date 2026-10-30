@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace "com.grapefruitmusic"
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         // From the developer's GitHub Pages address (hayliewordsman.github.io), as F-Droid asks. The
@@ -12,15 +12,14 @@ android {
         applicationId "io.github.hayliewordsman.grapefruitmusic"
         // Android 4.2.2 (Jelly Bean MR1).
         minSdk 17
-        // Kept below 23 on purpose: Grapefruit Music is built for Android 4.2.2 and uses
-        // install-time permissions. Android 14+ refuses to install apps targeting < 23.
-        targetSdk 22
-        versionCode 30
-        versionName "3.2.2"
+        // Modern behavior is version-gated; minSdk stays at Jelly Bean MR1.
+        targetSdk 36
+        versionCode 31
+        versionName "4.0-beta-1"
 
         ndk {
-            // Conscrypt ships native code; these are the ABIs Android 4.2.2 phones use.
-            abiFilters "armeabi-v7a", "x86"
+            // Keep old 32-bit devices and modern 64-bit-only phones supported.
+            abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
     }
 

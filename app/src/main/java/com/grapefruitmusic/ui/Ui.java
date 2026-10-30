@@ -75,9 +75,30 @@ public final class Ui {
         TextView t = new TextView(c);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         t.setTextColor(color(c, colorAttr));
-        if (bold) t.setTypeface(Typeface.DEFAULT_BOLD);
+        t.setTypeface(android.graphics.Typeface.create("sans-serif", bold ? Typeface.BOLD : Typeface.NORMAL));
         t.setSingleLine(true);
         t.setEllipsize(TextUtils.TruncateAt.END);
+        return t;
+    }
+
+    public static android.graphics.drawable.Drawable actionBackground(Context c) {
+        android.graphics.drawable.StateListDrawable states=new android.graphics.drawable.StateListDrawable();
+        states.addState(new int[]{android.R.attr.state_pressed},GrapefruitDialog.rounded(color(c,R.attr.gfControlPressed),dp(c,12)));
+        states.addState(new int[]{android.R.attr.state_focused},GrapefruitDialog.rounded(color(c,R.attr.gfControlPressed),dp(c,12)));
+        states.addState(new int[]{},GrapefruitDialog.rounded(color(c,R.attr.gfControl),dp(c,12)));
+        return states;
+    }
+
+    /** Shared themed action for category, podcast and radio pages. */
+    public static TextView button(Context c, String label, View.OnClickListener action) {
+        TextView t = text(c, 15, R.attr.gfAccent, true);
+        t.setText(label);
+        t.setSingleLine(false);
+        t.setGravity(android.view.Gravity.CENTER);
+        t.setMinHeight(dp(c, 48));
+        t.setPadding(dp(c, 12), dp(c, 10), dp(c, 12), dp(c, 10));
+        t.setBackground(actionBackground(c));
+        t.setOnClickListener(action);
         return t;
     }
 

@@ -8,6 +8,13 @@ with downloads for offline listening and time-synced lyrics.
 
 ## Features
 
+- **Podcasts (4.0 beta):** discover and search podcasts, add an RSS address, subscribe, stream episodes,
+  resume listening, and download episodes for offline playback. The Podcasts tab is immediately after Radio.
+  Subscriptions appear in Recently Added. New-episode notifications use periodic feed checks (about every six
+  hours, subject to battery restrictions), not immediate push. Downloads follow the Wi-Fi preference.
+- **Unified search:** music from the selected source, internet radio stations and podcasts in separate groups.
+  Radio and Podcasts retain dedicated searches.
+
 - **Sources:** music files on the phone, any number of Navidrome/Subsonic and Jellyfin servers, and *Downloaded Music*.
 - **Tabs:** Library, Playlists, Radio, Search and Settings. Library and Playlists show the source picked in Library.
 - **Excluded folders:** Settings › Excluded Folders hides folders (ringtones, voice messages, …) from
@@ -23,6 +30,8 @@ with downloads for offline listening and time-synced lyrics.
   Lyrics are saved after the first lookup, so they work offline too.
 - **iOS 10-style design:** large bold titles, album-art grids, a mini player above the tab bar, and a Now Playing
   card that slides up over a blurred copy of the artwork. The artwork shrinks when paused. Pull the card down to close it.
+  Now Playing uses the same heading and bottom action tiles on all screen shapes, with stacked artwork
+  on tall windows and two-column artwork and metadata on shorter windows.
   Lyrics and Up Next show a condensed header (small artwork and title) above the list.
 - **Themes:** Settings › Theme: *Grapefruit Dark* (the default) and *Grapefruit Light* (in the app icon's peach,
   cream, ruby and coral), *Starlight* (white) or *Pitch Black* (black). The app icon matches the theme: each
@@ -35,8 +44,7 @@ with downloads for offline listening and time-synced lyrics.
   made (as Navidrome/Subsonic, Jellyfin and the phone report it), newest first, each labelled Playlist where an
   album shows its artist. Turned sideways, the card pages scroll sideways instead:
   the Library's menu is the first column, then Recently Added two cards high; swipe right to left and the menu
-  slides away as more albums come in. Now Playing pops in as a panel on the right, beside the library (swipe it
-  right or tap outside to close it).
+  slides away as more albums come in. Now Playing opens over the full window with the same responsive design in every orientation.
 - **Looks the same on every Android version:** Grapefruit draws its own switches, dialogs, menus, text fields,
   messages and fast-scroll thumb instead of using Android's (Holo on 4.x, Material later). Settings switches are
   little grapefruit slices that roll across a grapefruit-gradient track.
@@ -168,9 +176,10 @@ Since 3.2.2 the app ID is `io.github.hayliewordsman.grapefruitmusic` (it was `co
 treats it as a new app: install it beside an older Grapefruit, sign in to your servers and download offline music
 again, then uninstall the old one.
 
-The app targets Android 4.2.2 and uses install-time permissions (`targetSdk 22`). It installs on Android 4.2–13.
-Android 14 and later block apps built for old Android versions; to install there anyway, use
-`adb install --bypass-low-target-sdk-block app-release.apk`.
+Version 4.0 beta 1 keeps Android 4.2.2 (API 17) support and targets API 36. Modern Android asks for
+music-library and notification permissions. A beta signed with the permanent app key can update an
+existing installation; a debug APK uses a different key and cannot update the release app.
+
 
 ## Connect a server
 
@@ -184,7 +193,7 @@ Self-signed certificates aren't supported.
 
 ## Build
 
-Requirements: JDK 17 and the Android SDK (platform 35).
+Requirements: JDK 21 and the Android SDK (platform 36, build tools 35.0.0).
 
 ```sh
 ./gradlew assembleDebug testDebugUnitTest lintDebug

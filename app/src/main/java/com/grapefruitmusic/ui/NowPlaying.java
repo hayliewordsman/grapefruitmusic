@@ -235,9 +235,9 @@ final class NowPlaying {
         btnRepeat = (IconView) root.findViewById(R.id.np_btn_repeat);
         btnKaraoke = (IconView) root.findViewById(R.id.np_btn_karaoke);
         btnQueue = (IconView) root.findViewById(R.id.np_btn_queue);
-        btnStation = new IconView(a);
+        btnStation = new com.grapefruitmusic.ui.widget.ActionIconView(a);
         int buttonPad = Ui.dp(a, 13);
-        btnStation.setPadding(buttonPad, buttonPad, buttonPad, buttonPad);
+
         btnStation.setVisibility(View.GONE);
         ((LinearLayout) root.findViewById(R.id.np_buttons)).addView(btnStation,
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
@@ -310,7 +310,26 @@ final class NowPlaying {
         next.setIcon(Icons.NEXT);
         prev.setColor(primary);
         next.setColor(primary);
+        IconView closeIcon = (IconView)root.findViewById(R.id.np_close);
+        closeIcon.setIcon(Icons.CHEVRON_DOWN);closeIcon.setColor(primary);
+        closeIcon.setContentDescription("Close Now Playing");
+        closeIcon.setOnClickListener(v -> close());
+        IconView moreIcon = (IconView)root.findViewById(R.id.np_more);
+        moreIcon.setIcon(Icons.MORE);moreIcon.setColor(primary);
+        moreIcon.setContentDescription("More actions");
+        moreIcon.setOnClickListener(v -> {
+            if (radio.inSession()) { PresetLabel.add(activity, radio.frequency()); return; }
+            MediaItem current = player.current();
+            android.app.Fragment fragment = activity.getFragmentManager().findFragmentById(R.id.content);
+            if (current != null && fragment instanceof BaseFragment) {
+                com.grapefruitmusic.source.MusicSource source = com.grapefruitmusic.source.Sources.get(activity).byId(current.sourceId);
+                if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(current.sourceId))
+                    PodcastsFragment.episodeActions((BaseFragment)fragment, current, null);
+                else if (source != null) TrackActions.show((BaseFragment)fragment, current, source);
+            }
+        });
         play.setColor(primary);
+        play.setBackground(GrapefruitDialog.rounded(accent, Ui.dp(a, 48)));
         volLow.setIcon(Icons.SPEAKER_LOW);
         volHigh.setIcon(Icons.SPEAKER_HIGH);
         volLow.setColor(secondary);
@@ -643,20 +662,12 @@ final class NowPlaying {
 
     private void applyLayout() {
         Configuration config = activity.getResources().getConfiguration();
-        side = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
+        side = false;
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) card.getLayoutParams();
-        if (side) {
-            int screen = Ui.dp(activity, config.screenWidthDp);
-            int width = Math.max(Ui.dp(activity, 320), Math.min(Math.round(screen * 0.42f), Ui.dp(activity, 440)));
-            int margin = Ui.dp(activity, 8);
-            lp.width = Math.min(width, screen - Ui.dp(activity, 48));
-            lp.gravity = Gravity.RIGHT;
-            lp.setMargins(0, margin, margin, margin);
-        } else {
-            lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
-            lp.gravity = Gravity.TOP | Gravity.LEFT;
-            lp.setMargins(0, Ui.dp(activity, 16), 0, 0);
-        }
+        lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+        lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        lp.gravity = Gravity.TOP | Gravity.LEFT;
+        lp.setMargins(0, 0, 0, 0);
         card.setLayoutParams(lp);
         card.setSide(side);
         // The grab bar goes across the top of the card, or down the left edge of the panel.
@@ -818,6 +829,7 @@ final class NowPlaying {
     private void updateRadio() {
         int freq = radio.frequency();
         setText(title, radio.title());
+        setText((TextView) root.findViewById(R.id.np_album), "");
         int state = radio.state();
         setText(artist, state == Radio.STARTING ? "Tuning in…" : state == Radio.SEEKING ? "Looking for a station…"
                 : radio.subtitle());
@@ -895,7 +907,8 @@ final class NowPlaying {
         }
         // Unchanged text is left alone, so a long station line keeps scrolling.
         setText(title, heading);
-        setText(artist, line);
+        setText(artist, item.live ? line : item.artist);
+        setText((TextView) root.findViewById(R.id.np_album), item.live ? "" : item.album);
         setText(smallTitle, heading);
         setText(smallArtist, line);
         boolean playing = player.wantsToPlay();
@@ -1002,6 +1015,7 @@ final class NowPlaying {
     private void showMode() {
         // Lyrics and Up Next: small artwork and title on top, the list below (iOS-style).
         boolean condensedMode = mode != MODE_ART;
+        root.findViewById(R.id.np_art_group).setVisibility(condensedMode ? View.INVISIBLE : View.VISIBLE);
         art.setVisibility(condensedMode ? View.INVISIBLE : View.VISIBLE);
         if (condensedMode && condensed.getVisibility() != View.VISIBLE) {
             condensed.setAlpha(0f);

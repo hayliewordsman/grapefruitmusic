@@ -11,7 +11,7 @@ import java.util.List;
  * Internet radio stations, so they play through the music player like songs. Not a library: it's
  * not in the Library tab's list; the Radio tab finds the stations.
  */
-public final class InternetRadioSource implements MusicSource {
+public class InternetRadioSource implements MusicSource {
     public static final String ID = "internet-radio";
     /** The artwork key of a station without a logo: generated from its name. */
     public static final String NAMED_ART = "station:";

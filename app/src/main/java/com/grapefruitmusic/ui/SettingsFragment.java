@@ -112,6 +112,19 @@ public final class SettingsFragment extends BaseFragment
         g.footer("Grapefruit's icon matches the theme. Your launcher shows the new one within a few seconds; "
                 + "if Grapefruit was on your home screen, you may need to put it back from the app list.");
 
+        final String[] layouts={"Automatic", "Stacked", "Two Columns"};
+        final int layout=Prefs.raw().getInt("now_playing_layout",0);
+        g.value("Now Playing Layout", layouts[Math.max(0,Math.min(layout,2))], v -> {
+            choose("Now Playing Layout",layouts,layout,new Choice(){
+                @Override public void chosen(int which){Prefs.raw().edit().putInt("now_playing_layout",which).apply();getActivity().recreate();}
+            });
+        });
+        g.section("Podcasts");
+        g.toggle("New Episode Notifications", Prefs.raw().getBoolean("podcast_notifications", true), new Toggle.Listener() {
+            @Override public void onToggled(Toggle t, boolean on) { Prefs.raw().edit().putBoolean("podcast_notifications", on).apply(); }
+        });
+        g.footer("Subscribed feeds are checked about every six hours. Battery restrictions can delay notifications. Episode downloads follow your Wi-Fi preference.");
+
         g.section("Servers");
         for (final Account a : Sources.get(c).accounts()) {
             String type = Account.JELLYFIN.equals(a.type) ? "Jellyfin" : "Navidrome / Subsonic";

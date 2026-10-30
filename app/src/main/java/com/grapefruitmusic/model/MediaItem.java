@@ -10,6 +10,7 @@ public class MediaItem implements Serializable {
     public static final int ALBUM = 2;
     public static final int PLAYLIST = 3;
     public static final int TRACK = 4;
+    public static final int PODCAST = 5;
 
     public int kind;
     /** The source this item belongs to (downloaded items keep their original source). */

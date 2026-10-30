@@ -158,7 +158,7 @@ public final class Downloads {
     }
 
     public void startWorker() {
-        if (hasQueued()) context.startService(new Intent(context, DownloadService.class));
+        if (hasQueued()) com.grapefruitmusic.compat.Platform.service(context, new Intent(context, DownloadService.class));
     }
 
     public boolean hasQueued() {

@@ -22,6 +22,7 @@ public final class Sources {
     private static Sources instance;
 
     private final LocalSource local;
+    private final com.grapefruitmusic.podcast.PodcastSource podcasts;
     private final DownloadedSource downloaded;
     private final InternetRadioSource internetRadio = new InternetRadioSource();
     private final List<Account> accounts = new ArrayList<Account>();
@@ -35,6 +36,7 @@ public final class Sources {
 
     private Sources(Context context) {
         local = new LocalSource(context);
+        podcasts = new com.grapefruitmusic.podcast.PodcastSource(context);
         downloaded = new DownloadedSource(context);
         loadAccounts();
         rebuild();
@@ -99,6 +101,7 @@ public final class Sources {
         for (MusicSource s : all) {
             if (s.id().equals(id)) return s;
         }
+        if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(id)) return podcasts;
         return InternetRadioSource.ID.equals(id) ? internetRadio : null;
     }
 

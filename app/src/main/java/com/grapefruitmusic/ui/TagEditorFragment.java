@@ -276,6 +276,13 @@ public final class TagEditorFragment extends BaseFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == EDIT_DOCUMENT) {
+            if (resultCode == android.app.Activity.RESULT_OK) {
+                editConsent = true;
+                save();
+            }
+            return;
+        }
         if (!CoverPicker.onActivityResult(getActivity(), requestCode, resultCode, data, coverListener())) {
             super.onActivityResult(requestCode, resultCode, data);
         }
@@ -320,8 +327,21 @@ public final class TagEditorFragment extends BaseFragment {
         }
     }
 
+    private boolean editConsent;
+    private static final int EDIT_DOCUMENT = 410;
+
     private void save() {
         if (loaded == null || saving) return;
+        if (android.os.Build.VERSION.SDK_INT >= 30 && target != null && target.file != null
+                && com.grapefruitmusic.source.LocalSource.ID.equals(item().sourceId) && !editConsent) {
+            android.net.Uri uri = android.content.ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, Long.parseLong(item().id));
+            android.app.PendingIntent consent = android.provider.MediaStore.createWriteRequest(
+                    getActivity().getContentResolver(), java.util.Collections.singletonList(uri));
+            try { startIntentSenderForResult(consent.getIntentSender(), EDIT_DOCUMENT, null, 0, 0, 0, null); }
+            catch (android.content.IntentSender.SendIntentException e) { Notice.show(getActivity(), "Couldn't request permission to edit this song."); }
+            return;
+        }
         final Tags t = fields();
         if (t.title.length() == 0) {
             Notice.show(getActivity(), "A song needs a title");
@@ -341,7 +361,10 @@ public final class TagEditorFragment extends BaseFragment {
         bg(new Bg.Work<Void>() {
             @Override
             public Void run() throws Exception {
-                SongTags.write(app, where, song, t, withPicture);
+                if (android.os.Build.VERSION.SDK_INT >= 29 && com.grapefruitmusic.source.LocalSource.ID.equals(song.sourceId))
+                    SongTags.writeDocument(app, where, song, t, withPicture,
+                            android.content.ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, Long.parseLong(song.id)));
+                else SongTags.write(app, where, song, t, withPicture);
                 return null;
             }
         }, new Bg.Done<Void>() {
@@ -349,6 +372,13 @@ public final class TagEditorFragment extends BaseFragment {
             public void done(Void result, Exception e) {
                 saving = false;
                 if (e != null) {
+                    if (android.os.Build.VERSION.SDK_INT == 29 && e instanceof android.app.RecoverableSecurityException) {
+                        try { TagEditorFragment.this.startIntentSenderForResult(
+                                ((android.app.RecoverableSecurityException)e).getUserAction().getActionIntent().getIntentSender(),
+                                EDIT_DOCUMENT, null, 0, 0, 0, null); }
+                        catch (android.content.IntentSender.SendIntentException failed) { Notice.show(app, "Couldn't request permission to edit this song."); }
+                        build(); return;
+                    }
                     Notice.showLong(app, describeSaveError(e));
                     build();
                     return;

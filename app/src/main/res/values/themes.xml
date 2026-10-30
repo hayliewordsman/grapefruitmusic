@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.Grapefruit.Light" parent="android:Theme.Holo.Light.NoActionBar">
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:windowBackground">@color/light_background</item>
         <item name="android:colorBackground">@color/light_background</item>
         <item name="android:textColorHighlight">#66F2545B</item>
@@ -36,6 +37,7 @@
     </style>
 
     <style name="Theme.Grapefruit.Dark" parent="android:Theme.Holo.NoActionBar">
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:windowBackground">@color/dark_background</item>
         <item name="android:colorBackground">@color/dark_background</item>
         <item name="android:textColorHighlight">#66FF6B6B</item>
@@ -72,6 +74,7 @@
 
     <!-- Grapefruit Light: on the lighter side, in the app icon's colours instead of white. -->
     <style name="Theme.Grapefruit.GrapefruitLight" parent="Theme.Grapefruit.Light">
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:windowBackground">@color/grapefruit_light_background</item>
         <item name="android:colorBackground">@color/grapefruit_light_background</item>
         <item name="android:textColorHighlight">#66E83850</item>
@@ -98,6 +101,7 @@
 
     <!-- Grapefruit Dark: the same colours after dark, instead of black. -->
     <style name="Theme.Grapefruit.GrapefruitDark" parent="Theme.Grapefruit.Dark">
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:windowBackground">@color/grapefruit_dark_background</item>
         <item name="android:colorBackground">@color/grapefruit_dark_background</item>
         <item name="android:textColorHighlight">#66FF7F6B</item>
@@ -188,6 +192,7 @@
     -->
     <style name="GrapefruitDialogWindow">
         <item name="android:windowIsFloating">true</item>
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowFrame">@null</item>
         <item name="android:windowNoTitle">true</item>

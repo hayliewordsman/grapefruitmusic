@@ -13,6 +13,15 @@ import qrcode
 import qrcode.image.svg
 
 
+def installation_note(manifest):
+    target = int(manifest.get('usesSdk', {}).get('targetSdkVersion', 0))
+    if target >= 28:
+        return ('Works with F-Droid and Droid-ify on Android 6 and newer. '
+                'Grapefruit Music also supports Android 4.2.2 and newer through the APK download below.')
+    return ("Works with F-Droid and Droid-ify on Android 6 to 13. Android 14 and newer may block "
+            "the older release currently available in this repository.")
+
+
 def main(template, index, app_id, fingerprint, url, out):
     if not re.fullmatch(r'[0-9A-F]{64}', fingerprint):
         sys.exit('fingerprint should be 64 hex digits: %r' % fingerprint)
@@ -20,6 +29,7 @@ def main(template, index, app_id, fingerprint, url, out):
         package = json.load(f)['packages'][app_id]
     newest = max(package['versions'].values(), key=lambda v: v['manifest']['versionCode'])
     values = {
+        'INSTALL_NOTE': installation_note(newest['manifest']),
         'SUMMARY': package['metadata']['summary']['en-US'],
         'FINGERPRINT': fingerprint,
         'VERSION': newest['manifest']['versionName'],

@@ -8,15 +8,23 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- FM radio on MediaTek tablets: lets Grapefruit open the radio chip (/dev/fm). -->
     <uses-permission android:name="android.permission.ACCESS_MTK_MMHW" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <!-- Android 4.2/4.3 need this to write downloads to the app's folder on the SD card. -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:name=".GrapefruitApp"
         android:allowBackup="false"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher_grapefruit_dark"
         android:label="@string/app_name"
         android:theme="@style/Theme.Grapefruit.GrapefruitDark">
@@ -83,10 +91,12 @@
 
         <service
             android:name=".playback.PlaybackService"
+            android:foregroundServiceType="mediaPlayback"
             android:exported="false" />
 
         <service
             android:name=".download.DownloadService"
+            android:foregroundServiceType="dataSync"
             android:exported="false" />
 
         <receiver
@@ -102,6 +112,14 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+        <service android:name=".podcast.PodcastJob" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true" />
+        <service android:name=".podcast.LegacyPodcastRefresh" android:exported="false" />
+        <receiver android:name=".podcast.PodcastRefresh" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
     </application>

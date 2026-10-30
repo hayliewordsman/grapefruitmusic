@@ -76,18 +76,10 @@ final class Grouped {
     }
 
     void addRow(LinearLayout row, boolean clickable) {
-        if (clickable) {
-            // Pressed highlight over the surface color.
-            LinearLayout wrap = new LinearLayout(c);
-            wrap.setBackgroundColor(Ui.color(c, R.attr.gfSurface));
-            row.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
-            wrap.addView(row, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
-            content.addView(wrap);
-        } else {
-            content.addView(row);
-        }
-        content.addView(Ui.separator(c, 0));
+        row.setBackground(Ui.actionBackground(c));
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(Ui.dp(c,12),Ui.dp(c,3),Ui.dp(c,12),Ui.dp(c,3));
+        content.addView(row,lp);
     }
 
     /** A label and a gray value; returns the value's view (to update it later). */

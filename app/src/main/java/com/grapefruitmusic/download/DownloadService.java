@@ -51,6 +51,8 @@ public final class DownloadService extends Service {
 
     @Override
     public synchronized int onStartCommand(Intent intent, int flags, int startId) {
+        startForeground(NOTIFICATION_ID, com.grapefruitmusic.compat.Platform.notification(this, "downloads", "Downloads")
+                .setSmallIcon(R.drawable.ic_stat_grapefruit).setContentTitle("Preparing downloads").build());
         if (worker == null || !worker.isAlive()) {
             worker = new Thread(new Runnable() {
                 @Override
@@ -67,7 +69,7 @@ public final class DownloadService extends Service {
     private void work() {
         int done = 0;
         int failed = 0;
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
             if (Prefs.wifiOnlyDownloads() && !Http.isOnWifi(this)) {
                 // NetworkReceiver restarts us when Wi-Fi comes back.
                 showWaiting();
@@ -132,6 +134,7 @@ public final class DownloadService extends Service {
                 int n;
                 long lastUpdate = 0;
                 while ((n = in.read(buf)) > 0) {
+                    if (Thread.currentThread().isInterrupted()) throw new IOException("Download paused by Android");
                     out.write(buf, 0, n);
                     written += n;
                     long now = System.currentTimeMillis();
@@ -197,11 +200,11 @@ public final class DownloadService extends Service {
     }
 
     private PendingIntent openApp() {
-        return PendingIntent.getActivity(this, 1, new Intent(this, MainActivity.class), 0);
+        return PendingIntent.getActivity(this, 1, new Intent(this, MainActivity.class), com.grapefruitmusic.compat.Platform.pendingFlags(0));
     }
 
     private void showProgress(MediaItem t, int index, int total, int percent) {
-        Notification n = new Notification.Builder(this)
+        Notification n = com.grapefruitmusic.compat.Platform.notification(this, "downloads", "Downloads")
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setContentTitle("Downloading " + index + " of " + Math.max(index, total))
                 .setContentText(t.title)
@@ -215,7 +218,7 @@ public final class DownloadService extends Service {
 
     private void showWaiting() {
         if (!downloads.hasQueued()) return;
-        Notification n = new Notification.Builder(this)
+        Notification n = com.grapefruitmusic.compat.Platform.notification(this, "downloads", "Downloads")
                 .setSmallIcon(R.drawable.ic_stat_grapefruit)
                 .setContentTitle("Downloads paused")
                 .setContentText(Prefs.wifiOnlyDownloads() ? "Waiting for Wi‑Fi" : "Waiting for a connection")
@@ -226,7 +229,7 @@ public final class DownloadService extends Service {
     }
 
     private void showFailed(int failed) {
-        Notification n = new Notification.Builder(this)
+        Notification n = com.grapefruitmusic.compat.Platform.notification(this, "downloads", "Downloads")
                 .setSmallIcon(R.drawable.ic_stat_grapefruit)
                 .setContentTitle(failed == 1 ? "1 song didn't download" : failed + " songs didn't download")
                 .setContentText("Open Settings › Downloads to try again")
@@ -234,6 +237,19 @@ public final class DownloadService extends Service {
                 .setContentIntent(openApp())
                 .build();
         notifications.notify(NOTIFICATION_ID, n);
+    }
+
+    @Override
+    public void onTimeout(int startId, int foregroundServiceType) {
+        if (worker != null) worker.interrupt();
+        stopForeground(true);
+        stopSelf();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (worker != null) worker.interrupt();
+        super.onDestroy();
     }
 
     @Override

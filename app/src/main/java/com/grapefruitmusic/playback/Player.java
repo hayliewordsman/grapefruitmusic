@@ -57,6 +57,14 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     private boolean shuffle;
     private int repeat = REPEAT_OFF;
 
+    private final Runnable podcastCheckpoint = new Runnable() {
+        @Override public void run() {
+            savePodcastPosition();
+            MediaItem m = current();
+            if (playWhenReady && m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId))
+                Bg.mainDelayed(this, 15000);
+        }
+    };
     private Engine engine;
     private boolean prepared;
     private boolean playWhenReady;
@@ -281,6 +289,10 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     private void changed() {
+        Bg.cancelMain(podcastCheckpoint);
+        MediaItem m = current();
+        if (playWhenReady && m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId))
+            Bg.mainDelayed(podcastCheckpoint, 15000);
         for (Listener l : listeners) l.onPlayerChanged();
     }
 
@@ -441,6 +453,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     public void pause() {
+        savePodcastPosition();
         playWhenReady = false;
         pausedByFocusLoss = false;
         if (isLive()) {
@@ -510,7 +523,17 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
 
     // ---- Engine ----
 
+    private void savePodcastPosition() {
+        MediaItem m = loadedItem;
+        if (m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId) && engine != null && prepared) {
+            long position = engine.getCurrentPosition(), duration = engine.getDuration();
+            if (duration > 0 && position >= duration - 1500) position = 0;
+            Prefs.raw().edit().putLong("podcast_position_" + m.id, position).apply();
+        }
+    }
+
     private void release() {
+        savePodcastPosition();
         if (engine != null) {
             engine.release();
             engine = null;
@@ -521,7 +544,9 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     private void load(boolean play) {
-        load(play, 0);
+        MediaItem m = current();
+        load(play, m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId)
+                ? Prefs.raw().getLong("podcast_position_" + m.id, 0) : 0);
     }
 
     /** Loads the current song, starting at startAt ms. */
@@ -574,6 +599,8 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                     reconnect(item);
                     return;
                 }
+                if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId))
+                    Prefs.raw().edit().remove("podcast_position_" + item.id).apply();
                 if (repeat == REPEAT_ONE) {
                     e.seekTo(0);
                     e.start();
@@ -689,6 +716,8 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     private File localFile(MediaItem item) {
+        if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId))
+            return com.grapefruitmusic.podcast.PodcastStore.get(context).localFile(item);
         if (item.path != null) {
             File f = new File(item.path);
             if (f.exists()) return f;
@@ -753,6 +782,6 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     }
 
     private void startService() {
-        context.startService(new Intent(context, PlaybackService.class));
+        com.grapefruitmusic.compat.Platform.service(context, new Intent(context, PlaybackService.class));
     }
 }
