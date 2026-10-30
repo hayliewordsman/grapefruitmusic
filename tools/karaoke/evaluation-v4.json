@@ -1,0 +1,1431 @@
+{
+  "summary": {
+    "original": {
+      "legacy": {
+        "count": 50,
+        "median_vocal_reduction_db": 4.15203646664647,
+        "median_backing_removed_db_below_original": 15.610472178849601
+      },
+      "new": {
+        "count": 50,
+        "median_vocal_reduction_db": 5.132819612258128,
+        "median_backing_removed_db_below_original": 15.753373902312756
+      }
+    },
+    "hard-panned-vocal": {
+      "legacy": {
+        "count": 50,
+        "median_vocal_reduction_db": 1.3177387620503245,
+        "median_backing_removed_db_below_original": 17.718222340860535
+      },
+      "new": {
+        "count": 50,
+        "median_vocal_reduction_db": 5.707699118792078,
+        "median_backing_removed_db_below_original": 14.743649706938115
+      }
+    }
+  },
+  "clips": [
+    {
+      "clip": "AM Contra - Heart Peripheral",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.734124657394428,
+      "backing_removed_db_below_original": 16.83407733622818
+    },
+    {
+      "clip": "AM Contra - Heart Peripheral",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 4.514709301081223,
+      "backing_removed_db_below_original": 19.749350371453616
+    },
+    {
+      "clip": "AM Contra - Heart Peripheral",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.631701180074093,
+      "backing_removed_db_below_original": 17.785501950914227
+    },
+    {
+      "clip": "AM Contra - Heart Peripheral",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.3924727053414112,
+      "backing_removed_db_below_original": 22.330868526834724
+    },
+    {
+      "clip": "Al James - Schoolboy Facination",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.213393118725279,
+      "backing_removed_db_below_original": 13.02826824271098
+    },
+    {
+      "clip": "Al James - Schoolboy Facination",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 6.4488559468363125,
+      "backing_removed_db_below_original": 10.82799983526873
+    },
+    {
+      "clip": "Al James - Schoolboy Facination",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.8868206389183975,
+      "backing_removed_db_below_original": 13.148071711603968
+    },
+    {
+      "clip": "Al James - Schoolboy Facination",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.9906693346195277,
+      "backing_removed_db_below_original": 12.947712693201947
+    },
+    {
+      "clip": "Angels In Amplifiers - I'm Alright",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.911073570501292,
+      "backing_removed_db_below_original": 13.657098614976794
+    },
+    {
+      "clip": "Angels In Amplifiers - I'm Alright",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 3.568242392349601,
+      "backing_removed_db_below_original": 13.838783432636962
+    },
+    {
+      "clip": "Angels In Amplifiers - I'm Alright",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.905647391904881,
+      "backing_removed_db_below_original": 16.253198761226447
+    },
+    {
+      "clip": "Angels In Amplifiers - I'm Alright",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.56079761432384,
+      "backing_removed_db_below_original": 16.495425526281473
+    },
+    {
+      "clip": "Arise - Run Run Run",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 2.560356492097861,
+      "backing_removed_db_below_original": 20.469233256158034
+    },
+    {
+      "clip": "Arise - Run Run Run",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 3.0582174250930256,
+      "backing_removed_db_below_original": 18.51289781618346
+    },
+    {
+      "clip": "Arise - Run Run Run",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.708147059863243,
+      "backing_removed_db_below_original": 19.131683835034107
+    },
+    {
+      "clip": "Arise - Run Run Run",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.8502628260151126,
+      "backing_removed_db_below_original": 20.524813331599464
+    },
+    {
+      "clip": "BKS - Bulldozer",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.645941469002573,
+      "backing_removed_db_below_original": 12.27629653435822
+    },
+    {
+      "clip": "BKS - Bulldozer",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.6175164988118277,
+      "backing_removed_db_below_original": 18.13175208933259
+    },
+    {
+      "clip": "BKS - Bulldozer",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.3163217712933974,
+      "backing_removed_db_below_original": 13.003109812154536
+    },
+    {
+      "clip": "BKS - Bulldozer",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.098568229023015,
+      "backing_removed_db_below_original": 18.54044902825907
+    },
+    {
+      "clip": "BKS - Too Much",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.3200808445256658,
+      "backing_removed_db_below_original": 21.494283559444334
+    },
+    {
+      "clip": "BKS - Too Much",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 3.754395735164697,
+      "backing_removed_db_below_original": 20.387842923858337
+    },
+    {
+      "clip": "BKS - Too Much",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.072256605990978,
+      "backing_removed_db_below_original": 18.78144381133058
+    },
+    {
+      "clip": "BKS - Too Much",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.8399449752807708,
+      "backing_removed_db_below_original": 25.932800320629354
+    },
+    {
+      "clip": "Ben Carrigan - We'll Talk About It All Tonight",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 2.4926967286181894,
+      "backing_removed_db_below_original": 20.07224015628834
+    },
+    {
+      "clip": "Ben Carrigan - We'll Talk About It All Tonight",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 3.598838239082771,
+      "backing_removed_db_below_original": 16.669023900020772
+    },
+    {
+      "clip": "Ben Carrigan - We'll Talk About It All Tonight",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.243189420773671,
+      "backing_removed_db_below_original": 14.570935571548311
+    },
+    {
+      "clip": "Ben Carrigan - We'll Talk About It All Tonight",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.2123472081446698,
+      "backing_removed_db_below_original": 19.86298144728321
+    },
+    {
+      "clip": "Bobby Nobody - Stitch Up",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.263261269746315,
+      "backing_removed_db_below_original": 12.756080634422592
+    },
+    {
+      "clip": "Bobby Nobody - Stitch Up",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 5.981760574476366,
+      "backing_removed_db_below_original": 10.858220587153415
+    },
+    {
+      "clip": "Bobby Nobody - Stitch Up",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.5691680229338,
+      "backing_removed_db_below_original": 13.474386284519825
+    },
+    {
+      "clip": "Bobby Nobody - Stitch Up",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.3183238135227766,
+      "backing_removed_db_below_original": 15.775433166797049
+    },
+    {
+      "clip": "Buitraker - Revo X",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 1.1832029537451167,
+      "backing_removed_db_below_original": 20.72444430155217
+    },
+    {
+      "clip": "Buitraker - Revo X",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 3.0514147250612274,
+      "backing_removed_db_below_original": 18.99763369375957
+    },
+    {
+      "clip": "Buitraker - Revo X",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 1.1994064562810716,
+      "backing_removed_db_below_original": 20.912158442339802
+    },
+    {
+      "clip": "Buitraker - Revo X",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.9907497236031229,
+      "backing_removed_db_below_original": 21.40739864945136
+    },
+    {
+      "clip": "Carlos Gonzalez - A Place For Us",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.166540881690314,
+      "backing_removed_db_below_original": 11.631409383548391
+    },
+    {
+      "clip": "Carlos Gonzalez - A Place For Us",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 4.024438759856553,
+      "backing_removed_db_below_original": 10.812173700260248
+    },
+    {
+      "clip": "Carlos Gonzalez - A Place For Us",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.567087811120862,
+      "backing_removed_db_below_original": 10.79910903203986
+    },
+    {
+      "clip": "Carlos Gonzalez - A Place For Us",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.3309639149162076,
+      "backing_removed_db_below_original": 13.709731722111623
+    },
+    {
+      "clip": "Cristina Vane - So Easy",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.996819777627089,
+      "backing_removed_db_below_original": 22.493220301063765
+    },
+    {
+      "clip": "Cristina Vane - So Easy",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 5.302130236193612,
+      "backing_removed_db_below_original": 18.900666577157523
+    },
+    {
+      "clip": "Cristina Vane - So Easy",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.808988393859672,
+      "backing_removed_db_below_original": 24.24294119586547
+    },
+    {
+      "clip": "Cristina Vane - So Easy",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.3171537105778723,
+      "backing_removed_db_below_original": 24.49239700790638
+    },
+    {
+      "clip": "Detsky Sad - Walkie Talkie",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.252899743945965,
+      "backing_removed_db_below_original": 13.98231970237919
+    },
+    {
+      "clip": "Detsky Sad - Walkie Talkie",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 6.993883727006517,
+      "backing_removed_db_below_original": 11.80981073379878
+    },
+    {
+      "clip": "Detsky Sad - Walkie Talkie",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.974207344718675,
+      "backing_removed_db_below_original": 13.445263338251795
+    },
+    {
+      "clip": "Detsky Sad - Walkie Talkie",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.661421598045783,
+      "backing_removed_db_below_original": 14.490618296099482
+    },
+    {
+      "clip": "Enda Reilly - Cur An Long Ag Seol",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.655862011782421,
+      "backing_removed_db_below_original": 12.205487843025448
+    },
+    {
+      "clip": "Enda Reilly - Cur An Long Ag Seol",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 5.588894206452128,
+      "backing_removed_db_below_original": 13.128271621948493
+    },
+    {
+      "clip": "Enda Reilly - Cur An Long Ag Seol",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.822694039218508,
+      "backing_removed_db_below_original": 12.965515957515601
+    },
+    {
+      "clip": "Enda Reilly - Cur An Long Ag Seol",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.7853437784109414,
+      "backing_removed_db_below_original": 14.629839048935871
+    },
+    {
+      "clip": "Forkupines - Semantics",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.732286299524642,
+      "backing_removed_db_below_original": 16.39125525274139
+    },
+    {
+      "clip": "Forkupines - Semantics",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 2.158668746004201,
+      "backing_removed_db_below_original": 16.82042374494617
+    },
+    {
+      "clip": "Forkupines - Semantics",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.789106906123126,
+      "backing_removed_db_below_original": 16.27289841906832
+    },
+    {
+      "clip": "Forkupines - Semantics",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.5282270502281645,
+      "backing_removed_db_below_original": 18.547723115356433
+    },
+    {
+      "clip": "Georgia Wonder - Siren",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 2.6367366169405,
+      "backing_removed_db_below_original": 12.265164791163258
+    },
+    {
+      "clip": "Georgia Wonder - Siren",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 4.1285945363567,
+      "backing_removed_db_below_original": 12.273042468547061
+    },
+    {
+      "clip": "Georgia Wonder - Siren",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.252252434519956,
+      "backing_removed_db_below_original": 11.04651491756946
+    },
+    {
+      "clip": "Georgia Wonder - Siren",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.035711918358373,
+      "backing_removed_db_below_original": 15.756906898565257
+    },
+    {
+      "clip": "Girls Under Glass - We Feel Alright",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.3903521790247853,
+      "backing_removed_db_below_original": 15.826317007466585
+    },
+    {
+      "clip": "Girls Under Glass - We Feel Alright",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 4.939637413358636,
+      "backing_removed_db_below_original": 13.484436040241224
+    },
+    {
+      "clip": "Girls Under Glass - We Feel Alright",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.545368667070207,
+      "backing_removed_db_below_original": 14.607995445866102
+    },
+    {
+      "clip": "Girls Under Glass - We Feel Alright",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.1967458928834165,
+      "backing_removed_db_below_original": 17.915374588940008
+    },
+    {
+      "clip": "Hollow Ground - Ill Fate",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.53891752025218,
+      "backing_removed_db_below_original": 15.679324598469076
+    },
+    {
+      "clip": "Hollow Ground - Ill Fate",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 6.854221483710395,
+      "backing_removed_db_below_original": 16.02962408647967
+    },
+    {
+      "clip": "Hollow Ground - Ill Fate",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.2471972175920314,
+      "backing_removed_db_below_original": 23.269065990332507
+    },
+    {
+      "clip": "Hollow Ground - Ill Fate",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.7794835541413186,
+      "backing_removed_db_below_original": 25.24511791913927
+    },
+    {
+      "clip": "James Elder & Mark M Thompson - The English Actor",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.671538146274055,
+      "backing_removed_db_below_original": 14.094035773073713
+    },
+    {
+      "clip": "James Elder & Mark M Thompson - The English Actor",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 2.521043889006748,
+      "backing_removed_db_below_original": 14.744018369504506
+    },
+    {
+      "clip": "James Elder & Mark M Thompson - The English Actor",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.450222621571324,
+      "backing_removed_db_below_original": 14.841640592063163
+    },
+    {
+      "clip": "James Elder & Mark M Thompson - The English Actor",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.0075979856513055,
+      "backing_removed_db_below_original": 17.123550943885505
+    },
+    {
+      "clip": "Juliet's Rescue - Heartbeats",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.159604812557223,
+      "backing_removed_db_below_original": 16.618602991145863
+    },
+    {
+      "clip": "Juliet's Rescue - Heartbeats",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 2.2340628421480133,
+      "backing_removed_db_below_original": 16.472825137925085
+    },
+    {
+      "clip": "Juliet's Rescue - Heartbeats",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.127382611259699,
+      "backing_removed_db_below_original": 15.63182676181037
+    },
+    {
+      "clip": "Juliet's Rescue - Heartbeats",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.427542612567064,
+      "backing_removed_db_below_original": 17.443491552307496
+    },
+    {
+      "clip": "Little Chicago's Finest - My Own",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 0.20397814584107027,
+      "backing_removed_db_below_original": 39.56475357425083
+    },
+    {
+      "clip": "Little Chicago's Finest - My Own",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.5416997844322692,
+      "backing_removed_db_below_original": 24.714167335319743
+    },
+    {
+      "clip": "Little Chicago's Finest - My Own",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 0.6309511785976984,
+      "backing_removed_db_below_original": 28.71608541140064
+    },
+    {
+      "clip": "Little Chicago's Finest - My Own",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.19871186706802607,
+      "backing_removed_db_below_original": 26.316898525355974
+    },
+    {
+      "clip": "Louis Cressy Band - Good Time",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.2943415241070335,
+      "backing_removed_db_below_original": 16.398721491166746
+    },
+    {
+      "clip": "Louis Cressy Band - Good Time",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 2.5421046743206563,
+      "backing_removed_db_below_original": 18.52789076929796
+    },
+    {
+      "clip": "Louis Cressy Band - Good Time",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.6590349582621178,
+      "backing_removed_db_below_original": 16.40446992462917
+    },
+    {
+      "clip": "Louis Cressy Band - Good Time",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.7923813598465829,
+      "backing_removed_db_below_original": 20.758432760694742
+    },
+    {
+      "clip": "Lyndsey Ollard - Catching Up",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.983855448574534,
+      "backing_removed_db_below_original": 18.01072928828854
+    },
+    {
+      "clip": "Lyndsey Ollard - Catching Up",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 7.719095689319898,
+      "backing_removed_db_below_original": 15.050822392928191
+    },
+    {
+      "clip": "Lyndsey Ollard - Catching Up",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 9.271338605546992,
+      "backing_removed_db_below_original": 15.401032687124472
+    },
+    {
+      "clip": "Lyndsey Ollard - Catching Up",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 2.0081219537257686,
+      "backing_removed_db_below_original": 15.457597302294241
+    },
+    {
+      "clip": "M.E.R.C. Music - Knockout",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.63854153628223,
+      "backing_removed_db_below_original": 12.10569098680805
+    },
+    {
+      "clip": "M.E.R.C. Music - Knockout",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 3.2138132261121943,
+      "backing_removed_db_below_original": 12.73237625770155
+    },
+    {
+      "clip": "M.E.R.C. Music - Knockout",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.625196018608292,
+      "backing_removed_db_below_original": 13.217242915545365
+    },
+    {
+      "clip": "M.E.R.C. Music - Knockout",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.45113460657567,
+      "backing_removed_db_below_original": 14.622047175249516
+    },
+    {
+      "clip": "Moosmusic - Big Dummy Shake",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 9.496874699322934,
+      "backing_removed_db_below_original": 12.158743842565194
+    },
+    {
+      "clip": "Moosmusic - Big Dummy Shake",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 10.078119604400808,
+      "backing_removed_db_below_original": 10.903653300092785
+    },
+    {
+      "clip": "Moosmusic - Big Dummy Shake",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 8.927609519321578,
+      "backing_removed_db_below_original": 12.379945995872726
+    },
+    {
+      "clip": "Moosmusic - Big Dummy Shake",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 2.3001839539886983,
+      "backing_removed_db_below_original": 11.403588840185515
+    },
+    {
+      "clip": "Motor Tapes - Shore",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.0826672385614162,
+      "backing_removed_db_below_original": 6.061884224064203
+    },
+    {
+      "clip": "Motor Tapes - Shore",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.5464065165666903,
+      "backing_removed_db_below_original": 21.75153900032905
+    },
+    {
+      "clip": "Motor Tapes - Shore",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.0132978661025627,
+      "backing_removed_db_below_original": 5.745585757043504
+    },
+    {
+      "clip": "Motor Tapes - Shore",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.26878848532332567,
+      "backing_removed_db_below_original": 23.729821163934794
+    },
+    {
+      "clip": "Mu - Too Bright",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 8.196260026602557,
+      "backing_removed_db_below_original": 18.237179625513022
+    },
+    {
+      "clip": "Mu - Too Bright",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 8.283824929540769,
+      "backing_removed_db_below_original": 15.391734185453956
+    },
+    {
+      "clip": "Mu - Too Bright",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 8.750324276575332,
+      "backing_removed_db_below_original": 16.454895706515206
+    },
+    {
+      "clip": "Mu - Too Bright",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.9315938636185936,
+      "backing_removed_db_below_original": 16.82100108000534
+    },
+    {
+      "clip": "Nerve 9 - Pray For The Rain",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.898007705017997,
+      "backing_removed_db_below_original": 9.342873691607235
+    },
+    {
+      "clip": "Nerve 9 - Pray For The Rain",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 8.402134766680918,
+      "backing_removed_db_below_original": 8.613011280645175
+    },
+    {
+      "clip": "Nerve 9 - Pray For The Rain",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 14.575115943277645,
+      "backing_removed_db_below_original": 6.827331820524548
+    },
+    {
+      "clip": "Nerve 9 - Pray For The Rain",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.9242924397084216,
+      "backing_removed_db_below_original": 10.966077335466366
+    },
+    {
+      "clip": "PR - Happy Daze",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 1.2317739503809553,
+      "backing_removed_db_below_original": 19.256495060702633
+    },
+    {
+      "clip": "PR - Happy Daze",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.0960336811726548,
+      "backing_removed_db_below_original": 28.1211152697501
+    },
+    {
+      "clip": "PR - Happy Daze",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 1.264959125653344,
+      "backing_removed_db_below_original": 19.781125828745033
+    },
+    {
+      "clip": "PR - Happy Daze",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.4073134811070897,
+      "backing_removed_db_below_original": 29.79532700922917
+    },
+    {
+      "clip": "PR - Oh No",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 1.2683522720875584,
+      "backing_removed_db_below_original": 14.447233335705052
+    },
+    {
+      "clip": "PR - Oh No",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.42828581256371,
+      "backing_removed_db_below_original": 22.17273193584868
+    },
+    {
+      "clip": "PR - Oh No",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 1.3710931349026652,
+      "backing_removed_db_below_original": 14.645658821813068
+    },
+    {
+      "clip": "PR - Oh No",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.6933673800951123,
+      "backing_removed_db_below_original": 22.80504276952961
+    },
+    {
+      "clip": "Punkdisco - Oral Hygiene",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.416299840810091,
+      "backing_removed_db_below_original": 17.901126808343374
+    },
+    {
+      "clip": "Punkdisco - Oral Hygiene",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 5.705602351501401,
+      "backing_removed_db_below_original": 18.477985581766333
+    },
+    {
+      "clip": "Punkdisco - Oral Hygiene",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.95906999979155,
+      "backing_removed_db_below_original": 19.62065246703692
+    },
+    {
+      "clip": "Punkdisco - Oral Hygiene",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.9206383202867747,
+      "backing_removed_db_below_original": 19.718988430106787
+    },
+    {
+      "clip": "Raft Monk - Tiring",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.5291452838467667,
+      "backing_removed_db_below_original": 15.759905912927012
+    },
+    {
+      "clip": "Raft Monk - Tiring",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.709288637213171,
+      "backing_removed_db_below_original": 20.425938559889374
+    },
+    {
+      "clip": "Raft Monk - Tiring",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.391468343867453,
+      "backing_removed_db_below_original": 15.227413446341904
+    },
+    {
+      "clip": "Raft Monk - Tiring",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.7311121235072103,
+      "backing_removed_db_below_original": 22.97036735760889
+    },
+    {
+      "clip": "Sambasevam Shanmugam - Kaathaadi",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 11.7482419804032,
+      "backing_removed_db_below_original": 11.512567249497124
+    },
+    {
+      "clip": "Sambasevam Shanmugam - Kaathaadi",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 5.250410010935069,
+      "backing_removed_db_below_original": 14.476779120624236
+    },
+    {
+      "clip": "Sambasevam Shanmugam - Kaathaadi",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 12.092488217861552,
+      "backing_removed_db_below_original": 11.984596501778068
+    },
+    {
+      "clip": "Sambasevam Shanmugam - Kaathaadi",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.3853709323038497,
+      "backing_removed_db_below_original": 15.83091320081737
+    },
+    {
+      "clip": "Secretariat - Borderline",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.117984818457706,
+      "backing_removed_db_below_original": 10.533685137608193
+    },
+    {
+      "clip": "Secretariat - Borderline",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 4.819003365554915,
+      "backing_removed_db_below_original": 11.631503881613286
+    },
+    {
+      "clip": "Secretariat - Borderline",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 8.47765368499913,
+      "backing_removed_db_below_original": 11.303197285022513
+    },
+    {
+      "clip": "Secretariat - Borderline",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.4532406415446495,
+      "backing_removed_db_below_original": 13.080679425449908
+    },
+    {
+      "clip": "Secretariat - Over The Top",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.74162214501223,
+      "backing_removed_db_below_original": 16.714245837442135
+    },
+    {
+      "clip": "Secretariat - Over The Top",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 6.667052584465876,
+      "backing_removed_db_below_original": 14.980324847228871
+    },
+    {
+      "clip": "Secretariat - Over The Top",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.839494937261601,
+      "backing_removed_db_below_original": 17.494927728080533
+    },
+    {
+      "clip": "Secretariat - Over The Top",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.5346755246376222,
+      "backing_removed_db_below_original": 17.521070092781063
+    },
+    {
+      "clip": "Side Effects Project - Sing With Me",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.730866110410508,
+      "backing_removed_db_below_original": 17.632733819929577
+    },
+    {
+      "clip": "Side Effects Project - Sing With Me",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 9.49898105421958,
+      "backing_removed_db_below_original": 13.863902420334506
+    },
+    {
+      "clip": "Side Effects Project - Sing With Me",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 8.380106576475516,
+      "backing_removed_db_below_original": 17.01554020943429
+    },
+    {
+      "clip": "Side Effects Project - Sing With Me",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.945209517363646,
+      "backing_removed_db_below_original": 16.84652248321327
+    },
+    {
+      "clip": "Signe Jakobsen - What Have You Done To Me",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.850229559715494,
+      "backing_removed_db_below_original": 17.132530178685464
+    },
+    {
+      "clip": "Signe Jakobsen - What Have You Done To Me",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 5.7982650232460395,
+      "backing_removed_db_below_original": 16.155626112054335
+    },
+    {
+      "clip": "Signe Jakobsen - What Have You Done To Me",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.994527475525989,
+      "backing_removed_db_below_original": 16.982114491529323
+    },
+    {
+      "clip": "Signe Jakobsen - What Have You Done To Me",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.7578496683698783,
+      "backing_removed_db_below_original": 18.827287624027832
+    },
+    {
+      "clip": "Skelpolu - Resurrection",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 1.5859914540948905,
+      "backing_removed_db_below_original": 13.400193200914511
+    },
+    {
+      "clip": "Skelpolu - Resurrection",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 2.6350698778987947,
+      "backing_removed_db_below_original": 16.739029804864835
+    },
+    {
+      "clip": "Skelpolu - Resurrection",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 2.507623987234482,
+      "backing_removed_db_below_original": 16.255983439614848
+    },
+    {
+      "clip": "Skelpolu - Resurrection",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.0842644685749139,
+      "backing_removed_db_below_original": 17.939036093630097
+    },
+    {
+      "clip": "Speak Softly - Broken Man",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.645579820797231,
+      "backing_removed_db_below_original": 13.071805995128132
+    },
+    {
+      "clip": "Speak Softly - Broken Man",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 4.693597971555137,
+      "backing_removed_db_below_original": 14.877945319047832
+    },
+    {
+      "clip": "Speak Softly - Broken Man",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.527503133651996,
+      "backing_removed_db_below_original": 13.461950557349612
+    },
+    {
+      "clip": "Speak Softly - Broken Man",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.9171601189421554,
+      "backing_removed_db_below_original": 19.176713079286234
+    },
+    {
+      "clip": "Speak Softly - Like Horses",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.284348300090206,
+      "backing_removed_db_below_original": 9.71208760036437
+    },
+    {
+      "clip": "Speak Softly - Like Horses",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 3.41215875416753,
+      "backing_removed_db_below_original": 12.347920866856388
+    },
+    {
+      "clip": "Speak Softly - Like Horses",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 8.544173109464255,
+      "backing_removed_db_below_original": 9.587788503426033
+    },
+    {
+      "clip": "Speak Softly - Like Horses",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.1948726606285993,
+      "backing_removed_db_below_original": 13.208002844959601
+    },
+    {
+      "clip": "The Doppler Shift - Atrophy",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 1.7172666788595121,
+      "backing_removed_db_below_original": 18.45487403568691
+    },
+    {
+      "clip": "The Doppler Shift - Atrophy",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.407747717952415,
+      "backing_removed_db_below_original": 15.829210172245247
+    },
+    {
+      "clip": "The Doppler Shift - Atrophy",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.972219097342503,
+      "backing_removed_db_below_original": 13.854316158664272
+    },
+    {
+      "clip": "The Doppler Shift - Atrophy",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.40575572589421727,
+      "backing_removed_db_below_original": 25.553420108626508
+    },
+    {
+      "clip": "The Easton Ellises (Baumi) - SDRNR",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 3.0864874081688254,
+      "backing_removed_db_below_original": 13.86555531666319
+    },
+    {
+      "clip": "The Easton Ellises (Baumi) - SDRNR",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 2.359660800788071,
+      "backing_removed_db_below_original": 16.1125302383909
+    },
+    {
+      "clip": "The Easton Ellises (Baumi) - SDRNR",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.3270127816665855,
+      "backing_removed_db_below_original": 13.307754635131989
+    },
+    {
+      "clip": "The Easton Ellises (Baumi) - SDRNR",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.285406042077851,
+      "backing_removed_db_below_original": 16.606427901721574
+    },
+    {
+      "clip": "The Easton Ellises - Falcon 69",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.645814057098243,
+      "backing_removed_db_below_original": 14.582372669107466
+    },
+    {
+      "clip": "The Easton Ellises - Falcon 69",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 4.0813412485386085,
+      "backing_removed_db_below_original": 13.547999056702643
+    },
+    {
+      "clip": "The Easton Ellises - Falcon 69",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.626291331461029,
+      "backing_removed_db_below_original": 13.101431641217703
+    },
+    {
+      "clip": "The Easton Ellises - Falcon 69",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.3625413039602927,
+      "backing_removed_db_below_original": 15.436121262232511
+    },
+    {
+      "clip": "The Long Wait - Dark Horses",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.360098600783009,
+      "backing_removed_db_below_original": 15.746841891698502
+    },
+    {
+      "clip": "The Long Wait - Dark Horses",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 5.33453425208242,
+      "backing_removed_db_below_original": 14.132928236705101
+    },
+    {
+      "clip": "The Long Wait - Dark Horses",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 8.613935709693855,
+      "backing_removed_db_below_original": 13.845323679212921
+    },
+    {
+      "clip": "The Long Wait - Dark Horses",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.402149593945101,
+      "backing_removed_db_below_original": 17.119588321559352
+    },
+    {
+      "clip": "The Mountaineering Club - Mallory",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.052246105790978,
+      "backing_removed_db_below_original": 19.4089075458931
+    },
+    {
+      "clip": "The Mountaineering Club - Mallory",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 4.1754783969362395,
+      "backing_removed_db_below_original": 19.263712576805283
+    },
+    {
+      "clip": "The Mountaineering Club - Mallory",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 4.970436025633789,
+      "backing_removed_db_below_original": 18.632204853371093
+    },
+    {
+      "clip": "The Mountaineering Club - Mallory",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.9155652120595472,
+      "backing_removed_db_below_original": 24.299094596434315
+    },
+    {
+      "clip": "The Sunshine Garcia Band - For I Am The Moon",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 6.34720437052685,
+      "backing_removed_db_below_original": 16.9809267915505
+    },
+    {
+      "clip": "The Sunshine Garcia Band - For I Am The Moon",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 7.9561497866273285,
+      "backing_removed_db_below_original": 13.288128914079971
+    },
+    {
+      "clip": "The Sunshine Garcia Band - For I Am The Moon",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 9.263691342859389,
+      "backing_removed_db_below_original": 14.461065305960066
+    },
+    {
+      "clip": "The Sunshine Garcia Band - For I Am The Moon",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.5947686199267452,
+      "backing_removed_db_below_original": 16.16201224893912
+    },
+    {
+      "clip": "Timboz - Pony",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 1.5591718232829341,
+      "backing_removed_db_below_original": 28.06484862305168
+    },
+    {
+      "clip": "Timboz - Pony",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 3.5615718303580497,
+      "backing_removed_db_below_original": 20.672711267639087
+    },
+    {
+      "clip": "Timboz - Pony",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 2.5245136640522103,
+      "backing_removed_db_below_original": 22.925362704296365
+    },
+    {
+      "clip": "Timboz - Pony",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.9097102231894063,
+      "backing_removed_db_below_original": 25.008415976170483
+    },
+    {
+      "clip": "Tom McKenzie - Directions",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 5.303249318873892,
+      "backing_removed_db_below_original": 20.901666020470138
+    },
+    {
+      "clip": "Tom McKenzie - Directions",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 4.8649310918729345,
+      "backing_removed_db_below_original": 17.788606265623205
+    },
+    {
+      "clip": "Tom McKenzie - Directions",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.266168354276154,
+      "backing_removed_db_below_original": 21.145507450935092
+    },
+    {
+      "clip": "Tom McKenzie - Directions",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.3099294500525058,
+      "backing_removed_db_below_original": 20.660015854310295
+    },
+    {
+      "clip": "Triviul feat. The Fiend - Widow",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.192701188048442,
+      "backing_removed_db_below_original": 10.70564645223887
+    },
+    {
+      "clip": "Triviul feat. The Fiend - Widow",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 5.358241860568722,
+      "backing_removed_db_below_original": 9.903582626377252
+    },
+    {
+      "clip": "Triviul feat. The Fiend - Widow",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 12.88063335257392,
+      "backing_removed_db_below_original": 8.558548252272182
+    },
+    {
+      "clip": "Triviul feat. The Fiend - Widow",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.9699326306631313,
+      "backing_removed_db_below_original": 10.95067863505937
+    },
+    {
+      "clip": "We Fell From The Sky - Not You",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 2.374651033477753,
+      "backing_removed_db_below_original": 17.96049299200861
+    },
+    {
+      "clip": "We Fell From The Sky - Not You",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 2.502166502377783,
+      "backing_removed_db_below_original": 19.313559261627944
+    },
+    {
+      "clip": "We Fell From The Sky - Not You",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 1.897726405079373,
+      "backing_removed_db_below_original": 19.7517774115603
+    },
+    {
+      "clip": "We Fell From The Sky - Not You",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 0.4384920672147721,
+      "backing_removed_db_below_original": 26.582239850450566
+    },
+    {
+      "clip": "Zeno - Signs",
+      "scenario": "original",
+      "algorithm": "new",
+      "vocal_reduction_db": 7.387300037113876,
+      "backing_removed_db_below_original": 10.342981449218714
+    },
+    {
+      "clip": "Zeno - Signs",
+      "scenario": "original",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 5.984598070500358,
+      "backing_removed_db_below_original": 10.46762668776892
+    },
+    {
+      "clip": "Zeno - Signs",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "new",
+      "vocal_reduction_db": 10.402460841966159,
+      "backing_removed_db_below_original": 8.937760033438924
+    },
+    {
+      "clip": "Zeno - Signs",
+      "scenario": "hard-panned-vocal",
+      "algorithm": "legacy",
+      "vocal_reduction_db": 1.4971397658037457,
+      "backing_removed_db_below_original": 13.787284573344758
+    }
+  ],
+  "notes": "Test clips were not used in training/selection of the new model. The legacy model documentation says these clips were part of its training."
+}

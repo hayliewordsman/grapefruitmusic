@@ -1,0 +1,11 @@
+# 4.0 beta 4 — build 36
+
+Karaoke Mode now uses a newly trained stereo separator instead of the legacy centre-only estimate. Immediate playback, local/offline inference, the strength slider and roughly 70 ms separator latency are retained. Exactly mono windows remain centred and a silent channel stays silent. Model size is 63,064 bytes; no new Android runtime dependency was introduced.
+
+The processor and model are GPL-3.0-or-later. Training used 84 CC BY 4.0 SiSEC18-MUS seven-second excerpts, 10 separate model-selection excerpts and 50 separate evaluation excerpts. Dataset attribution, split manifest, model/recipe hashes, source and licensing are available in the app's About → Karaoke Mode page and source assets. The source archive checksum was verified against Zenodo's metadata. The old FMA/Demucs training description is marked as historical and is no longer presented as the current model's provenance.
+
+The reproducible recipe and full quantitative comparison are in [the model documentation](../tools/karaoke/README-v4.md) and `tools/karaoke/evaluation-v4.json`. Median vocal reduction improved from 4.15 to 5.13 dB on original test mixtures with similar median backing loss. The controlled hard-pan comparison improved from 1.32 to 5.71 dB while removing more backing. These are short-excerpt energy measurements, not perceptual scores or a guarantee of complete lead-only removal. The legacy model trained on its own test partition; that limitation is explicitly documented.
+
+Local validation: 139 tests passed; debug/release APKs built; Android lint reported zero errors. Java output matched the Python quantized-model reference within one 16-bit sample step. Tests cover zero-strength transparency, stereo silence, mono centring, 48 kHz finite output, switching, latency, bounded model loading and parameter budget. A warmed host JVM processed 20 seconds of input in roughly 0.18–0.21 seconds under a 48 MB Java heap; this is not a Jelly Bean device benchmark.
+
+Min SDK 17, target/compile SDK 36, application ID and signing identity are preserved. No database change is required for beta 4. Device listening quality, audio underruns and target-phone throughput remain to be confirmed. Publishing workflows are unchanged and no release or merge is authorized by this change.

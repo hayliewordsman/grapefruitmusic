@@ -1,0 +1,5 @@
+4.0 beta 4
+Rebuilt Karaoke Mode with a lightweight stereo vocal separator for immediate on-device playback.
+Improves off-centre vocal reduction while keeping the strength slider, offline operation and Android 4.2.2 support.
+Updated About with actual model, dataset, licences, credits and training source.
+Vocal removal remains imperfect; instruments and backing voices can also be affected.

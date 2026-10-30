@@ -19,7 +19,10 @@ public class VocalRemoverTest {
     /** The model the app ships (app/src/main/assets/karaoke.bin). */
     static synchronized VocalRemover.Model model() throws IOException {
         if (model == null) {
-            for (String path : new String[]{"src/main/assets/karaoke.bin", "app/src/main/assets/karaoke.bin"}) {
+            for (String path :
+                    new String[] {
+                        "src/main/assets/karaoke.bin", "app/src/main/assets/karaoke.bin"
+                    }) {
                 File f = new File(path);
                 if (f.exists()) {
                     InputStream in = new FileInputStream(f);
@@ -103,16 +106,26 @@ public class VocalRemoverTest {
             r.process(in[2 * f] / 32768f, in[2 * f + 1] / 32768f);
             int l = Math.round(r.outL * 32768);
             int rr = Math.round(r.outR * 32768);
-            worst = Math.max(worst, Math.max(Math.abs(l - expected[2 * f]), Math.abs(rr - expected[2 * f + 1])));
+            worst =
+                    Math.max(
+                            worst,
+                            Math.max(
+                                    Math.abs(l - expected[2 * f]),
+                                    Math.abs(rr - expected[2 * f + 1])));
             if (f >= r.latency()) {
                 double d = (in[2 * (f - r.latency())] - expected[2 * f]) / 32768.0;
                 removed += d * d;
             }
         }
-        System.out.println("golden: worst difference " + worst + " LSB, removed rms "
-                + Math.sqrt(removed / (in.length / 2 - r.latency())));
+        System.out.println(
+                "golden: worst difference "
+                        + worst
+                        + " LSB, removed rms "
+                        + Math.sqrt(removed / (in.length / 2 - r.latency())));
         assertTrue("worst difference " + worst + " LSB", worst <= 3);
-        assertTrue("the model really took something away", Math.sqrt(removed / (in.length / 2)) > 0.01);
+        assertTrue(
+                "the model really took something away",
+                Math.sqrt(removed / (in.length / 2)) > 0.01);
     }
 
     @Test
@@ -161,17 +174,69 @@ public class VocalRemoverTest {
         d.setKaraoke(true, 1f, model());
         short[] in = samples("golden_in.bin");
         short[] pcm = in.clone();
-        for (int off = 0; off < pcm.length; off += 4096) d.process(pcm, off, Math.min(4096, pcm.length - off));
+        for (int off = 0; off < pcm.length; off += 4096)
+            d.process(pcm, off, Math.min(4096, pcm.length - off));
         assertEquals(plain + 3072, d.latencyFrames());
         assertTrue(d.karaokeRunning());
-        // Switching off fades out, drops the remover, fades back in: no sample jumps by more than the
+        // Switching off fades out, drops the remover, fades back in: no sample jumps by more than
+        // the
         // music itself does.
         d.setKaraoke(false, 1f, null);
         short[] again = in.clone();
-        for (int off = 0; off < again.length; off += 4096) d.process(again, off, Math.min(4096, again.length - off));
+        for (int off = 0; off < again.length; off += 4096)
+            d.process(again, off, Math.min(4096, again.length - off));
         assertTrue(!d.karaokeRunning());
         assertEquals(plain, d.latencyFrames());
         int ceiling = (int) Math.ceil(Dsp.CEILING * 32767) + 1;
         for (short s : again) assertTrue(Math.abs(s) <= ceiling);
+    }
+
+    @Test
+    public void stereoRebuildDoesNotPutSoundIntoAnEmptyChannel() throws IOException {
+        short[] in = samples("golden_in.bin");
+        VocalRemover r = new VocalRemover(model(), 44100);
+        for (int f = 0; f < in.length / 2; f++) {
+            r.process(in[2 * f] / 32768f, 0);
+            assertEquals("silent right channel", 0, r.outR, 1e-5);
+        }
+    }
+
+    @Test
+    public void monoRecordingsRemainCentered() throws IOException {
+        short[] in = samples("golden_in.bin");
+        VocalRemover r = new VocalRemover(model(), 44100);
+        for (int f = 0; f < in.length / 2; f++) {
+            float v = in[2 * f] / 32768f;
+            r.process(v, v);
+            assertEquals(r.outL, r.outR, 1e-6);
+        }
+    }
+
+    @Test
+    public void modelUsesStereoFeaturesAndBoundedLayers() throws IOException {
+        VocalRemover.Model m = model();
+        assertEquals(4 * m.bands, m.enc.ins);
+        assertEquals(2 * m.bands, m.out.outs);
+        assertEquals(128, m.bands);
+        int weights =
+                m.enc.weights.length
+                        + m.ctx.weights.length
+                        + m.mid.weights.length
+                        + m.out.weights.length;
+        assertTrue("small realtime network", weights <= 111000);
+    }
+
+    @Test
+    public void rejectsInvalidDimensionsBeforeAllocating() throws IOException {
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        java.io.DataOutputStream out = new java.io.DataOutputStream(bytes);
+        for (int v : new int[] {0x47464b4d, 5, Integer.MAX_VALUE, 1024, 128, 3, 1}) out.writeInt(v);
+        for (float v : new float[] {60, 16000, 1e-8f, 1.5f}) out.writeFloat(v);
+        try {
+            VocalRemover.Model.read(new ByteArrayInputStream(bytes.toByteArray()));
+            fail();
+        } catch (IOException expected) {
+            assertTrue(expected.getMessage().contains("dimensions"));
+        }
     }
 }

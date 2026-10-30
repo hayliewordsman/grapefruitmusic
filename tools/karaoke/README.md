@@ -1,3 +1,9 @@
+# Karaoke training recipes
+
+**4.0 beta 4 ships the new stereo separator:** see [README-v4.md](README-v4.md) for its training recipe, licensing, evaluation and limits. The material below documents the retired centre-only separator and its historical data; it is not the provenance of the current model.
+
+---
+
 # Karaoke Mode model
 
 Grapefruit's Karaoke Mode (`app/src/main/java/com/grapefruitmusic/playback/VocalRemover.java`) runs a

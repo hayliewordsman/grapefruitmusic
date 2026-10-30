@@ -106,20 +106,16 @@ with downloads for offline listening and time-synced lyrics.
   Lounge, Piano, Pop, R&B, Rock, Small Speakers, Spoken Word, Treble Booster / Reducer and Vocal Booster /
   Reducer. Each band is a peaking filter; because neighbouring bands overlap, their gains are solved together so
   every band's centre lands exactly where its slider is.
-- **Karaoke Mode:** Settings › Sound › Karaoke Mode, or the microphone in Now Playing, turns down the lead vocal
-  of any song, by as much as the Vocal Removal slider says (in Settings, or the upright slider beside the
-  artwork in Now Playing while Karaoke Mode is on: slide up to take more away). A small neural network (about
-  110,000 weights, 4-bit, 0.06 MB) runs on the phone, offline, inside Grapefruit's own audio engine: for each
-  46 ms window of sound (a new one every 23 ms) it looks at 96 frequency bands of the middle and sides of the
-  mix, from 70 ms back to 23 ms ahead plus a longer memory, and estimates how much of each band is lead vocal;
-  that part of the middle is subtracted from both channels, so instruments and the stereo picture stay. The
-  sound starts 70 ms later. Version 2 (3.2) does about a third of version 1's work, so it keeps up on a 2013
-  tablet, and Grapefruit's engine keeps half a second of sound ready so a busy moment doesn't stutter. It was
-  trained by `tools/karaoke` on the MUSDB18 7-second excerpts (CC BY 4.0) and on 459 Free Music Archive songs
-  (CC BY, CC0 and public domain; credited in Settings › About) that Demucs, a much larger separation model,
-  split into voice and backing; on songs it didn't learn from it takes the lead vocal down 3.9 to 4.6 dB
-  (median), against version 1's 3.6. It's read and run once in the background before it plays (Android 4's
-  JIT compiles code only after it has run a while), so it's fast from the first note.
+- **Karaoke Mode:** Settings › Sound › Karaoke Mode, or the microphone in Now Playing, reduces vocals
+  during playback with a lightweight on-device stereo separator. Its 63 KB, 4-bit model analyses left,
+  right, mid and side spectra across 128 bands and estimates a separate vocal mask for each channel.
+  The separator adds about 70 ms of latency at 44.1 kHz; the playback clock accounts for it. The strength
+  slider blends the reduction with the original audio. Singing and reverberation can remain, and some
+  instruments may become quieter. This is lightweight vocal reduction, not guaranteed studio-quality isolation.
+  The GPL-3.0-or-later model was trained from scratch using 84 CC BY 4.0 SiSEC18-MUS seven-second excerpts,
+  with 10 separate selection clips and 50 evaluation clips. Credits, licences and the reproducible recipe
+  are in Settings › About › Karaoke Mode and [the training documentation](tools/karaoke/README-v4.md).
+  See that document for measured results, instrument-loss tradeoffs and benchmark limitations.
 - **Mono Audio:** Settings › Accessibility. Left and right are mixed and played in both ears, at the song's own
   sample rate, keeping everything that's in either channel. A plain average, (L+R)/2, loses sound: whatever is out
   of phase between the channels (reverb, room sound, stereo-widened parts) cancels, a time difference between them
@@ -176,7 +172,7 @@ Since 3.2.2 the app ID is `io.github.hayliewordsman.grapefruitmusic` (it was `co
 treats it as a new app: install it beside an older Grapefruit, sign in to your servers and download offline music
 again, then uninstall the old one.
 
-Version 4.0 beta 3 keeps Android 4.2.2 (API 17) support and targets API 36. Modern Android asks for
+Version 4.0 beta 4 keeps Android 4.2.2 (API 17) support and targets API 36. Modern Android asks for
 music-library and notification permissions. Episode Downloads shows ongoing podcast transfers and their progress;
 Playlists is available within Library. A beta signed with the permanent app key can update an
 existing installation; a debug APK uses a different key and cannot update the release app.
@@ -243,7 +239,8 @@ any later version (`GPL-3.0-or-later`; see [LICENSE](LICENSE)). It is distribute
 useful, but without any warranty; without even the implied warranty of merchantability or fitness for a particular
 purpose.
 
-It includes [Conscrypt](https://github.com/google/conscrypt) (Apache License 2.0). Karaoke Mode's model
-(`app/src/main/assets/karaoke.bin`) was trained by `tools/karaoke` on the MUSDB18 7-second excerpts (CC BY 4.0)
-and Free Music Archive songs under CC BY, CC0 or public domain, credited in `app/src/main/assets/karaoke_credits.txt`
-and in the app.
+It includes [Conscrypt](https://github.com/google/conscrypt) (Apache License 2.0). Karaoke Mode's
+processor and model weights are GPL-3.0-or-later. Its training data is the
+[SiSEC18-MUS 7s Excerpts](https://zenodo.org/records/3270814), CC BY 4.0, by Fabian-Robert Stöter,
+Antoine Liutkus and Nobutaka Ito. Training/selection credits and model provenance ship in
+`app/src/main/assets/karaoke_credits.txt` and `karaoke_training.json` and are described in the app.
