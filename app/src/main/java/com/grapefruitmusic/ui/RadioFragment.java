@@ -167,7 +167,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
 
     /** FM: listen and scan, presets as tiles, and the stations a scan found. */
     private void addFm(final Context c) {
-        LinearLayout actions = new LinearLayout(c);
+        LinearLayout actions = Ui.actionRow(c);
         actions.setOrientation(LinearLayout.HORIZONTAL);
         actions.setPadding(Ui.dp(c, 16), Ui.dp(c, 8), Ui.dp(c, 16), Ui.dp(c, 4));
         boolean on = radio.wantsToPlay();
@@ -180,7 +180,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
                 else main().playRadio(radio.frequency());
             }
         });
-        actions.addView(listen, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        actions.addView(listen, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
         boolean scanning = radio.state() == Radio.SCANNING;
         LinearLayout scan = Ui.pill(c, Icons.SEARCH, scanning ? "Finding Stations…" : "Find Stations");
         scan.setEnabled(!scanning);
@@ -191,8 +191,8 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
                 radio.scan();
             }
         });
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-        lp.leftMargin = Ui.dp(c, 12);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        lp.leftMargin = Ui.dp(c, 8);
         actions.addView(scan, lp);
         content.addView(actions);
         if (!radio.headphones()) {
@@ -253,7 +253,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
      * popular where they are.
      */
     private void addInternet(final Context c) {
-        LinearLayout actions = new LinearLayout(c);
+        LinearLayout actions = Ui.actionRow(c);
         actions.setOrientation(LinearLayout.HORIZONTAL);
         actions.setPadding(Ui.dp(c, 16), Ui.dp(c, 8), Ui.dp(c, 16), Ui.dp(c, 4));
         LinearLayout search = Ui.pill(c, Icons.SEARCH, "Search Stations");
@@ -263,7 +263,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
                 main().push(StationsFragment.newInstance(StationsFragment.SEARCH, null, "Search Stations", "Radio"));
             }
         });
-        actions.addView(search, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        actions.addView(search, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
         LinearLayout link = Ui.pill(c, Icons.PLUS, "Add by Link");
         link.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -271,8 +271,8 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
                 addByLink(c);
             }
         });
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-        lp.leftMargin = Ui.dp(c, 12);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        lp.leftMargin = Ui.dp(c, 8);
         actions.addView(link, lp);
         content.addView(actions);
         boolean online = Http.isOnline(c);

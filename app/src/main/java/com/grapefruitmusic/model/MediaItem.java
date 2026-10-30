@@ -42,6 +42,8 @@ public class MediaItem implements Serializable {
     public String entryId;
     /** Podcast directory identity, used only for discovery editorial rules. */
     public String podcastDirectoryId;
+    /** Current system download snapshot; refreshed from DownloadManager rather than serialized. */
+    public transient com.grapefruitmusic.podcast.PodcastDownload podcastDownload;
     /** Track gain in dB reported by the server (ReplayGain, relative to -18 LUFS), or null. */
     public Float replayGain;
     /** When an album was added to the library or a playlist made (ms since 1970), or 0 if unknown. */

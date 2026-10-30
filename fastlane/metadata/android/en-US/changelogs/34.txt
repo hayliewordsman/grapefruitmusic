@@ -1,0 +1,10 @@
+4.0 beta 2
+Now Playing: icon-only bottom controls and metadata aligned with the progress bar.
+Fixed clipped server selection highlights and the podcast sources button.
+Audited button spacing across screens and dialogs, including long labels and compact layouts.
+Removed obsolete Settings dividers.
+Playlists remains available in Library; removed its bottom-menu tab.
+Podcast downloads show progress in the app and system notifications, with cancel/retry actions.
+Large podcast archives now stream with bounded memory use.
+Expanded the disclosed discovery editorial policy; excluded shows remain available through Search and subscriptions.
+Android 4.2.2 support retained; targets Android API 36.

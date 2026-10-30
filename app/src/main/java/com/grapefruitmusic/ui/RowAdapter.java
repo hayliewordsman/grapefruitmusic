@@ -256,6 +256,8 @@ final class RowAdapter extends BaseAdapter {
         ArtworkView art;
         TextView title;
         TextView subtitle;
+        TextView downloadStatus;
+        android.widget.ProgressBar downloadProgress;
         IconView accessory;
         IconView more;
     }
@@ -279,6 +281,22 @@ final class RowAdapter extends BaseAdapter {
             h.subtitle = Ui.text(context, 13, R.attr.gfTextSecondary, false);
             texts.addView(h.title);
             texts.addView(h.subtitle);
+            h.downloadStatus = Ui.text(context, 12, R.attr.gfTextSecondary, false);
+            h.downloadStatus.setSingleLine(false);
+            h.downloadStatus.setMaxLines(2);
+            h.downloadStatus.setPadding(0, Ui.dp(context, 4), 0, 0);
+            texts.addView(h.downloadStatus);
+            h.downloadProgress = new android.widget.ProgressBar(context, null,
+                    android.R.attr.progressBarStyleHorizontal);
+            h.downloadProgress.setMax(100);
+            if (h.downloadProgress.getProgressDrawable() != null)
+                h.downloadProgress.getProgressDrawable().mutate().setColorFilter(
+                        accent, android.graphics.PorterDuff.Mode.SRC_IN);
+            if (h.downloadProgress.getIndeterminateDrawable() != null)
+                h.downloadProgress.getIndeterminateDrawable().mutate().setColorFilter(
+                        accent, android.graphics.PorterDuff.Mode.SRC_IN);
+            texts.addView(h.downloadProgress, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(context, 8)));
             row.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
             h.accessory = Ui.icon(context, Icons.CHEVRON_RIGHT, secondary, 18);
             row.addView(h.accessory);
@@ -308,14 +326,24 @@ final class RowAdapter extends BaseAdapter {
         h.title.setTextColor(m.kind == MediaItem.TRACK && m.key().equals(playingKey) ? accent : primary);
         h.subtitle.setText(subtitle(m));
         h.subtitle.setVisibility(h.subtitle.getText().length() > 0 ? View.VISIBLE : View.GONE);
+        com.grapefruitmusic.podcast.PodcastDownload progress = m.podcastDownload;
+        h.downloadStatus.setVisibility(progress == null ? View.GONE : View.VISIBLE);
+        h.downloadProgress.setVisibility(progress != null && progress.active() ? View.VISIBLE : View.GONE);
+        if (progress != null) {
+            h.downloadStatus.setText(progress.text());
+            h.downloadProgress.setIndeterminate(progress.percent() < 0);
+            if (progress.percent() >= 0) h.downloadProgress.setProgress(progress.percent());
+            h.downloadProgress.setContentDescription(progress.text());
+        }
         h.more.setTag(m);
         h.more.setVisibility(m.kind == MediaItem.TRACK ? View.VISIBLE : View.GONE);
         if (m.kind == MediaItem.TRACK) {
             Integer state = downloadStates != null ? downloadStates.get(m.id) : null;
-            if (state != null && state == Downloads.DONE) {
+            if ((progress != null && m.path != null) || (state != null && state == Downloads.DONE)) {
                 h.accessory.setIcon(Icons.DOWNLOADED);
                 h.accessory.setVisibility(View.VISIBLE);
-            } else if (state != null && (state == Downloads.QUEUED || state == Downloads.ACTIVE)) {
+            } else if ((progress != null && progress.active())
+                    || (state != null && (state == Downloads.QUEUED || state == Downloads.ACTIVE))) {
                 h.accessory.setIcon(Icons.DOWNLOAD);
                 h.accessory.setVisibility(View.VISIBLE);
             } else {

@@ -196,14 +196,14 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         header.addView(addSongs, al);
         addSongsButton = addSongs;
 
-        LinearLayout buttons = new LinearLayout(c);
+        LinearLayout buttons = Ui.actionRow(c);
         buttons.setOrientation(LinearLayout.HORIZONTAL);
         buttons.setPadding(0, Ui.dp(c, 14), 0, Ui.dp(c, 4));
         LinearLayout playBtn = Ui.pill(c, Icons.PLAY, "Play");
         LinearLayout shuffleBtn = Ui.pill(c, Icons.SHUFFLE, "Shuffle");
-        LinearLayout.LayoutParams l = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-        LinearLayout.LayoutParams r = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-        r.leftMargin = Ui.dp(c, 12);
+        LinearLayout.LayoutParams l = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        LinearLayout.LayoutParams r = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        r.leftMargin = Ui.dp(c, 8);
         buttons.addView(playBtn, l);
         buttons.addView(shuffleBtn, r);
         playBtn.setOnClickListener(new View.OnClickListener() {

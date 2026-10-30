@@ -21,6 +21,8 @@ public final class PodcastsFragment extends BaseFragment {
     private TextView status;
     private EditText field;
     private int generation;
+    private boolean resumed, loading, downloadPollInFlight;
+    private final Runnable downloadPoll = () -> refreshDownloadProgress();
     private List<MediaItem> items = new ArrayList<MediaItem>();
 
     private int mode() {
@@ -57,14 +59,15 @@ public final class PodcastsFragment extends BaseFragment {
                         : mode == SEARCH
                                 ? "Search Podcasts"
                                 : mode == DOWNLOADED
-                                        ? "Downloaded Episodes"
+                                        ? "Episode Downloads"
                                         : mode == SUBSCRIPTIONS ? "Subscriptions" : "Podcasts";
         LinearLayout header =
                 Ui.header(
                         c, mode == HOME ? null : "Podcasts", title, mode == HOME ? null : goBack());
         root.addView(header);
         if (mode == HOME) {
-            LinearLayout buttons = new LinearLayout(c);
+            LinearLayout buttons = Ui.actionRow(c);
+            buttons.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 8));
             addButton(buttons, "Search Podcasts", v -> main().push(page(SEARCH, null)));
             addButton(buttons, "Subscriptions", v -> main().push(page(SUBSCRIPTIONS, null)));
             addButton(buttons, "Downloads", v -> main().push(page(DOWNLOADED, null)));
@@ -106,18 +109,27 @@ public final class PodcastsFragment extends BaseFragment {
                     android.graphics.Typeface.create(
                             "sans-serif", android.graphics.Typeface.NORMAL));
             field.setMinHeight(Ui.dp(c, 48));
-            addSearchControl(header, field, 10);
-            addSearchControl(header, Ui.button(c, "Search Podcasts", v -> load()), 8);
+            addHeaderControl(header, field, 10);
+            addHeaderControl(header, Ui.button(c, "Search Podcasts", v -> load()), 8);
             field.setOnEditorActionListener(
                     (v, action, event) -> {
                         load();
                         return true;
                     });
-            addSearchControl(header, Ui.button(c, "Add by RSS address", v -> addFeed()), 8);
+            addHeaderControl(header, Ui.button(c, "Add by RSS address", v -> addFeed()), 8);
+        }
+        if (mode == DOWNLOADED) {
+            TextView hint = Ui.text(c, 14, R.attr.gfTextSecondary, false);
+            hint.setSingleLine(false);
+            hint.setText(
+                    "Active downloads appear first. Open an episode's menu to cancel or retry.");
+            hint.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 8));
+            header.addView(hint);
         }
         if (mode == SHOW) {
             final MediaItem show = item();
-            header.addView(
+            addHeaderControl(
+                    header,
                     Ui.button(
                             c,
                             store.subscribed(show.id) ? "Unsubscribe" : "Subscribe",
@@ -131,8 +143,9 @@ public final class PodcastsFragment extends BaseFragment {
                                                 ? "Subscribed. New episodes are checked"
                                                         + " periodically."
                                                 : "Unsubscribed. Downloads are kept.");
-                            }));
-            header.addView(Ui.button(c, "Refresh Episodes", v -> load()));
+                            }),
+                    8);
+            addHeaderControl(header, Ui.button(c, "Refresh Episodes", v -> load()), 8);
         }
         FrameLayout body = new FrameLayout(c);
         root.addView(body, new LinearLayout.LayoutParams(-1, 0, 1));
@@ -146,11 +159,14 @@ public final class PodcastsFragment extends BaseFragment {
             note.setSingleLine(false);
             note.setGravity(Gravity.CENTER);
             offline.addView(note);
+            LinearLayout.LayoutParams offlineButton = new LinearLayout.LayoutParams(-1, -2);
+            offlineButton.topMargin = Ui.dp(c, 16);
             offline.addView(
                     Ui.button(
                             c,
                             "Browse Downloaded Episodes",
-                            v -> main().push(page(DOWNLOADED, null))));
+                            v -> main().push(page(DOWNLOADED, null))),
+                    offlineButton);
             body.addView(offline, new FrameLayout.LayoutParams(-1, -1));
             return root;
         }
@@ -226,7 +242,7 @@ public final class PodcastsFragment extends BaseFragment {
         }
     }
 
-    private void addSearchControl(LinearLayout header, View control, int gapDp) {
+    private void addHeaderControl(LinearLayout header, View control, int gapDp) {
         LinearLayout.LayoutParams lp =
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -235,8 +251,8 @@ public final class PodcastsFragment extends BaseFragment {
     }
 
     private void addButton(LinearLayout row, String title, View.OnClickListener action) {
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -2, 1);
-        lp.setMargins(3, 3, 3, 6);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -1, 1);
+        lp.leftMargin = row.getChildCount() == 0 ? 0 : Ui.dp(row.getContext(), 8);
         row.addView(Ui.button(getActivity(), title, action), lp);
     }
 
@@ -271,24 +287,25 @@ public final class PodcastsFragment extends BaseFragment {
     }
 
     private void episodeActions(final MediaItem m) {
-        episodeActions(
-                this,
-                m,
-                () -> {
-                    if (mode() == DOWNLOADED) load();
-                });
+        episodeActions(this, m, () -> refreshDownloadProgress());
     }
 
     static void episodeActions(final BaseFragment page, final MediaItem m, final Runnable refresh) {
         final Context c = page.getActivity();
         final PodcastStore store = PodcastStore.get(c);
-        boolean local = store.localFile(m) != null;
+        PodcastDownload progress = store.downloadProgress(m);
+        boolean local = progress != null && progress.status == PodcastDownload.COMPLETE;
+        boolean active = progress != null && progress.active();
+        String action =
+                local
+                        ? "Remove Download"
+                        : active
+                                ? "Cancel Download"
+                                : progress != null ? "Retry Download" : "Download Episode";
         Ui.dialog(c)
                 .setTitle(m.title)
                 .setItems(
-                        new String[] {
-                            "Play", local ? "Remove Download" : "Download Episode", "Mark Unplayed"
-                        },
+                        new String[] {"Play", action, "Mark Unplayed"},
                         (d, w) -> {
                             if (w == 0) {
                                 Player.get(c).playNow(m);
@@ -298,13 +315,15 @@ public final class PodcastsFragment extends BaseFragment {
                                 if (m.sameAs(Player.get(c).current())) Player.get(c).seekTo(0);
                             } else {
                                 try {
-                                    if (local) store.removeDownload(m);
+                                    if (local || active) store.removeDownload(m);
                                     else store.download(m);
                                     Notice.show(
                                             c,
                                             local
                                                     ? "Download removed"
-                                                    : "Episode queued for download");
+                                                    : active
+                                                            ? "Download canceled"
+                                                            : "Episode queued for download");
                                     if (refresh != null) refresh.run();
                                 } catch (Exception e) {
                                     Notice.show(
@@ -330,6 +349,7 @@ public final class PodcastsFragment extends BaseFragment {
         final MediaItem show = mode == SHOW ? item() : null;
         final String query = field == null ? "" : field.getText().toString().trim();
         if (mode == SEARCH && query.length() == 0) return;
+        loading = true;
         status.setText("Loading…");
         status.setVisibility(View.VISIBLE);
         bg(
@@ -352,6 +372,7 @@ public final class PodcastsFragment extends BaseFragment {
                 },
                 (List<MediaItem> found, Exception error) -> {
                     if (gen != generation || getView() == null) return;
+                    loading = false;
                     if (error == null) {
                         items = found;
                         render();
@@ -363,15 +384,57 @@ public final class PodcastsFragment extends BaseFragment {
                 });
     }
 
+    private void scheduleDownloadPoll() {
+        Bg.cancelMain(downloadPoll);
+        if (resumed && adapter != null && (mode() == DOWNLOADED || mode() == SHOW))
+            Bg.mainDelayed(downloadPoll, 1500);
+    }
+
+    private void refreshDownloadProgress() {
+        if (!resumed || adapter == null || downloadPollInFlight) return;
+        if (loading) {
+            scheduleDownloadPoll();
+            return;
+        }
+        int mode = mode();
+        if (mode != DOWNLOADED && mode != SHOW) return;
+        final int gen = generation;
+        final Context c = getActivity().getApplicationContext();
+        final String feed = mode == SHOW ? item().id : null;
+        downloadPollInFlight = true;
+        Bg.run(
+                () -> PodcastStore.get(c).episodes(feed, mode == DOWNLOADED),
+                (List<MediaItem> found, Exception error) -> {
+                    downloadPollInFlight = false;
+                    if (!resumed || getView() == null) return;
+                    if (gen == generation && error == null) {
+                        items = found;
+                        render();
+                        status.setText(found.isEmpty() ? "Nothing here yet." : "");
+                    }
+                    scheduleDownloadPoll();
+                });
+    }
+
     @Override
     public void onResume() {
         super.onResume();
-        if (mode() == DOWNLOADED && adapter != null) load();
+        resumed = true;
+        scheduleDownloadPoll();
+    }
+
+    @Override
+    public void onPause() {
+        resumed = false;
+        Bg.cancelMain(downloadPoll);
+        super.onPause();
     }
 
     @Override
     public void onDestroyView() {
         generation++;
+        resumed = false;
+        Bg.cancelMain(downloadPoll);
         adapter = null;
         super.onDestroyView();
     }

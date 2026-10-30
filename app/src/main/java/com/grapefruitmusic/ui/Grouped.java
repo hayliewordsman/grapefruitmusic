@@ -67,7 +67,7 @@ final class Grouped {
         LinearLayout row = new LinearLayout(c);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setMinimumHeight(Ui.dp(c, 46));
+        row.setMinimumHeight(Ui.dp(c, 48));
         row.setPadding(Ui.dp(c, 16), Ui.dp(c, 6), Ui.dp(c, 12), Ui.dp(c, 6));
         row.setBackgroundColor(Ui.color(c, R.attr.gfSurface));
         if (click != null) row.setOnClickListener(click);
@@ -77,7 +77,7 @@ final class Grouped {
     void addRow(LinearLayout row, boolean clickable) {
         row.setBackground(Ui.actionBackground(c));
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(Ui.dp(c,12),Ui.dp(c,3),Ui.dp(c,12),Ui.dp(c,3));
+        lp.setMargins(Ui.dp(c,12),Ui.dp(c,4),Ui.dp(c,12),Ui.dp(c,4));
         content.addView(row,lp);
     }
 

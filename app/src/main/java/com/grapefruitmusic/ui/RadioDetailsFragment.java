@@ -60,7 +60,7 @@ public final class RadioDetailsFragment extends BaseFragment {
         intro.setPadding(Ui.dp(c, 16), 0, Ui.dp(c, 16), Ui.dp(c, 8));
         content.addView(intro);
 
-        LinearLayout actions = new LinearLayout(c);
+        LinearLayout actions = Ui.actionRow(c);
         actions.setOrientation(LinearLayout.HORIZONTAL);
         actions.setPadding(Ui.dp(c, 16), Ui.dp(c, 4), Ui.dp(c, 16), Ui.dp(c, 8));
         LinearLayout copy = Ui.pill(c, Icons.QUEUE, "Copy");
@@ -73,7 +73,7 @@ public final class RadioDetailsFragment extends BaseFragment {
                 Notice.show(c, "Copied the radio details");
             }
         });
-        actions.addView(copy, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        actions.addView(copy, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
         LinearLayout save = Ui.pill(c, Icons.DOWNLOAD, "Save Details");
         save.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,8 +81,8 @@ public final class RadioDetailsFragment extends BaseFragment {
                 save(c);
             }
         });
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-        lp.leftMargin = Ui.dp(c, 12);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        lp.leftMargin = Ui.dp(c, 8);
         actions.addView(save, lp);
         content.addView(actions);
 

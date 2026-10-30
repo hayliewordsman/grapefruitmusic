@@ -94,12 +94,21 @@ public final class Ui {
         TextView t = text(c, 15, R.attr.gfAccent, true);
         t.setText(label);
         t.setSingleLine(false);
+        t.setEllipsize(null);
         t.setGravity(android.view.Gravity.CENTER);
         t.setMinHeight(dp(c, 48));
         t.setPadding(dp(c, 12), dp(c, 10), dp(c, 12), dp(c, 10));
         t.setBackground(actionBackground(c));
         t.setOnClickListener(action);
         return t;
+    }
+
+    /** Equal-height horizontal actions; labels may wrap without shifting their backgrounds. */
+    public static LinearLayout actionRow(Context c) {
+        LinearLayout row = new LinearLayout(c);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setBaselineAligned(false);
+        return row;
     }
 
     public static View separator(Context c, int insetLeftDp) {
@@ -178,6 +187,10 @@ public final class Ui {
     public static TextView textButton(Context c, String label, boolean bold) {
         TextView t = text(c, 17, R.attr.gfAccent, bold);
         t.setText(label);
+        t.setMinHeight(dp(c, 48));
+        t.setMinWidth(dp(c, 48));
+        t.setSingleLine(false);
+        t.setEllipsize(null);
         t.setGravity(Gravity.CENTER_VERTICAL);
         t.setPadding(dp(c, 10), dp(c, 6), dp(c, 10), dp(c, 6));
         t.setBackgroundResource(resource(c, R.attr.gfRowBackground));
@@ -217,6 +230,8 @@ public final class Ui {
     public static LinearLayout pill(Context c, int icon, String label) {
         LinearLayout p = new LinearLayout(c);
         p.setOrientation(LinearLayout.HORIZONTAL);
+        p.setBaselineAligned(false);
+        p.setMinimumHeight(dp(c, 48));
         p.setGravity(Gravity.CENTER);
         p.setBackgroundResource(resource(c, R.attr.gfPillBackground));
         p.setPadding(dp(c, 12), dp(c, 10), dp(c, 12), dp(c, 10));
@@ -224,6 +239,8 @@ public final class Ui {
         p.addView(i);
         TextView t = text(c, 16, R.attr.gfAccent, true);
         t.setText(label);
+        t.setSingleLine(false);
+        t.setEllipsize(null);
         t.setPadding(dp(c, 8), 0, 0, 0);
         p.addView(t);
         return p;

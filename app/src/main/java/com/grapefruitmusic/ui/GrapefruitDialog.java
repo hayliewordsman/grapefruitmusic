@@ -52,6 +52,34 @@ public final class GrapefruitDialog extends Dialog {
         return items;
     }
 
+    /** Keep long actions readable on narrow dialogs or with larger system fonts. */
+    private static final class ButtonBar extends LinearLayout {
+        ButtonBar(Context c) { super(c); setBaselineAligned(false); }
+
+        @Override protected void onMeasure(int widthSpec, int heightSpec) {
+            int gap = Ui.dp(getContext(), 8);
+            int width = MeasureSpec.getSize(widthSpec) - getPaddingLeft() - getPaddingRight();
+            int count = getChildCount();
+            int cell = count == 0 ? width : (width - gap * (count - 1)) / count;
+            boolean stack = false;
+            for (int i = 0; i < count; i++) {
+                TextView button = (TextView)getChildAt(i);
+                if (button.getPaint().measureText(button.getText().toString())
+                        + button.getPaddingLeft() + button.getPaddingRight() > cell) stack = true;
+            }
+            setOrientation(stack ? VERTICAL : HORIZONTAL);
+            for (int i = 0; i < count; i++) {
+                LayoutParams lp = (LayoutParams)getChildAt(i).getLayoutParams();
+                lp.width = stack ? LayoutParams.MATCH_PARENT : 0;
+                lp.height = stack ? LayoutParams.WRAP_CONTENT : LayoutParams.MATCH_PARENT;
+                lp.weight = stack ? 0 : 1;
+                lp.leftMargin = !stack && i > 0 ? gap : 0;
+                lp.topMargin = stack && i > 0 ? gap : 0;
+            }
+            super.onMeasure(widthSpec, heightSpec);
+        }
+    }
+
     public static final class Builder {
         private final Context context;
         private CharSequence title;
@@ -185,19 +213,19 @@ public final class GrapefruitDialog extends Dialog {
                 card.addView(itemList(d, false), shrinkable(Ui.dp(c, 10)));
             }
             if (positiveText != null || negativeText != null) {
-                LinearLayout buttons = new LinearLayout(c);
+                LinearLayout buttons = new ButtonBar(c);
                 buttons.setOrientation(LinearLayout.HORIZONTAL);
                 LinearLayout.LayoutParams blp = matchWidth();
                 blp.topMargin = Ui.dp(c, 20);
                 card.addView(buttons, blp);
                 if (negativeText != null) {
                     d.negativeButton = pill(negativeText, false);
-                    buttons.addView(d.negativeButton, new LinearLayout.LayoutParams(0, Ui.dp(c, 46), 1));
+                    buttons.addView(d.negativeButton, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
                     d.negativeButton.setOnClickListener(buttonClick(d, DialogInterface.BUTTON_NEGATIVE, negativeListener));
                 }
                 if (positiveText != null) {
                     d.positiveButton = pill(positiveText, true);
-                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, Ui.dp(c, 46), 1);
+                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
                     if (negativeText != null) lp.leftMargin = Ui.dp(c, 10);
                     buttons.addView(d.positiveButton, lp);
                     d.positiveButton.setOnClickListener(buttonClick(d, DialogInterface.BUTTON_POSITIVE, positiveListener));
@@ -243,11 +271,15 @@ public final class GrapefruitDialog extends Dialog {
 
             TextView cancel = Ui.text(c, 17, R.attr.gfAccent, true);
             cancel.setText("Cancel");
+            cancel.setSingleLine(false);
+            cancel.setEllipsize(null);
+            cancel.setMinHeight(Ui.dp(c, 54));
+            cancel.setPadding(Ui.dp(c, 12), Ui.dp(c, 10), Ui.dp(c, 12), Ui.dp(c, 10));
             cancel.setGravity(Gravity.CENTER);
             cancel.setBackground(pressable(Ui.color(c, R.attr.gfSurface), Ui.color(c, R.attr.gfControlPressed),
                     Ui.dp(c, 16)));
             LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    Ui.dp(c, 54));
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
             clp.topMargin = Ui.dp(c, 8);
             column.addView(cancel, clp);
             cancel.setOnClickListener(new View.OnClickListener() {
@@ -335,8 +367,11 @@ public final class GrapefruitDialog extends Dialog {
             Context c = context;
             TextView b = Ui.text(c, 16, R.attr.gfAccent, true);
             b.setText(text);
+            b.setSingleLine(false);
+            b.setEllipsize(null);
+            b.setMinHeight(Ui.dp(c, 48));
             b.setGravity(Gravity.CENTER);
-            b.setPadding(Ui.dp(c, 10), 0, Ui.dp(c, 10), 0);
+            b.setPadding(Ui.dp(c, 12), Ui.dp(c, 10), Ui.dp(c, 12), Ui.dp(c, 10));
             int radius = Ui.dp(c, 23);
             if (primary) {
                 int fill = destructive ? RED : Ui.accent(c);

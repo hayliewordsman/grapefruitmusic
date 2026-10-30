@@ -38,13 +38,13 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     public static final String EXTRA_OPEN_NOW_PLAYING = "open_now_playing";
 
     private static final int TAB_LIBRARY = 0;
-    private static final int TAB_PLAYLISTS = 1;
     private static final int TAB_RADIO = 2;
     private static final int TAB_PODCASTS = 3;
     private static final int TAB_SEARCH = 4;
     private static final int TAB_SETTINGS = 5;
-    private static final String[] TAB_NAMES = {"Library", "Playlists", "Radio", "Podcasts", "Search", "Settings"};
-    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.PLAYLIST, Icons.RADIO, Icons.HEADPHONES, Icons.SEARCH, Icons.SETTINGS};
+    private static final int[] TAB_IDS = {TAB_LIBRARY, TAB_RADIO, TAB_PODCASTS, TAB_SEARCH, TAB_SETTINGS};
+    private static final String[] TAB_NAMES = {"Library", "Radio", "Podcasts", "Search", "Settings"};
+    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.RADIO, Icons.HEADPHONES, Icons.SEARCH, Icons.SETTINGS};
 
     /** Grapefruit's open windows (normally one), for the notification's close button. Main thread. */
     private static final Map<MainActivity, Boolean> LIVE = new WeakHashMap<MainActivity, Boolean>();
@@ -153,7 +153,10 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             showTab(TAB_LIBRARY);
         } else {
             tab = saved.getInt("tab", TAB_LIBRARY);
-            highlightTab();
+            boolean visible = false;
+            for (int id : TAB_IDS) if (id == tab) visible = true;
+            if (!visible) showTab(TAB_LIBRARY);
+            else highlightTab();
             if (saved.getBoolean("now_playing_open")) nowPlaying.openImmediately();
         }
         handleIntent(getIntent());
@@ -162,7 +165,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     private void buildTabBar() {
         LinearLayout bar = (LinearLayout) findViewById(R.id.tab_bar);
         for (int i = 0; i < TAB_NAMES.length; i++) {
-            final int index = i;
+            final int index = TAB_IDS[i];
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.VERTICAL);
             item.setGravity(Gravity.CENTER);
@@ -191,8 +194,8 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         int accent = Ui.accent(this);
         int inactive = Ui.color(this, R.attr.gfTextSecondary);
         for (int i = 0; i < TAB_NAMES.length; i++) {
-            tabIcons[i].setColor(i == tab ? accent : inactive);
-            tabLabels[i].setTextColor(i == tab ? accent : inactive);
+            tabIcons[i].setColor(TAB_IDS[i] == tab ? accent : inactive);
+            tabLabels[i].setTextColor(TAB_IDS[i] == tab ? accent : inactive);
         }
     }
 
@@ -205,8 +208,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
         Fragment root;
-        if (index == TAB_PLAYLISTS) root = BrowseFragment.newInstance(null, BrowseFragment.PLAYLISTS, null, null);
-        else if (index == TAB_RADIO) root = new RadioFragment();
+        if (index == TAB_RADIO) root = new RadioFragment();
         else if (index == TAB_PODCASTS) root = new PodcastsFragment();
         else if (index == TAB_SEARCH) root = new SearchFragment();
         else if (index == TAB_SETTINGS) root = new SettingsFragment();

@@ -81,7 +81,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         top.addView(Ui.separator(c, 16));
 
-        rows = new LinearLayout(c);
+        rows = Ui.actionRow(c);
         rows.setOrientation(LinearLayout.HORIZONTAL);
         rows.setPadding(Ui.dp(c, 12), 0, Ui.dp(c, 12), 0);
         top.addView(rows);
@@ -283,8 +283,8 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
                 push(BrowseFragment.newInstance(s.id(), mode, null, "Library"));
             }
         });
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-        lp.setMargins(Ui.dp(c, 3), Ui.dp(c, 6), Ui.dp(c, 3), Ui.dp(c, 6));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        lp.setMargins(Ui.dp(c, 4), Ui.dp(c, 8), Ui.dp(c, 4), Ui.dp(c, 8));
         rows.addView(t, lp);
     }
 

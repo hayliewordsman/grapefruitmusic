@@ -177,7 +177,8 @@ treats it as a new app: install it beside an older Grapefruit, sign in to your s
 again, then uninstall the old one.
 
 Version 4.0 beta 2 keeps Android 4.2.2 (API 17) support and targets API 36. Modern Android asks for
-music-library and notification permissions. A beta signed with the permanent app key can update an
+music-library and notification permissions. Episode Downloads shows ongoing podcast transfers and their progress;
+Playlists is available within Library. A beta signed with the permanent app key can update an
 existing installation; a debug APK uses a different key and cannot update the release app.
 
 

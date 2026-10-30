@@ -114,7 +114,7 @@ Jordan Peterson’s main podcast is excluded under an explicit editorial decisio
 
 RSS/Atom XML now streams from the network into a SAX parser instead of buffering a full XML document. It retains at most the first 1,000 entries and caps individual text fields at 4,096 characters, nesting at 64 levels and input at 64 MiB. The input limit is a network/resource safety budget, not an audio-download limit or an editorial criterion. DTDs and external entities are rejected; redirects retain the original feed identity and resolve media against the final address. Very large individual XML attributes remain subject to the XML parser's own allocation behavior and the input budget.
 
-Validation: 121 unit tests, debug/release builds and Android lint; actual Charlie Kirk (17,039,593 bytes), Matt Walsh (12,791,098 bytes) and Morning Wire (9,144,369 bytes) archives each parsed to the bounded 1,000-episode window under a 48 MiB JVM heap. This is parser validation, not an Android 4.2.2 device smoke test. API 17 remains the minimum supported version.
+Validation: 127 unit tests, debug/release builds and Android lint; actual Charlie Kirk (17,039,593 bytes), Matt Walsh (12,791,098 bytes) and Morning Wire (9,144,369 bytes) archives each parsed to the bounded 1,000-episode window under a 48 MiB JVM heap. This is parser validation, not an Android 4.2.2 device smoke test. API 17 remains the minimum supported version.
 
 ## The Joe Rogan Experience
 

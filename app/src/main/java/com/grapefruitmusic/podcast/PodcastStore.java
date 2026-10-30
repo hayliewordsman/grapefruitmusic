@@ -203,12 +203,14 @@ public final class PodcastStore {
 
     public List<MediaItem> episodes(String feed, boolean downloaded) {
         List<MediaItem> out = new ArrayList<MediaItem>();
+        Map<Long, PodcastDownload> progress = downloadSnapshots();
         Cursor c =
                 db.getReadableDatabase()
                         .rawQuery(
                                 "SELECT e.*,p.title AS show_title,p.author FROM episodes e JOIN"
                                         + " podcasts p ON p.feed=e.feed"
-                                        + (feed == null ? "" : " WHERE e.feed=?")
+                                        + (feed == null ? " WHERE 1=1" : " WHERE e.feed=?")
+                                        + (downloaded ? " AND e.download_id >= 0" : "")
                                         + " ORDER BY published DESC",
                                 feed == null ? null : new String[] {feed});
         try {
@@ -226,14 +228,109 @@ public final class PodcastStore {
                 m.streamUrl = c.getString(c.getColumnIndexOrThrow("url"));
                 m.durationMs = c.getLong(c.getColumnIndexOrThrow("duration"));
                 m.added = c.getLong(c.getColumnIndexOrThrow("published"));
-                File file = localFile(m);
-                if (file != null) m.path = file.getPath();
-                if (!downloaded || file != null) out.add(m);
+                long downloadId = c.getLong(c.getColumnIndexOrThrow("download_id"));
+                if (downloadId >= 0) {
+                    PodcastDownload state = progress.get(downloadId);
+                    File file = destination(m);
+                    if (state != null && state.status == PodcastDownload.COMPLETE && file.isFile())
+                        m.path = file.getPath();
+                    else if (state == null || state.status == PodcastDownload.COMPLETE)
+                        state = new PodcastDownload(PodcastDownload.MISSING, 0, 0, -1);
+                    m.podcastDownload = state;
+                }
+                out.add(m);
             }
         } finally {
             c.close();
         }
+        if (downloaded)
+            Collections.sort(
+                    out,
+                    (a, b) -> {
+                        int pa =
+                                a.podcastDownload != null && a.podcastDownload.active()
+                                        ? 0
+                                        : a.path == null ? 1 : 2;
+                        int pb =
+                                b.podcastDownload != null && b.podcastDownload.active()
+                                        ? 0
+                                        : b.path == null ? 1 : 2;
+                        return pa - pb; // Stable sort retains publication order within each status
+                        // group.
+                    });
         return out;
+    }
+
+    /** Batched provider queries per refresh, including only episode downloads owned by this app. */
+    private Map<Long, PodcastDownload> downloadSnapshots() {
+        List<Long> ids = new ArrayList<Long>();
+        Cursor rows =
+                db.getReadableDatabase()
+                        .rawQuery("SELECT download_id FROM episodes WHERE download_id >= 0", null);
+        try {
+            while (rows.moveToNext()) ids.add(rows.getLong(0));
+        } finally {
+            rows.close();
+        }
+        Map<Long, PodcastDownload> out = new HashMap<Long, PodcastDownload>();
+        if (ids.isEmpty()) return out;
+        DownloadManager manager =
+                (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        // Bound the query argument count on old DownloadProvider implementations.
+        for (int start = 0; start < ids.size(); start += 400) {
+            long[] batch = new long[Math.min(400, ids.size() - start)];
+            for (int i = 0; i < batch.length; i++) batch[i] = ids.get(start + i);
+            Cursor c = manager.query(new DownloadManager.Query().setFilterById(batch));
+            if (c == null) continue;
+            try {
+                while (c.moveToNext()) {
+                    out.put(
+                            c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_ID)),
+                            new PodcastDownload(
+                                    c.getInt(
+                                            c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)),
+                                    c.getInt(
+                                            c.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON)),
+                                    c.getLong(
+                                            c.getColumnIndexOrThrow(
+                                                    DownloadManager
+                                                            .COLUMN_BYTES_DOWNLOADED_SO_FAR)),
+                                    c.getLong(
+                                            c.getColumnIndexOrThrow(
+                                                    DownloadManager.COLUMN_TOTAL_SIZE_BYTES))));
+                }
+            } finally {
+                c.close();
+            }
+        }
+        return out;
+    }
+
+    /** Read live state when opening a menu, even if the screen snapshot is slightly older. */
+    public PodcastDownload downloadProgress(MediaItem m) {
+        long id = downloadId(m);
+        if (id < 0) return null;
+        DownloadManager manager =
+                (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        Cursor c = manager.query(new DownloadManager.Query().setFilterById(id));
+        try {
+            if (c != null && c.moveToFirst()) {
+                PodcastDownload p =
+                        new PodcastDownload(
+                                c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)),
+                                c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON)),
+                                c.getLong(
+                                        c.getColumnIndexOrThrow(
+                                                DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)),
+                                c.getLong(
+                                        c.getColumnIndexOrThrow(
+                                                DownloadManager.COLUMN_TOTAL_SIZE_BYTES)));
+                if (p.status != PodcastDownload.COMPLETE || destination(m).isFile()) return p;
+            }
+            return new PodcastDownload(PodcastDownload.MISSING, 0, 0, -1);
+        } finally {
+            if (c != null) c.close();
+        }
     }
 
     private File destination(MediaItem m) {
@@ -284,10 +381,12 @@ public final class PodcastStore {
         if (old >= 0) {
             Cursor c = manager.query(new DownloadManager.Query().setFilterById(old));
             try {
-                if (c != null
-                        && c.moveToFirst()
-                        && c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
-                                != DownloadManager.STATUS_FAILED) return;
+                if (c != null && c.moveToFirst()) {
+                    int state = c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+                    if (state == DownloadManager.STATUS_PENDING
+                            || state == DownloadManager.STATUS_RUNNING
+                            || state == DownloadManager.STATUS_PAUSED) return;
+                }
             } finally {
                 if (c != null) c.close();
             }
