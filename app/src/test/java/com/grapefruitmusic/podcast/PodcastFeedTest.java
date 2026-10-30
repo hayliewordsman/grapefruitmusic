@@ -97,7 +97,7 @@ public class PodcastFeedTest {
         for (int i = 0; i < 9 * 1024 * 1024; i++) xml.append('x');
         xml.append(
                 "</description><enclosure"
-                    + " url='https://example.org/ep.mp3'/></item></channel></rss>");
+                        + " url='https://example.org/ep.mp3'/></item></channel></rss>");
         PodcastFeed f =
                 PodcastFeed.parse(
                         new java.io.ByteArrayInputStream(xml.toString().getBytes("UTF-8")),
@@ -153,5 +153,17 @@ public class PodcastFeedTest {
         StringBuilder xml = new StringBuilder("<rss><channel>");
         for (int i = 0; i < 70; i++) xml.append("<nested>");
         PodcastFeed.parse(xml.toString(), BASE);
+    }
+
+    @Test
+    public void invalidShowArtworkCannotPropagateToEpisodes() throws Exception {
+        PodcastFeed f =
+                PodcastFeed.parse(
+                        "<rss><channel><title>A</title><image>"
+                                + "<url>file:///private/art.jpg</url></image><item><enclosure "
+                                + "url='https://example.org/ep.mp3'/></item></channel></rss>",
+                        BASE);
+        assertNull(f.show.artKey);
+        assertNull(f.episodes.get(0).artKey);
     }
 }

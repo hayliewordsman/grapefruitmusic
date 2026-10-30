@@ -227,13 +227,13 @@ public final class PodcastFeed {
             } catch (Enough complete) {
                 // Intentional early stop; only the bounded initial episode window is ingested.
             }
+            if (!webUrl(result.show.artKey)) result.show.artKey = null;
             for (MediaItem episode : result.episodes) {
                 episode.album = result.show.title;
                 if (episode.artist == null || episode.artist.length() == 0)
                     episode.artist = result.show.artist;
                 if (!webUrl(episode.artKey)) episode.artKey = result.show.artKey;
             }
-            if (!webUrl(result.show.artKey)) result.show.artKey = null;
             return result;
         } catch (Exception e) {
             throw new IOException("Couldn't read podcast feed", e);
