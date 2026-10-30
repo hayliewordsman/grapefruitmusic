@@ -83,8 +83,7 @@ public final class PodcastsFragment extends BaseFragment {
                                     .setTitle("Discovery recommendations")
                                     .setMessage(DiscoveryPolicy.EXPLANATION)
                                     .setPositiveButton("Done", null)
-                                    .setNegativeButton(
-                                            "Exclusions & sources", (d, w) -> editorialSources())
+                                    .setView(Ui.button(c, "Exclusions & sources", button -> editorialSources()))
                                     .show();
                         }
                     },

@@ -32,7 +32,7 @@ final class AddServerDialog {
         form.setOrientation(LinearLayout.VERTICAL);
         scroll.addView(form);
 
-        final Segmented type = new Segmented(c, new String[]{"Navidrome / Subsonic", "Jellyfin"}, 0);
+        final Segmented type = new Segmented(c, new String[]{"Navidrome /\nSubsonic", "Jellyfin"}, 0);
         form.addView(type);
 
         final EditText url = field(c, form, "Server address, e.g. http://192.168.1.10:4533",

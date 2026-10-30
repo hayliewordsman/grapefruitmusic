@@ -21,6 +21,8 @@ final class Segmented extends LinearLayout {
     Segmented(Context c, String[] labels, int initial) {
         super(c);
         setOrientation(HORIZONTAL);
+        // Multiline labels need equal-height backgrounds, without baseline offsets.
+        setBaselineAligned(false);
         setBackground(GrapefruitDialog.rounded(Ui.color(c, R.attr.gfControl), Ui.dp(c, 12)));
         int pad = Ui.dp(c, 3);
         setPadding(pad, pad, pad, pad);
@@ -31,7 +33,7 @@ final class Segmented extends LinearLayout {
             t.setText(labels[i]);
             t.setGravity(Gravity.CENTER);
             t.setSingleLine(false);
-            t.setMaxLines(2);
+            t.setEllipsize(null);
             t.setMinHeight(Ui.dp(c, 48));
             t.setPadding(Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 6));
             t.setOnClickListener(new OnClickListener() {
@@ -40,7 +42,7 @@ final class Segmented extends LinearLayout {
                     select(index);
                 }
             });
-            addView(t, new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1));
+            addView(t, new LayoutParams(0, LayoutParams.MATCH_PARENT, 1));
             segments[i] = t;
         }
         select(initial);
