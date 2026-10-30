@@ -40,6 +40,8 @@ public class MediaItem implements Serializable {
     public String description;
     /** A track's entry in the playlist it was loaded from (used to remove it). */
     public String entryId;
+    /** Podcast directory identity, used only for discovery editorial rules. */
+    public String podcastDirectoryId;
     /** Track gain in dB reported by the server (ReplayGain, relative to -18 LUFS), or null. */
     public Float replayGain;
     /** When an album was added to the library or a playlist made (ms since 1970), or 0 if unknown. */

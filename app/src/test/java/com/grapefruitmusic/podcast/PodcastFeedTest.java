@@ -57,8 +57,8 @@ public class PodcastFeedTest {
         PodcastFeed f =
                 PodcastFeed.parse(
                         "<rss><channel><title>A</title><item><enclosure"
-                            + " url='file:///etc/passwd'/></item><item><title>No"
-                            + " audio</title></item></channel></rss>",
+                                + " url='file:///etc/passwd'/></item><item><title>No"
+                                + " audio</title></item></channel></rss>",
                         BASE);
         assertTrue(f.episodes.isEmpty());
     }
@@ -75,7 +75,7 @@ public class PodcastFeedTest {
     public void redirectKeepsIdentityAndResolvesAgainstFinalFeed() throws Exception {
         String xml =
                 "<rss><channel><title>Show</title><item><guid>same</guid><enclosure"
-                    + " url='ep.mp3'/></item></channel></rss>";
+                        + " url='ep.mp3'/></item></channel></rss>";
         PodcastFeed original = PodcastFeed.parse(xml, BASE, BASE);
         PodcastFeed moved = PodcastFeed.parse(xml, BASE, "https://cdn.example.net/audio/feed.xml");
         assertEquals(original.episodes.get(0).id, moved.episodes.get(0).id);
@@ -87,5 +87,71 @@ public class PodcastFeedTest {
         assertTrue(PodcastFeed.webUrl(BASE));
         assertFalse(PodcastFeed.webUrl("file:///tmp/foo"));
         assertFalse(PodcastFeed.webUrl("https://name:password@example.org/feed"));
+    }
+
+    @Test
+    public void streamsPastEightMiBWithBoundedFields() throws Exception {
+        StringBuilder xml =
+                new StringBuilder(
+                        "<rss><channel><title>Large</title><item><title>Episode</title><description>");
+        for (int i = 0; i < 9 * 1024 * 1024; i++) xml.append('x');
+        xml.append(
+                "</description><enclosure"
+                    + " url='https://example.org/ep.mp3'/></item></channel></rss>");
+        PodcastFeed f =
+                PodcastFeed.parse(
+                        new java.io.ByteArrayInputStream(xml.toString().getBytes("UTF-8")),
+                        BASE,
+                        BASE);
+        assertEquals(1, f.episodes.size());
+        assertTrue(f.episodes.get(0).description.length() <= 4096);
+    }
+
+    @Test
+    public void stopsReadingAfterBoundedEpisodeWindow() throws Exception {
+        StringBuilder xml = new StringBuilder("<rss><channel><title>Archive</title>");
+        for (int i = 0; i < 1000; i++)
+            xml.append(
+                    "<item><guid>"
+                            + i
+                            + "</guid><enclosure url='https://example.org/ep.mp3'/></item>");
+        // Deliberately incomplete tail must never be parsed after the first 1,000 entries.
+        xml.append("<broken");
+        PodcastFeed f =
+                PodcastFeed.parse(
+                        new java.io.ByteArrayInputStream(xml.toString().getBytes("UTF-8")),
+                        BASE,
+                        BASE);
+        assertEquals(1000, f.episodes.size());
+        assertNotEquals(f.episodes.get(0).id, f.episodes.get(999).id);
+    }
+
+    @Test(expected = java.io.IOException.class)
+    public void streamRejectsUtf16DocumentType() throws Exception {
+        String xml =
+                "<?xml version='1.0' encoding='UTF-16'?><!DOCTYPE rss [<!ENTITY x 'expanded'>]>"
+                        + "<rss><channel><title>&x;</title></channel></rss>";
+        PodcastFeed.parse(new java.io.ByteArrayInputStream(xml.getBytes("UTF-16")), BASE, BASE);
+    }
+
+    @Test
+    public void streamHonorsDeclaredEncodingAndLateShowMetadata() throws Exception {
+        String xml =
+                "<?xml version='1.0' encoding='ISO-8859-1'?><rss><channel><item>"
+                        + "<enclosure url='https://example.org/ep.mp3'/></item><title>Café</title>"
+                        + "<author>Host</author><image><url>/art.jpg</url></image></channel></rss>";
+        PodcastFeed f =
+                PodcastFeed.parse(
+                        new java.io.ByteArrayInputStream(xml.getBytes("ISO-8859-1")), BASE, BASE);
+        assertEquals("Café", f.episodes.get(0).album);
+        assertEquals("Host", f.episodes.get(0).artist);
+        assertEquals("https://example.org/art.jpg", f.episodes.get(0).artKey);
+    }
+
+    @Test(expected = java.io.IOException.class)
+    public void rejectsExcessiveNesting() throws Exception {
+        StringBuilder xml = new StringBuilder("<rss><channel>");
+        for (int i = 0; i < 70; i++) xml.append("<nested>");
+        PodcastFeed.parse(xml.toString(), BASE);
     }
 }

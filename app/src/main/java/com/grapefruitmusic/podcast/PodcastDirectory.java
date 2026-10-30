@@ -37,7 +37,7 @@ public final class PodcastDirectory {
                 body.optJSONObject("feed") != null
                         ? body.optJSONObject("feed").optJSONArray("results")
                         : null;
-        if (charts == null || charts.length() == 0) return search("podcast");
+        if (charts == null || charts.length() == 0) return DiscoveryPolicy.rank(search("podcast"));
         StringBuilder ids = new StringBuilder();
         for (int i = 0; i < charts.length(); i++) {
             String id = charts.optJSONObject(i).optString("id");
@@ -46,7 +46,7 @@ public final class PodcastDirectory {
                 ids.append(id);
             }
         }
-        if (ids.length() == 0) return search("podcast");
+        if (ids.length() == 0) return DiscoveryPolicy.rank(search("podcast"));
         return DiscoveryPolicy.rank(
                 results(
                         Http.getJson(
@@ -71,6 +71,7 @@ public final class PodcastDirectory {
                             feed,
                             o.optString("collectionName", o.optString("trackName")));
             m.artist = o.optString("artistName");
+            m.podcastDirectoryId = o.optString("collectionId", o.optString("trackId"));
             m.artKey = o.optString("artworkUrl600", o.optString("artworkUrl100"));
             out.add(m);
         }

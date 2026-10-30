@@ -106,7 +106,7 @@ public final class PodcastStore {
                         prefs.getString(key + "_modified", null),
                         key);
         if (response == null) return 0;
-        PodcastFeed parsed = PodcastFeed.parse(response.body, show.id, response.url);
+        PodcastFeed parsed = response.feed;
         SQLiteDatabase sql = db.getWritableDatabase();
         int fresh = 0;
         boolean baseline = prefs.getBoolean(key + "_loaded", false);
@@ -149,11 +149,11 @@ public final class PodcastStore {
     }
 
     private static final class Response {
-        final String body, url, etag, modified;
+        final PodcastFeed feed;
+        final String etag, modified;
 
-        Response(String body, String url, String etag, String modified) {
-            this.body = body;
-            this.url = url;
+        Response(PodcastFeed feed, String etag, String modified) {
+            this.feed = feed;
             this.etag = etag;
             this.modified = modified;
         }
@@ -162,6 +162,7 @@ public final class PodcastStore {
     private Response fetch(String url, String etag, String modified, String key)
             throws IOException {
         if (!PodcastFeed.webUrl(url)) throw new IOException("Use an http or https feed address");
+        String originalUrl = url;
         for (int redirects = 0; redirects < 6; redirects++) {
             HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
             c.setInstanceFollowRedirects(false);
@@ -184,24 +185,15 @@ public final class PodcastStore {
                     continue;
                 }
                 if (status != 200) throw new IOException("Feed returned HTTP " + status);
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                byte[] buf = new byte[8192];
                 InputStream in = c.getInputStream();
                 try {
-                    int n;
-                    while ((n = in.read(buf)) != -1) {
-                        if (out.size() + n > 8 * 1024 * 1024)
-                            throw new IOException("Feed is too large");
-                        out.write(buf, 0, n);
-                    }
+                    return new Response(
+                            PodcastFeed.parse(in, originalUrl, url),
+                            c.getHeaderField("ETag"),
+                            c.getHeaderField("Last-Modified"));
                 } finally {
                     in.close();
                 }
-                return new Response(
-                        out.toString("UTF-8"),
-                        url,
-                        c.getHeaderField("ETag"),
-                        c.getHeaderField("Last-Modified"));
             } finally {
                 c.disconnect();
             }
@@ -215,7 +207,7 @@ public final class PodcastStore {
                 db.getReadableDatabase()
                         .rawQuery(
                                 "SELECT e.*,p.title AS show_title,p.author FROM episodes e JOIN"
-                                    + " podcasts p ON p.feed=e.feed"
+                                        + " podcasts p ON p.feed=e.feed"
                                         + (feed == null ? "" : " WHERE e.feed=?")
                                         + " ORDER BY published DESC",
                                 feed == null ? null : new String[] {feed});

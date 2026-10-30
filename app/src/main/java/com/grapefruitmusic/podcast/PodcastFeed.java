@@ -3,7 +3,6 @@ package com.grapefruitmusic.podcast;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.util.Hashes;
 
-import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
 import java.io.*;
@@ -40,95 +39,205 @@ public final class PodcastFeed {
     }
 
     public static PodcastFeed parse(String xml, String url, String baseUrl) throws IOException {
-        if (!webUrl(url)
-                || xml.length() > 8 * 1024 * 1024
-                || xml.toUpperCase(Locale.US).contains("<!DOCTYPE"))
-            throw new IOException("Invalid or oversized podcast feed");
+        return read(new InputSource(new StringReader(xml)), url, baseUrl);
+    }
+
+    /** Stream large archives without retaining the XML document. Honors the XML encoding. */
+    public static PodcastFeed parse(InputStream stream, String url, String baseUrl)
+            throws IOException {
+        InputStream bounded =
+                new FilterInputStream(stream) {
+                    private long remaining = 64L * 1024 * 1024;
+
+                    @Override
+                    public int read() throws IOException {
+                        int b = super.read();
+                        if (b != -1 && --remaining < 0)
+                            throw new IOException("Feed exceeds safety budget");
+                        return b;
+                    }
+
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException {
+                        int n = in.read(b, off, (int) Math.min(len, remaining + 1));
+                        if (n > 0 && (remaining -= n) < 0)
+                            throw new IOException("Feed exceeds safety budget");
+                        return n;
+                    }
+                };
+        return read(new InputSource(bounded), url, baseUrl);
+    }
+
+    private static final class Enough extends org.xml.sax.SAXException {}
+
+    private static PodcastFeed read(InputSource input, String url, String baseUrl)
+            throws IOException {
+        if (!webUrl(url) || !webUrl(baseUrl)) throw new IOException("Invalid podcast address");
+        final PodcastFeed result =
+                new PodcastFeed(new MediaItem(MediaItem.PODCAST, PodcastSource.ID, url, ""));
         try {
-            DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
-            f.setNamespaceAware(true);
-            f.setExpandEntityReferences(false);
-            DocumentBuilder b = f.newDocumentBuilder();
-            b.setEntityResolver((publicId, systemId) -> new InputSource(new StringReader("")));
-            Element root = b.parse(new InputSource(new StringReader(xml))).getDocumentElement();
-            Element channel = child(root, "channel");
-            if (channel == null && "feed".equals(local(root))) channel = root;
-            if (channel == null)
-                throw new IOException("This address is not an RSS or Atom podcast feed");
-            MediaItem show =
-                    new MediaItem(MediaItem.PODCAST, PodcastSource.ID, url, text(channel, "title"));
-            show.artist = text(channel, "author");
-            show.artKey = art(channel, baseUrl);
-            show.description = text(channel, "description");
-            PodcastFeed result = new PodcastFeed(show);
-            for (Node n = channel.getFirstChild();
-                    n != null && result.episodes.size() < 1000;
-                    n = n.getNextSibling()) {
-                if (!(n instanceof Element)
-                        || !("item".equals(local(n)) || "entry".equals(local(n)))) continue;
-                Element e = (Element) n;
-                String enclosure = null;
-                for (Node k = e.getFirstChild(); k != null; k = k.getNextSibling()) {
-                    if (!(k instanceof Element)) continue;
-                    Element a = (Element) k;
-                    if ("enclosure".equals(local(a))) enclosure = a.getAttribute("url");
-                    if ("link".equals(local(a)) && "enclosure".equals(a.getAttribute("rel")))
-                        enclosure = a.getAttribute("href");
-                }
-                if (enclosure == null) continue;
-                enclosure = resolve(baseUrl, enclosure);
-                if (!webUrl(enclosure)) continue;
-                String guid = text(e, "guid");
-                if (guid.length() == 0) guid = text(e, "id");
-                if (guid.length() == 0) guid = enclosure;
-                MediaItem m =
-                        new MediaItem(
-                                MediaItem.TRACK,
-                                PodcastSource.ID,
-                                Hashes.sha1(url + "\n" + guid),
-                                text(e, "title"));
-                m.streamUrl = enclosure;
-                m.albumId = url;
-                m.album = show.title;
-                m.artist = show.artist;
-                m.artKey = art(e, baseUrl);
-                if (m.artKey == null) m.artKey = show.artKey;
-                m.description = text(e, "description");
-                m.durationMs = duration(text(e, "duration"));
-                m.added = date(text(e, "pubDate"));
-                if (m.added == 0) m.added = date(text(e, "published"));
-                result.episodes.add(m);
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            org.xml.sax.XMLReader reader = factory.newSAXParser().getXMLReader();
+            // The lexical handler rejects DTDs on both Android and the JVM. The resolver also
+            // rejects every external entity; no network/file access is permitted by the parser.
+            org.xml.sax.ext.DefaultHandler2 handler =
+                    new org.xml.sax.ext.DefaultHandler2() {
+                        int depth, channelDepth, episodeDepth, entries;
+                        boolean channelFound;
+                        MediaItem episode;
+                        String guid, enclosure;
+                        final List<String> names = new ArrayList<String>();
+                        final List<StringBuilder> values = new ArrayList<StringBuilder>();
+
+                        @Override
+                        public void startDTD(String name, String publicId, String systemId)
+                                throws org.xml.sax.SAXException {
+                            throw new org.xml.sax.SAXException("Document types are not allowed");
+                        }
+
+                        @Override
+                        public InputSource resolveEntity(String publicId, String systemId)
+                                throws org.xml.sax.SAXException {
+                            throw new org.xml.sax.SAXException("External entities are not allowed");
+                        }
+
+                        @Override
+                        public void startElement(
+                                String uri,
+                                String local,
+                                String qualified,
+                                org.xml.sax.Attributes a)
+                                throws org.xml.sax.SAXException {
+                            String name = local.length() == 0 ? qualified : local;
+                            if (++depth > 64)
+                                throw new org.xml.sax.SAXException("Feed nesting is too deep");
+                            names.add(name);
+                            values.add(new StringBuilder());
+                            if ((depth == 2 && "channel".equals(name) && "rss".equals(names.get(0)))
+                                    || (depth == 1 && "feed".equals(name))) {
+                                channelDepth = depth;
+                                channelFound = true;
+                            }
+                            if (channelDepth == 0) return;
+                            if (depth == channelDepth + 1
+                                    && ("item".equals(name) || "entry".equals(name))) {
+                                episodeDepth = depth;
+                                episode = new MediaItem(MediaItem.TRACK, PodcastSource.ID, "", "");
+                                guid = enclosure = "";
+                            }
+                            MediaItem target = episode == null ? result.show : episode;
+                            int parent = episode == null ? channelDepth : episodeDepth;
+                            if (depth == parent + 1) {
+                                if ("image".equals(name) && a.getValue("href") != null)
+                                    target.artKey = resolve(baseUrl, a.getValue("href"));
+                                if (episode != null && "enclosure".equals(name))
+                                    enclosure = a.getValue("url");
+                                if (episode != null
+                                        && "link".equals(name)
+                                        && "enclosure".equals(a.getValue("rel")))
+                                    enclosure = a.getValue("href");
+                            }
+                        }
+
+                        @Override
+                        public void characters(char[] ch, int start, int length) {
+                            // Each field is bounded, including ignored extension elements and
+                            // descriptions.
+                            if (!values.isEmpty()) {
+                                StringBuilder b = values.get(values.size() - 1);
+                                b.append(
+                                        ch,
+                                        start,
+                                        Math.min(length, Math.max(0, 4096 - b.length())));
+                            }
+                        }
+
+                        @Override
+                        public void endElement(String uri, String local, String qualified)
+                                throws org.xml.sax.SAXException {
+                            String name = names.remove(names.size() - 1);
+                            String text = values.remove(values.size() - 1).toString().trim();
+                            if (channelDepth > 0) {
+                                MediaItem target = episode == null ? result.show : episode;
+                                int parent = episode == null ? channelDepth : episodeDepth;
+                                if (depth == parent + 1) {
+                                    if ("title".equals(name)) target.title = text;
+                                    if ("author".equals(name)) target.artist = text;
+                                    if ("description".equals(name) || "summary".equals(name))
+                                        target.description = text;
+                                    if (episode != null) {
+                                        if ("guid".equals(name)
+                                                || ("id".equals(name) && guid.length() == 0))
+                                            guid = text;
+                                        if ("duration".equals(name))
+                                            target.durationMs = duration(text);
+                                        if ("pubDate".equals(name) || "published".equals(name))
+                                            target.added = date(text);
+                                    }
+                                }
+                                if (depth == parent + 2
+                                        && "image".equals(names.get(names.size() - 1))
+                                        && "url".equals(name))
+                                    target.artKey = resolve(baseUrl, text);
+                                if (episode != null && depth == episodeDepth) {
+                                    String audio = resolve(baseUrl, enclosure);
+                                    if (webUrl(audio)) {
+                                        episode.id =
+                                                Hashes.sha1(
+                                                        url
+                                                                + "\n"
+                                                                + (guid.length() == 0
+                                                                        ? audio
+                                                                        : guid));
+                                        episode.streamUrl = audio;
+                                        episode.albumId = url;
+                                        result.episodes.add(episode);
+                                    }
+                                    episode = null;
+                                    // Count all entries so a feed of invalid entries cannot force
+                                    // unlimited work.
+                                    if (++entries >= 1000) throw new Enough();
+                                }
+                                if (depth == channelDepth) channelDepth = 0;
+                            }
+                            // Preserve mixed text / Atom author-name text, still bounded per field.
+                            if (!values.isEmpty()) {
+                                StringBuilder b = values.get(values.size() - 1);
+                                b.append(
+                                        text,
+                                        0,
+                                        Math.min(text.length(), Math.max(0, 4096 - b.length())));
+                            }
+                            depth--;
+                        }
+
+                        @Override
+                        public void endDocument() throws org.xml.sax.SAXException {
+                            if (!channelFound)
+                                throw new org.xml.sax.SAXException("Not an RSS or Atom feed");
+                        }
+                    };
+            reader.setContentHandler(handler);
+            reader.setErrorHandler(handler);
+            reader.setEntityResolver(handler);
+            reader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
+            try {
+                reader.parse(input);
+            } catch (Enough complete) {
+                // Intentional early stop; only the bounded initial episode window is ingested.
             }
+            for (MediaItem episode : result.episodes) {
+                episode.album = result.show.title;
+                if (episode.artist == null || episode.artist.length() == 0)
+                    episode.artist = result.show.artist;
+                if (!webUrl(episode.artKey)) episode.artKey = result.show.artKey;
+            }
+            if (!webUrl(result.show.artKey)) result.show.artKey = null;
             return result;
-        } catch (IOException e) {
-            throw e;
         } catch (Exception e) {
             throw new IOException("Couldn't read podcast feed", e);
         }
-    }
-
-    private static String local(Node n) {
-        return n.getLocalName() != null ? n.getLocalName() : n.getNodeName();
-    }
-
-    private static Element child(Element e, String name) {
-        for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling())
-            if (n instanceof Element && name.equals(local(n))) return (Element) n;
-        return null;
-    }
-
-    private static String text(Element e, String name) {
-        Element n = child(e, name);
-        return n == null ? "" : n.getTextContent().trim();
-    }
-
-    private static String art(Element e, String base) {
-        Element n = child(e, "image");
-        if (n == null) return null;
-        String s = n.getAttribute("href");
-        if (s.length() == 0) s = text(n, "url");
-        s = resolve(base, s);
-        return webUrl(s) ? s : null;
     }
 
     private static String resolve(String base, String value) {

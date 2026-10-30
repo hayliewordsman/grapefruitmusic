@@ -71,6 +71,7 @@ public final class PodcastsFragment extends BaseFragment {
             header.addView(buttons);
             TextView disclosure = Ui.text(c, 12, R.attr.gfTextSecondary, false);
             disclosure.setSingleLine(false);
+            disclosure.setLinkTextColor(Ui.accent(c));
             android.text.SpannableString text =
                     new android.text.SpannableString(
                             "Discovery recommendations are curated. Learn more");
@@ -82,6 +83,8 @@ public final class PodcastsFragment extends BaseFragment {
                                     .setTitle("Discovery recommendations")
                                     .setMessage(DiscoveryPolicy.EXPLANATION)
                                     .setPositiveButton("Done", null)
+                                    .setNegativeButton(
+                                            "Exclusions & sources", (d, w) -> editorialSources())
                                     .show();
                         }
                     },
@@ -119,7 +122,7 @@ public final class PodcastsFragment extends BaseFragment {
                                         c,
                                         on
                                                 ? "Subscribed. New episodes are checked"
-                                                      + " periodically."
+                                                        + " periodically."
                                                 : "Unsubscribed. Downloads are kept.");
                             }));
             header.addView(Ui.button(c, "Refresh Episodes", v -> load()));
@@ -184,6 +187,36 @@ public final class PodcastsFragment extends BaseFragment {
         if (mode != SEARCH) load();
         else render();
         return root;
+    }
+
+    private void editorialSources() {
+        final Context c = getActivity();
+        try {
+            java.io.InputStream in = c.getAssets().open("podcast-discovery-policy.html");
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            try {
+                byte[] buffer = new byte[4096];
+                int n;
+                while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
+            } finally {
+                in.close();
+            }
+            TextView text = Ui.text(c, 15, R.attr.gfTextPrimary, false);
+            text.setSingleLine(false);
+            text.setPadding(Ui.dp(c, 20), Ui.dp(c, 8), Ui.dp(c, 20), Ui.dp(c, 16));
+            text.setText(android.text.Html.fromHtml(out.toString("UTF-8")));
+            text.setLinkTextColor(Ui.accent(c));
+            text.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+            ScrollView scroll = new ScrollView(c);
+            scroll.addView(text);
+            Ui.dialog(c)
+                    .setTitle("Editorial exclusions & sources")
+                    .setView(scroll)
+                    .setPositiveButton("Done", null)
+                    .show();
+        } catch (java.io.IOException e) {
+            Notice.show(c, "Couldn't open the bundled editorial policy.");
+        }
     }
 
     private void addButton(LinearLayout row, String title, View.OnClickListener action) {
