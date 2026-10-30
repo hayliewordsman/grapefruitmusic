@@ -1,0 +1,7 @@
+4.0 beta 2
+Now Playing: icon-only bottom controls and metadata aligned with the progress bar.
+Fixed clipped server selection highlights and the podcast sources button.
+Improved podcast search spacing and removed obsolete Settings dividers.
+Large podcast archives now stream with bounded memory use.
+Expanded the disclosed discovery editorial policy; excluded shows remain available through Search and subscriptions.
+Android 4.2.2 support retained; targets Android API 36.

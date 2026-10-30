@@ -52,7 +52,6 @@ final class Grouped {
         t.setText(title.toUpperCase(Locale.US));
         t.setPadding(Ui.dp(c, 16), Ui.dp(c, 26), Ui.dp(c, 16), Ui.dp(c, 6));
         content.addView(t);
-        content.addView(Ui.separator(c, 0));
     }
 
     void footer(String text) {

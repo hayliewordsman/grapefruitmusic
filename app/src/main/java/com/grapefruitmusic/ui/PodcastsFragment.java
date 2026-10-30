@@ -83,7 +83,11 @@ public final class PodcastsFragment extends BaseFragment {
                                     .setTitle("Discovery recommendations")
                                     .setMessage(DiscoveryPolicy.EXPLANATION)
                                     .setPositiveButton("Done", null)
-                                    .setView(Ui.button(c, "Exclusions & sources", button -> editorialSources()))
+                                    .setView(
+                                            Ui.button(
+                                                    c,
+                                                    "Exclusions & sources",
+                                                    button -> editorialSources()))
                                     .show();
                         }
                     },
@@ -98,14 +102,18 @@ public final class PodcastsFragment extends BaseFragment {
             field = Ui.field(c, 16, false, "Podcast name");
             field.setSingleLine(true);
             field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
-            header.addView(field);
-            header.addView(Ui.button(c, "Search Podcasts", v -> load()));
+            field.setTypeface(
+                    android.graphics.Typeface.create(
+                            "sans-serif", android.graphics.Typeface.NORMAL));
+            field.setMinHeight(Ui.dp(c, 48));
+            addSearchControl(header, field, 10);
+            addSearchControl(header, Ui.button(c, "Search Podcasts", v -> load()), 8);
             field.setOnEditorActionListener(
                     (v, action, event) -> {
                         load();
                         return true;
                     });
-            header.addView(Ui.button(c, "Add by RSS address", v -> addFeed()));
+            addSearchControl(header, Ui.button(c, "Add by RSS address", v -> addFeed()), 8);
         }
         if (mode == SHOW) {
             final MediaItem show = item();
@@ -216,6 +224,14 @@ public final class PodcastsFragment extends BaseFragment {
         } catch (java.io.IOException e) {
             Notice.show(c, "Couldn't open the bundled editorial policy.");
         }
+    }
+
+    private void addSearchControl(LinearLayout header, View control, int gapDp) {
+        LinearLayout.LayoutParams lp =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = Ui.dp(header.getContext(), gapDp);
+        header.addView(control, lp);
     }
 
     private void addButton(LinearLayout row, String title, View.OnClickListener action) {

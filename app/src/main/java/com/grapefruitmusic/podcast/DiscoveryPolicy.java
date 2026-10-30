@@ -31,6 +31,7 @@ public final class DiscoveryPolicy {
     private static final Set<String> DIRECTORY_IDS =
             new HashSet<String>(
                     Arrays.asList(
+                            "360084272",
                             "1184022695",
                             "1045171376",
                             "1047335260",
@@ -94,6 +95,7 @@ public final class DiscoveryPolicy {
     private static final Set<String> FEEDS =
             new HashSet<String>(
                     Arrays.asList(
+                            "https://feeds.megaphone.fm/GLT1412515089",
                             "https://feeds.megaphone.fm/BVDWV6444647327",
                             "https://anchor.fm/s/d2a6450/podcast/rss",
                             "https://anchor.fm/s/fabf41b8/podcast/rss",
@@ -186,6 +188,7 @@ public final class DiscoveryPolicy {
         String title = label(show.title);
         String creator = label(show.artist);
         if (Arrays.asList(
+                        "the joe rogan experience",
                         "the jordan b. peterson podcast",
                         "the political cesspool",
                         "the political cesspool radio show",

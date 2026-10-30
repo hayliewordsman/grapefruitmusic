@@ -119,4 +119,26 @@ public class DiscoveryPolicyTest {
         m.artist = "Jordan Peterson";
         assertFalse(DiscoveryPolicy.excluded(m));
     }
+
+    @Test
+    public void roganIdentityIsExcludedWithoutFilteringIndependentCoverage() {
+        assertTrue(DiscoveryPolicy.excluded(show("https://feeds.megaphone.fm/GLT1412515089", "")));
+        MediaItem m = show("https://new.example/feed", "New label");
+        m.podcastDirectoryId = "360084272";
+        assertTrue(DiscoveryPolicy.excluded(m));
+        m.podcastDirectoryId = null;
+        m.title = "The Joe Rogan Experience";
+        assertTrue(DiscoveryPolicy.excluded(m));
+        for (String title :
+                new String[] {
+                    "Joe Rogan Experience Review podcast",
+                    "The Joe Rogan AI Experience",
+                    "Reporting on The Joe Rogan Experience"
+                }) {
+            m.title = title;
+            assertFalse(title, DiscoveryPolicy.excluded(m));
+        }
+        assertFalse(
+                DiscoveryPolicy.excluded(show("https://independent.example/feed", "Joe Rogan")));
+    }
 }
