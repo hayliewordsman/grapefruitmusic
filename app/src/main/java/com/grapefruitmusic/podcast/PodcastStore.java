@@ -4,7 +4,6 @@ import android.app.DownloadManager;
 import android.content.*;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 
 import com.grapefruitmusic.data.Db;
 import com.grapefruitmusic.model.MediaItem;
@@ -16,7 +15,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-/** Durable feed subscriptions and system-managed downloads, independent of music servers. */
+/** Durable feed subscriptions and app-managed downloads, with legacy system-download compatibility. */
 public final class PodcastStore {
     private static PodcastStore instance;
     private final Context context;
@@ -210,26 +209,23 @@ public final class PodcastStore {
                                 "SELECT e.*,p.title AS show_title,p.author FROM episodes e JOIN"
                                         + " podcasts p ON p.feed=e.feed"
                                         + (feed == null ? " WHERE 1=1" : " WHERE e.feed=?")
-                                        + (downloaded ? " AND e.download_id >= 0" : "")
+                                        + (downloaded
+                                                ? " AND (e.download_id >= 0 OR e.download_state >="
+                                                        + " 0)"
+                                                : "")
                                         + " ORDER BY published DESC",
                                 feed == null ? null : new String[] {feed});
         try {
             while (c.moveToNext()) {
-                MediaItem m =
-                        new MediaItem(
-                                MediaItem.TRACK,
-                                PodcastSource.ID,
-                                c.getString(c.getColumnIndexOrThrow("id")),
-                                c.getString(c.getColumnIndexOrThrow("title")));
-                m.albumId = c.getString(c.getColumnIndexOrThrow("feed"));
-                m.album = c.getString(c.getColumnIndexOrThrow("show_title"));
-                m.artist = c.getString(c.getColumnIndexOrThrow("author"));
-                m.artKey = c.getString(c.getColumnIndexOrThrow("art"));
-                m.streamUrl = c.getString(c.getColumnIndexOrThrow("url"));
-                m.durationMs = c.getLong(c.getColumnIndexOrThrow("duration"));
-                m.added = c.getLong(c.getColumnIndexOrThrow("published"));
+                MediaItem m = readEpisode(c);
+                int owned = c.getInt(c.getColumnIndexOrThrow("download_state"));
+                if (owned >= 0) {
+                    m.podcastDownload = ownProgress(c, m);
+                    if (m.podcastDownload.status == PodcastDownload.COMPLETE)
+                        m.path = destination(m).getPath();
+                }
                 long downloadId = c.getLong(c.getColumnIndexOrThrow("download_id"));
-                if (downloadId >= 0) {
+                if (owned < 0 && downloadId >= 0) {
                     PodcastDownload state = progress.get(downloadId);
                     File file = destination(m);
                     if (state != null && state.status == PodcastDownload.COMPLETE && file.isFile())
@@ -259,6 +255,35 @@ public final class PodcastStore {
                         // group.
                     });
         return out;
+    }
+
+    private static MediaItem readEpisode(Cursor c) {
+        MediaItem m =
+                new MediaItem(
+                        MediaItem.TRACK,
+                        PodcastSource.ID,
+                        c.getString(c.getColumnIndexOrThrow("id")),
+                        c.getString(c.getColumnIndexOrThrow("title")));
+        m.albumId = c.getString(c.getColumnIndexOrThrow("feed"));
+        m.album = c.getString(c.getColumnIndexOrThrow("show_title"));
+        m.artist = c.getString(c.getColumnIndexOrThrow("author"));
+        m.artKey = c.getString(c.getColumnIndexOrThrow("art"));
+        m.streamUrl = c.getString(c.getColumnIndexOrThrow("url"));
+        m.durationMs = c.getLong(c.getColumnIndexOrThrow("duration"));
+        m.added = c.getLong(c.getColumnIndexOrThrow("published"));
+        return m;
+    }
+
+    private PodcastDownload ownProgress(Cursor c, MediaItem m) {
+        int state = c.getInt(c.getColumnIndexOrThrow("download_state"));
+        if (state == PodcastDownload.COMPLETE && !destination(m).isFile())
+            state = PodcastDownload.MISSING;
+        return new PodcastDownload(
+                state,
+                c.getInt(c.getColumnIndexOrThrow("download_reason")),
+                c.getLong(c.getColumnIndexOrThrow("download_received")),
+                c.getLong(c.getColumnIndexOrThrow("download_total")),
+                c.getString(c.getColumnIndexOrThrow("download_error")));
     }
 
     /** Batched provider queries per refresh, including only episode downloads owned by this app. */
@@ -308,6 +333,15 @@ public final class PodcastStore {
 
     /** Read live state when opening a menu, even if the screen snapshot is slightly older. */
     public PodcastDownload downloadProgress(MediaItem m) {
+        Cursor row =
+                db.getReadableDatabase()
+                        .rawQuery("SELECT * FROM episodes WHERE id=?", new String[] {m.id});
+        try {
+            if (row.moveToFirst() && row.getInt(row.getColumnIndexOrThrow("download_state")) >= 0)
+                return ownProgress(row, m);
+        } finally {
+            row.close();
+        }
         long id = downloadId(m);
         if (id < 0) return null;
         DownloadManager manager =
@@ -333,30 +367,17 @@ public final class PodcastStore {
         }
     }
 
-    private File destination(MediaItem m) {
+    File destination(MediaItem m) {
         File root = context.getExternalFilesDir("podcasts");
         if (root == null) root = new File(context.getFilesDir(), "podcasts");
         return new File(root, Hashes.sha1(m.id) + ".audio");
     }
 
     public File localFile(MediaItem m) {
-        File f = destination(m);
-        if (!f.isFile()) return null;
-        long id = downloadId(m);
-        if (id < 0) return null;
-        DownloadManager manager =
-                (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-        Cursor c = manager.query(new DownloadManager.Query().setFilterById(id));
-        try {
-            return c != null
-                            && c.moveToFirst()
-                            && c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
-                                    == DownloadManager.STATUS_SUCCESSFUL
-                    ? f
-                    : null;
-        } finally {
-            if (c != null) c.close();
-        }
+        File file = destination(m);
+        if (!file.isFile()) return null;
+        PodcastDownload state = downloadProgress(m);
+        return state != null && state.status == PodcastDownload.COMPLETE ? file : null;
     }
 
     private long downloadId(MediaItem m) {
@@ -371,53 +392,147 @@ public final class PodcastStore {
         }
     }
 
-    public void download(MediaItem m) throws IOException {
+    public synchronized void download(MediaItem m) throws IOException {
         if (localFile(m) != null) return;
         if (!PodcastFeed.webUrl(m.streamUrl))
             throw new IOException("No downloadable episode audio");
-        DownloadManager manager =
-                (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-        long old = downloadId(m);
-        if (old >= 0) {
-            Cursor c = manager.query(new DownloadManager.Query().setFilterById(old));
-            try {
-                if (c != null && c.moveToFirst()) {
-                    int state = c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
-                    if (state == DownloadManager.STATUS_PENDING
-                            || state == DownloadManager.STATUS_RUNNING
-                            || state == DownloadManager.STATUS_PAUSED) return;
-                }
-            } finally {
-                if (c != null) c.close();
+        Cursor c =
+                db.getReadableDatabase()
+                        .rawQuery(
+                                "SELECT download_state FROM episodes WHERE id=?",
+                                new String[] {m.id});
+        try {
+            if (!c.moveToFirst()) throw new IOException("Refresh this podcast before downloading");
+            int state = c.getInt(0);
+            if (state == PodcastDownload.QUEUED
+                    || state == PodcastDownload.RUNNING
+                    || state == PodcastDownload.PAUSED) {
+                resumeDownloads();
+                return;
             }
-            manager.remove(old);
+        } finally {
+            c.close();
         }
-        File dest = destination(m);
-        if (!dest.getParentFile().isDirectory() && !dest.getParentFile().mkdirs())
-            throw new IOException("Download storage is unavailable");
-        if (dest.exists() && !dest.delete())
-            throw new IOException("Couldn't replace incomplete episode");
-        DownloadManager.Request request =
-                new DownloadManager.Request(Uri.parse(m.streamUrl))
-                        .setTitle(m.title)
-                        .setDescription(m.album)
-                        .setDestinationUri(Uri.fromFile(dest))
-                        .setNotificationVisibility(
-                                DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        if (Prefs.wifiOnlyDownloads())
-            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
-        long id = manager.enqueue(request);
-        ContentValues v = new ContentValues();
-        v.put("download_id", id);
-        db.getWritableDatabase().update("episodes", v, "id=?", new String[] {m.id});
+        removeLegacy(m);
+        db.getWritableDatabase()
+                .execSQL(
+                        "UPDATE episodes SET"
+                            + " download_id=-1,download_state=1,download_received=0,download_total=-1,download_error=NULL,download_reason=0,download_generation=download_generation+1"
+                            + " WHERE id=?",
+                        new Object[] {m.id});
+        resumeDownloads();
     }
 
-    public void removeDownload(MediaItem m) {
+    private void removeLegacy(MediaItem m) {
         long id = downloadId(m);
         if (id >= 0)
             ((DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE)).remove(id);
+    }
+
+    public synchronized void removeDownload(MediaItem m) {
+        removeLegacy(m);
+        db.getWritableDatabase()
+                .execSQL(
+                        "UPDATE episodes SET"
+                            + " download_id=-1,download_state=-1,download_received=0,download_total=-1,download_error=NULL,download_generation=download_generation+1"
+                            + " WHERE id=?",
+                        new Object[] {m.id});
+        PodcastDownloadService.cancel(m.id);
+        destination(m).delete();
+    }
+
+    public boolean hasPendingTransfers() {
+        Cursor c =
+                db.getReadableDatabase()
+                        .rawQuery(
+                                "SELECT 1 FROM episodes WHERE download_state IN (1,2,4) LIMIT 1",
+                                null);
+        try {
+            return c.moveToFirst();
+        } finally {
+            c.close();
+        }
+    }
+
+    public void resumeDownloads() {
+        if (hasPendingTransfers())
+            com.grapefruitmusic.compat.Platform.service(
+                    context, new Intent(context, PodcastDownloadService.class));
+    }
+
+    static final class Transfer {
+        final MediaItem item;
+        final long generation;
+
+        Transfer(MediaItem item, long generation) {
+            this.item = item;
+            this.generation = generation;
+        }
+    }
+
+    synchronized void recoverTransfers() {
+        db.getWritableDatabase()
+                .execSQL(
+                        "UPDATE episodes SET download_state=1,download_received=0 WHERE"
+                                + " download_state=2");
+    }
+
+    synchronized Transfer nextTransfer() {
+        Cursor c =
+                db.getReadableDatabase()
+                        .rawQuery(
+                                "SELECT e.*,p.title AS show_title,p.author FROM episodes e JOIN"
+                                    + " podcasts p ON p.feed=e.feed WHERE e.download_state IN (1,4)"
+                                    + " ORDER BY e.published DESC LIMIT 1",
+                                null);
+        try {
+            if (!c.moveToFirst()) return null;
+            Transfer t =
+                    new Transfer(
+                            readEpisode(c),
+                            c.getLong(c.getColumnIndexOrThrow("download_generation")));
+            updateTransfer(t, PodcastDownload.RUNNING, 0, -1, 0, null);
+            return t;
+        } finally {
+            c.close();
+        }
+    }
+
+    synchronized boolean currentTransfer(Transfer t) {
+        Cursor c =
+                db.getReadableDatabase()
+                        .rawQuery(
+                                "SELECT 1 FROM episodes WHERE id=? AND download_generation=? AND"
+                                        + " download_state IN (1,2,4)",
+                                new String[] {t.item.id, Long.toString(t.generation)});
+        try {
+            return c.moveToFirst();
+        } finally {
+            c.close();
+        }
+    }
+
+    synchronized void updateTransfer(
+            Transfer t, int state, long received, long total, int reason, String error) {
         ContentValues v = new ContentValues();
-        v.put("download_id", -1);
-        db.getWritableDatabase().update("episodes", v, "id=?", new String[] {m.id});
+        v.put("download_state", state);
+        v.put("download_received", received);
+        v.put("download_total", total);
+        v.put("download_reason", reason);
+        v.put("download_error", error);
+        db.getWritableDatabase()
+                .update(
+                        "episodes",
+                        v,
+                        "id=? AND download_generation=? AND download_state IN (1,2,4)",
+                        new String[] {t.item.id, Long.toString(t.generation)});
+    }
+
+    synchronized boolean finishTransfer(Transfer t, File part) throws IOException {
+        if (!currentTransfer(t)) return false;
+        File dest = destination(t.item);
+        if (!part.renameTo(dest)) throw new IOException("Couldn't save episode to storage");
+        updateTransfer(t, PodcastDownload.COMPLETE, dest.length(), dest.length(), 0, null);
+        return true;
     }
 }

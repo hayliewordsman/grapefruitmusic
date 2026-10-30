@@ -29,6 +29,8 @@ public final class PodcastsFragment extends BaseFragment {
         return getArguments() == null ? HOME : getArguments().getInt("podcast_mode");
     }
 
+    public static PodcastsFragment downloads() { return page(DOWNLOADED, null); }
+
     public static PodcastsFragment show(MediaItem show) {
         return page(SHOW, show);
     }

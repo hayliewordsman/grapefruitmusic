@@ -176,7 +176,7 @@ Since 3.2.2 the app ID is `io.github.hayliewordsman.grapefruitmusic` (it was `co
 treats it as a new app: install it beside an older Grapefruit, sign in to your servers and download offline music
 again, then uninstall the old one.
 
-Version 4.0 beta 2 keeps Android 4.2.2 (API 17) support and targets API 36. Modern Android asks for
+Version 4.0 beta 3 keeps Android 4.2.2 (API 17) support and targets API 36. Modern Android asks for
 music-library and notification permissions. Episode Downloads shows ongoing podcast transfers and their progress;
 Playlists is available within Library. A beta signed with the permanent app key can update an
 existing installation; a debug APK uses a different key and cannot update the release app.

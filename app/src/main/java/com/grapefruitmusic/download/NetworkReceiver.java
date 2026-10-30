@@ -13,5 +13,6 @@ public final class NetworkReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         boolean ok = Prefs.wifiOnlyDownloads() ? Http.isOnWifi(context) : Http.isOnline(context);
         if (ok) Downloads.get(context).startWorker();
+        if (Http.isOnline(context)) com.grapefruitmusic.podcast.PodcastStore.get(context).resumeDownloads();
     }
 }

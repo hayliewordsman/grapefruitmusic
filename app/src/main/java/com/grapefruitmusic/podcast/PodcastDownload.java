@@ -2,7 +2,7 @@ package com.grapefruitmusic.podcast;
 
 import com.grapefruitmusic.util.Format;
 
-/** Immutable snapshot of a system-managed episode download; never persisted as live state. */
+/** Immutable episode-download snapshot for app-managed and legacy system transfers. */
 public final class PodcastDownload {
     // DownloadManager values, kept here so progress formatting is pure Java and unit-testable.
     public static final int MISSING = 0,
@@ -13,8 +13,14 @@ public final class PodcastDownload {
             FAILED = 16;
     public final int status, reason;
     public final long received, total;
+    public final String error;
 
     public PodcastDownload(int status, int reason, long received, long total) {
+        this(status, reason, received, total, null);
+    }
+
+    public PodcastDownload(int status, int reason, long received, long total, String error) {
+        this.error = error;
         this.status = status;
         this.reason = reason;
         this.received = Math.max(0, received);
@@ -35,6 +41,7 @@ public final class PodcastDownload {
         if (status == COMPLETE) return "Downloaded";
         if (status == MISSING) return "Download unavailable · Retry from the episode menu";
         if (status == FAILED) {
+            if (error != null && error.length() > 0) return "Download failed · " + error;
             if (reason == 1006) return "Download failed · Not enough storage";
             if (reason >= 400 && reason <= 599) return "Download failed · HTTP " + reason;
             return "Download failed · Retry from the episode menu";

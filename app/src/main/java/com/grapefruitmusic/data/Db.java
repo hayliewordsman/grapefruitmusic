@@ -14,7 +14,7 @@ public final class Db extends SQLiteOpenHelper {
     }
 
     private Db(Context context) {
-        super(context, "grapefruit.db", null, 4);
+        super(context, "grapefruit.db", null, 5);
     }
 
     @Override
@@ -55,6 +55,16 @@ public final class Db extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE podcasts (feed TEXT PRIMARY KEY, title TEXT, author TEXT, art TEXT, subscribed INTEGER NOT NULL DEFAULT 0)");
         db.execSQL("CREATE TABLE episodes (id TEXT PRIMARY KEY, feed TEXT NOT NULL, title TEXT, url TEXT, art TEXT, published INTEGER, duration INTEGER, download_id INTEGER NOT NULL DEFAULT -1)");
         db.execSQL("CREATE INDEX episodes_feed ON episodes(feed, published)");
+        createPodcastTransfers(db);
+    }
+
+    private static void createPodcastTransfers(SQLiteDatabase db) {
+        db.execSQL("ALTER TABLE episodes ADD COLUMN download_state INTEGER NOT NULL DEFAULT -1");
+        db.execSQL("ALTER TABLE episodes ADD COLUMN download_received INTEGER NOT NULL DEFAULT 0");
+        db.execSQL("ALTER TABLE episodes ADD COLUMN download_total INTEGER NOT NULL DEFAULT -1");
+        db.execSQL("ALTER TABLE episodes ADD COLUMN download_error TEXT");
+        db.execSQL("ALTER TABLE episodes ADD COLUMN download_reason INTEGER NOT NULL DEFAULT 0");
+        db.execSQL("ALTER TABLE episodes ADD COLUMN download_generation INTEGER NOT NULL DEFAULT 0");
     }
 
     @Override
@@ -62,5 +72,6 @@ public final class Db extends SQLiteOpenHelper {
         if (oldVersion < 2) createPlaylistMeta(db);
         if (oldVersion < 3) createLoudness(db);
         if (oldVersion < 4) createPodcasts(db);
+        else if (oldVersion < 5) createPodcastTransfers(db);
     }
 }

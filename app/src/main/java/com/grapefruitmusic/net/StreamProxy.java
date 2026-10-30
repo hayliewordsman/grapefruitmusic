@@ -55,6 +55,7 @@ public final class StreamProxy {
         long captured;
         boolean capturing;
         boolean captureDone;
+        boolean podcast;
 
         Target(String url, Map<String, String> headers, Capture capture) {
             this.url = url;
@@ -94,6 +95,16 @@ public final class StreamProxy {
         synchronized (targets) {
             targets.put(token, new Target(url, headers == null ? new HashMap<String, String>() : headers, capture));
         }
+        return "http://127.0.0.1:" + server.getLocalPort() + "/s/" + token;
+    }
+
+    /** Podcast-only redirect handling; existing authenticated music-server behavior is unchanged. */
+    public String registerPodcast(String url, Map<String, String> headers, Capture capture) throws IOException {
+        ensureStarted();
+        String token = Hashes.randomHex(8);
+        Target target = new Target(url, headers == null ? new HashMap<String, String>() : headers, capture);
+        target.podcast = true;
+        synchronized (targets) { targets.put(token, target); }
         return "http://127.0.0.1:" + server.getLocalPort() + "/s/" + token;
     }
 
@@ -173,16 +184,22 @@ public final class StreamProxy {
                 return;
             }
 
-            upstream = (HttpURLConnection) new URL(target.url).openConnection();
-            upstream.setConnectTimeout(15000);
-            upstream.setReadTimeout(30000);
-            upstream.setRequestProperty("User-Agent", Http.USER_AGENT);
-            // Byte ranges must refer to the raw bytes.
-            upstream.setRequestProperty("Accept-Encoding", "identity");
-            for (Map.Entry<String, String> h : target.headers.entrySet()) {
-                upstream.setRequestProperty(h.getKey(), h.getValue());
+            if (target.podcast) {
+                Map<String, String> headers = new HashMap<String, String>(target.headers);
+                if (range != null) headers.put("Range", range);
+                upstream = PodcastAudio.open(target.url, headers);
+            } else {
+                upstream = (HttpURLConnection) new URL(target.url).openConnection();
+                upstream.setConnectTimeout(15000);
+                upstream.setReadTimeout(30000);
+                upstream.setRequestProperty("User-Agent", Http.USER_AGENT);
+                // Byte ranges must refer to the raw bytes.
+                upstream.setRequestProperty("Accept-Encoding", "identity");
+                for (Map.Entry<String, String> h : target.headers.entrySet()) {
+                    upstream.setRequestProperty(h.getKey(), h.getValue());
+                }
+                if (range != null) upstream.setRequestProperty("Range", range);
             }
-            if (range != null) upstream.setRequestProperty("Range", range);
             int code = Http.status(upstream);
 
             StringBuilder head = new StringBuilder();

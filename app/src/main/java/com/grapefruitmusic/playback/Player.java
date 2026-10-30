@@ -659,6 +659,8 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 if (req == null) throw new IOException("This song is no longer available");
                 if (item.live) {
                     player.setDataSource(StreamProxy.get().registerLive(req.url, req.headers, titlesFor(player)));
+                } else if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId)) {
+                    player.setDataSource(StreamProxy.get().registerPodcast(req.url, req.headers, volumeMatch.captureFor(item)));
                 } else {
                     player.setDataSource(StreamProxy.get().register(req.url, req.headers, volumeMatch.captureFor(item)));
                 }

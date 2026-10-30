@@ -237,6 +237,11 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     }
 
     private void handleIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra("open_podcast_downloads", false)) {
+            intent.removeExtra("open_podcast_downloads");
+            showTab(TAB_PODCASTS);
+            push(PodcastsFragment.downloads());
+        }
         if (intent != null && intent.getBooleanExtra("open_podcasts", false)) {
             intent.removeExtra("open_podcasts"); showTab(TAB_PODCASTS);
         }
@@ -271,6 +276,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     @Override
     protected void onResume() {
         super.onResume();
+        com.grapefruitmusic.podcast.PodcastStore.get(this).resumeDownloads();
         Notice.setSink(this);
         com.grapefruitmusic.download.Downloads.get(this).startWorker();
     }
