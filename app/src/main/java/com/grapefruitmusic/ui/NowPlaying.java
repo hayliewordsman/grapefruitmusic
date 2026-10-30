@@ -686,6 +686,11 @@ final class NowPlaying {
         View stage = root.findViewById(R.id.np_stage);
         FrameLayout artwork = (FrameLayout)root.findViewById(R.id.np_art_group);
         View metadata = root.findViewById(R.id.np_metadata);
+        // The progress track starts 24dp in: its 14dp margin plus 10dp thumb inset.
+        // PlayerMetadata already supplies a 12dp outer gap; landscape labels live in controls.
+        int metadataPadding = Ui.dp(activity, landscape ? 24 : 12);
+        metadata.setPadding(metadataPadding, metadata.getPaddingTop(),
+                metadataPadding, metadata.getPaddingBottom());
         ViewGroup destination = landscape ? controls : artwork;
         if (metadata.getParent() != destination) {
             ((ViewGroup)metadata.getParent()).removeView(metadata);
