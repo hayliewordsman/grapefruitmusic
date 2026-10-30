@@ -11,6 +11,7 @@ import com.grapefruitmusic.ui.Ui;
 public final class ActionIconView extends IconView {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private int tint;
+    private boolean labelVisible = true;
 
     public ActionIconView(Context c) {
         super(c);
@@ -31,6 +32,18 @@ public final class ActionIconView extends IconView {
                 Ui.dp(getContext(), 24));
     }
 
+    /** Keep content descriptions for accessibility when the visual label is hidden. */
+    public void setLabelVisible(boolean visible) {
+        labelVisible = visible;
+        int horizontal = Ui.dp(getContext(), 13);
+        setPadding(
+                horizontal,
+                Ui.dp(getContext(), visible ? 7 : 13),
+                horizontal,
+                Ui.dp(getContext(), visible ? 24 : 13));
+        invalidate();
+    }
+
     @Override
     public void setColor(int c) {
         tint = c;
@@ -49,7 +62,7 @@ public final class ActionIconView extends IconView {
                 new RectF(gap, 0, getWidth() - gap, getHeight()), radius, radius, paint);
         super.onDraw(canvas);
         CharSequence label = getContentDescription();
-        if (label != null) {
+        if (labelVisible && label != null) {
             paint.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
             paint.setTextSize(10 * getResources().getDisplayMetrics().scaledDensity);
             paint.setTextAlign(Paint.Align.CENTER);

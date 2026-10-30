@@ -73,7 +73,7 @@
                 <FrameLayout android:id="@+id/np_output" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
                 <com.grapefruitmusic.ui.widget.ActionIconView android:id="@+id/np_btn_preset" android:layout_width="52dp" android:layout_height="52dp" android:layout_marginLeft="8dp" />
             </LinearLayout>
-            <LinearLayout android:id="@+id/np_buttons" android:layout_width="match_parent" android:layout_height="64dp" android:layout_marginBottom="4dp" android:orientation="horizontal" android:paddingLeft="8dp" android:paddingRight="8dp">
+            <LinearLayout android:id="@+id/np_buttons" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginBottom="4dp" android:orientation="horizontal" android:paddingLeft="8dp" android:paddingRight="8dp">
                 <com.grapefruitmusic.ui.widget.ActionIconView android:id="@+id/np_btn_lyrics" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
                 <com.grapefruitmusic.ui.widget.ActionIconView android:id="@+id/np_btn_queue" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
                 <com.grapefruitmusic.ui.widget.ActionIconView android:id="@+id/np_btn_karaoke" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />

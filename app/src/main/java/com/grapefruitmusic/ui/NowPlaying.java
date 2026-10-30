@@ -236,7 +236,10 @@ final class NowPlaying {
         btnKaraoke = (IconView) root.findViewById(R.id.np_btn_karaoke);
         btnQueue = (IconView) root.findViewById(R.id.np_btn_queue);
         btnStation = new com.grapefruitmusic.ui.widget.ActionIconView(a);
-        int buttonPad = Ui.dp(a, 13);
+        for (IconView button : new IconView[]{btnLyrics, btnQueue, btnKaraoke,
+                btnShuffle, btnRepeat, btnStation}) {
+            ((com.grapefruitmusic.ui.widget.ActionIconView)button).setLabelVisible(false);
+        }
 
         btnStation.setVisibility(View.GONE);
         ((LinearLayout) root.findViewById(R.id.np_buttons)).addView(btnStation,
@@ -706,7 +709,7 @@ final class NowPlaying {
         controls.setPadding(padding, 0, padding, 0);
         resizeHeight(root.findViewById(R.id.np_transport), compact ? 56 : 72);
         resizeHeight(root.findViewById(R.id.np_volume_row), compact ? 28 : 36);
-        resizeHeight(root.findViewById(R.id.np_buttons), compact ? 56 : 64);
+        resizeHeight(root.findViewById(R.id.np_buttons), 48);
         resizeHeight(root.findViewById(R.id.np_grabber), compact ? 40 : 44);
         resizeHeight(scrubber, compact ? 24 : 30);
         for (IconView button : new IconView[]{prev, play, next}) {
