@@ -669,11 +669,53 @@ final class NowPlaying {
         lp.gravity = Gravity.TOP | Gravity.LEFT;
         lp.setMargins(0, 0, 0, 0);
         card.setLayoutParams(lp);
+        configureContentLayout(config);
         card.setSide(side);
         // The grab bar goes across the top of the card, or down the left edge of the panel.
         grabber.setVisibility(side ? View.GONE : View.VISIBLE);
         sideGrabber.setVisibility(side ? View.VISIBLE : View.GONE);
         content.setPadding(side ? Ui.dp(activity, 22) : 0, side ? Ui.dp(activity, 12) : 0, 0, 0);
+    }
+
+    /** Full-width shared player; only the inner arrangement changes with available room. */
+    private void configureContentLayout(Configuration config) {
+        boolean landscape = config.screenWidthDp > config.screenHeightDp * 1.2f;
+        boolean compact = config.screenHeightDp < 500;
+        LinearLayout body = (LinearLayout)root.findViewById(R.id.np_main);
+        LinearLayout controls = (LinearLayout)root.findViewById(R.id.np_controls);
+        View stage = root.findViewById(R.id.np_stage);
+        FrameLayout artwork = (FrameLayout)root.findViewById(R.id.np_art_group);
+        View metadata = root.findViewById(R.id.np_metadata);
+        ViewGroup destination = landscape ? controls : artwork;
+        if (metadata.getParent() != destination) {
+            ((ViewGroup)metadata.getParent()).removeView(metadata);
+            if (landscape) controls.addView(metadata, 0, new LinearLayout.LayoutParams(-1, -2));
+            else artwork.addView(metadata, new FrameLayout.LayoutParams(-1, -2));
+        }
+        body.setOrientation(landscape ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL);
+        stage.setLayoutParams(landscape ? new LinearLayout.LayoutParams(0, -1, 1)
+                : new LinearLayout.LayoutParams(-1, 0, 1));
+        controls.setLayoutParams(landscape ? new LinearLayout.LayoutParams(0, -1, 1)
+                : new LinearLayout.LayoutParams(-1, -2));
+        int padding = Ui.dp(activity, landscape ? 12 : 0);
+        controls.setPadding(padding, 0, padding, 0);
+        resizeHeight(root.findViewById(R.id.np_transport), compact ? 56 : 72);
+        resizeHeight(root.findViewById(R.id.np_volume_row), compact ? 28 : 36);
+        resizeHeight(root.findViewById(R.id.np_buttons), compact ? 56 : 64);
+        resizeHeight(root.findViewById(R.id.np_grabber), compact ? 40 : 44);
+        resizeHeight(scrubber, compact ? 24 : 30);
+        for (IconView button : new IconView[]{prev, play, next}) {
+            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)button.getLayoutParams();
+            lp.width = lp.height = Ui.dp(activity, compact ? 48 : button == play ? 72 : 64);
+            if (button == play) lp.leftMargin = lp.rightMargin = Ui.dp(activity, compact ? 12 : 28);
+            button.setLayoutParams(lp);
+        }
+    }
+
+    private void resizeHeight(View view, int dp) {
+        ViewGroup.LayoutParams lp = view.getLayoutParams();
+        lp.height = Ui.dp(activity, dp);
+        view.setLayoutParams(lp);
     }
 
     /** How far the card moves to be out of sight: down, or right at the side. */
@@ -1016,6 +1058,7 @@ final class NowPlaying {
         // Lyrics and Up Next: small artwork and title on top, the list below (iOS-style).
         boolean condensedMode = mode != MODE_ART;
         root.findViewById(R.id.np_art_group).setVisibility(condensedMode ? View.INVISIBLE : View.VISIBLE);
+        root.findViewById(R.id.np_metadata).setVisibility(condensedMode ? View.GONE : View.VISIBLE);
         art.setVisibility(condensedMode ? View.INVISIBLE : View.VISIBLE);
         if (condensedMode && condensed.getVisibility() != View.VISIBLE) {
             condensed.setAlpha(0f);

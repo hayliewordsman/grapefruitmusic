@@ -21,8 +21,16 @@ public final class PlayerMetadata extends FrameLayout {
 
     @Override
     protected void onMeasure(int ws, int hs) {
-        int w = MeasureSpec.getSize(ws), h = MeasureSpec.getSize(hs), gap = Ui.dp(getContext(), 16);
+        int w = MeasureSpec.getSize(ws), h = MeasureSpec.getSize(hs), gap = Ui.dp(getContext(), 12);
         View art = findViewById(R.id.np_art), labels = findViewById(R.id.np_metadata);
+        if (labels == null) {
+            int size = Math.max(0, Math.min(w, h) - gap * 2);
+            art.measure(
+                    MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY),
+                    MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY));
+            setMeasuredDimension(w, h);
+            return;
+        }
         boolean columns = columns(w, h);
         int aw =
                 columns
@@ -41,8 +49,14 @@ public final class PlayerMetadata extends FrameLayout {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        int w = r - l, h = b - t, gap = Ui.dp(getContext(), 16);
+        int w = r - l, h = b - t, gap = Ui.dp(getContext(), 12);
         View art = findViewById(R.id.np_art), labels = findViewById(R.id.np_metadata);
+        if (labels == null) {
+            int size = art.getMeasuredWidth();
+            int x = (w - size) / 2, y = (h - size) / 2;
+            art.layout(x, y, x + size, y + size);
+            return;
+        }
         boolean columns = columns(w, h);
         int aw = art.getMeasuredWidth(), lh = labels.getMeasuredHeight();
         int x = columns ? gap : (w - aw) / 2,
