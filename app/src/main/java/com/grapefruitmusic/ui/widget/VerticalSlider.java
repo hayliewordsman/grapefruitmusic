@@ -84,6 +84,13 @@ public class VerticalSlider extends View {
     }
 
     @Override
+    protected void onMeasure(int widthSpec, int heightSpec) {
+        // Fit short landscape screens, while keeping the upright control compact.
+        int height = Math.min(MeasureSpec.getSize(heightSpec), Math.round(240 * density));
+        setMeasuredDimension(MeasureSpec.getSize(widthSpec), height);
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         float w = getWidth() - getPaddingLeft() - getPaddingRight();
         float left = getPaddingLeft();

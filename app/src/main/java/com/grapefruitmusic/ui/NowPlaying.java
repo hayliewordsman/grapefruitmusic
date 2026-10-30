@@ -811,11 +811,7 @@ final class NowPlaying {
         if (!karaokeSlider.isSliding()) karaokeSlider.setValue(Prefs.karaokeAmount());
         if (show == (karaokeSlider.getVisibility() == View.VISIBLE)) return;
         karaokeSlider.setVisibility(show ? View.VISIBLE : View.GONE);
-        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) art.getLayoutParams();
-        int side = Ui.dp(activity, show ? 58 : 12);
-        lp.leftMargin = side;
-        lp.rightMargin = side;
-        art.setLayoutParams(lp);
+        // The horizontal artwork row reserves a separate column for the slider.
     }
 
     /** Switches the card between the music queue and the radio. */
@@ -1065,7 +1061,7 @@ final class NowPlaying {
     private void showMode() {
         // Lyrics and Up Next: small artwork and title on top, the list below (iOS-style).
         boolean condensedMode = mode != MODE_ART;
-        root.findViewById(R.id.np_art_group).setVisibility(condensedMode ? View.INVISIBLE : View.VISIBLE);
+        root.findViewById(R.id.np_art_row).setVisibility(condensedMode ? View.INVISIBLE : View.VISIBLE);
         root.findViewById(R.id.np_metadata).setVisibility(condensedMode ? View.GONE : View.VISIBLE);
         art.setVisibility(condensedMode ? View.INVISIBLE : View.VISIBLE);
         if (condensedMode && condensed.getVisibility() != View.VISIBLE) {

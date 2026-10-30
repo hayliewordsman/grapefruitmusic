@@ -8,7 +8,7 @@ repo_name: Grapefruit Music
 repo_icon: icon.png
 repo_description: >-
   Releases of Grapefruit Music, a music player for your own files, Navidrome, Subsonic
-  and Jellyfin servers and internet radio, made for Android 4.2.2 and later. Built from
+  and Jellyfin servers, internet radio and podcasts, made for Android 4.2.2 and later. Built from
   https://github.com/hayliewordsman/grapefruitmusic and signed by its developer.
 
 # Keep the three newest versions in the main repo; older ones move to the archive repo.

@@ -91,7 +91,7 @@ final class Grouped {
         v.setText(value);
         v.setPadding(Ui.dp(c, 8), 0, 0, 0);
         row.addView(v);
-        if (click != null) row.addView(Ui.icon(c, Icons.CHEVRON_RIGHT, Ui.color(c, R.attr.gfSeparator), 18));
+        if (click != null) row.addView(Ui.icon(c, Icons.CHEVRON_RIGHT, Ui.color(c, R.attr.gfDisclosure), 18));
         addRow(row, click != null);
         return v;
     }

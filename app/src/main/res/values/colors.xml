@@ -81,4 +81,9 @@
     <color name="grapefruit_dark_toggle_off">#4A2229</color>
     <color name="grapefruit_dark_toggle_off_segments">#F2D0C6</color>
     <color name="grapefruit_dark_knob">#F2D0C6</color>
+    <!-- Navigation affordances need more contrast than decorative separators. -->
+    <color name="light_disclosure">#6E6E73</color>
+    <color name="dark_disclosure">#AEAEB2</color>
+    <color name="grapefruit_light_disclosure">#8D4B56</color>
+    <color name="grapefruit_dark_disclosure">#D4A5AC</color>
 </resources>

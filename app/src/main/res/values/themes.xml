@@ -12,6 +12,7 @@
         <item name="gfTextPrimary">@color/light_text</item>
         <item name="gfTextSecondary">@color/light_text_secondary</item>
         <item name="gfSeparator">@color/light_separator</item>
+        <item name="gfDisclosure">@color/light_disclosure</item>
         <item name="gfAccent">@color/grapefruit</item>
         <item name="gfFill">@color/light_fill</item>
         <item name="gfScrim">@color/light_scrim</item>
@@ -48,6 +49,7 @@
         <item name="gfTextPrimary">@color/dark_text</item>
         <item name="gfTextSecondary">@color/dark_text_secondary</item>
         <item name="gfSeparator">@color/dark_separator</item>
+        <item name="gfDisclosure">@color/dark_disclosure</item>
         <item name="gfAccent">@color/grapefruit_bright</item>
         <item name="gfFill">@color/dark_fill</item>
         <item name="gfScrim">@color/dark_scrim</item>
@@ -85,6 +87,7 @@
         <item name="gfTextPrimary">@color/grapefruit_light_text</item>
         <item name="gfTextSecondary">@color/grapefruit_light_text_secondary</item>
         <item name="gfSeparator">@color/grapefruit_light_separator</item>
+        <item name="gfDisclosure">@color/grapefruit_light_disclosure</item>
         <item name="gfAccent">@color/grapefruit_light_accent</item>
         <item name="gfFill">@color/grapefruit_light_fill</item>
         <item name="gfScrim">@color/grapefruit_light_scrim</item>
@@ -112,6 +115,7 @@
         <item name="gfTextPrimary">@color/grapefruit_dark_text</item>
         <item name="gfTextSecondary">@color/grapefruit_dark_text_secondary</item>
         <item name="gfSeparator">@color/grapefruit_dark_separator</item>
+        <item name="gfDisclosure">@color/grapefruit_dark_disclosure</item>
         <item name="gfAccent">@color/grapefruit_dark_accent</item>
         <item name="gfFill">@color/grapefruit_dark_fill</item>
         <item name="gfScrim">@color/grapefruit_dark_scrim</item>

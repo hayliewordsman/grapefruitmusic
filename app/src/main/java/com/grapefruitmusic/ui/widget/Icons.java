@@ -32,26 +32,35 @@ public final class Icons {
     public static final int CHECK = 23;
     public static final int PLAYLIST = 24;
     public static final int HANDLE = 25;
+
     /** Filled circle with a white minus (the color is the circle's). */
     public static final int REMOVE = 26;
+
     /** A microphone: Karaoke Mode. */
     public static final int MIC = 27;
+
     /** A broadcast mast with waves: the Radio tab. */
     public static final int RADIO = 28;
+
     public static final int HEADPHONES = 29;
+
     /** A filled square: stop (the radio, which is live, stops rather than pauses). */
     public static final int STOP = 30;
+
     public static final int CLOSE = 31;
 
     private static final Paint PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final Path PATH = new Path();
     private static final RectF OVAL = new RectF();
 
-    private Icons() {
-    }
+    private Icons() {}
 
     /** Draws icon into bounds (kept square, centered). Main thread only. */
     public static void draw(Canvas c, int icon, RectF bounds, int color) {
+        if (icon == PLAY || icon == PAUSE || icon == NEXT || icon == PREVIOUS) {
+            drawTransport(c, icon, bounds, color);
+            return;
+        }
         float size = Math.min(bounds.width(), bounds.height());
         float s = size / 24f;
         c.save();
@@ -66,37 +75,6 @@ public final class Icons {
         Path path = PATH;
         path.reset();
         switch (icon) {
-            case PLAY:
-                fillRounded(p);
-                path.moveTo(7, 4.5f);
-                path.lineTo(19.5f, 12);
-                path.lineTo(7, 19.5f);
-                path.close();
-                c.drawPath(path, p);
-                break;
-            case PAUSE:
-                p.setStyle(Paint.Style.FILL);
-                OVAL.set(6, 4.5f, 10, 19.5f);
-                c.drawRoundRect(OVAL, 1, 1, p);
-                OVAL.set(14, 4.5f, 18, 19.5f);
-                c.drawRoundRect(OVAL, 1, 1, p);
-                break;
-            case NEXT:
-            case PREVIOUS:
-                if (icon == PREVIOUS) {
-                    c.scale(-1, 1, 12, 12);
-                }
-                fillRounded(p);
-                path.moveTo(2.5f, 6);
-                path.lineTo(11.5f, 12);
-                path.lineTo(2.5f, 18);
-                path.close();
-                path.moveTo(12, 6);
-                path.lineTo(21, 12);
-                path.lineTo(12, 18);
-                path.close();
-                c.drawPath(path, p);
-                break;
             case LIBRARY:
                 stroke(p, 2.4f);
                 c.drawLine(4.5f, 4, 4.5f, 20, p);
@@ -359,9 +337,55 @@ public final class Icons {
         p.setStrokeWidth(width);
     }
 
-    /** Filled shapes with slightly rounded corners. */
-    private static void fillRounded(Paint p) {
-        p.setStyle(Paint.Style.FILL_AND_STROKE);
-        p.setStrokeWidth(1.5f);
+    /** Build playback paths in physical pixels: no enlarged 24px hardware path texture. */
+    private static void drawTransport(Canvas canvas, int icon, RectF bounds, int color) {
+        float size = Math.min(bounds.width(), bounds.height()), u = size / 24f;
+        float left = bounds.centerX() - size / 2f, top = bounds.centerY() - size / 2f;
+        Paint p = PAINT;
+        p.reset();
+        p.setAntiAlias(true);
+        p.setColor(color);
+        p.setStyle(Paint.Style.FILL);
+        Path path = PATH;
+        path.reset();
+        if (icon == PAUSE) {
+            float radius = Math.max(1, u);
+            OVAL.set(
+                    Math.round(left + 6 * u),
+                    top + 4.5f * u,
+                    Math.round(left + 10 * u),
+                    top + 19.5f * u);
+            canvas.drawRoundRect(OVAL, radius, radius, p);
+            OVAL.set(
+                    Math.round(left + 14 * u),
+                    top + 4.5f * u,
+                    Math.round(left + 18 * u),
+                    top + 19.5f * u);
+            canvas.drawRoundRect(OVAL, radius, radius, p);
+            return;
+        }
+        if (icon == PLAY) {
+            // Small quadratic corners, rather than a thick scaled outline around the triangle.
+            path.moveTo(left + 7 * u, top + 5.8f * u);
+            path.quadTo(left + 7 * u, top + 4.5f * u, left + 8.2f * u, top + 5.2f * u);
+            path.lineTo(left + 18.5f * u, top + 11.3f * u);
+            path.quadTo(left + 19.7f * u, top + 12 * u, left + 18.5f * u, top + 12.7f * u);
+            path.lineTo(left + 8.2f * u, top + 18.8f * u);
+            path.quadTo(left + 7 * u, top + 19.5f * u, left + 7 * u, top + 18.2f * u);
+            path.close();
+        } else {
+            boolean reverse = icon == PREVIOUS;
+            for (int i = 0; i < 2; i++) {
+                float start = i == 0 ? 2.5f : 12;
+                float end = i == 0 ? 11.5f : 21;
+                float x = left + (reverse ? 24 - start : start) * u;
+                float tip = left + (reverse ? 24 - end : end) * u;
+                path.moveTo(x, top + 6 * u);
+                path.lineTo(tip, top + 12 * u);
+                path.lineTo(x, top + 18 * u);
+                path.close();
+            }
+        }
+        canvas.drawPath(path, p);
     }
 }

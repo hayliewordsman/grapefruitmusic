@@ -1,6 +1,8 @@
 Grapefruit Music is a small, native music player for Android 4.2.2 (Jelly Bean) and later. It plays music you own: files on your device, and your own Navidrome, Subsonic or Jellyfin servers.
 
 • Download albums, playlists and songs for offline listening
+• Discover podcasts, subscribe, download episodes and receive periodic new-episode notifications
+• Search music, radio stations and podcasts together
 • Time-synced lyrics from .lrc files, your server or LRCLIB
 • Internet radio from the Radio Browser directory, and FM radio on tablets whose built-in radio Grapefruit supports
 • Volume Match, Volume Boost, a 10-band equalizer, Mono Audio and Karaoke Mode

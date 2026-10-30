@@ -298,7 +298,7 @@ final class RowAdapter extends BaseAdapter {
             texts.addView(h.downloadProgress, new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(context, 8)));
             row.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-            h.accessory = Ui.icon(context, Icons.CHEVRON_RIGHT, secondary, 18);
+            h.accessory = Ui.icon(context, Icons.CHEVRON_RIGHT, Ui.color(context, R.attr.gfDisclosure), 18);
             row.addView(h.accessory);
             h.more = Ui.moreButton(context);
             h.more.setOnClickListener(new View.OnClickListener() {
@@ -338,6 +338,7 @@ final class RowAdapter extends BaseAdapter {
         h.more.setTag(m);
         h.more.setVisibility(m.kind == MediaItem.TRACK ? View.VISIBLE : View.GONE);
         if (m.kind == MediaItem.TRACK) {
+            h.accessory.setColor(secondary);
             Integer state = downloadStates != null ? downloadStates.get(m.id) : null;
             if ((progress != null && m.path != null) || (state != null && state == Downloads.DONE)) {
                 h.accessory.setIcon(Icons.DOWNLOADED);
@@ -351,6 +352,7 @@ final class RowAdapter extends BaseAdapter {
             }
         } else {
             h.accessory.setIcon(Icons.CHEVRON_RIGHT);
+            h.accessory.setColor(Ui.color(context, R.attr.gfDisclosure));
             h.accessory.setVisibility(View.VISIBLE);
         }
         return convertView;

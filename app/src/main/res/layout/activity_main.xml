@@ -22,15 +22,17 @@
             </FrameLayout>
             <LinearLayout android:id="@+id/np_main" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="vertical">
                 <FrameLayout android:id="@+id/np_stage" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
-                    <com.grapefruitmusic.ui.widget.PlayerMetadata android:layout_width="match_parent" android:layout_height="match_parent" android:id="@+id/np_art_group">
-                        <com.grapefruitmusic.ui.widget.ArtworkView android:id="@+id/np_art" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_gravity="center" android:layout_margin="12dp" />
-                        <LinearLayout android:id="@+id/np_metadata" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingLeft="12dp" android:paddingRight="12dp">
-                            <TextView android:id="@+id/np_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:ellipsize="end" android:gravity="left" android:paddingLeft="0dp" android:paddingRight="0dp" android:singleLine="true" android:textColor="?attr/gfTextPrimary" android:textSize="20sp" android:textStyle="bold" />
-                            <TextView android:id="@+id/np_album" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textColor="?attr/gfTextSecondary" android:singleLine="true" android:ellipsize="end" />
-                            <TextView android:id="@+id/np_artist" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:gravity="left" android:paddingLeft="0dp" android:paddingRight="0dp" android:singleLine="true" android:textColor="?attr/gfTextSecondary" android:textSize="16sp" />
-                        </LinearLayout>
-                    </com.grapefruitmusic.ui.widget.PlayerMetadata>
-                    <com.grapefruitmusic.ui.widget.VerticalSlider android:id="@+id/np_karaoke" android:layout_width="44dp" android:layout_height="240dp" android:layout_gravity="right|center_vertical" android:layout_marginRight="10dp" android:visibility="gone" />
+                    <LinearLayout android:id="@+id/np_art_row" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal" android:gravity="center_vertical">
+                        <com.grapefruitmusic.ui.widget.PlayerMetadata android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:id="@+id/np_art_group">
+                            <com.grapefruitmusic.ui.widget.ArtworkView android:id="@+id/np_art" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_gravity="center" android:layout_margin="12dp" />
+                            <LinearLayout android:id="@+id/np_metadata" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingLeft="12dp" android:paddingRight="12dp">
+                                <TextView android:id="@+id/np_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:ellipsize="end" android:gravity="left" android:paddingLeft="0dp" android:paddingRight="0dp" android:singleLine="true" android:textColor="?attr/gfTextPrimary" android:textSize="20sp" android:textStyle="bold" />
+                                <TextView android:id="@+id/np_album" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textColor="?attr/gfTextSecondary" android:singleLine="true" android:ellipsize="end" />
+                                <TextView android:id="@+id/np_artist" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:gravity="left" android:paddingLeft="0dp" android:paddingRight="0dp" android:singleLine="true" android:textColor="?attr/gfTextSecondary" android:textSize="16sp" />
+                            </LinearLayout>
+                        </com.grapefruitmusic.ui.widget.PlayerMetadata>
+                        <com.grapefruitmusic.ui.widget.VerticalSlider android:id="@+id/np_karaoke" android:layout_width="48dp" android:layout_height="match_parent" android:layout_marginTop="12dp" android:layout_marginBottom="12dp" android:layout_marginRight="12dp" android:paddingLeft="2dp" android:paddingRight="2dp" android:visibility="gone" />
+                    </LinearLayout>
                     <LinearLayout android:id="@+id/np_condensed" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone">
                         <LinearLayout android:id="@+id/np_mini_header" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" android:paddingBottom="8dp" android:paddingLeft="20dp" android:paddingRight="20dp" android:paddingTop="4dp">
                             <com.grapefruitmusic.ui.widget.ArtworkView android:id="@+id/np_small_art" android:layout_width="60dp" android:layout_height="60dp" />
@@ -75,10 +77,10 @@
             </LinearLayout>
             <LinearLayout android:id="@+id/np_buttons" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginBottom="4dp" android:orientation="horizontal" android:paddingLeft="8dp" android:paddingRight="8dp">
                 <com.grapefruitmusic.ui.widget.ActionIconView android:id="@+id/np_btn_lyrics" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
-                <com.grapefruitmusic.ui.widget.ActionIconView android:id="@+id/np_btn_queue" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
                 <com.grapefruitmusic.ui.widget.ActionIconView android:id="@+id/np_btn_karaoke" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
                 <com.grapefruitmusic.ui.widget.ActionIconView android:id="@+id/np_btn_shuffle" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
                 <com.grapefruitmusic.ui.widget.ActionIconView android:id="@+id/np_btn_repeat" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+                <com.grapefruitmusic.ui.widget.ActionIconView android:id="@+id/np_btn_queue" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
             </LinearLayout>
         </LinearLayout>
         <FrameLayout android:id="@+id/np_side_grabber" android:layout_width="22dp" android:layout_height="match_parent" android:layout_gravity="left" android:visibility="gone">

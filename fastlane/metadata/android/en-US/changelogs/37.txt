@@ -1,0 +1,7 @@
+4.0
+Podcasts: discovery, subscriptions, offline downloads, progress and periodic episode notifications.
+Search music, radio and podcasts together.
+Adaptive Now Playing with sharper controls and icon-only Lyrics, Karaoke, Shuffle, Repeat and Queue actions.
+Refreshed Library and Settings; playlists are in Library.
+Rebuilt lightweight stereo Karaoke Mode with FOSS model and updated credits.
+Modern Android support while retaining Android 4.2.2 compatibility.
