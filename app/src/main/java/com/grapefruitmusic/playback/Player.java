@@ -180,7 +180,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
 
     /** The sound settings, for Grapefruit's own engine. */
     public static Effects effects() {
-        return new Effects(Prefs.volumeBoost(), eqCurve(), Prefs.monoAudio(), Prefs.karaoke(), Prefs.karaokeAmount());
+        return new Effects(Prefs.volumeBoost(), eqCurve(), Prefs.monoAudio(), Prefs.karaoke(), Prefs.karaokeAmount(), Prefs.liveMode(), Prefs.liveAmount());
     }
 
     /** The equalizer curve chosen in Settings: a preset's, or the Custom one. */

@@ -31,6 +31,7 @@ final class DspEngine implements Engine {
 
     /** Karaoke Mode's model, read from the app once. */
     private static VocalRemover.Model karaokeModel;
+    private volatile Effects effects;
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Context app;
@@ -164,11 +165,13 @@ final class DspEngine implements Engine {
 
     @Override
     public void setEffects(final Effects e) {
+        effects = e;
         dsp.setBoost(e.boost);
         dsp.setEq(e.eq);
         dsp.setMono(e.mono);
+        dsp.setLive(e.live, e.liveAmount);
         VocalRemover.Model model = loadedKaraokeModel();
-        if (e.karaoke && model == null) {
+        if ((e.karaoke || e.live) && model == null) {
             // Read the model off the main thread; Karaoke Mode starts once it's in.
             com.grapefruitmusic.util.Bg.run(new com.grapefruitmusic.util.Bg.Work<VocalRemover.Model>() {
                 @Override
@@ -178,7 +181,7 @@ final class DspEngine implements Engine {
             }, new com.grapefruitmusic.util.Bg.Done<VocalRemover.Model>() {
                 @Override
                 public void done(VocalRemover.Model m, Exception error) {
-                    if (m != null) dsp.setKaraoke(e.karaoke, e.karaokeAmount, m);
+                    if (m != null && effects == e) dsp.setKaraoke(e.karaoke, e.karaokeAmount, m);
                     else Log.w(TAG, "karaoke model", error);
                 }
             });

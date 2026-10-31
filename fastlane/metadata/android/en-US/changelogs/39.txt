@@ -1,0 +1,6 @@
+4.1 beta 1
+Live Mode: song-derived crowd singalong, procedural audience/applause and venue ambience, with a 0–100% strength slider.
+Six labeled Now Playing actions: Lyrics, Karaoke, Live, Shuffle, Repeat and Up Next.
+More space above the action row.
+Original procedural crowd training recipe and provenance included; existing FOSS vocal-separator credits retained.
+Android 4.2.2+ and permanent signing identity preserved.

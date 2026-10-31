@@ -88,6 +88,18 @@ public final class AboutFragment extends BaseFragment {
                         main().push(KaraokeCreditsFragment.newInstance("About"));
                     }
                 });
+        g.value("Live Mode", "Procedural crowd v1 · GPL-3.0-or-later", v -> {
+            Ui.dialog(getActivity()).setTitle("Live Mode").setMessage(
+                    "Live Mode layers the song's estimated vocals into a delayed, detuned crowd choir,"
+                    + " with venue reflections and a synthesized audience. Instrumentals get ambience"
+                    + " without invented lyrics. The new AR-12 texture model was trained only on"
+                    + " original procedural voices and applause (GPL-3.0-or-later); no recordings"
+                    + " or pretrained crowd weights were used. The vocal separator and its CC BY 4.0"
+                    + " SiSEC18-MUS attribution are listed under Karaoke Mode. This beta is a"
+                    + " stylized simulation, not a recording of a real crowd. Recipe, seeds and"
+                    + " evaluation: tools/live; manifest: assets/live_training.json in the source.")
+                    .setPositiveButton("OK", null).show();
+        });
         g.footer(
                 "Conscrypt (github.com/google/conscrypt) provides secure connections on older"
                     + " Android versions. Online lyrics come from LRCLIB (lrclib.net), a community"

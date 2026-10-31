@@ -88,6 +88,7 @@ final class NowPlaying {
     private final IconView btnShuffle;
     private final IconView btnRepeat;
     private final IconView btnKaraoke;
+    private final IconView btnLive;
     private final IconView btnQueue;
     /** A live station: + keeps it in My Stations (✓ when it's there; tap again to let it go). */
     private final IconView btnStation;
@@ -109,6 +110,7 @@ final class NowPlaying {
     private final TextView outputNote;
     private final IconView btnPreset;
     private final VerticalSlider karaokeSlider;
+    private final VerticalSlider liveSlider;
     private final int accent;
     private final int secondary;
     private final int primary;
@@ -234,11 +236,12 @@ final class NowPlaying {
         btnShuffle = (IconView) root.findViewById(R.id.np_btn_shuffle);
         btnRepeat = (IconView) root.findViewById(R.id.np_btn_repeat);
         btnKaraoke = (IconView) root.findViewById(R.id.np_btn_karaoke);
+        btnLive = (IconView) root.findViewById(R.id.np_btn_live);
         btnQueue = (IconView) root.findViewById(R.id.np_btn_queue);
         btnStation = new com.grapefruitmusic.ui.widget.ActionIconView(a);
         for (IconView button : new IconView[]{btnLyrics, btnQueue, btnKaraoke,
-                btnShuffle, btnRepeat, btnStation}) {
-            ((com.grapefruitmusic.ui.widget.ActionIconView)button).setLabelVisible(false);
+                btnShuffle, btnRepeat, btnLive, btnStation}) {
+            ((com.grapefruitmusic.ui.widget.ActionIconView)button).setLabelVisible(true);
         }
 
         btnStation.setVisibility(View.GONE);
@@ -283,7 +286,9 @@ final class NowPlaying {
         outputArea.addView(outputNote, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER_VERTICAL));
         buildRadioControls(root);
+        liveSlider = (VerticalSlider) root.findViewById(R.id.np_live_strength);
         buildKaraokeSlider(root);
+        buildLiveSlider();
         IconView volLow = (IconView) root.findViewById(R.id.np_vol_low);
         IconView volHigh = (IconView) root.findViewById(R.id.np_vol_high);
 
@@ -341,6 +346,16 @@ final class NowPlaying {
         btnShuffle.setIcon(Icons.SHUFFLE);
         btnRepeat.setIcon(Icons.REPEAT);
         btnKaraoke.setIcon(Icons.MIC);
+        btnLive.setIcon(Icons.CHEERING);
+        btnLive.setContentDescription("Live Mode");
+        btnLive.setOnClickListener(v -> {
+            boolean on = !Prefs.liveMode();
+            Prefs.setLiveMode(on);
+            if (on) Player.prepareKaraoke(activity);
+            player.audioEffectsChanged();
+            showKaraoke();
+            Notice.show(activity, on ? "Live Mode on" : "Live Mode off");
+        });
         btnQueue.setIcon(Icons.QUEUE);
         prev.setContentDescription("Previous");
         next.setContentDescription("Next");
@@ -609,6 +624,19 @@ final class NowPlaying {
         });
     }
 
+    private void buildLiveSlider() {
+        liveSlider.setIcon(Icons.CHEERING);
+        liveSlider.setColors((secondary & 0x00ffffff) | 0x40000000, accent, secondary);
+        liveSlider.setContentDescription("Live Mode strength");
+        liveSlider.setListener(new VerticalSlider.Listener() {
+            @Override public void onSlide(float value) {
+                Prefs.setLiveAmount(value);
+                player.audioEffectsChanged();
+            }
+            @Override public void onSlideEnd(float value) { onSlide(value); }
+        });
+    }
+
     private void buildKaraokeSlider(View root) {
         karaokeSlider.setIcon(Icons.MIC);
         karaokeSlider.setColors((secondary & 0x00ffffff) | 0x40000000, accent, secondary);
@@ -634,6 +662,9 @@ final class NowPlaying {
                 if (h > 0 && lp.height != h) {
                     lp.height = h;
                     karaokeSlider.setLayoutParams(lp);
+                    ViewGroup.LayoutParams liveLp = liveSlider.getLayoutParams();
+                    liveLp.height = h;
+                    liveSlider.setLayoutParams(liveLp);
                 }
             }
         });
@@ -714,7 +745,7 @@ final class NowPlaying {
         controls.setPadding(padding, 0, padding, 0);
         resizeHeight(root.findViewById(R.id.np_transport), compact ? 56 : 72);
         resizeHeight(root.findViewById(R.id.np_volume_row), compact ? 28 : 36);
-        resizeHeight(root.findViewById(R.id.np_buttons), 48);
+        resizeHeight(root.findViewById(R.id.np_buttons), 60);
         resizeHeight(root.findViewById(R.id.np_grabber), compact ? 40 : 44);
         resizeHeight(scrubber, compact ? 24 : 30);
         for (IconView button : new IconView[]{prev, play, next}) {
@@ -807,12 +838,17 @@ final class NowPlaying {
 
     private void showKaraoke() {
         btnKaraoke.setColor(Prefs.karaoke() ? accent : secondary);
+        btnLive.setColor(Prefs.liveMode() ? accent : secondary);
+        btnLive.setSelected(Prefs.liveMode());
         showKaraokeSlider();
     }
 
     /** The vocal slider beside the artwork while Karaoke Mode is on (the artwork makes room). */
     private void showKaraokeSlider() {
-        boolean show = !radioMode && Prefs.karaoke() && mode == MODE_ART;
+        boolean showLive = !radioMode && !liveMode && Prefs.liveMode() && mode == MODE_ART;
+        liveSlider.setValue(Prefs.liveAmount());
+        liveSlider.setVisibility(showLive ? View.VISIBLE : View.GONE);
+        boolean show = !radioMode && !liveMode && Prefs.karaoke() && mode == MODE_ART;
         if (!karaokeSlider.isSliding()) karaokeSlider.setValue(Prefs.karaokeAmount());
         if (show == (karaokeSlider.getVisibility() == View.VISIBLE)) return;
         karaokeSlider.setVisibility(show ? View.VISIBLE : View.GONE);

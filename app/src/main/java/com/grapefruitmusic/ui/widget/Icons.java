@@ -48,6 +48,7 @@ public final class Icons {
     public static final int STOP = 30;
 
     public static final int CLOSE = 31;
+    public static final int CHEERING = 32;
 
     private static final Paint PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final Path PATH = new Path();
@@ -75,6 +76,29 @@ public final class Icons {
         Path path = PATH;
         path.reset();
         switch (icon) {
+            case CHEERING:
+                stroke(p, 1.25f);
+                // Original mirrored raised hands, drawn in the current theme tint.
+                for (int hand = 0; hand < 2; hand++) {
+                    c.save();
+                    if (hand == 1) { c.translate(24, 0); c.scale(-1, 1); }
+                    path.reset();
+                    path.moveTo(5, 22); path.lineTo(5, 17);
+                    path.cubicTo(3, 15, 2.5f, 13, 2.5f, 11);
+                    path.lineTo(2.5f, 7); path.quadTo(3.5f, 6, 4.5f, 7);
+                    path.lineTo(4.5f, 11); path.lineTo(4.5f, 4.5f);
+                    path.quadTo(5.5f, 3.5f, 6.5f, 4.5f); path.lineTo(6.5f, 10);
+                    path.lineTo(6.5f, 3.5f); path.quadTo(7.5f, 2.5f, 8.5f, 3.5f);
+                    path.lineTo(8.5f, 10); path.lineTo(8.5f, 5.5f);
+                    path.quadTo(9.5f, 4.5f, 10.5f, 5.5f); path.lineTo(10.5f, 12);
+                    path.lineTo(11.2f, 10.5f); path.quadTo(12.5f, 10, 12, 12);
+                    path.lineTo(10, 17); path.lineTo(10, 22);
+                    c.drawPath(path, p); c.restore();
+                }
+                c.drawLine(11, 1, 11, 2.5f, p);
+                c.drawLine(0.5f, 3, 1.5f, 4, p);
+                c.drawLine(22.5f, 4, 23.5f, 3, p);
+                break;
             case LIBRARY:
                 stroke(p, 2.4f);
                 c.drawLine(4.5f, 4, 4.5f, 20, p);

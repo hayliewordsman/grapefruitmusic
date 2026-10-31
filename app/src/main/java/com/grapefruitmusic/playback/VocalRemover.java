@@ -212,6 +212,7 @@ public final class VocalRemover {
     private float smoothed = -1;
 
     /** The two channels after process(). */
+    public float dryOutL, dryOutR;
     public float outL;
 
     public float outR;
@@ -369,6 +370,8 @@ public final class VocalRemover {
                         ? 0
                         : played < latency + FADE ? (played - latency) / (float) FADE : 1;
         played++;
+        dryOutL = dryL[dryPos] * gain;
+        dryOutR = dryR[dryPos] * gain;
         outL = (dryL[dryPos] - vl) * gain;
         outR = (dryR[dryPos] - vr) * gain;
         dryL[dryPos] = l;

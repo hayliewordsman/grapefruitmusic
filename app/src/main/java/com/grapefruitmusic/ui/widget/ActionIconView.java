@@ -68,9 +68,13 @@ public final class ActionIconView extends IconView {
             paint.setTextAlign(Paint.Align.CENTER);
             paint.setColor(tint);
             String text = label.toString();
+            if (text.equals("Live Mode")) text = "Live";
             if (text.equals("Karaoke Mode")) text = "Karaoke";
             if (text.startsWith("Add to ")) text = "Save";
             if (text.startsWith("Remove from ")) text = "Saved";
+            float available = Math.max(1, getWidth() - Ui.dp(c, 6));
+            float measured = paint.measureText(text);
+            if (measured > available) paint.setTextSize(paint.getTextSize() * available / measured);
             canvas.drawText(text, getWidth() / 2f, getHeight() - Ui.dp(c, 8), paint);
         }
     }

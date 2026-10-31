@@ -118,6 +118,13 @@ public final class Prefs {
         prefs.edit().putFloat("karaoke_amount", Math.max(0, Math.min(1, amount))).apply();
     }
 
+    public static boolean liveMode() { return prefs.getBoolean("live_mode", false); }
+    public static void setLiveMode(boolean on) { prefs.edit().putBoolean("live_mode", on).apply(); }
+    public static float liveAmount() { return prefs.getFloat("live_amount", 0.5f); }
+    public static void setLiveAmount(float amount) {
+        prefs.edit().putFloat("live_amount", Math.max(0, Math.min(1, amount))).apply();
+    }
+
     /** Mono Audio: left and right mixed together in both ears. */
     public static boolean monoAudio() {
         return prefs.getBoolean("mono_audio", false);
