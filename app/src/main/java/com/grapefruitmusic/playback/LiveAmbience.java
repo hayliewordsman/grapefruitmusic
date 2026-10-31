@@ -9,6 +9,10 @@ final class LiveAmbience {
     private final float excursion;
     private final float smooth, attack, release, lowCoefficient, highCoefficient;
     private final int textureStep;
+    private final float transientAttack, transientSlow, sendAttack, sendRelease;
+    private final int transientHold;
+    private float fastEnergy, slowEnergy, echoSend = 1;
+    private int hold;
     private int pos, texturePos, random = 0x41b1, control;
     private float amount, envelope, low, high, clap, crowdL, crowdR;
     double outL, outR;
@@ -31,6 +35,11 @@ final class LiveAmbience {
         release = (float)(1 - Math.exp(-1.0 / (rate * 0.35)));
         lowCoefficient = (float)(1 - Math.exp(-2*Math.PI*3000/rate));
         highCoefficient = (float)(1 - Math.exp(-2*Math.PI*240/rate));
+        transientAttack = (float)(1 - Math.exp(-1.0 / (rate * 0.002)));
+        transientSlow = (float)(1 - Math.exp(-1.0 / (rate * 0.060)));
+        sendAttack = (float)(1 - Math.exp(-1.0 / (rate * 0.001)));
+        sendRelease = (float)(1 - Math.exp(-1.0 / (rate * 0.030)));
+        transientHold = rate / 30;
         textureStep = (int)((LiveCrowdTexture.RATE * 65536L) / rate);
     }
 
@@ -57,9 +66,17 @@ final class LiveAmbience {
     void process(double left, double right, double vocalL, double vocalR, float strength) {
         float target = Float.isNaN(strength) ? 0 : Math.max(0, Math.min(1, strength));
         amount += (target - amount) * smooth;
-        float energy = (float)Math.min(1, (Math.abs(left)+Math.abs(right))*2);
+        float magnitude = (float)((Math.abs(left)+Math.abs(right))*0.5);
+        float energy = Math.min(1, magnitude*4);
         envelope += (energy-envelope) * (energy > envelope ? attack : release);
-        voice[pos] = (float)((vocalL+vocalR)*0.5);
+        // Keep dry drum attacks intact, but do not turn each hit into repeated crowd/room taps.
+        fastEnergy += (magnitude-fastEnergy)*transientAttack;
+        slowEnergy += (magnitude-slowEnergy)*transientSlow;
+        if (fastEnergy > 0.025f && fastEnergy > slowEnergy*1.8f) hold = transientHold;
+        float sendTarget = hold > 0 ? 0.12f : 1;
+        if (hold > 0) hold--;
+        echoSend += (sendTarget-echoSend)*(sendTarget < echoSend ? sendAttack : sendRelease);
+        voice[pos] = (float)((vocalL+vocalR)*0.5)*echoSend;
         float choirL = 0, choirR = 0;
         for (int i = 0; i < 4; i++) {
             delay[i] += step[i];
@@ -70,8 +87,8 @@ final class LiveAmbience {
         }
         float reverbL = roomL[(pos-roomDelay[0])&mask]*0.32f + roomR[(pos-roomDelay[1])&mask]*0.21f;
         float reverbR = roomR[(pos-roomDelay[2])&mask]*0.32f + roomL[(pos-roomDelay[3])&mask]*0.21f;
-        roomL[pos] = (float)left + reverbL*0.45f;
-        roomR[pos] = (float)right + reverbR*0.45f;
+        roomL[pos] = (float)left*echoSend + reverbL*0.45f;
+        roomR[pos] = (float)right*echoSend + reverbR*0.45f;
         // Read a pre-rendered trained texture; no AR, tanh, sin, division or long modulo per sample.
         short[] texture = LiveCrowdTexture.PCM;
         int at = texturePos >>> 16;
@@ -88,8 +105,8 @@ final class LiveAmbience {
         }
         float bedL = a*(1f/32768)*0.35f + crowdL;
         float bedR = b*(1f/32768)*0.35f + crowdR;
-        outL = left + amount*(choirL*0.6f + reverbL*0.65f + bedL*envelope);
-        outR = right + amount*(choirR*0.6f + reverbR*0.65f + bedR*envelope);
+        outL = left + amount*(choirL*0.45f + reverbL*0.30f + bedL*envelope);
+        outR = right + amount*(choirR*0.45f + reverbR*0.30f + bedR*envelope);
         texturePos = (texturePos+textureStep)&0x0fffffff;
         pos = (pos+1)&mask;
     }

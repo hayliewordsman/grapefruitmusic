@@ -1,0 +1,23 @@
+{
+  "name": "Original procedural stadium cheers v1",
+  "license": "GPL-3.0-or-later",
+  "recordings_used": false,
+  "pretrained_weights_used": false,
+  "sample_rate": 12000,
+  "channels": 2,
+  "seconds_per_event": 3,
+  "seeds": [
+    7101,
+    7102
+  ],
+  "encoding": "GSC1 header, signed 8-bit interleaved stereo; opening then closing",
+  "bytes": 144012,
+  "sha256": "087ec24575b23d65825abcd4fbf9bb949ff90385ca3e6061c773e8c4e706fff0",
+  "script_sha256": "15703911b46c422c3c7bd62428b80e168d8535c8146e9c7890864206b29c7c9d",
+  "numpy": "2.3.5",
+  "rms": [
+    0.28108274257223487,
+    0.2825149295128984
+  ],
+  "limitations": "Stylized synthetic whoops, applause and whistles; no human crowd recording or perceptual evaluation."
+}

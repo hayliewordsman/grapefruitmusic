@@ -78,3 +78,54 @@ measures synthetic spectral predictability, not crowd realism or listener prefer
 The AR texture is not a generative singing model. No real-crowd evaluation or human
 listening panel has been run. Device listening and JP5S throughput still require
 confirmation; host benchmarks cannot prove this fix eliminates hardware stuttering.
+
+## Beta 3: opening and closing stadium cheers
+
+The echoes, vocal-band ensemble and background audience above remain. A separate
+three-second opening cheer overlaps the start of the song; another three-second
+cheer plays after the last note, before playback advances to the next song. These
+are independent of the song signal, so they still sound over a silent intro/outro.
+Both follow Live strength, master volume and the existing mono/limiter chain.
+
+`render_stadium.py` generates 96 independent open-vowel whoops, 180 clap bursts,
+nine gliding whistles and short baked stereo reflections per event. Two fixed seeds
+produce different opening/closing takes. Everything is original mathematical
+synthesis under GPL-3.0-or-later: no human recordings, sound libraries, performers,
+pretrained weights, training downloads or network service are used. This is a
+stylized synthetic stadium audience, not a real stadium recording or a listener-
+validated claim of realism. The previous lightweight crowd model is unchanged.
+
+Reproduce with Python 3 and NumPy 2.3.5:
+
+```sh
+OPENBLAS_NUM_THREADS=1 python3 tools/live/render_stadium.py
+```
+
+The output is `assets/stadium_cheers.pcm`: a bounded 144,012-byte GSC1 file, holding
+two three-second takes at 12kHz, signed 8-bit stereo, plus a 12-byte header. Its JSON
+manifest records the recipe hash, clip hash, seeds, format and licensing. The decoder
+thread reads it once; runtime mixing uses two linear interpolations per sample and
+no synthesis/model inference. Closing audio is fed in 1024-frame blocks, avoiding
+large tail buffers or long processing bursts on Android 4.2.2.
+
+Seeking/resuming past the opening window does not replay the intro. Seeking to the
+beginning restarts it; enabling Live mid-song does not invent a new intro. Pausing
+pauses playback; skipping abandons the current engine/tail. EOF drives the closing
+cheer even for files with unknown duration. The final position display remains at
+the song duration while the closing cheer plays. Turning Live off suppresses the
+cheer through the existing smoothing/fade path. No new Android dependency or API
+above 17 is introduced.
+
+Percussion echoes are also softer in beta 3. The room output gain falls from 0.65
+to 0.30 and ensemble gain from 0.60 to 0.45. A cheap fast/slow energy comparison
+briefly reduces the room/ensemble input on sharp attacks, then smoothly restores
+it. This alters only the effect sends, preserving the original drum attack and
+leaving the separate stadium-cheer layer independent. A deterministic 2ms burst
+check measured room-tail energy at 7.1% of beta 2 (about 11.5dB lower), with an
+unchanged dry attack. It is a controlled signal test, not a listening assessment
+of every mix; sharp vocal/instrument attacks can also reduce the effect briefly.
+
+Beta 3 removes the duplicate artwork sliders introduced by combining the earlier
+inline UI with beta 2's popup. There is now one percent popup for the effect you
+enable or long-press. Karaoke and Live keep their independent saved strengths and
+can remain enabled together; opening one control does not change the other effect.

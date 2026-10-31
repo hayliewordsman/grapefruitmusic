@@ -91,7 +91,8 @@ public final class AboutFragment extends BaseFragment {
         g.value("Live Mode", "Procedural crowd v1 · GPL-3.0-or-later", v -> {
             Ui.dialog(getActivity()).setTitle("Live Mode").setMessage(
                     "Live Mode layers a lightweight vocal-band estimate into a delayed, detuned crowd choir,"
-                    + " with venue reflections and a synthesized audience. Instrumentals get ambience"
+                    + " with gentler venue reflections and a synthesized audience. Separate opening and closing"
+                    + " stadium cheers add original synthesized whoops, applause and whistles. Instrumentals get ambience"
                     + " without invented lyrics. The new AR-12 texture model was trained only on"
                     + " original procedural voices and applause (GPL-3.0-or-later), pre-rendered for older phones; no recordings"
                     + " or pretrained crowd weights were used. Live Mode alone needs no neural separator."

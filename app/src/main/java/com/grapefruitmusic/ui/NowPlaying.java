@@ -40,7 +40,6 @@ import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.ui.widget.NowPlayingCard;
 import com.grapefruitmusic.ui.widget.Scrubber;
 import com.grapefruitmusic.ui.widget.TuningDial;
-import com.grapefruitmusic.ui.widget.VerticalSlider;
 import com.grapefruitmusic.util.ArtworkLoader;
 import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Blur;
@@ -109,8 +108,6 @@ final class NowPlaying {
     private final Segmented output;
     private final TextView outputNote;
     private final IconView btnPreset;
-    private final VerticalSlider karaokeSlider;
-    private final VerticalSlider liveSlider;
     private final int accent;
     private final int secondary;
     private final int primary;
@@ -274,7 +271,6 @@ final class NowPlaying {
         musicButtons = root.findViewById(R.id.np_buttons);
         radioButtons = root.findViewById(R.id.np_radio_buttons);
         btnPreset = (IconView) root.findViewById(R.id.np_btn_preset);
-        karaokeSlider = (VerticalSlider) root.findViewById(R.id.np_karaoke);
         output = new Segmented(a, new String[]{"Headphones", "Speaker"}, 0);
         FrameLayout outputArea = (FrameLayout) root.findViewById(R.id.np_output);
         outputArea.addView(output);
@@ -286,9 +282,6 @@ final class NowPlaying {
         outputArea.addView(outputNote, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER_VERTICAL));
         buildRadioControls(root);
-        liveSlider = (VerticalSlider) root.findViewById(R.id.np_live_strength);
-        buildKaraokeSlider(root);
-        buildLiveSlider();
         IconView volLow = (IconView) root.findViewById(R.id.np_vol_low);
         IconView volHigh = (IconView) root.findViewById(R.id.np_vol_high);
 
@@ -351,7 +344,6 @@ final class NowPlaying {
         btnLive.setOnClickListener(v -> {
             boolean on = !Prefs.liveMode();
             Prefs.setLiveMode(on);
-            if (on) setMode(MODE_ART);
             player.audioEffectsChanged();
             showKaraoke();
             if (on) showEffectStrength(true);
@@ -370,7 +362,6 @@ final class NowPlaying {
             public void onClick(View v) {
                 boolean on = !Prefs.karaoke();
                 Prefs.setKaraoke(on);
-                if (on) setMode(MODE_ART);
                 if (on) Player.prepareKaraoke(activity);
                 player.audioEffectsChanged();
                 showKaraoke();
@@ -650,59 +641,12 @@ final class NowPlaying {
                 if (liveEffect) Prefs.setLiveAmount(value / 100f);
                 else Prefs.setKaraokeAmount(value / 100f);
                 player.audioEffectsChanged();
-                showKaraokeSlider();
             }
         });
         content.addView(valueLabel);
         content.addView(strength, new LinearLayout.LayoutParams(-1, Ui.dp(activity, 56)));
         Ui.dialog(activity).setTitle(liveEffect ? "Live Mode strength" : "Karaoke strength")
                 .setView(content).setPositiveButton("Done", null).show();
-    }
-
-    private void buildLiveSlider() {
-        liveSlider.setIcon(Icons.CHEERING);
-        liveSlider.setColors((secondary & 0x00ffffff) | 0x40000000, accent, secondary);
-        liveSlider.setContentDescription("Live Mode strength");
-        liveSlider.setListener(new VerticalSlider.Listener() {
-            @Override public void onSlide(float value) {
-                Prefs.setLiveAmount(value);
-                player.audioEffectsChanged();
-            }
-            @Override public void onSlideEnd(float value) { onSlide(value); }
-        });
-    }
-
-    private void buildKaraokeSlider(View root) {
-        karaokeSlider.setIcon(Icons.MIC);
-        karaokeSlider.setColors((secondary & 0x00ffffff) | 0x40000000, accent, secondary);
-        karaokeSlider.setContentDescription("Vocal removal");
-        karaokeSlider.setListener(new VerticalSlider.Listener() {
-            @Override
-            public void onSlide(float value) {
-                Prefs.setKaraokeAmount(value);
-                player.audioEffectsChanged();
-            }
-
-            @Override
-            public void onSlideEnd(float value) {
-                onSlide(value);
-            }
-        });
-        // As tall as there's room for, up to 240dp.
-        root.findViewById(R.id.np_stage).addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
-                int h = Math.min(Ui.dp(activity, 240), (b - t) - Ui.dp(activity, 24));
-                ViewGroup.LayoutParams lp = karaokeSlider.getLayoutParams();
-                if (h > 0 && lp.height != h) {
-                    lp.height = h;
-                    karaokeSlider.setLayoutParams(lp);
-                    ViewGroup.LayoutParams liveLp = liveSlider.getLayoutParams();
-                    liveLp.height = h;
-                    liveSlider.setLayoutParams(liveLp);
-                }
-            }
-        });
     }
 
     /** The volume the slider (and the volume keys) control: the radio may have its own. */
@@ -875,19 +819,6 @@ final class NowPlaying {
         btnKaraoke.setColor(Prefs.karaoke() ? accent : secondary);
         btnLive.setColor(Prefs.liveMode() ? accent : secondary);
         btnLive.setSelected(Prefs.liveMode());
-        showKaraokeSlider();
-    }
-
-    /** The vocal slider beside the artwork while Karaoke Mode is on (the artwork makes room). */
-    private void showKaraokeSlider() {
-        boolean showLive = !radioMode && !liveMode && Prefs.liveMode() && mode == MODE_ART;
-        liveSlider.setValue(Prefs.liveAmount());
-        liveSlider.setVisibility(showLive ? View.VISIBLE : View.GONE);
-        boolean show = !radioMode && !liveMode && Prefs.karaoke() && mode == MODE_ART;
-        if (!karaokeSlider.isSliding()) karaokeSlider.setValue(Prefs.karaokeAmount());
-        if (show == (karaokeSlider.getVisibility() == View.VISIBLE)) return;
-        karaokeSlider.setVisibility(show ? View.VISIBLE : View.GONE);
-        // The horizontal artwork row reserves a separate column for the slider.
     }
 
     /** Switches the card between the music queue and the radio. */
@@ -916,7 +847,6 @@ final class NowPlaying {
         btnShuffle.setVisibility(View.VISIBLE);
         btnRepeat.setVisibility(View.VISIBLE);
         btnStation.setVisibility(View.GONE);
-        showKaraokeSlider();
     }
 
     /** + or ✓: whether the station playing is in My Stations. */
@@ -1130,7 +1060,6 @@ final class NowPlaying {
         lastUserScroll = 0;
         if (m == MODE_QUEUE) refreshQueue(true);
         showMode();
-        showKaraokeSlider();
         tick();
     }
 

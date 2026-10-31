@@ -1,0 +1,6 @@
+4.1 beta 3
+Distinct opening and closing stadium cheers, whoops, whistles and applause alongside Live Mode's echoes and singalong.
+Softer percussion echoes; original hits stay intact.
+One strength popup per effect; removed duplicate artwork sliders.
+Original pre-rendered GPL audio, offline and lightweight; no new runtime model.
+Android 4.2.2+ and existing signing setup retained. Beta artifact only, no F-Droid update.

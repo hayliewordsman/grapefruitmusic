@@ -95,6 +95,22 @@ public class LiveAmbienceTest {
         d.process(x, 0, x.length);
         assertFalse(d.karaokeRunning());
     }
+    @Test public void percussionEchoTailIsSoftWhileDryAttackStaysIntact() {
+        LiveAmbience positive = new LiveAmbience(44100), negative = new LiveAmbience(44100);
+        double tailPeak = 0, tailEnergy = 0;
+        for (int i=0;i<44100;i++) {
+            double hit = i<88 ? Math.sin(i*0.37)*0.9 : 0;
+            positive.process(hit,hit,0,0,1);
+            negative.process(-hit,-hit,0,0,1);
+            // Identical audience noise cancels, leaving only dry hit and room reflections.
+            double music = (positive.outL-negative.outL)*0.5;
+            if (i<88) assertEquals(hit,music,1e-7);
+            if (i>2205) { tailPeak=Math.max(tailPeak,Math.abs(music)); tailEnergy+=music*music; }
+        }
+        assertTrue("Echoes should remain present",tailEnergy>0.001);
+        assertTrue("Percussion must not return as a loud delayed hit",tailPeak<0.10);
+    }
+
     private Dsp dsp(float strength, boolean mono) throws Exception {
         Dsp d = new Dsp();
         d.setLive(true, strength);

@@ -31,6 +31,8 @@ public final class Dsp {
     private LiveAmbience audience;
     private double liveKaraokeMix;
     private boolean liveRunning;
+    private StadiumCheer cheers;
+    private float cheerAmount;
     private volatile boolean karaoke;
     private volatile float karaokeAmount = 1f;
     private volatile VocalRemover.Model karaokeModel;
@@ -120,6 +122,8 @@ public final class Dsp {
         eqStale = true;
         // Nothing's playing through the old state, so the mix starts as wanted, without a fade.
         mixer = mono && channels == 2 ? new MonoMix() : null;
+        cheers = new StadiumCheer(rate);
+        cheerAmount = 0;
         liveRunning = live;
         audience = liveRunning ? new LiveAmbience(rate) : null;
         liveKaraokeMix = karaoke ? karaokeAmount : 0;
@@ -149,6 +153,19 @@ public final class Dsp {
     /** Clears filters and limiter (after a seek). */
     public void reset() {
         if (rate > 0) setFormat(rate, channels);
+    }
+
+    /** Position in decoded song time; called at open and after a seek. */
+    public void setSongPosition(long ms) { cheers.position(ms); }
+
+    /** EOF: emit a separate closing cheer, then flush all effect/limiter delay. */
+    public int finishSongFrames() {
+        int tail = latencyFrames();
+        if (live && liveAmount > 0) {
+            cheers.end();
+            tail += rate * 3 + rate / 100; // includes resampling-rounding margin
+        }
+        return tail;
     }
 
     private VocalRemover newRemover() {
@@ -224,6 +241,11 @@ public final class Dsp {
                 input[0] = audience.outL;
                 if (channels > 1) input[1] = audience.outR;
             }
+            cheerAmount += ((live ? liveAmount : 0) - cheerAmount) * 0.002f;
+            cheers.process(cheerAmount);
+            input[0] += cheers.outL;
+            if (channels > 1) input[1] += cheers.outR;
+            else input[0] = input[0] - cheers.outL + (cheers.outL + cheers.outR) * 0.5;
             if (mixer != null) {
                 mixer.process((float) input[0], (float) input[1]);
                 input[0] = mixer.out;

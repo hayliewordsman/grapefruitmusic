@@ -284,6 +284,7 @@ final class DspEngine implements Engine {
                 codec.configure(format, null, null, 0);
                 codec.start();
             }
+            StadiumCheer.load(app.getAssets().open("stadium_cheers.pcm"));
             openTrack(format.getInteger(MediaFormat.KEY_SAMPLE_RATE), channels, 0);
             post(new Runnable() {
                 @Override
@@ -343,6 +344,7 @@ final class DspEngine implements Engine {
         }
         bufferFrames = bytes / (2 * outChannels);
         dsp.setFormat(sampleRate, outChannels);
+        dsp.setSongPosition(atUs / 1000);
         synchronized (lock) {
             if (track != null) track.release();
             track = t;
@@ -367,6 +369,7 @@ final class DspEngine implements Engine {
         boolean inputDone = false;
         boolean outputDone = false;
         boolean tailFlushed = false;
+        int tailRemaining = -1;
         boolean stopped = false;
         long drainDeadline = 0;
         long skipUntilUs = 0;
@@ -397,9 +400,11 @@ final class DspEngine implements Engine {
                 }
                 skipUntilUs = seek;
                 dsp.reset();
+                dsp.setSongPosition(seek / 1000);
                 inputDone = false;
                 outputDone = false;
                 tailFlushed = false;
+                tailRemaining = -1;
                 stopped = false;
                 continue;
             }
@@ -423,14 +428,20 @@ final class DspEngine implements Engine {
             // 2. End of the song: send out the limiter's last few ms, then let it all play.
             if (outputDone) {
                 if (!tailFlushed) {
+                    if (tailRemaining < 0) tailRemaining = dsp.finishSongFrames();
+                    if (tailRemaining > 0) {
+                        // Bound work and allocations: feed the cheer in normal audio-sized blocks.
+                        int frames = Math.min(1024, tailRemaining);
+                        int n = frames * outChannels;
+                        ensurePending(n);
+                        java.util.Arrays.fill(pending, 0, n, (short) 0);
+                        dsp.process(pending, 0, n);
+                        tailRemaining -= frames;
+                        pendingOff = 0;
+                        pendingLen = n;
+                        continue;
+                    }
                     tailFlushed = true;
-                    int n = dsp.latencyFrames() * outChannels;
-                    ensurePending(n);
-                    java.util.Arrays.fill(pending, 0, n, (short) 0);
-                    dsp.process(pending, 0, n);
-                    pendingOff = 0;
-                    pendingLen = n;
-                    continue;
                 }
                 if (!stopped) {
                     stopped = true;
