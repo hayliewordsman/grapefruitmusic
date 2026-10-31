@@ -1,81 +1,96 @@
 package com.grapefruitmusic.playback;
 
-/** Original procedural audience, song-derived vocal ensemble and small venue. No sample playback. */
+/** Lightweight live mix: baked FOSS crowd texture, vocal-band ensemble and venue reflections. */
 final class LiveAmbience {
-    private final int rate;
-    private final double[][] voices;
-    private final double[][] room;
-    private final double[][] ar = new double[2][LiveCrowdModel.AR.length];
-    private final double[] noise = new double[2];
-    private final double[] phase = {0.03, 0.21, 0.47, 0.79, 0.13, 0.39, 0.63, 0.91};
-    private long pos;
-    private int arPos, random = 0x41b1, clock;
-    private final double smooth, attack, release;
-    private double clap;
-    private double envelope, amount;
+    private final float[] voice, roomL, roomR;
+    private final int mask;
+    private final int[] roomDelay;
+    private final float[] delay = new float[4], step = new float[4], center = new float[4];
+    private final float excursion;
+    private final float smooth, attack, release, lowCoefficient, highCoefficient;
+    private final int textureStep;
+    private int pos, texturePos, random = 0x41b1, control;
+    private float amount, envelope, low, high, clap, crowdL, crowdR;
     double outL, outR;
 
-    LiveAmbience(int sampleRate) {
-        rate = sampleRate;
-        smooth = 1 - Math.exp(-1.0 / (rate * 0.025));
-        attack = 1 - Math.exp(-1.0 / (rate * 0.05));
-        release = 1 - Math.exp(-1.0 / (rate * 0.35));
-        voices = new double[2][Math.max(4, rate / 3)];
-        room = new double[2][Math.max(4, rate / 2)];
+    LiveAmbience(int rate) {
+        int size = 1;
+        while (size < rate / 2 + 2) size <<= 1;
+        mask = size - 1;
+        voice = new float[size]; roomL = new float[size]; roomR = new float[size];
+        roomDelay = new int[]{(int)(rate*0.113), (int)(rate*0.271),
+                (int)(rate*0.127), (int)(rate*0.293)};
+        excursion = rate * 0.003f;
+        for (int i = 0; i < 4; i++) {
+            center[i] = rate * (0.065f + i * 0.029f);
+            delay[i] = center[i];
+            step[i] = (i % 2 == 0 ? 1 : -1) * (0.0037f + i * 0.0005f);
+        }
+        smooth = (float)(1 - Math.exp(-1.0 / (rate * 0.025)));
+        attack = (float)(1 - Math.exp(-1.0 / (rate * 0.05)));
+        release = (float)(1 - Math.exp(-1.0 / (rate * 0.35)));
+        lowCoefficient = (float)(1 - Math.exp(-2*Math.PI*3000/rate));
+        highCoefficient = (float)(1 - Math.exp(-2*Math.PI*240/rate));
+        textureStep = (int)((LiveCrowdTexture.RATE * 65536L) / rate);
     }
 
-    private double random() {
+    /** No neural separator or model warm-up needed for Live Mode alone. */
+    void processSong(double left, double right, float strength) {
+        float mid = (float)((left + right) * 0.5);
+        low += lowCoefficient * (mid - low);
+        high += highCoefficient * (low - high);
+        float vocalBand = low - high;
+        process(left, right, vocalBand, vocalBand, strength);
+    }
+
+    private float random() {
         random ^= random << 13; random ^= random >>> 17; random ^= random << 5;
-        return random / 2147483648.0;
+        return random / 2147483648f;
     }
 
-    private double read(double[] buffer, double delay) {
-        double at = (pos % buffer.length - delay + buffer.length * 2) % buffer.length;
-        int i = (int) at;
-        double fraction = at - i;
-        return buffer[i] * (1 - fraction) + buffer[(i + 1) % buffer.length] * fraction;
+    private float readVoice(float d) {
+        int whole = (int)d;
+        float part = d - whole;
+        return voice[(pos - whole) & mask] * (1-part) + voice[(pos-whole-1) & mask]*part;
     }
 
     void process(double left, double right, double vocalL, double vocalR, float strength) {
-        double target = Float.isNaN(strength) ? 0 : Math.max(0, Math.min(1, strength));
+        float target = Float.isNaN(strength) ? 0 : Math.max(0, Math.min(1, strength));
         amount += (target - amount) * smooth;
-        // Audience follows musical activity, then fades with the venue tail in silence.
-        double energy = Math.min(1, (Math.abs(left) + Math.abs(right)) * 2);
-        envelope += (energy - envelope) * (energy > envelope ? attack : release);
-        voices[0][(int) (pos % voices[0].length)] = vocalL;
-        voices[1][(int) (pos % voices[1].length)] = vocalR;
-        if (clock <= 0) {
-            if (random() > 0.995) clap = 1;
-            clap *= 0.985;
-            for (int c = 0; c < 2; c++) {
-                double x = random() * Math.sqrt(3) * LiveCrowdModel.INNOVATION;
-                for (int k = 0; k < LiveCrowdModel.AR.length; k++)
-                    x += LiveCrowdModel.AR[k] * ar[c][(arPos + ar[c].length - k - 1) % ar[c].length];
-                ar[c][arPos] = x;
-                noise[c] = Math.tanh(x * 0.6) + random() * clap * 0.7;
-            }
-            arPos = (arPos + 1) % ar[0].length;
-            clock += rate;
+        float energy = (float)Math.min(1, (Math.abs(left)+Math.abs(right))*2);
+        envelope += (energy-envelope) * (energy > envelope ? attack : release);
+        voice[pos] = (float)((vocalL+vocalR)*0.5);
+        float choirL = 0, choirR = 0;
+        for (int i = 0; i < 4; i++) {
+            delay[i] += step[i];
+            if (delay[i] > center[i]+excursion || delay[i] < center[i]-excursion) step[i] = -step[i];
+            float v = readVoice(delay[i]);
+            choirL += v * (i % 2 == 0 ? 0.26f : 0.10f);
+            choirR += v * (i % 2 == 0 ? 0.10f : 0.26f);
         }
-        clock -= LiveCrowdModel.RATE;
-        double choirL = 0, choirR = 0;
-        for (int i = 0; i < phase.length; i++) {
-            phase[i] += (0.31 + i * 0.047) / rate;
-            if (phase[i] >= 1) phase[i] -= 1;
-            double triangle = 4 * Math.abs(phase[i] - 0.5) - 1;
-            double delay = rate * (0.065 + i * 0.013 + 0.003 * triangle);
-            double voice = read(voices[i & 1], delay);
-            choirL += voice * ((i & 1) == 0 ? 0.18 : 0.07);
-            choirR += voice * ((i & 1) == 0 ? 0.07 : 0.18);
+        float reverbL = roomL[(pos-roomDelay[0])&mask]*0.32f + roomR[(pos-roomDelay[1])&mask]*0.21f;
+        float reverbR = roomR[(pos-roomDelay[2])&mask]*0.32f + roomL[(pos-roomDelay[3])&mask]*0.21f;
+        roomL[pos] = (float)left + reverbL*0.45f;
+        roomR[pos] = (float)right + reverbR*0.45f;
+        // Read a pre-rendered trained texture; no AR, tanh, sin, division or long modulo per sample.
+        short[] texture = LiveCrowdTexture.PCM;
+        int at = texturePos >>> 16;
+        float part = (texturePos & 65535) * (1f/65536);
+        float a = texture[at] + (texture[(at+1)&4095]-texture[at])*part;
+        int other = (at+1919)&4095;
+        float b = texture[other] + (texture[(other+1)&4095]-texture[other])*part;
+        if (--control <= 0) {
+            control = 64;
+            if (random() > 0.94f) clap = 1;
+            clap *= 0.82f;
+            crowdL = random()*clap*0.18f;
+            crowdR = random()*clap*0.18f;
         }
-        double roomL = read(room[0], rate * 0.113) * 0.32 + read(room[1], rate * 0.271) * 0.21;
-        double roomR = read(room[1], rate * 0.127) * 0.32 + read(room[0], rate * 0.293) * 0.21;
-        room[0][(int) (pos % room[0].length)] = left + roomL * 0.45;
-        room[1][(int) (pos % room[1].length)] = right + roomR * 0.45;
-        // A slowly varying applause/cheer bed with a different pattern in each ear.
-        double swell = 0.6 + 0.4 * Math.sin(pos / (double) rate * 0.83);
-        outL = left + amount * (choirL * 0.6 + roomL * 0.65 + noise[0] * envelope * swell * 0.12);
-        outR = right + amount * (choirR * 0.6 + roomR * 0.65 + noise[1] * envelope * swell * 0.12);
-        pos++;
+        float bedL = a*(1f/32768)*0.35f + crowdL;
+        float bedR = b*(1f/32768)*0.35f + crowdR;
+        outL = left + amount*(choirL*0.6f + reverbL*0.65f + bedL*envelope);
+        outR = right + amount*(choirR*0.6f + reverbR*0.65f + bedR*envelope);
+        texturePos = (texturePos+textureStep)&0x0fffffff;
+        pos = (pos+1)&mask;
     }
 }

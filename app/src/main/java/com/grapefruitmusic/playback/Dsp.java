@@ -120,12 +120,12 @@ public final class Dsp {
         eqStale = true;
         // Nothing's playing through the old state, so the mix starts as wanted, without a fade.
         mixer = mono && channels == 2 ? new MonoMix() : null;
-        audience = new LiveAmbience(rate);
-        liveRunning = live && karaokeModel != null;
+        liveRunning = live;
+        audience = liveRunning ? new LiveAmbience(rate) : null;
         liveKaraokeMix = karaoke ? karaokeAmount : 0;
         frame = new double[channels];
         input = new double[channels];
-        remover = (karaoke || live) && karaokeModel != null ? newRemover() : null;
+        remover = karaoke && karaokeModel != null ? newRemover() : null;
         switchGain = 1;
         switchPhase = 0;
 
@@ -188,10 +188,10 @@ public final class Dsp {
         }
         int boost = boostLevel;
         double g = volume * Math.pow(10, BOOST_DB[boost] / 20);
-        boolean wantKaraoke = (karaoke || live) && karaokeModel != null;
+        boolean wantKaraoke = karaoke && karaokeModel != null;
         boolean wantMono = mono && channels == 2;
         if ((wantKaraoke != (remover != null) || wantMono != (mixer != null)
-                || (live && karaokeModel != null) != liveRunning) && switchPhase == 0) switchPhase = 1;
+                || live != liveRunning) && switchPhase == 0) switchPhase = 1;
         float fade = 1f / Math.max(1, rate / 100); // 10 ms
         // With no boost, equalizer or vocal removal nothing can get louder than it came in, so it
         // passes through as is. (The mono mix very rarely peaks a little higher than the music
@@ -203,21 +203,26 @@ public final class Dsp {
             int base = pos * channels;
             double peak = 0;
             for (int c = 0; c < channels; c++) input[c] = pcm[i + c] / 32768.0;
+            double vocalL = 0, vocalR = 0;
             if (remover != null) {
                 remover.process((float) input[0], (float) input[channels - 1]);
                 if (liveRunning) {
-                    double vocalL = remover.dryOutL - remover.outL;
-                    double vocalR = remover.dryOutR - remover.outR;
+                    vocalL = remover.dryOutL - remover.outL;
+                    vocalR = remover.dryOutR - remover.outR;
                     liveKaraokeMix += ((karaoke ? karaokeAmount : 0) - liveKaraokeMix) * 0.002;
                     double amount = liveKaraokeMix;
-                    audience.process(remover.dryOutL - vocalL * amount,
-                            remover.dryOutR - vocalR * amount, vocalL, vocalR, liveAmount);
-                    input[0] = audience.outL;
-                    if (channels > 1) input[1] = audience.outR;
+                    input[0] = remover.dryOutL - vocalL * amount;
+                    if (channels > 1) input[1] = remover.dryOutR - vocalR * amount;
                 } else {
                     input[0] = remover.outL;
                     if (channels > 1) input[1] = remover.outR;
                 }
+            }
+            if (liveRunning) {
+                if (remover != null) audience.process(input[0], input[channels-1], vocalL, vocalR, liveAmount);
+                else audience.processSong(input[0], input[channels-1], liveAmount);
+                input[0] = audience.outL;
+                if (channels > 1) input[1] = audience.outR;
             }
             if (mixer != null) {
                 mixer.process((float) input[0], (float) input[1]);
@@ -228,10 +233,10 @@ public final class Dsp {
                     switchGain -= fade;
                     if (switchGain <= 0) {
                         switchGain = 0;
-                        boolean want = (karaoke || live) && karaokeModel != null;
+                        boolean want = karaoke && karaokeModel != null;
                         if (want != (remover != null)) remover = want ? newRemover() : null;
-                        liveRunning = live && karaokeModel != null;
-                        audience = new LiveAmbience(rate);
+                        liveRunning = live;
+                        audience = liveRunning ? new LiveAmbience(rate) : null;
                         liveKaraokeMix = karaoke ? karaokeAmount : 0;
                         boolean together = mono && channels == 2;
                         if (together != (mixer != null)) {
@@ -269,7 +274,9 @@ public final class Dsp {
                 }
                 frame[c] = x * g;
             }
-            if (together) frame[1] = frame[0];
+            if (together) {
+                frame[1] = frame[0];
+            }
             for (int c = 0; c < channels; c++) {
                 double abs = Math.abs(frame[c]);
                 if (abs > peak) peak = abs;

@@ -351,9 +351,10 @@ final class NowPlaying {
         btnLive.setOnClickListener(v -> {
             boolean on = !Prefs.liveMode();
             Prefs.setLiveMode(on);
-            if (on) Player.prepareKaraoke(activity);
+            if (on) setMode(MODE_ART);
             player.audioEffectsChanged();
             showKaraoke();
+            if (on) showEffectStrength(true);
             Notice.show(activity, on ? "Live Mode on" : "Live Mode off");
         });
         btnQueue.setIcon(Icons.QUEUE);
@@ -369,12 +370,16 @@ final class NowPlaying {
             public void onClick(View v) {
                 boolean on = !Prefs.karaoke();
                 Prefs.setKaraoke(on);
+                if (on) setMode(MODE_ART);
                 if (on) Player.prepareKaraoke(activity);
                 player.audioEffectsChanged();
                 showKaraoke();
+                if (on) showEffectStrength(false);
                 Notice.show(activity, on ? "Karaoke Mode on" : "Karaoke Mode off");
             }
         });
+        btnLive.setOnLongClickListener(v -> { showEffectStrength(true); return true; });
+        btnKaraoke.setOnLongClickListener(v -> { showEffectStrength(false); return true; });
         btnQueue.setContentDescription("Up Next");
 
         dim.setOnClickListener(new View.OnClickListener() {
@@ -622,6 +627,36 @@ final class NowPlaying {
                 }
             }
         });
+    }
+
+    /** A full-width control remains available on cramped displays or from Lyrics/Up Next. */
+    private void showEffectStrength(final boolean liveEffect) {
+        LinearLayout content = new LinearLayout(activity);
+        content.setOrientation(LinearLayout.VERTICAL);
+        int padding = Ui.dp(activity, 16);
+        content.setPadding(padding, padding, padding, padding);
+        final TextView valueLabel = Ui.text(activity, 16, R.attr.gfTextPrimary, true);
+        final Scrubber strength = new Scrubber(activity);
+        strength.setMax(100);
+        long initial = Math.round((liveEffect ? Prefs.liveAmount() : Prefs.karaokeAmount()) * 100);
+        strength.setValue(initial);
+        valueLabel.setText(initial + "%");
+        strength.setContentDescription(liveEffect ? "Live Mode strength" : "Vocal removal");
+        strength.setColors((secondary & 0x00ffffff) | 0x40000000, accent, accent);
+        strength.setListener(new Scrubber.Listener() {
+            @Override public void onScrubStart() { }
+            @Override public void onScrub(long value) { valueLabel.setText(value + "%"); }
+            @Override public void onScrubEnd(long value) {
+                if (liveEffect) Prefs.setLiveAmount(value / 100f);
+                else Prefs.setKaraokeAmount(value / 100f);
+                player.audioEffectsChanged();
+                showKaraokeSlider();
+            }
+        });
+        content.addView(valueLabel);
+        content.addView(strength, new LinearLayout.LayoutParams(-1, Ui.dp(activity, 56)));
+        Ui.dialog(activity).setTitle(liveEffect ? "Live Mode strength" : "Karaoke strength")
+                .setView(content).setPositiveButton("Done", null).show();
     }
 
     private void buildLiveSlider() {

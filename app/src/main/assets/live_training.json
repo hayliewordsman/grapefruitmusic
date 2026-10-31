@@ -1,5 +1,5 @@
 {
-  "name": "Procedural crowd AR-12 v1",
+  "name": "Procedural crowd AR-12 v1, pre-rendered texture v2",
   "license": "GPL-3.0-or-later",
   "data": "Original procedural choir and applause; no recordings",
   "sample_rate": 8000,
@@ -41,10 +41,12 @@
   ],
   "selection_seeds": [],
   "numpy": "2.3.5",
-  "script_sha256": "7c3164d2ad47032977924a3d93ab366b7596d86778bac699a15c1b1457fd0e17",
+  "script_sha256": "93a9c920f9e58713821036db381d303131fbecd63d12c7df235cd8d6c3f752a8",
   "model_sha256": "b400dc8e71e0019619954b36c3e985ab852010d3f73ddf9aa2e98bff72caf747",
+  "texture_seed": 6101,
+  "texture_sha256": "ea4d37bc6f4983a80e434d8d8c99c3437cb754f4d7e7c71714945f3820dc4657",
   "max_pole_radius": 0.8990118356399442,
   "train_prediction_error": 0.24851514675753383,
   "held_out_prediction_error": 0.22856039627844094,
-  "limitations": "Synthetic spectral prediction metric only; no real-crowd or perceptual validation. The AR model makes texture, not intelligible singing. Song-derived vocal doubling supplies singalong."
+  "limitations": "Synthetic spectral prediction metric only; no real-crowd or perceptual validation. The AR model makes texture, not intelligible singing. Lightweight vocal-band doubling supplies singalong without neural separation."
 }

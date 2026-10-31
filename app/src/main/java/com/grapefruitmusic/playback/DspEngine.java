@@ -30,7 +30,7 @@ final class DspEngine implements Engine {
     private static final long TIMEOUT_US = 5000;
 
     /** Karaoke Mode's model, read from the app once. */
-    private static VocalRemover.Model karaokeModel;
+    private static volatile VocalRemover.Model karaokeModel;
     private volatile Effects effects;
 
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -171,7 +171,7 @@ final class DspEngine implements Engine {
         dsp.setMono(e.mono);
         dsp.setLive(e.live, e.liveAmount);
         VocalRemover.Model model = loadedKaraokeModel();
-        if ((e.karaoke || e.live) && model == null) {
+        if (e.karaoke && model == null) {
             // Read the model off the main thread; Karaoke Mode starts once it's in.
             com.grapefruitmusic.util.Bg.run(new com.grapefruitmusic.util.Bg.Work<VocalRemover.Model>() {
                 @Override
@@ -181,15 +181,16 @@ final class DspEngine implements Engine {
             }, new com.grapefruitmusic.util.Bg.Done<VocalRemover.Model>() {
                 @Override
                 public void done(VocalRemover.Model m, Exception error) {
-                    if (m != null && effects == e) dsp.setKaraoke(e.karaoke, e.karaokeAmount, m);
-                    else Log.w(TAG, "karaoke model", error);
+                    if (m != null) {
+                        if (effects == e) dsp.setKaraoke(e.karaoke, e.karaokeAmount, m);
+                    } else Log.w(TAG, "karaoke model", error);
                 }
             });
         }
         dsp.setKaraoke(e.karaoke, e.karaokeAmount, model);
     }
 
-    private static synchronized VocalRemover.Model loadedKaraokeModel() {
+    private static VocalRemover.Model loadedKaraokeModel() {
         return karaokeModel;
     }
 

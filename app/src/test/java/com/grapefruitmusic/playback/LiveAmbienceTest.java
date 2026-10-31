@@ -69,6 +69,32 @@ public class LiveAmbienceTest {
         assertEquals(0, a.outL, 1e-5);
         assertEquals(0, a.outR, 1e-5);
     }
+    @Test public void liveAloneAddsAudibleCrowdWithoutASeparatorModel() {
+        Dsp wet = new Dsp(), dry = new Dsp();
+        wet.setLive(true, 1);
+        wet.setFormat(44100, 2); dry.setFormat(44100, 2);
+        assertFalse(wet.karaokeRunning());
+        assertEquals(dry.latencyFrames(), wet.latencyFrames());
+        short[] x = input(), reference = x.clone();
+        wet.process(x, 0, x.length); dry.process(reference, 0, reference.length);
+        double difference = 0;
+        for (int i = x.length/2; i < x.length; i++) {
+            double delta = (x[i]-reference[i])/32768.;
+            difference += delta*delta;
+        }
+        assertTrue("Live mix must be audible without a model", Math.sqrt(difference/(x.length/2)) > 0.03);
+    }
+    @Test public void enablingLiveWhilePlayingWorksWithoutModelWarmup() {
+        Dsp d = new Dsp(); d.setFormat(44100, 2);
+        short[] warm = input(); d.process(warm, 0, warm.length);
+        d.setLive(true, 1);
+        short[] x = input(); d.process(x, 0, x.length);
+        assertFalse(d.karaokeRunning());
+        assertEquals(176, d.latencyFrames());
+        d.setLive(false, 1);
+        d.process(x, 0, x.length);
+        assertFalse(d.karaokeRunning());
+    }
     private Dsp dsp(float strength, boolean mono) throws Exception {
         Dsp d = new Dsp();
         d.setLive(true, strength);
@@ -85,11 +111,10 @@ public class LiveAmbienceTest {
         }
         return x;
     }
-    @Test public void zeroLiveStrengthMatchesDelayedOriginal() throws Exception {
+    @Test public void zeroLiveStrengthMatchesUnprocessedLimiterPath() throws Exception {
         short[] a = input(), b = a.clone();
         Dsp live = dsp(0, false);
         Dsp dry = new Dsp();
-        dry.setKaraoke(true, 0, VocalRemoverTest.model());
         dry.setFormat(44100, 2);
         live.process(a, 0, a.length); dry.process(b, 0, b.length);
         assertArrayEquals(b, a);

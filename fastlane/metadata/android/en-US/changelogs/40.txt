@@ -1,0 +1,5 @@
+4.1 beta 2
+Live Mode starts without vocal-model loading or warm-up, using a much lighter vocal-band chorus and pre-rendered FOSS crowd texture.
+Raised crowd/applause level.
+Enabling Karaoke or Live reveals the strength slider in the artwork view. Long-press either button for a full-width percent control.
+API 17 support and existing signing setup retained. Beta artifact only; no F-Droid update.

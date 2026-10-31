@@ -1,73 +1,80 @@
-# Live Mode — 4.1 beta 1
+# Live Mode — 4.1 beta 2
 
-Live Mode is a local, real-time concert simulation: a song-derived vocal ensemble,
-venue reflections, and a procedural audience/applause bed. It is not a text-to-singing
-model and does not invent lyrics. With instrumental music, the venue and crowd bed
-still run; the separator may leak instruments into the ensemble. No remote inference,
-network audio collection, microphone access, or extra Android runtime is involved.
+Live Mode is a local, real-time concert simulation: a song-derived vocal-band
+ensemble, venue reflections, and a procedural audience/applause bed. It does not
+invent lyrics. No network service, microphone, downloaded weights or runtime
+Android dependency is required.
 
-## Sound path
+## Changes after the beta 1 JP5S report
 
-The existing GPL-3.0-or-later stereo separator runs once, at full strength, to estimate
-vocals. Its delayed original and estimated backing share a time base. Eight short,
-slowly modulated delay taps turn the estimated vocals into a dispersed, slightly
-detuned crowd chorus; the original words and melody come from the playing song.
-Short stereo feedback paths supply venue reflections. A trained AR-12 statistical
-model shapes independently generated noise, with procedural clap bursts and a slow
-cheer swell. The crowd bed follows musical activity and decays in silence. This
-provides a stylized crowd impression, not a faithful audience performance.
+The user reported that Karaoke worked smoothly on their Android 4.2.2 JP5S, but
+Live Mode alone stuttered and added no audible crowd; strength controls were also
+not appearing. Beta 1 made *all* Live audio conditional on the vocal separator's
+model being ready and added per-sample AR inference, double/long remainder and
+transcendental operations on top of separation. Its audience gain was also low.
+Without device logs we cannot establish which of these caused the observed failure.
 
-The strength slider blends the complete live addition from 0 to 100% in 1% steps,
-with a 25 ms glide. At 0%, output is the delayed original (or the current Karaoke
-mix). Enabling Live Mode retains the separator's approximately 70 ms latency at
-44.1 kHz; it does not preprocess a whole song. Karaoke and Live Mode can operate
-together: Karaoke adjusts the foreground vocal, while Live Mode adds a crowd choir.
-Mono Audio is applied after the live mix. The existing limiter bounds the final output.
-Effect toggles crossfade; seek/format reset clears audience and venue history.
+Beta 2 decouples Live Mode from neural separation and model warm-up. Its default
+singalong comes from a cheap vocal-band estimate of the stereo centre, with four
+modulated delay taps. This can include instruments and cannot isolate backing
+singers; it is an intentionally lighter approximation for legacy hardware.
+If Karaoke is enabled as well, its already-running separator's vocal estimate is
+reused instead. The crowd/venue path runs even when no separator model is loaded.
 
-## New model and original data
+The trained AR texture is synthesized during export and quantized into a 4096-sample
+short table, with a circular join crossfade. Playback uses interpolated table reads
+and separate procedural clap bursts. Float delay rings use power-of-two indices;
+there is no per-sample AR, tanh, sin, long remainder or heap allocation in LiveAmbience.
+Audience texture gain is raised from 0.12 to 0.35 before activity/strength scaling;
+clap levels are retuned. The song-dependent envelope keeps silence silent and lets
+tails decay. The existing limiter bounds the final combined output.
+
+At 0% there is no live addition. The slider has 1% steps and a 25ms glide. Live alone
+adds no separator latency, only the existing 4ms limiter lookahead. Karaoke retains
+its own separator latency/processing cost. Enabling either effect returns to artwork
+and opens a full-width percentage control. The inline sliders remain beside artwork;
+long-pressing either action reopens the percentage control from any view.
+
+A volatile published model reference also keeps main-thread effect changes from
+waiting on the background separator model's synchronized warm-up lock.
+
+## FOSS model, data and export
 
 `train.py` fits an order-12 autoregressive predictor using regularized least squares
-on 24 two-second original procedural clips at 8 kHz. Each clip synthesizes 24 varied
-harmonic/formant voices with independent syllabic envelopes plus noise-burst applause.
-This is **48 seconds of synthetic training audio**, not licensed recordings of crowds.
-Eight independent seeds (16 seconds) are held out for evaluation, with no selection
-partition or pretrained crowd weights. The deterministic seeds, versions, hashes,
-pole bound, and evaluation results are in `app/src/main/assets/live_training.json`.
-The script regenerates the data; no audio dataset is downloaded or packaged.
+on 24 two-second original procedural clips at 8kHz (48 seconds). Each clip synthesizes
+24 varied harmonic/formant voices with independent syllabic envelopes and noise-burst
+applause. Eight disjoint seeds (16 seconds) are held out for evaluation, without a
+selection partition or pretrained crowd weights. The data is generated by the script,
+not downloaded or included as real-world recordings.
 
-Code, procedural training data, and exported model are GPL-3.0-or-later under the
-repository LICENSE. NumPy 2.3.5 (BSD-3-Clause) is used only by the training script.
-There are no sampled performers, scraped videos, commercial sound libraries,
-voice clones, or additional third-party audio rights to clear for the new model.
-Users' songs are processed on-device and are not collected for training.
+The same fitted AR model as beta 1 is now pre-rendered using export seed 6101.
+`LiveCrowdTexture.java` contains the quantized table; `LiveCrowdModel.java` retains
+the original fitted coefficients for audit. Both are generated. The manifest at
+`app/src/main/assets/live_training.json` records the recipe/model/texture hashes,
+seeds, NumPy version, pole bound and synthetic prediction errors.
 
-The reused vocal separator has separate provenance: CC BY 4.0 SiSEC18-MUS 7-second
-excerpts by Fabian-Robert Stöter, Antoine Liutkus and Nobutaka Ito, 84 training clips,
-10 selection clips and 50 held-out evaluation clips. Attribution is retained in
-About → Karaoke Mode and the existing assets. See [the separator recipe](../karaoke/README-v4.md).
-No new training or claim of ownership over those recordings is made here.
+Code, generated training data, model and rendered texture are GPL-3.0-or-later under
+the repository LICENSE. NumPy 2.3.5 (BSD-3-Clause) is a training/export tool only.
+There are no sampled performers, scraped videos, commercial sound libraries, voice
+clones, or additional third-party audio recordings. Users' songs are never collected
+for training. The generated texture is an audio synthesis output of this project's
+original model, not a recording of a human audience.
 
-## Reproduce
+Karaoke's existing GPL separator has separate CC BY 4.0 SiSEC18-MUS seven-second
+excerpt provenance (Fabian-Robert Stöter, Antoine Liutkus and Nobutaka Ito; 84 training,
+10 selection and 50 evaluation clips). Attribution remains in About → Karaoke Mode.
+See [the separator recipe](../karaoke/README-v4.md).
 
-From the repository root, using Python 3 and NumPy 2.3.5:
+## Reproduce and limitations
+
+From the root with Python 3 and NumPy 2.3.5:
 
 ```sh
 OPENBLAS_NUM_THREADS=1 python3 tools/live/train.py
 ```
 
-This regenerates `LiveCrowdModel.java` and `live_training.json`. Training performs no
-network requests. The model's poles are bounded below the unit circle for stable
-synthesis. Synthetic held-out normalized prediction error is reported in the manifest;
-it measures spectral predictability, **not realism, intelligibility, or listener preference**.
-The model provides crowd texture; the separate vocal-doubling path provides singalong.
-
-## Beta limits
-
-No real-crowd benchmark or human listening panel has been run. Source separation can
-leak instruments, miss voices, or sound less convincing for reverberant recordings.
-Repeated/delayed vocals are an approximation of people singing together, not newly
-performed backing vocals. Hardware listening, target Jelly Bean throughput, and UI
-appearance at large font sizes still need device confirmation. Host unit tests and
-performance checks cannot establish these. APK minimum API 17 and signing identity
-remain unchanged; no new runtime dependencies were added.
+Training/export makes no network requests. Held-out normalized AR prediction error
+measures synthetic spectral predictability, not crowd realism or listener preference.
+The AR texture is not a generative singing model. No real-crowd evaluation or human
+listening panel has been run. Device listening and JP5S throughput still require
+confirmation; host benchmarks cannot prove this fix eliminates hardware stuttering.
