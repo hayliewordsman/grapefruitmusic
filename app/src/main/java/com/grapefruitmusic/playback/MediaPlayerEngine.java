@@ -12,6 +12,7 @@ import java.io.IOException;
 final class MediaPlayerEngine implements Engine {
     private final MediaPlayer mp = new MediaPlayer();
     private Callback callback;
+    private final PendingSeek seek = new PendingSeek();
 
     MediaPlayerEngine(Context context) {
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -20,6 +21,14 @@ final class MediaPlayerEngine implements Engine {
             @Override
             public void onPrepared(MediaPlayer m) {
                 if (callback != null) callback.onPrepared(MediaPlayerEngine.this);
+            }
+        });
+        mp.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+            @Override
+            public void onSeekComplete(MediaPlayer m) {
+                // Old Android may discard seeks issued while another seek is in flight.
+                int next = seek.complete();
+                if (next >= 0) mp.seekTo(next);
             }
         });
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -79,12 +88,13 @@ final class MediaPlayerEngine implements Engine {
 
     @Override
     public void seekTo(int ms) {
-        mp.seekTo(ms);
+        int next = seek.request(ms);
+        if (next >= 0) mp.seekTo(next);
     }
 
     @Override
     public int getCurrentPosition() {
-        return mp.getCurrentPosition();
+        return seek.position(mp.getCurrentPosition());
     }
 
     @Override

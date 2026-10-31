@@ -498,7 +498,8 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
 
     public void seekTo(long ms) {
         if (engine != null && prepared && !isLive()) {
-            engine.seekTo((int) ms);
+            engine.seekTo((int) Math.max(0, Math.min(ms, durationMs() > 0
+                    ? Math.min(durationMs(), Integer.MAX_VALUE) : Integer.MAX_VALUE)));
             changed();
         }
     }
@@ -545,6 +546,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
 
     private void load(boolean play) {
         MediaItem m = current();
+        savePodcastPosition();
         load(play, m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId)
                 ? Prefs.raw().getLong("podcast_position_" + m.id, 0) : 0);
     }

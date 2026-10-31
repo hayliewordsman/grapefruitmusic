@@ -445,7 +445,12 @@ final class NowPlaying {
 
             @Override
             public void onScrub(long value) {
-                showTimes(value, player.durationMs());
+                showTimes(value, scrubber.getMax());
+            }
+
+            @Override
+            public void onScrubCancel() {
+                tick();
             }
 
             @Override
@@ -1105,6 +1110,7 @@ final class NowPlaying {
         if (radioMode || liveMode || player.current() == null) return;
         long pos = player.positionMs();
         long dur = player.durationMs();
+        scrubber.setEnabled(dur > 0);
         scrubber.setMax(dur);
         if (!scrubber.isDragging()) {
             scrubber.setValue(pos);

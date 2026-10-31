@@ -1,0 +1,4 @@
+4.0.1
+Fixed Now Playing scrubber jumps during dragging and cancelled gestures.
+Fixed temporary time/progress jumps when seeking or resuming podcasts, including repeated seeks on older Android devices.
+Preserves Android 4.2.2 support and the existing app signing identity.

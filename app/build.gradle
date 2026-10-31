@@ -14,8 +14,8 @@ android {
         minSdk 17
         // Modern behavior is version-gated; minSdk stays at Jelly Bean MR1.
         targetSdk 36
-        versionCode 37
-        versionName "4.0"
+        versionCode 38
+        versionName "4.0.1"
 
         ndk {
             // Keep old 32-bit devices and modern 64-bit-only phones supported.

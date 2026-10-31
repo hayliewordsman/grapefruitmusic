@@ -18,6 +18,8 @@ public class Scrubber extends View {
         void onScrub(long value);
 
         void onScrubEnd(long value);
+
+        default void onScrubCancel() { }
     }
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -26,6 +28,8 @@ public class Scrubber extends View {
     private long max = 1;
     private long value;
     private boolean dragging;
+    private long dragStartValue;
+    private int pointerId = -1;
     private float thumbRadius;
     private float dragThumbRadius;
     /** 0 at rest, 1 while touched; animated so the thumb grows and shrinks smoothly. */
@@ -71,7 +75,9 @@ public class Scrubber extends View {
     }
 
     public void setMax(long max) {
+        if (dragging) return;
         this.max = Math.max(1, max);
+        value = Math.min(value, this.max);
         invalidate();
     }
 
@@ -116,25 +122,54 @@ public class Scrubber extends View {
         if (!isEnabled()) return false;
         switch (e.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                getParent().requestDisallowInterceptTouchEvent(true);
+                if (getParent() != null) getParent().requestDisallowInterceptTouchEvent(true);
+                pointerId = e.getPointerId(0);
+                dragStartValue = value;
                 dragging = true;
                 animateGrow(1f, 160);
                 if (listener != null) listener.onScrubStart();
                 track(e.getX());
                 return true;
             case MotionEvent.ACTION_MOVE:
-                track(e.getX());
+                int index = e.findPointerIndex(pointerId);
+                if (dragging && index >= 0) track(e.getX(index));
+                return true;
+            case MotionEvent.ACTION_POINTER_UP:
+                if (e.getPointerId(e.getActionIndex()) != pointerId) return true;
+                // Losing the controlling finger cancels; another finger must not jump the thumb.
+            case MotionEvent.ACTION_CANCEL:
+                if (dragging) {
+                    value = dragStartValue;
+                    finishDrag();
+                    if (listener != null) listener.onScrubCancel();
+                }
                 return true;
             case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                track(e.getX());
-                dragging = false;
-                animateGrow(0f, 240);
-                if (listener != null) listener.onScrubEnd(value);
+                if (dragging) {
+                    int upIndex = e.findPointerIndex(pointerId);
+                    if (upIndex >= 0) track(e.getX(upIndex));
+                    finishDrag();
+                    performClick();
+                    if (listener != null) listener.onScrubEnd(value);
+                }
                 return true;
             default:
                 return super.onTouchEvent(e);
         }
+    }
+
+    private void finishDrag() {
+        dragging = false;
+        pointerId = -1;
+        if (getParent() != null) getParent().requestDisallowInterceptTouchEvent(false);
+        animateGrow(0f, 240);
+        invalidate();
+    }
+
+    @Override
+    public boolean performClick() {
+        super.performClick();
+        return true;
     }
 
     private void animateGrow(float to, long duration) {
