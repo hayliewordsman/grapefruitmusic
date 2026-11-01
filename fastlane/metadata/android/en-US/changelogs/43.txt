@@ -1,0 +1,3 @@
+4.1 beta 5
+Live Mode: the ovation waits for the last sung words when the band drops out under the final line (as at the end of "Blank Space"), instead of starting as the music gets quiet.
+Now Playing: titles, artists and albums too long for their line scroll by instead of ending in "…".

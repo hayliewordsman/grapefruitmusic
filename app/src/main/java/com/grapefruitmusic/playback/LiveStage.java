@@ -54,6 +54,11 @@ final class LiveStage {
     private float fastMs = TYPICAL_RMS * TYPICAL_RMS;
     private float longMs = TYPICAL_RMS * TYPICAL_RMS;
     private float loudPeak;
+    // The lead vocal's loudness (fast, and its recent peak), summed at the stadium's rate.
+    private float voicePower;
+    private int voiceCount;
+    private float voiceMs, voicePeak;
+    private final float voiceCoef, voiceFall;
     private final float slowCoef, fastCoef, longCoef, peakFall;
     private float scale = lastScale;
     private final float scaleCoef;
@@ -128,6 +133,8 @@ final class LiveStage {
         longCoef = coef(rate / (float) CONTROL, 8);
         // The peak falls half a dB a second (power): slow enough that a fade-out shows.
         peakFall = (float) Math.pow(10, -0.05 * CONTROL / rate);
+        voiceCoef = coef(rate / (float) CONTROL, 0.15);
+        voiceFall = (float) Math.pow(10, -0.025 * CONTROL / rate);
         scaleCoef = coef(rate / (float) CONTROL, 3);
         bedCoef = coef(rate / (float) CONTROL, 1.5);
         reactAttack = coef(rate / (float) CONTROL, 0.25);
@@ -220,6 +227,7 @@ final class LiveStage {
         reactCursor = Integer.MAX_VALUE;
         quietFrames = 0;
         loudPeak = 0;
+        voiceMs = voicePeak = 0;
         java.util.Arrays.fill(history, 0);
         bedTarget = 1;
         openCursor = Integer.MAX_VALUE;
@@ -352,6 +360,15 @@ final class LiveStage {
         float block = power * (1f / CONTROL);
         power = 0;
         fastMs += (block - fastMs) * fastCoef;
+        float voiceBlock = voiceCount > 0 ? voicePower / voiceCount : 0;
+        voicePower = 0;
+        voiceCount = 0;
+        voiceMs += (voiceBlock - voiceMs) * voiceCoef;
+        float voiceDecayed = voicePeak * voiceFall;
+        voicePeak = voiceMs > voiceDecayed ? voiceMs : voiceDecayed;
+        // Still singing: within 10dB of the vocal's recent peak. The band dropping out under the last
+        // line isn't the end of the song.
+        boolean singing = voiceMs > voicePeak * 0.1f && voiceMs > 1e-6f;
         if (songFrame >= 0 && !outro) {
             slowMs += (block - slowMs) * slowCoef;
             longMs += (block - longMs) * longCoef;
@@ -378,12 +395,13 @@ final class LiveStage {
                 float twoAgo = history[historyAt];
                 float oneAgo = history[(historyAt + 2) & 3];
                 boolean fading = oneAgo < twoAgo * 0.8f && fastMs < oneAgo * 0.8f && fastMs < twoAgo * 0.4f;
-                if (left <= endWindow && fading) end(left);
+                if (left <= endWindow && fading && !singing) end(left);
                 if (left <= endWindow && !outro && outroAt == Long.MAX_VALUE) {
                     // A fade-out, a last chord dying away, or silence before the file ends: 9dB down
-                    // on the song's recent peak, for a moment near the end, or for over a second
-                    // before that (so a break before the last chorus doesn't end it).
-                    boolean quiet = fastMs < loudPeak * 0.125f || fastMs < 1e-5f;
+                    // on the song's recent peak, with the singing stopped, for a moment near the end,
+                    // or for over a second before that (so a break before the last chorus doesn't end
+                    // it).
+                    boolean quiet = (fastMs < loudPeak * 0.125f || fastMs < 1e-5f) && !singing;
                     quietFrames = quiet ? quietFrames + CONTROL : 0;
                     int hold = left <= rate * 3L ? endHold : endHoldEarly;
                     if (quietFrames >= hold || left <= rate / 5) end(left);
@@ -445,6 +463,8 @@ final class LiveStage {
             voice = keep > 0 ? bandMid * (keep < 1 ? keep : 1) : 0;
         }
         voiceHigh += (voice - voiceHigh) * band; // dull, as from far away
+        voicePower += voiceHigh * voiceHigh;
+        voiceCount++;
         ring[ringPos] = voiceHigh * choirGain;
 
         float choirL = 0, choirR = 0;

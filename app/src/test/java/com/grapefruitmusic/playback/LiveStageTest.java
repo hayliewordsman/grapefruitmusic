@@ -175,6 +175,37 @@ public class LiveStageTest {
     }
 
     @Test
+    public void theOvationWaitsForTheLastWords() {
+        int rate = 22050;
+        LiveStage s = new LiveStage(rate, crowd, 0, rate * 40L);
+        // The band stops 8 seconds from the end; the singer goes on for 5 more (as at the end of
+        // "Blank Space"); then 3 seconds of silence.
+        for (int i = 0; i < rate * 40; i++) {
+            double t = i / (double) rate;
+            double band = t < 32 ? Math.sin(2 * Math.PI * 330 * t) * 0.4 : 0;
+            float voice = t < 37 ? (float) (Math.sin(2 * Math.PI * 220 * t) * 0.1) : 0;
+            s.process(band + voice, band + voice, voice, true, 1);
+        }
+        double at = s.ovationFrame / (double) rate;
+        assertTrue("ovation at " + at, at > 37 && at < 38.5);
+    }
+
+    @Test
+    public void aFadeOutWithTheSingerFadingToo() {
+        int rate = 22050;
+        LiveStage s = new LiveStage(rate, crowd, 0, rate * 40L);
+        for (int i = 0; i < rate * 40; i++) {
+            double t = i / (double) rate;
+            double gain = t < 30 ? 1 : Math.pow(10, -2 * (t - 30) / 10);
+            double band = Math.sin(2 * Math.PI * 330 * t) * 0.3 * gain;
+            float voice = (float) (Math.sin(2 * Math.PI * 220 * t) * 0.15 * gain);
+            s.process(band + voice, band + voice, voice, true, 1);
+        }
+        double at = s.ovationFrame / (double) rate;
+        assertTrue("ovation at " + at, at > 31 && at < 34);
+    }
+
+    @Test
     public void aShortBreakBeforeTheLastChorusIsNotTheEnd() {
         int rate = 22050;
         LiveStage s = new LiveStage(rate, crowd, 0, rate * 40L);

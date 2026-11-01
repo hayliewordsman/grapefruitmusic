@@ -248,6 +248,12 @@ final class NowPlaying {
         smallArt = (ArtworkView) root.findViewById(R.id.np_small_art);
         smallTitle = (TextView) root.findViewById(R.id.np_small_title);
         smallArtist = (TextView) root.findViewById(R.id.np_small_artist);
+        // Text too long for its line scrolls by (marquee, in the layout) rather than end in "…".
+        // Android only scrolls a selected (or focused) line.
+        for (TextView t : new TextView[] {title, artist, smallTitle, smallArtist,
+                (TextView) root.findViewById(R.id.np_album)}) {
+            t.setSelected(true);
+        }
         listArea = (DragFrame) root.findViewById(R.id.np_list_area);
         listArea.setCallback(new DragFrame.Callback() {
             @Override
@@ -834,10 +840,6 @@ final class NowPlaying {
         prev.setContentDescription(on ? "Previous station" : "Previous");
         next.setContentDescription(on ? "Next station" : "Next");
         play.setContentDescription(on ? "Play or stop the radio" : "Play or pause");
-        // The radio's text can be long: let it scroll by.
-        artist.setEllipsize(on ? android.text.TextUtils.TruncateAt.MARQUEE : android.text.TextUtils.TruncateAt.END);
-        artist.setMarqueeRepeatLimit(-1);
-        artist.setSelected(on);
         trackKey = null;
         radioArtKey = null;
         // Live mode is worked out afresh for the next song or station.
@@ -873,9 +875,6 @@ final class NowPlaying {
         prev.setContentDescription(on ? "Previous station" : "Previous");
         next.setContentDescription(on ? "Next station" : "Next");
         play.setContentDescription(on ? "Play or stop the station" : "Play or pause");
-        artist.setEllipsize(on ? android.text.TextUtils.TruncateAt.MARQUEE : android.text.TextUtils.TruncateAt.END);
-        artist.setMarqueeRepeatLimit(-1);
-        artist.setSelected(on);
     }
 
     private void updateRadio() {
