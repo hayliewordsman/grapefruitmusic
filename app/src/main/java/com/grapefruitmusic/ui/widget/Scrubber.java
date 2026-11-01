@@ -8,6 +8,7 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.animation.DecelerateInterpolator;
 
 /** Thin iOS-style slider for song position and volume. */
@@ -30,6 +31,12 @@ public class Scrubber extends View {
     private boolean dragging;
     private long dragStartValue;
     private int pointerId = -1;
+    /** Where the thumb is relative to the finger, so picking it up doesn't move it. */
+    private float grabOffset;
+    private float downX;
+    private boolean moved;
+    private final int touchSlop;
+    private final float grabRadius;
     private float thumbRadius;
     private float dragThumbRadius;
     /** 0 at rest, 1 while touched; animated so the thumb grows and shrinks smoothly. */
@@ -50,6 +57,8 @@ public class Scrubber extends View {
         density = getResources().getDisplayMetrics().density;
         thumbRadius = 3.5f * density;
         dragThumbRadius = 9 * density;
+        touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        grabRadius = 28 * density;
     }
 
     public void setListener(Listener l) {
@@ -126,13 +135,30 @@ public class Scrubber extends View {
                 pointerId = e.getPointerId(0);
                 dragStartValue = value;
                 dragging = true;
+                downX = e.getX();
                 animateGrow(1f, 160);
                 if (listener != null) listener.onScrubStart();
-                track(e.getX());
+                float thumb = thumbX();
+                if (Math.abs(downX - thumb) <= grabRadius) {
+                    // Picked up the thumb: it stays put until the finger moves, then keeps its place
+                    // under the finger (no jump by however far off-centre the finger landed).
+                    grabOffset = thumb - downX;
+                    moved = false;
+                } else {
+                    // Touched the bar elsewhere: go there.
+                    grabOffset = 0;
+                    moved = true;
+                    track(downX);
+                }
                 return true;
             case MotionEvent.ACTION_MOVE:
                 int index = e.findPointerIndex(pointerId);
-                if (dragging && index >= 0) track(e.getX(index));
+                if (dragging && index >= 0) {
+                    float x = e.getX(index);
+                    if (!moved && Math.abs(x - downX) < touchSlop) return true;
+                    moved = true;
+                    track(x + grabOffset);
+                }
                 return true;
             case MotionEvent.ACTION_POINTER_UP:
                 if (e.getPointerId(e.getActionIndex()) != pointerId) return true;
@@ -146,11 +172,17 @@ public class Scrubber extends View {
                 return true;
             case MotionEvent.ACTION_UP:
                 if (dragging) {
-                    int upIndex = e.findPointerIndex(pointerId);
-                    if (upIndex >= 0) track(e.getX(upIndex));
+                    // Where the finger was last seen moving, not where it lifted: lifting rolls the
+                    // finger, and some screens report the last point well off, which moved the seek.
                     finishDrag();
                     performClick();
-                    if (listener != null) listener.onScrubEnd(value);
+                    if (moved) {
+                        if (listener != null) listener.onScrubEnd(value);
+                    } else {
+                        // A tap on the thumb: nothing to do.
+                        value = dragStartValue;
+                        if (listener != null) listener.onScrubCancel();
+                    }
                 }
                 return true;
             default:
@@ -185,6 +217,11 @@ public class Scrubber extends View {
             }
         });
         growAnimator.start();
+    }
+
+    private float thumbX() {
+        float pad = dragThumbRadius + density;
+        return pad + (getWidth() - 2 * pad) * (value / (float) max);
     }
 
     private void track(float x) {

@@ -1,131 +1,100 @@
-# Live Mode — 4.1 beta 2
+# Live Mode
 
-Live Mode is a local, real-time concert simulation: a song-derived vocal-band
-ensemble, venue reflections, and a procedural audience/applause bed. It does not
-invent lyrics. No network service, microphone, downloaded weights or runtime
-Android dependency is required.
+Live Mode plays a song as if to a stadium crowd: original synthesized audience sound, mixed in real
+time with the song, the crowd singing along, and the stadium's reverberation. Everything here is
+GPL-3.0-or-later, made by this repository's own code. No recordings of people, sound libraries,
+sampled audio or trained crowd models are used.
 
-## Changes after the beta 1 JP5S report
+## What happens during a song
 
-The user reported that Karaoke worked smoothly on their Android 4.2.2 JP5S, but
-Live Mode alone stuttered and added no audible crowd; strength controls were also
-not appearing. Beta 1 made *all* Live audio conditional on the vocal separator's
-model being ready and added per-sample AR inference, double/long remainder and
-transcendental operations on top of separation. Its audience gain was also low.
-Without device logs we cannot establish which of these caused the observed failure.
+| When | What Live Mode does |
+| --- | --- |
+| Before the first note | The crowd cheers for two seconds before the song starts (only when a song starts from the beginning, not after a seek or when Live Mode is turned on part-way). The time shows 0:00 meanwhile. |
+| The first seconds | The cheer carries on under the intro and dies down to the crowd under the song. |
+| Through the song | A distant crowd, about 30dB under full scale at 100% strength (scaled with the song's own loudness). Its loop has no single voice or whistle that could be noticed coming round. |
+| A big moment | When the song gets 3dB louder than over the last few seconds and stays there (a chorus coming in), part of the crowd cheers. At most once every 35 seconds, not in the first 15 or the last 20. |
+| The lead vocal | The crowd sings it: six copies, each a little late (30 to 120ms) and a little out of tune (about 15 cents, drifting), dulled and mostly reverberant, louder in louder sections. |
+| The ending | The ovation starts as the music ends: when the song has been falling steadily for two seconds in its last 15 (a fade-out), when it's 9dB down on its recent peak (for a moment in the last three seconds, or over a second before that, so a break before the last chorus doesn't count), or at the end of the file. In a long fade-out it starts late enough to last past the end; after the file ends, it plays out (up to nine seconds) before the next song. |
 
-Beta 2 decouples Live Mode from neural separation and model warm-up. Its default
-singalong comes from a cheap vocal-band estimate of the stereo centre, with four
-modulated delay taps. This can include instruments and cannot isolate backing
-singers; it is an intentionally lighter approximation for legacy hardware.
-If Karaoke is enabled as well, its already-running separator's vocal estimate is
-reused instead. The crowd/venue path runs even when no separator model is loaded.
+The song and the crowd's singing go through a simulated stadium: two allpass diffusers and an
+eight-line feedback delay network (Hadamard mixing, 2.4-second decay, treble damped in the loop).
 
-The trained AR texture is synthesized during export and quantized into a 4096-sample
-short table, with a circular join crossfade. Playback uses interpolated table reads
-and separate procedural clap bursts. Float delay rings use power-of-two indices;
-there is no per-sample AR, tanh, sin, long remainder or heap allocation in LiveAmbience.
-Audience texture gain is raised from 0.12 to 0.35 before activity/strength scaling;
-clap levels are retuned. The song-dependent envelope keeps silence silent and lets
-tails decay. The existing limiter bounds the final combined output.
+## The vocal the crowd sings
 
-At 0% there is no live addition. The slider has 1% steps and a 25ms glide. Live alone
-adds no separator latency, only the existing 4ms limiter lookahead. Karaoke retains
-its own separator latency/processing cost. Enabling either effect returns to artwork
-and opens a full-width percentage control. The inline sliders remain beside artwork;
-long-pressing either action reopens the percentage control from any view.
+Live Mode borrows Karaoke Mode's separator (`VocalRemover`, credited under Karaoke Mode) for the lead
+vocal: it runs whenever Live Mode is on, as for Karaoke Mode. The song itself is not changed (Live
+Mode alone plays it untouched, 70ms later, the separator's delay). If Karaoke Mode is on too, it
+removes the vocal as set and the crowd still sings it.
 
-A volatile published model reference also keeps main-thread effect changes from
-waiting on the background separator model's synchronized warm-up lock.
+Until the separator's model is loaded (the first few seconds after Live Mode is first turned on), and
+on a device where it's too slow, the crowd follows the song's centre instead: the 200Hz to 3kHz band
+of the mid channel, where the side channel is quiet, and not on drum hits. "Too slow" is measured on
+the device: if the effects keep the audio thread busy more than 65% of the time, two seconds at a
+time, twice in a row, while the separator runs for Live Mode alone, Live Mode stops using it until
+Grapefruit is next started. Karaoke Mode itself is never turned down.
 
-## FOSS model, data and export
+## Cost
 
-`train.py` fits an order-12 autoregressive predictor using regularized least squares
-on 24 two-second original procedural clips at 8kHz (48 seconds). Each clip synthesizes
-24 varied harmonic/formant voices with independent syllabic envelopes and noise-burst
-applause. Eight disjoint seeds (16 seconds) are held out for evaluation, without a
-selection partition or pretrained crowd weights. The data is generated by the script,
-not downloaded or included as real-world recordings.
+The song-dependent work (the crowd's singing and the stadium) runs at about 11kHz: a factor of
+`round(rate / 11025)` below the sample rate, with a one-pole low-pass and averaging on the way down
+and linear interpolation on the way up. The crowd is pre-rendered, mu-law coded: a frame is four
+table look-ups and two interpolations per playing sound. No allocation once running.
 
-The same fitted AR model as beta 1 is now pre-rendered using export seed 6101.
-`LiveCrowdTexture.java` contains the quantized table; `LiveCrowdModel.java` retains
-the original fitted coefficients for audit. Both are generated. The manifest at
-`app/src/main/assets/live_training.json` records the recipe/model/texture hashes,
-seeds, NumPy version, pole bound and synthetic prediction errors.
+Measured on a desktop JVM (single thread, the 50-second test song in `LiveStageTest`'s style):
 
-Code, generated training data, model and rendered texture are GPL-3.0-or-later under
-the repository LICENSE. NumPy 2.3.5 (BSD-3-Clause) is a training/export tool only.
-There are no sampled performers, scraped videos, commercial sound libraries, voice
-clones, or additional third-party audio recordings. Users' songs are never collected
-for training. The generated texture is an audio synthesis output of this project's
-original model, not a recording of a human audience.
+| | ns per frame, JIT | ns per frame, interpreter only |
+| --- | --- | --- |
+| No effects (limiter only) | 72 | 724 |
+| Live Mode, without the separator | 138 | 1962 |
+| Karaoke Mode | 607 | 6196 |
+| Live Mode with the separator | 639 | 7565 |
 
-Karaoke's existing GPL separator has separate CC BY 4.0 SiSEC18-MUS seven-second
-excerpt provenance (Fabian-Robert Stöter, Antoine Liutkus and Nobutaka Ito; 84 training,
-10 selection and 50 evaluation clips). Attribution remains in About → Karaoke Mode.
-See [the separator recipe](../karaoke/README-v4.md).
+So Live Mode costs about 1.05x (JIT) to 1.2x (interpreter) what Karaoke Mode does. These are not
+device measurements; the on-device check above is what keeps a slower tablet from stuttering.
 
-## Reproduce and limitations
+## The crowd: `render_crowd.py`
 
-From the root with Python 3 and NumPy 2.3.5:
+`render_crowd.py` writes `app/src/main/assets/live_crowd.bin` and its manifest `live_crowd.json`
+(sizes, levels, seeds and SHA-256 hashes). It needs Python 3 with NumPy 2.3.5 and SciPy 1.16.3 (both
+BSD-3-Clause, used only here):
 
 ```sh
-OPENBLAS_NUM_THREADS=1 python3 tools/live/train.py
+python3 tools/live/render_crowd.py
 ```
 
-Training/export makes no network requests. Held-out normalized AR prediction error
-measures synthetic spectral predictability, not crowd realism or listener preference.
-The AR texture is not a generative singing model. No real-crowd evaluation or human
-listening panel has been run. Device listening and JP5S throughput still require
-confirmation; host benchmarks cannot prove this fix eliminates hardware stuttering.
+It synthesizes:
 
-## Beta 3: opening and closing stadium cheers
+- **Applause.** A few thousand people, each clapping with their own hands: a noise burst (0.6 to
+  2.4ms decay) through a resonator at 620 to 3300Hz, as Peltola et al. modelled hand claps
+  ("Synthesis of hand clapping sounds", IEEE TASLP 2007), plus the clap's crack. Each has a rate
+  (around 4.4 claps a second), timing jitter, a place in the stadium and a threshold: they join
+  and stop as the crowd's mood rises and falls.
+- **Cheering.** Hundreds of voices, men's and women's: a band-limited sawtooth glottal source with
+  jitter, shimmer and breath noise, through four formant resonators moving between vowels ("woo-oh",
+  "yeah", "hey", "oh", screams), with rising and falling pitch and vibrato.
+- **Two-finger whistles** and the hum of a crowd too big to hear any one person.
+- **The stadium.** Every sound is near, mid-field or far: distance turns it down and dulls it, and
+  a synthesized stereo stadium response (octave-band decay from 3.3 seconds in the bass to 0.4 in
+  the treble, early reflections from the pitch and the stands) gives the space around it.
 
-The echoes, vocal-band ensemble and background audience above remain. A separate
-three-second opening cheer overlaps the start of the song; another three-second
-cheer plays after the last note, before playback advances to the next song. These
-are independent of the song signal, so they still sound over a silent intro/outro.
-Both follow Live strength, master volume and the existing mono/limiter chain.
+Three sections: the crowd under songs (20 seconds, 16kHz, looping with a 2.5-second crossfade), the
+opening cheer (7 seconds, 22.05kHz; the song comes in at 2 seconds) and the closing ovation
+(9 seconds, 22.05kHz). 1.3MB in all.
 
-`render_stadium.py` generates 96 independent open-vowel whoops, 180 clap bursts,
-nine gliding whistles and short baked stereo reflections per event. Two fixed seeds
-produce different opening/closing takes. Everything is original mathematical
-synthesis under GPL-3.0-or-later: no human recordings, sound libraries, performers,
-pretrained weights, training downloads or network service are used. This is a
-stylized synthetic stadium audience, not a real stadium recording or a listener-
-validated claim of realism. The previous lightweight crowd model is unchanged.
+The levels were checked against a public-domain field recording of applause (radio aporee, "7 Rue
+Sleidan, Strasbourg", archive.org item `aporee_47869_54396`): the synthesized ovation's long-term
+spectrum follows the recording's within a few dB from 300Hz to 10kHz. The recording was only
+measured; nothing of it is in the app or this repository.
 
-Reproduce with Python 3 and NumPy 2.3.5:
+## Format of `live_crowd.bin`
 
-```sh
-OPENBLAS_NUM_THREADS=1 python3 tools/live/render_stadium.py
-```
+Big-endian. `GFLC`, version 1, section count 3; then for each section: a four-letter tag (`BED `,
+`OPEN`, `CLOS`), sample rate, channels (2), frames, marker (for `OPEN`, the frame the song comes in
+at) and the section's RMS as a float. Then each section's audio: signed 8-bit mu-law (mu = 255),
+interleaved stereo.
 
-The output is `assets/stadium_cheers.pcm`: a bounded 144,012-byte GSC1 file, holding
-two three-second takes at 12kHz, signed 8-bit stereo, plus a 12-byte header. Its JSON
-manifest records the recipe hash, clip hash, seeds, format and licensing. The decoder
-thread reads it once; runtime mixing uses two linear interpolations per sample and
-no synthesis/model inference. Closing audio is fed in 1024-frame blocks, avoiding
-large tail buffers or long processing bursts on Android 4.2.2.
+## Limits
 
-Seeking/resuming past the opening window does not replay the intro. Seeking to the
-beginning restarts it; enabling Live mid-song does not invent a new intro. Pausing
-pauses playback; skipping abandons the current engine/tail. EOF drives the closing
-cheer even for files with unknown duration. The final position display remains at
-the song duration while the closing cheer plays. Turning Live off suppresses the
-cheer through the existing smoothing/fade path. No new Android dependency or API
-above 17 is introduced.
-
-Percussion echoes are also softer in beta 3. The room output gain falls from 0.65
-to 0.30 and ensemble gain from 0.60 to 0.45. A cheap fast/slow energy comparison
-briefly reduces the room/ensemble input on sharp attacks, then smoothly restores
-it. This alters only the effect sends, preserving the original drum attack and
-leaving the separate stadium-cheer layer independent. A deterministic 2ms burst
-check measured room-tail energy at 7.1% of beta 2 (about 11.5dB lower), with an
-unchanged dry attack. It is a controlled signal test, not a listening assessment
-of every mix; sharp vocal/instrument attacks can also reduce the effect briefly.
-
-Beta 3 removes the duplicate artwork sliders introduced by combining the earlier
-inline UI with beta 2's popup. There is now one percent popup for the effect you
-enable or long-press. Karaoke and Live keep their independent saved strengths and
-can remain enabled together; opening one control does not change the other effect.
+This is a stylized, synthesized crowd. It hasn't been compared with real stadium recordings by
+listeners, and it can't know a song's structure: the ending and the big moments are guessed from
+loudness. The crowd sings whatever the separator (or the centre) hears as the vocal.

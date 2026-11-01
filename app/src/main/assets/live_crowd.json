@@ -1,0 +1,48 @@
+{
+  "name": "Grapefruit Live Mode crowd v2",
+  "license": "GPL-3.0-or-later",
+  "made_by": "tools/live/render_crowd.py: original synthesis",
+  "recordings_used": false,
+  "sampled_audio_used": false,
+  "pretrained_models_used": false,
+  "encoding": "GFLC v1: big-endian header, then per section signed 8-bit mu-law (mu=255), interleaved stereo",
+  "sections": [
+    {
+      "tag": "BED ",
+      "rate": 16000,
+      "channels": 2,
+      "frames": 320000,
+      "seconds": 20.0,
+      "marker_seconds": 0,
+      "rms": 0.17191
+    },
+    {
+      "tag": "OPEN",
+      "rate": 22050,
+      "channels": 2,
+      "frames": 154350,
+      "seconds": 7.0,
+      "marker_seconds": 2.0,
+      "rms": 0.07869
+    },
+    {
+      "tag": "CLOS",
+      "rate": 22050,
+      "channels": 2,
+      "frames": 198450,
+      "seconds": 9.0,
+      "marker_seconds": 0,
+      "rms": 0.06078
+    }
+  ],
+  "bytes": 1345684,
+  "sha256": "6af6474050623f3533b4b702b69a327e06f52950841653ab01480dbf1b1ae7f7",
+  "script_sha256": "f0da5d6db3ef1ee2bece747fe7668d9b5c5daea257af6a79eb3fdd4987addc84",
+  "numpy": "2.3.5",
+  "seeds": {
+    "stadium": 20261101,
+    "bed": 1101,
+    "opening": 2202,
+    "closing": 3303
+  }
+}

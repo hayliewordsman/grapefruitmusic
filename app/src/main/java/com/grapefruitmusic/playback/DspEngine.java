@@ -62,6 +62,20 @@ final class DspEngine implements Engine {
     private int pendingOff;
     private int pendingLen;
     private short[] scratch = new short[0];
+    /** Live Mode's crowd before the first note: frames still to make, and the song's first sound, held. */
+    private boolean preRollPending;
+    private int preRollLeft;
+    private short[] held = new short[0];
+    private int heldLen;
+    /** Frames of the current track that came before the song (Live Mode's cheer): not song time. */
+    private volatile int preRollFrames;
+    /** The end of the decoded song, from the decoder: the real length, once the end is reached. */
+    private long decodedEndUs;
+    private volatile boolean endKnown;
+    // How busy the effects keep the audio thread.
+    private long busyNs;
+    private long busyFrames;
+    private int busyWindows;
 
     DspEngine(Context context) {
         app = context.getApplicationContext();
@@ -143,13 +157,15 @@ final class DspEngine implements Engine {
         if (t != null && r > 0) {
             try {
                 // What's heard now went in latencyFrames() earlier (Karaoke Mode's 70 ms, mostly).
-                long heard = (t.getPlaybackHeadPosition() & 0xffffffffL) - dsp.latencyFrames();
+                long heard = (t.getPlaybackHeadPosition() & 0xffffffffL) - dsp.latencyFrames() - preRollFrames;
                 us += Math.max(0, heard) * 1000000L / r;
             } catch (IllegalStateException e) {
                 // The audio thread just let go of the track (stopping, or an error on its way).
             }
         }
-        if (durationUs > 0 && us > durationUs) us = durationUs;
+        // Once the end is known (Live Mode's ovation plays on past it), the time stops there. Before,
+        // a length estimated from the file can be short: the time runs on rather than stop early.
+        if (endKnown && durationUs > 0 && us > durationUs) us = durationUs;
         return (int) (us / 1000);
     }
 
@@ -170,8 +186,22 @@ final class DspEngine implements Engine {
         dsp.setEq(e.eq);
         dsp.setMono(e.mono);
         dsp.setLive(e.live, e.liveAmount);
+        if (e.live && LiveCrowd.get() == null) {
+            com.grapefruitmusic.util.Bg.run(new com.grapefruitmusic.util.Bg.Work<LiveCrowd>() {
+                @Override
+                public LiveCrowd run() throws Exception {
+                    return loadCrowd(app);
+                }
+            }, new com.grapefruitmusic.util.Bg.Done<LiveCrowd>() {
+                @Override
+                public void done(LiveCrowd c, Exception error) {
+                    if (c == null) Log.w(TAG, "live crowd", error);
+                }
+            });
+        }
         VocalRemover.Model model = loadedKaraokeModel();
-        if (e.karaoke && model == null) {
+        // Live Mode's crowd sings along to the vocal that Karaoke Mode's separator finds.
+        if ((e.karaoke || e.live) && model == null) {
             // Read the model off the main thread; Karaoke Mode starts once it's in.
             com.grapefruitmusic.util.Bg.run(new com.grapefruitmusic.util.Bg.Work<VocalRemover.Model>() {
                 @Override
@@ -188,6 +218,12 @@ final class DspEngine implements Engine {
             });
         }
         dsp.setKaraoke(e.karaoke, e.karaokeAmount, model);
+    }
+
+    /** Live Mode's crowd (assets/live_crowd.bin), read once. */
+    static LiveCrowd loadCrowd(Context c) throws IOException {
+        LiveCrowd crowd = LiveCrowd.get();
+        return crowd != null ? crowd : LiveCrowd.load(c.getAssets().open("live_crowd.bin"));
     }
 
     private static VocalRemover.Model loadedKaraokeModel() {
@@ -284,8 +320,23 @@ final class DspEngine implements Engine {
                 codec.configure(format, null, null, 0);
                 codec.start();
             }
-            StadiumCheer.load(app.getAssets().open("stadium_cheers.pcm"));
+            Effects e = effects;
+            if (e != null && e.live) {
+                loadCrowd(app);
+                // The separator, before the song starts (once a run): the crowd sings from the first
+                // note, and there's no switch-over part-way through.
+                if (!Dsp.liveSeparationTooSlow) {
+                    try {
+                        dsp.setKaraoke(e.karaoke, e.karaokeAmount, karaokeModel(app));
+                    } catch (IOException x) {
+                        Log.w(TAG, "karaoke model", x);
+                    }
+                }
+            }
+            dsp.setSongDuration(durationUs > 0 ? durationUs / 1000 : -1);
             openTrack(format.getInteger(MediaFormat.KEY_SAMPLE_RATE), channels, 0);
+            // Played from the beginning (no seek before it starts): Live Mode's crowd cheers first.
+            preRollPending = true;
             post(new Runnable() {
                 @Override
                 public void run() {
@@ -352,6 +403,7 @@ final class DspEngine implements Engine {
             baseUs = atUs;
             framesWritten = 0;
             pendingLen = 0;
+            preRollFrames = 0;
             if (playing && !completed) t.play();
         }
     }
@@ -389,18 +441,18 @@ final class DspEngine implements Engine {
                 // Slow (a stream may need to fetch), so done outside the lock.
                 ex.seekTo(seek, MediaExtractor.SEEK_TO_PREVIOUS_SYNC);
                 if (codec != null) codec.flush();
+                // A new AudioTrack rather than flush(): on Android 4.x a flushed track can go on
+                // counting from where it was, which put the time (and the scrubber, and a podcast's
+                // saved place) ahead of what was playing. Also clears the effects (dsp.setFormat).
+                openTrack(rate, inChannels, seek);
                 synchronized (lock) {
-                    track.pause();
-                    track.flush();
-                    baseUs = seek;
-                    framesWritten = 0;
-                    pendingLen = 0;
                     if (seekToUs == seek) seekToUs = -1;
-                    if (playing && seekToUs < 0) track.play();
                 }
                 skipUntilUs = seek;
-                dsp.reset();
-                dsp.setSongPosition(seek / 1000);
+                preRollPending = false;
+                preRollLeft = 0;
+                heldLen = 0;
+                endKnown = false;
                 inputDone = false;
                 outputDone = false;
                 tailFlushed = false;
@@ -425,17 +477,49 @@ final class DspEngine implements Engine {
                 continue;
             }
 
-            // 2. End of the song: send out the limiter's last few ms, then let it all play.
+            // 2. Live Mode's crowd cheering before the song, then the song's first sound, held back.
+            if (preRollLeft > 0) {
+                int frames = Math.min(1024, preRollLeft);
+                int n = frames * outChannels;
+                ensurePending(n);
+                java.util.Arrays.fill(pending, 0, n, (short) 0);
+                process(pending, n);
+                preRollLeft -= frames;
+                pendingOff = 0;
+                pendingLen = n;
+                continue;
+            }
+            if (heldLen > 0) {
+                short[] swap = pending;
+                pending = held;
+                held = swap;
+                process(pending, heldLen);
+                pendingOff = 0;
+                pendingLen = heldLen;
+                heldLen = 0;
+                continue;
+            }
+
+            // 3. End of the song: send out the effects' last few ms (and Live Mode's ovation), then
+            // let it all play.
             if (outputDone) {
                 if (!tailFlushed) {
-                    if (tailRemaining < 0) tailRemaining = dsp.finishSongFrames();
+                    if (tailRemaining < 0) {
+                        // The decoder's own end of the song, unless it looks wrong (old decoders can
+                        // get timestamps wrong).
+                        if (decodedEndUs > 0 && (durationUs <= 0 || decodedEndUs > durationUs / 2)) {
+                            durationUs = decodedEndUs;
+                        }
+                        endKnown = true;
+                        tailRemaining = dsp.finishSongFrames();
+                    }
                     if (tailRemaining > 0) {
                         // Bound work and allocations: feed the cheer in normal audio-sized blocks.
                         int frames = Math.min(1024, tailRemaining);
                         int n = frames * outChannels;
                         ensurePending(n);
                         java.util.Arrays.fill(pending, 0, n, (short) 0);
-                        dsp.process(pending, 0, n);
+                        process(pending, n);
                         tailRemaining -= frames;
                         pendingOff = 0;
                         pendingLen = n;
@@ -469,7 +553,7 @@ final class DspEngine implements Engine {
                 continue;
             }
 
-            // 3. Decode some more.
+            // 4. Decode some more.
             if (codec == null) {
                 rawBuf.clear();
                 int size = ex.readSampleData(rawBuf, 0);
@@ -528,6 +612,8 @@ final class DspEngine implements Engine {
         b.limit(offset + size);
         b.slice().order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(scratch, 0, samples);
         int frames = samples / inChannels;
+        long endUs = ptsUs + frames * 1000000L / rate;
+        if (endUs > decodedEndUs) decodedEndUs = endUs;
         int skip = 0;
         if (ptsUs < skipUntilUs) {
             skip = (int) Math.min(frames, (skipUntilUs - ptsUs) * rate / 1000000L);
@@ -551,8 +637,48 @@ final class DspEngine implements Engine {
                 pending[o++] = (short) (r / (inChannels / 2));
             }
         }
-        dsp.process(pending, 0, o);
+        if (preRollPending) {
+            preRollPending = false;
+            int cheer = dsp.preRollFrames();
+            if (cheer > 0) {
+                // Keep the song's first sound until the crowd's cheer has gone out.
+                dsp.startPreRoll();
+                preRollFrames = cheer;
+                preRollLeft = cheer;
+                short[] swap = held;
+                held = pending;
+                pending = swap;
+                heldLen = o;
+                pendingLen = 0;
+                return;
+            }
+        }
+        process(pending, o);
         pendingOff = 0;
         pendingLen = o;
+    }
+
+    /**
+     * Runs the effects, timing them. If Live Mode's use of the vocal separator keeps the audio thread
+     * busy more than 65% of the time (two windows of two seconds in a row), Live Mode drops it: a
+     * slower tablet would otherwise stutter.
+     */
+    private void process(short[] pcm, int samples) {
+        long start = System.nanoTime();
+        dsp.process(pcm, 0, samples);
+        busyNs += System.nanoTime() - start;
+        busyFrames += samples / outChannels;
+        int r = rate;
+        if (busyFrames >= r * 2L) {
+            double load = busyNs / (busyFrames * 1e9 / r);
+            busyWindows = load > 0.65 && dsp.liveUsesSeparator() ? busyWindows + 1 : 0;
+            if (busyWindows >= 2) {
+                Dsp.liveSeparationTooSlow = true;
+                Log.w(TAG, "Live Mode: separating the vocal is too slow here (" + Math.round(load * 100)
+                        + "% busy); following the song's centre instead");
+            }
+            busyNs = 0;
+            busyFrames = 0;
+        }
     }
 }

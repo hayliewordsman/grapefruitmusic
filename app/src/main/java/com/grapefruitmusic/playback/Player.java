@@ -425,7 +425,9 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     public long durationMs() {
         if (engine != null && prepared) {
             int d = engine.getDuration();
-            if (d > 0) return d;
+            // A length estimated from the file (a podcast without an index, say) can be short: the
+            // time must not stop at the end while the episode plays on.
+            if (d > 0) return Math.max(d, engine.getCurrentPosition());
         }
         MediaItem c = current();
         return c != null ? c.durationMs : 0;

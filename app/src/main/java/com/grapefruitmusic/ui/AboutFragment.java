@@ -88,18 +88,19 @@ public final class AboutFragment extends BaseFragment {
                         main().push(KaraokeCreditsFragment.newInstance("About"));
                     }
                 });
-        g.value("Live Mode", "Procedural crowd v1 · GPL-3.0-or-later", v -> {
+        g.value("Live Mode", "Synthesized crowd v2 · GPL-3.0-or-later", v -> {
             Ui.dialog(getActivity()).setTitle("Live Mode").setMessage(
-                    "Live Mode layers a lightweight vocal-band estimate into a delayed, detuned crowd choir,"
-                    + " with gentler venue reflections and a synthesized audience. Separate opening and closing"
-                    + " stadium cheers add original synthesized whoops, applause and whistles. Instrumentals get ambience"
-                    + " without invented lyrics. The new AR-12 texture model was trained only on"
-                    + " original procedural voices and applause (GPL-3.0-or-later), pre-rendered for older phones; no recordings"
-                    + " or pretrained crowd weights were used. Live Mode alone needs no neural separator."
-                    + " When Karaoke is also enabled, its vocal estimate is reused. The separator and its CC BY 4.0"
-                    + " SiSEC18-MUS attribution are listed under Karaoke Mode. This beta is a"
-                    + " stylized simulation, not a recording of a real crowd. Recipe, seeds and"
-                    + " evaluation: tools/live; manifest: assets/live_training.json in the source.")
+                    "Live Mode plays a song as if to a stadium: the crowd cheers before the first note,"
+                    + " is there through the song and cheers when it lifts, sings along with the lead"
+                    + " vocal, and gives an ovation as the song ends (as a fade-out starts, or the music"
+                    + " stops). The song and the crowd's singing ring in a simulated stadium."
+                    + " The crowd is original synthesis, made by Grapefruit's own program from noise and"
+                    + " arithmetic: thousands of modelled hand claps, hundreds of synthesized voices"
+                    + " shouting and whistles, placed in a synthesized stadium. No recordings of people,"
+                    + " sound libraries or trained crowd models were used; it is GPL-3.0-or-later like the"
+                    + " rest of the app. To find the voice the crowd sings, Live Mode uses Karaoke Mode's"
+                    + " separator (credited under Karaoke Mode), or the song's centre on tablets too"
+                    + " slow for both. Recipe: tools/live in the source; manifest: assets/live_crowd.json.")
                     .setPositiveButton("OK", null).show();
         });
         g.footer(

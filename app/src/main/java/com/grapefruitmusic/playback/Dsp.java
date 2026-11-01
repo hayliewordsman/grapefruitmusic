@@ -1,7 +1,7 @@
 package com.grapefruitmusic.playback;
 
 /**
- * Grapefruit's own sound processing, for Karaoke Mode, Volume Boost, the Equalizer and Mono Audio:
+ * Grapefruit's own sound processing, for Karaoke Mode, Live Mode, Volume Boost, the Equalizer and Mono Audio:
  * vocal removal, mono mixing, the 10-band equalizer, gain, and a look-ahead limiter that turns peaks down just before they'd clip, so boosted music gets
  * louder instead of distorting (the idea behind Viper4Android's eXtra-Loud). Pure Java (unit tested).
  *
@@ -28,11 +28,18 @@ public final class Dsp {
     private volatile float volume = 1f;
     private volatile boolean live;
     private volatile float liveAmount = 0.5f;
-    private LiveAmbience audience;
+    private LiveStage stage;
     private double liveKaraokeMix;
     private boolean liveRunning;
-    private StadiumCheer cheers;
-    private float cheerAmount;
+    /** Song position of the next frame in (negative while Live Mode's crowd cheers before it). */
+    private long songFrame;
+    private volatile long songDurationMs = -1;
+    /**
+     * Live Mode borrows Karaoke Mode's separator for the lead vocal the crowd sings along to. Set
+     * (for the rest of the run) if that keeps the audio thread too busy: the crowd then follows the
+     * song's centre instead.
+     */
+    static volatile boolean liveSeparationTooSlow;
     private volatile boolean karaoke;
     private volatile float karaokeAmount = 1f;
     private volatile VocalRemover.Model karaokeModel;
@@ -99,6 +106,21 @@ public final class Dsp {
         live = on;
     }
 
+    /** Live Mode's stage, for tests. */
+    LiveStage liveStage() {
+        return stage;
+    }
+
+    /** Is the separator running for Live Mode alone (Karaoke Mode off)? */
+    boolean liveUsesSeparator() {
+        return liveRunning && !karaoke && remover != null;
+    }
+
+    /** Karaoke Mode's separator: for Karaoke Mode, and for Live Mode's singing crowd. */
+    private boolean wantRemover() {
+        return karaokeModel != null && (karaoke || (live && !liveSeparationTooSlow));
+    }
+
     /** Is Karaoke Mode taking effect right now (its model loaded and running)? */
     public boolean karaokeRunning() {
         return remover != null;
@@ -122,14 +144,12 @@ public final class Dsp {
         eqStale = true;
         // Nothing's playing through the old state, so the mix starts as wanted, without a fade.
         mixer = mono && channels == 2 ? new MonoMix() : null;
-        cheers = new StadiumCheer(rate);
-        cheerAmount = 0;
         liveRunning = live;
-        audience = liveRunning ? new LiveAmbience(rate) : null;
+        stage = liveRunning ? newStage() : null;
         liveKaraokeMix = karaoke ? karaokeAmount : 0;
         frame = new double[channels];
         input = new double[channels];
-        remover = karaoke && karaokeModel != null ? newRemover() : null;
+        remover = wantRemover() ? newRemover() : null;
         switchGain = 1;
         switchPhase = 0;
 
@@ -155,16 +175,50 @@ public final class Dsp {
         if (rate > 0) setFormat(rate, channels);
     }
 
-    /** Position in decoded song time; called at open and after a seek. */
-    public void setSongPosition(long ms) { cheers.position(ms); }
+    /** Position in decoded song time; called at open and after a seek (after setFormat). */
+    public void setSongPosition(long ms) {
+        songFrame = Math.max(0, ms) * rate / 1000;
+        if (stage != null) stage.seek(songFrame);
+    }
 
-    /** EOF: emit a separate closing cheer, then flush all effect/limiter delay. */
+    /** The song's length in ms, -1 if unknown: Live Mode's ovation starts as the music ends. */
+    public void setSongDuration(long ms) {
+        songDurationMs = ms;
+        if (stage != null) stage.setDuration(durationFrames());
+    }
+
+    private long durationFrames() {
+        long ms = songDurationMs;
+        return ms > 0 && rate > 0 ? ms * rate / 1000 : -1;
+    }
+
+    private LiveStage newStage() {
+        return new LiveStage(rate, LiveCrowd.get(), songFrame, durationFrames());
+    }
+
+    /**
+     * Starting a song from its beginning: frames of silence to process before it, during which Live
+     * Mode's crowd cheers (0 with Live Mode off). Follow with {@link #startPreRoll()}.
+     */
+    public int preRollFrames() {
+        LiveStage s = stage;
+        return s != null && live && liveAmount > 0 && songFrame == 0 ? s.preRollFrames() : 0;
+    }
+
+    public void startPreRoll() {
+        if (stage == null) return;
+        stage.startPreRoll();
+        songFrame = -stage.preRollFrames();
+    }
+
+    /**
+     * The song's last frame has gone in: frames of silence still to process, for the effects' delay
+     * to come out and, with Live Mode, the crowd's ovation.
+     */
     public int finishSongFrames() {
         int tail = latencyFrames();
-        if (live && liveAmount > 0) {
-            cheers.end();
-            tail += rate * 3 + rate / 100; // includes resampling-rounding margin
-        }
+        LiveStage s = stage;
+        if (s != null && live && liveAmount > 0) tail += s.finish();
         return tail;
     }
 
@@ -205,7 +259,7 @@ public final class Dsp {
         }
         int boost = boostLevel;
         double g = volume * Math.pow(10, BOOST_DB[boost] / 20);
-        boolean wantKaraoke = karaoke && karaokeModel != null;
+        boolean wantKaraoke = wantRemover();
         boolean wantMono = mono && channels == 2;
         if ((wantKaraoke != (remover != null) || wantMono != (mixer != null)
                 || live != liveRunning) && switchPhase == 0) switchPhase = 1;
@@ -221,9 +275,11 @@ public final class Dsp {
             double peak = 0;
             for (int c = 0; c < channels; c++) input[c] = pcm[i + c] / 32768.0;
             double vocalL = 0, vocalR = 0;
+            boolean separated = false;
             if (remover != null) {
                 remover.process((float) input[0], (float) input[channels - 1]);
                 if (liveRunning) {
+                    separated = true;
                     vocalL = remover.dryOutL - remover.outL;
                     vocalR = remover.dryOutR - remover.outR;
                     liveKaraokeMix += ((karaoke ? karaokeAmount : 0) - liveKaraokeMix) * 0.002;
@@ -236,16 +292,16 @@ public final class Dsp {
                 }
             }
             if (liveRunning) {
-                if (remover != null) audience.process(input[0], input[channels-1], vocalL, vocalR, liveAmount);
-                else audience.processSong(input[0], input[channels-1], liveAmount);
-                input[0] = audience.outL;
-                if (channels > 1) input[1] = audience.outR;
+                stage.process(input[0], input[channels - 1], (float) ((vocalL + vocalR) * 0.5), separated,
+                        liveAmount);
+                if (channels > 1) {
+                    input[0] = stage.outL;
+                    input[1] = stage.outR;
+                } else {
+                    input[0] = (stage.outL + stage.outR) * 0.5;
+                }
             }
-            cheerAmount += ((live ? liveAmount : 0) - cheerAmount) * 0.002f;
-            cheers.process(cheerAmount);
-            input[0] += cheers.outL;
-            if (channels > 1) input[1] += cheers.outR;
-            else input[0] = input[0] - cheers.outL + (cheers.outL + cheers.outR) * 0.5;
+            songFrame++;
             if (mixer != null) {
                 mixer.process((float) input[0], (float) input[1]);
                 input[0] = mixer.out;
@@ -255,10 +311,12 @@ public final class Dsp {
                     switchGain -= fade;
                     if (switchGain <= 0) {
                         switchGain = 0;
-                        boolean want = karaoke && karaokeModel != null;
+                        boolean want = wantRemover();
                         if (want != (remover != null)) remover = want ? newRemover() : null;
-                        liveRunning = live;
-                        audience = liveRunning ? new LiveAmbience(rate) : null;
+                        if (liveRunning != live) {
+                            liveRunning = live;
+                            stage = live ? newStage() : null;
+                        }
                         liveKaraokeMix = karaoke ? karaokeAmount : 0;
                         boolean together = mono && channels == 2;
                         if (together != (mixer != null)) {
