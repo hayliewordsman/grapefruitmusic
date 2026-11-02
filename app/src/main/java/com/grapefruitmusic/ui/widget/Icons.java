@@ -56,6 +56,9 @@ public final class Icons {
     /** The same forward: 15 seconds on. */
     public static final int FORWARD_15 = 34;
 
+    /** A speaker's head on a stem, inside two rings open at the bottom: the Podcasts tab. */
+    public static final int PODCASTS = 35;
+
     private static final Paint PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final Path PATH = new Path();
     private static final RectF OVAL = new RectF();
@@ -86,6 +89,19 @@ public final class Icons {
         Path path = PATH;
         path.reset();
         switch (icon) {
+            case PODCASTS:
+                // Head and stem, solid.
+                p.setStyle(Paint.Style.FILL);
+                c.drawCircle(12, 10.6f, 2.7f, p);
+                OVAL.set(10.45f, 14.6f, 13.55f, 22);
+                c.drawRoundRect(OVAL, 1.55f, 1.55f, p);
+                // Two rings around the head, open at the bottom where the stem comes out.
+                stroke(p, 1.9f);
+                OVAL.set(6.3f, 4.9f, 17.7f, 16.3f);
+                c.drawArc(OVAL, 132, 276, false, p);
+                OVAL.set(2.6f, 1.2f, 21.4f, 20);
+                c.drawArc(OVAL, 136, 268, false, p);
+                break;
             case CHEERING:
                 stroke(p, 1.25f);
                 // Original mirrored raised hands, drawn in the current theme tint.

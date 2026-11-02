@@ -47,7 +47,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     private static final int TAB_SETTINGS = 5;
     private static final int[] TAB_IDS = {TAB_LIBRARY, TAB_RADIO, TAB_PODCASTS, TAB_SEARCH, TAB_SETTINGS};
     private static final String[] TAB_NAMES = {"Library", "Radio", "Podcasts", "Search", "Settings"};
-    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.RADIO, Icons.HEADPHONES, Icons.SEARCH, Icons.SETTINGS};
+    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.RADIO, Icons.PODCASTS, Icons.SEARCH, Icons.SETTINGS};
 
     /** Grapefruit's open windows (normally one), for the notification's close button. Main thread. */
     private static final Map<MainActivity, Boolean> LIVE = new WeakHashMap<MainActivity, Boolean>();

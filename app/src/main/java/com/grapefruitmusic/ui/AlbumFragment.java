@@ -307,9 +307,11 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         bar.setMinimumHeight(Ui.dp(c, 40));
         if (header.getChildCount() > 0) {
             backButton = header.getChildAt(0);
-            ViewGroup.LayoutParams lp = backButton.getLayoutParams();
+            // Its own size, but not the header's margin under it: centred in this bar, that margin
+            // lifted the button out of the top of the bar, which cut its top off.
+            ViewGroup.LayoutParams own = backButton.getLayoutParams();
             header.removeView(backButton);
-            bar.addView(backButton, lp);
+            bar.addView(backButton, new LinearLayout.LayoutParams(own.width, own.height));
         }
         cancelButton = Ui.textButton(c, "Cancel", false);
         LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
