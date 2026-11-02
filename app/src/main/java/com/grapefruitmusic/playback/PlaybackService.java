@@ -59,8 +59,6 @@ public final class PlaybackService extends Service implements Player.Listener, R
     private String artFor;
     private Bitmap art;
     /** The artwork as the notification shows it: the whole picture, scaled to fit. */
-    private Bitmap fittedArt;
-    private Bitmap fittedFrom;
     private final SparseArray<Bitmap> buttons = new SparseArray<Bitmap>();
 
     private final BroadcastReceiver noisy = new BroadcastReceiver() {
@@ -99,8 +97,15 @@ public final class PlaybackService extends Service implements Player.Listener, R
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         foreground = true;
-        startForeground(1, com.grapefruitmusic.compat.Platform.notification(this, "playback", "Playback")
-                .setSmallIcon(R.drawable.ic_stat_grapefruit).setContentTitle(getString(R.string.app_name)).build());
+        // Android 8+ wants a notification at once. This one is small (no pictures) but says what's
+        // playing, so it never stands alone as just "Grapefruit" if the full one below were lost.
+        MediaItem now = player.current();
+        Notification.Builder first = com.grapefruitmusic.compat.Platform.notification(this, "playback", "Playback")
+                .setSmallIcon(R.drawable.ic_stat_grapefruit);
+        if (radio.inSession()) first.setContentTitle(radio.title()).setContentText(radio.subtitle());
+        else if (now != null) first.setContentTitle(now.title).setContentText(now.artist != null ? now.artist : "");
+        else first.setContentTitle(getString(R.string.app_name));
+        startForeground(NOTIFICATION_ID, first.build());
         String action = intent != null ? intent.getAction() : null;
         if (ACTION_CLOSE.equals(action)) {
             close();
@@ -222,8 +227,9 @@ public final class PlaybackService extends Service implements Player.Listener, R
             ed.putString(MediaMetadataRetriever.METADATA_KEY_ALBUM, live ? text2 : item.album);
             if (!live) ed.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, item.durationMs);
             if (art != null) {
-                // The lock screen recycles bitmaps it's given, so hand it a copy.
-                Bitmap copy = art.copy(Bitmap.Config.ARGB_8888, false);
+                // The lock screen recycles bitmaps it's given, so hand it a copy (half the size when
+                // the picture has no see-through parts).
+                Bitmap copy = art.copy(art.hasAlpha() ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565, false);
                 if (copy != null) ed.putBitmap(RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK, copy);
             }
             ed.apply();
@@ -260,8 +266,8 @@ public final class PlaybackService extends Service implements Player.Listener, R
         if (text2.length() > 0 && !onRadio) line = line.length() == 0 ? text2 : line + " — " + text2;
         RemoteViews small = new RemoteViews(getPackageName(), R.layout.notification_player);
         RemoteViews big = new RemoteViews(getPackageName(), R.layout.notification_player_big);
-        fill(small, title, line, playing, onRadio);
-        fill(big, title, text, playing, onRadio);
+        fill(small, title, line, playing, onRadio, fittedArt(64));
+        fill(big, title, text, playing, onRadio, fittedArt(128));
         big.setTextViewText(R.id.n_text2, text2);
         Notification.Builder b = com.grapefruitmusic.compat.Platform.notification(this, "playback", "Playback")
                 .setSmallIcon(R.drawable.ic_stat_grapefruit)
@@ -279,10 +285,9 @@ public final class PlaybackService extends Service implements Player.Listener, R
         return n;
     }
 
-    private void fill(RemoteViews v, String title, String text, boolean playing, boolean onRadio) {
+    private void fill(RemoteViews v, String title, String text, boolean playing, boolean onRadio, Bitmap fitted) {
         v.setTextViewText(R.id.n_title, title);
         v.setTextViewText(R.id.n_text, text);
-        Bitmap fitted = fittedArt();
         if (fitted != null) v.setImageViewBitmap(R.id.n_art, fitted);
         else v.setImageViewResource(R.id.n_art, R.mipmap.ic_launcher);
         v.setImageViewBitmap(R.id.n_prev, button(Icons.PREVIOUS));
@@ -299,16 +304,34 @@ public final class PlaybackService extends Service implements Player.Listener, R
         v.setContentDescription(R.id.n_close, "Stop and close Grapefruit");
     }
 
-    /**
-     * The artwork at the unfolded notification's size, the whole picture: Android 4 shows a
-     * notification's large icon unscaled and cropped to its middle, so it's scaled here instead.
+    /*
+     * Everything in a notification travels to the system in one go, and Android drops a
+     * notification that's too big for that without a word, leaving the last one showing (on the
+     * JP5S, the bare "Grapefruit" posted as the service starts). So its pictures are kept small:
+     * the cover for each view at the size it's shown (64dp folded, 128dp unfolded), never more than
+     * 256 pixels, and with no see-through parts stored at two bytes a pixel instead of four.
      */
-    private Bitmap fittedArt() {
+    private static final int MAX_ART_PX = 256;
+    private Bitmap fittedFrom;
+    private final android.util.SparseArray<Bitmap> fitted = new android.util.SparseArray<Bitmap>();
+
+    /** The artwork for a view sizeDp across, the whole picture (Android 4 crops what doesn't fit). */
+    private Bitmap fittedArt(int sizeDp) {
         if (art == null) return null;
-        if (art == fittedFrom && fittedArt != null) return fittedArt;
-        fittedFrom = art;
-        fittedArt = fit(art, Math.round(128 * getResources().getDisplayMetrics().density));
-        return fittedArt;
+        if (art != fittedFrom) {
+            fittedFrom = art;
+            fitted.clear();
+        }
+        Bitmap b = fitted.get(sizeDp);
+        if (b != null) return b;
+        int px = Math.min(MAX_ART_PX, Math.round(sizeDp * getResources().getDisplayMetrics().density));
+        b = fit(art, px);
+        if (!b.hasAlpha() && b.getConfig() != Bitmap.Config.RGB_565) {
+            Bitmap compact = b.copy(Bitmap.Config.RGB_565, false);
+            if (compact != null) b = compact;
+        }
+        fitted.put(sizeDp, b);
+        return b;
     }
 
     /** bitmap scaled down so its longer side is at most size, keeping its shape (all of it shows). */
@@ -325,7 +348,8 @@ public final class PlaybackService extends Service implements Player.Listener, R
     private Bitmap button(int icon) {
         Bitmap b = buttons.get(icon);
         if (b != null) return b;
-        int size = Math.round(32 * getResources().getDisplayMetrics().density);
+        // 32dp, but at most 72 pixels: each view carries all four, and every byte counts (above).
+        int size = Math.min(72, Math.round(32 * getResources().getDisplayMetrics().density));
         b = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         int color = Build.VERSION.SDK_INT >= 21 ? 0xff5f6368 : 0xffffffff;
         Icons.draw(new Canvas(b), icon, new RectF(0, 0, size, size), color);

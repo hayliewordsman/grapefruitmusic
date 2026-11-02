@@ -125,6 +125,8 @@ final class NowPlaying {
     private boolean side;
     private boolean started;
     private int mode = MODE_ART;
+    /** Laid out in two columns (a wide or square screen): see configureContentLayout. */
+    private boolean twoColumns;
     private String trackKey;
     private Lyrics lyrics;
     private boolean lyricsLoading;
@@ -719,6 +721,8 @@ final class NowPlaying {
         lp.setMargins(0, 0, 0, 0);
         card.setLayoutParams(lp);
         configureContentLayout(config);
+        // Lyrics or Up Next open while the screen turns: laid out again for the new columns.
+        if (mode != MODE_ART) showMode();
         card.setSide(side);
         // The grab bar goes across the top of the card, or down the left edge of the panel.
         grabber.setVisibility(side ? View.GONE : View.VISIBLE);
@@ -731,6 +735,7 @@ final class NowPlaying {
         // Two columns on a wide or square screen (a phone on its side, a tablet, a Unihertz Titan):
         // the artwork at the left; the title, the controls and the buttons at the right.
         boolean landscape = Ui.wide(config);
+        twoColumns = landscape;
         boolean compact = config.screenHeightDp < 500;
         LinearLayout content = (LinearLayout) root.findViewById(R.id.np_content);
         LinearLayout body = (LinearLayout)root.findViewById(R.id.np_main);
@@ -1184,18 +1189,22 @@ final class NowPlaying {
     }
 
     private void showMode() {
-        // Lyrics and Up Next: small artwork and title on top, the list below (iOS-style).
+        // Lyrics and Up Next: small artwork and title on top, the list below (iOS-style). In two
+        // columns the list takes the whole left side, where the artwork was, and the title and
+        // artist stay at the right, above the progress bar.
         boolean condensedMode = mode != MODE_ART;
+        boolean keepTitle = condensedMode && twoColumns;
         root.findViewById(R.id.np_art_row).setVisibility(condensedMode ? View.INVISIBLE : View.VISIBLE);
-        root.findViewById(R.id.np_metadata).setVisibility(condensedMode ? View.GONE : View.VISIBLE);
+        root.findViewById(R.id.np_metadata).setVisibility(condensedMode && !keepTitle ? View.GONE : View.VISIBLE);
+        root.findViewById(R.id.np_mini_header).setVisibility(twoColumns ? View.GONE : View.VISIBLE);
         art.setVisibility(condensedMode ? View.INVISIBLE : View.VISIBLE);
         if (condensedMode && condensed.getVisibility() != View.VISIBLE) {
             condensed.setAlpha(0f);
             condensed.animate().alpha(1f).setDuration(180).setListener(null).start();
         }
         condensed.setVisibility(condensedMode ? View.VISIBLE : View.GONE);
-        title.setVisibility(condensedMode ? View.GONE : View.VISIBLE);
-        artist.setVisibility(condensedMode ? View.GONE : View.VISIBLE);
+        title.setVisibility(condensedMode && !keepTitle ? View.GONE : View.VISIBLE);
+        artist.setVisibility(condensedMode && !keepTitle ? View.GONE : View.VISIBLE);
         boolean showLyrics = mode == MODE_LYRICS && lyrics != null;
         lyricsList.setVisibility(showLyrics ? View.VISIBLE : View.GONE);
         queueList.setVisibility(mode == MODE_QUEUE ? View.VISIBLE : View.GONE);
