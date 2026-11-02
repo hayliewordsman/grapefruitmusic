@@ -191,13 +191,7 @@ public final class PodcastsFragment extends BaseFragment {
             body.addView(offline, new FrameLayout.LayoutParams(-1, -1));
             return root;
         }
-        ListView list = new ListView(c);
-        RowAdapter.style(list);
-        // A section: the tab's title and chips (and its note) at the top of the list.
-        if (menu != null) menu.addHeaders(list);
-        else body.addView(list);
         status = Ui.status(c);
-        list.addFooterView(status, null, false);
         adapter =
                 new RowAdapter(
                         c,
@@ -222,6 +216,24 @@ public final class PodcastsFragment extends BaseFragment {
                                 else episodeActions(m);
                             }
                         });
+        if (menu != null && menu.wide && (mode == HOME || mode == SUBSCRIPTIONS)) {
+            // On a wide screen, Discover's and Subscriptions' shows are cards scrolling sideways
+            // beside the chip column, as the Library's albums are, the title (and note) with them.
+            com.grapefruitmusic.ui.widget.HorizontalGrid grid = new com.grapefruitmusic.ui.widget.HorizontalGrid(c);
+            grid.setPadding(0, 0, 0, Ui.dp(c, 8));
+            int perColumn = adapter.landscapeRows(SectionMenu.WIDE_RESERVED_DP + (mode == HOME ? 28 : 0));
+            adapter.setStacked(perColumn);
+            grid.setShape(perColumn, adapter.cardTextHeight());
+            grid.setAdapter(adapter);
+            load();
+            return menu.page(grid, status);
+        }
+        ListView list = new ListView(c);
+        RowAdapter.style(list);
+        // A section: the tab's title and chips (and its note) at the top of the list.
+        if (menu != null) menu.addHeaders(list);
+        else body.addView(list);
+        list.addFooterView(status, null, false);
         list.setAdapter(adapter);
         list.setOnItemClickListener(
                 (parent, v, pos, id) -> adapter.click(pos - list.getHeaderViewsCount()));
@@ -233,6 +245,12 @@ public final class PodcastsFragment extends BaseFragment {
         if (mode != SEARCH) load();
         else render();
         return menu != null ? menu.page(list) : root;
+    }
+
+    /** The loading, empty or error line; gone when there's nothing to say. */
+    private void showStatus(String text) {
+        status.setText(text);
+        status.setVisibility(text.length() == 0 ? View.GONE : View.VISIBLE);
     }
 
     private void editorialSources() {
@@ -394,9 +412,9 @@ public final class PodcastsFragment extends BaseFragment {
                     if (error == null) {
                         items = found;
                         render();
-                        status.setText(found.isEmpty() ? "Nothing here yet." : "");
+                        showStatus(found.isEmpty() ? "Nothing here yet." : "");
                     } else
-                        status.setText(
+                        showStatus(
                                 "Couldn't load podcasts. Check your connection and try again.\n"
                                         + error.getMessage());
                 });
@@ -428,7 +446,7 @@ public final class PodcastsFragment extends BaseFragment {
                     if (gen == generation && error == null) {
                         items = found;
                         render();
-                        status.setText(found.isEmpty() ? "Nothing here yet." : "");
+                        showStatus(found.isEmpty() ? "Nothing here yet." : "");
                     }
                     scheduleDownloadPoll();
                 });

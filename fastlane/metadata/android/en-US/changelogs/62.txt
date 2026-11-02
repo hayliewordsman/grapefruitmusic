@@ -1,0 +1,2 @@
+5.1 beta 1
+Podcasts on a wide screen matches the Library: Discover's and Subscriptions' shows are cards scrolling sideways beside the floating chips, with the title and note scrolling along.
