@@ -11,6 +11,7 @@ import java.util.TreeSet;
 public final class Prefs {
     /** No theme picked: Grapefruit Dark. */
     public static final int THEME_SYSTEM = 0;
+    /** Starlight, retired in 5.0 beta 9: shown as Grapefruit Light (Ui.theme). */
     public static final int THEME_STARLIGHT = 1;
     public static final int THEME_PITCH_BLACK = 2;
     public static final int THEME_GRAPEFRUIT_LIGHT = 3;

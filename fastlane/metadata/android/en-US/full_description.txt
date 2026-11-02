@@ -8,6 +8,6 @@ Grapefruit Music & Podcasts is a small, native music and podcast player for Andr
 • Volume Match, Volume Boost, a 10-band equalizer, Mono Audio and Karaoke Mode
 • Live Mode: any song as a stadium show, with a crowd that cheers, sings along and applauds
 • Edit song tags and artwork
-• Four themes
+• Three themes
 
 Grapefruit draws its own controls, so it looks the same on every Android version, and brings its own modern TLS (Conscrypt), so it can still reach today's HTTPS servers on Android 4.2.

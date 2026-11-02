@@ -110,8 +110,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             if (!needed.isEmpty()) requestPermissions(needed.toArray(new String[needed.size()]), 40);
         }
         if (android.os.Build.VERSION.SDK_INT >= 23) {
-            boolean light = Ui.theme(this) == com.grapefruitmusic.util.Prefs.THEME_STARLIGHT
-                    || Ui.theme(this) == com.grapefruitmusic.util.Prefs.THEME_GRAPEFRUIT_LIGHT;
+            boolean light = Ui.theme(this) == com.grapefruitmusic.util.Prefs.THEME_GRAPEFRUIT_LIGHT;
             int flags = light ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : 0;
             if (android.os.Build.VERSION.SDK_INT >= 26 && light) flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
             getWindow().getDecorView().setSystemUiVisibility(flags);
@@ -127,8 +126,8 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         miniArt = (ArtworkView) findViewById(R.id.mini_art);
         miniArt.setPlaceholderColors(Ui.color(this, R.attr.gfFill), Ui.color(this, R.attr.gfTextSecondary));
         miniTitle = (TextView) findViewById(R.id.mini_title);
-        // A title too long for the mini player scrolls by (marquee, in the layout); Android only
-        // scrolls a selected line.
+        // A title too long for the mini player scrolls by (marquee, in the layout), three times a
+        // song; Android only scrolls a selected line, and Now Playing deselects it while it covers it.
         miniTitle.setSelected(true);
         miniTitle.setTypeface(Fonts.semiBold());
         miniArtist = (TextView) findViewById(R.id.mini_artist);
@@ -230,8 +229,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         if (Build.VERSION.SDK_INT >= 33) {
             // Android 13+ draws its own splash screen first: in this theme's colours next time.
             int t = Ui.theme(this);
-            getSplashScreen().setSplashScreenTheme(t == Prefs.THEME_STARLIGHT ? R.style.Splash_Light
-                    : t == Prefs.THEME_PITCH_BLACK ? R.style.Splash_Dark
+            getSplashScreen().setSplashScreenTheme(t == Prefs.THEME_PITCH_BLACK ? R.style.Splash_Dark
                     : t == Prefs.THEME_GRAPEFRUIT_DARK ? R.style.Splash_GrapefruitDark : R.style.Splash_GrapefruitLight);
         }
         if (splashShown) {
@@ -444,6 +442,11 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
                 .replace(R.id.content, page)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    /** Whether the mini player's title may scroll (not while Now Playing covers it). */
+    void setMiniTitleScrolls(boolean scrolls) {
+        if (miniTitle != null) miniTitle.setSelected(scrolls);
     }
 
     void openNowPlaying() {

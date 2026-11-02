@@ -16,7 +16,6 @@ public class ArtworkView extends View {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint edge = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint shadow = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Matrix matrix = new Matrix();
     private final RectF rect = new RectF();
     private final RectF iconRect = new RectF();
@@ -72,21 +71,55 @@ public class ArtworkView extends View {
         invalidate();
     }
 
-    /** Soft drop shadow (Now Playing). Uses a software layer, so keep it to one view. */
+    /**
+     * Soft drop shadow (Now Playing). The blurred shape is drawn once into a mask (an alpha-only
+     * picture, made again only when the artwork's size or corners change) and painted from there
+     * in the shadow's colour: the view stays hardware-drawn. (Until 5.0 beta 9 it drew the shadow
+     * with a software layer, which redrew the whole artwork on the CPU.)
+     */
     public void setShadowDp(float dp) {
         shadowSize = dp * getResources().getDisplayMetrics().density;
-        setLayerType(shadowSize > 0 ? LAYER_TYPE_SOFTWARE : LAYER_TYPE_NONE, null);
-        shadow.setColor(0xff000000);
-        setShadowColor(shadowColor);
+        shadowMask = null;
+        invalidate();
     }
 
     private int shadowColor = 0x55000000;
+    /** The blurred artwork shape (ALPHA_8), for maskSize and maskRadius. */
+    private Bitmap shadowMask;
+    private float maskSize = -1;
+    private float maskRadius = -1;
+    private final Paint maskPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
     /** The shadow's colour: a glow in the artwork's own colour, say. */
     public void setShadowColor(int color) {
         shadowColor = color;
-        shadow.setShadowLayer(shadowSize * 0.9f, 0, shadowSize * 0.3f, color);
         invalidate();
+    }
+
+    /** The shadow under rect (the artwork, size across, corners r), from the cached mask. */
+    private void drawShadow(Canvas canvas, float size, float r) {
+        float blur = shadowSize * 0.9f;
+        if (shadowMask == null || maskSize != size || maskRadius != r) {
+            int side = (int) Math.ceil(size + 2 * blur);
+            if (side <= 0) return;
+            Bitmap mask;
+            try {
+                mask = Bitmap.createBitmap(side, side, Bitmap.Config.ALPHA_8);
+            } catch (OutOfMemoryError e) {
+                return;
+            }
+            Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+            p.setColor(0xff000000);
+            if (blur > 0) p.setMaskFilter(new android.graphics.BlurMaskFilter(blur, android.graphics.BlurMaskFilter.Blur.NORMAL));
+            new Canvas(mask).drawRoundRect(new RectF(blur, blur, blur + size, blur + size), r, r, p);
+            // Not recycled: a frame being drawn may still use the old one.
+            shadowMask = mask;
+            maskSize = size;
+            maskRadius = r;
+        }
+        // An alpha-only picture is painted in the paint's colour.
+        maskPaint.setColor(shadowColor);
+        canvas.drawBitmap(shadowMask, rect.left - blur, rect.top - blur + shadowSize * 0.3f, maskPaint);
     }
 
     @Override
@@ -111,7 +144,7 @@ public class ArtworkView extends View {
         rect.set(rect.centerX() - size / 2f, rect.centerY() - size / 2f,
                 rect.centerX() + size / 2f, rect.centerY() + size / 2f);
         float r = circle ? size / 2f : radius;
-        if (shadowSize > 0) canvas.drawRoundRect(rect, r, r, shadow);
+        if (shadowSize > 0) drawShadow(canvas, size, r);
         if (shader != null) {
             float scale = Math.max(size / bitmap.getWidth(), size / bitmap.getHeight());
             matrix.setScale(scale, scale);

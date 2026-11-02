@@ -4,7 +4,7 @@
     <color name="grapefruit">#F2545B</color>
     <color name="grapefruit_bright">#FF6B6B</color>
 
-    <!-- Light palette (Starlight) -->
+    <!-- Light palette: the base Grapefruit Light builds on (Starlight, retired in 5.0 beta 9). -->
     <color name="light_background">#FFFFFF</color>
     <color name="light_grouped">#F3F3F6</color>
     <color name="light_surface">#FFFFFF</color>
@@ -21,29 +21,34 @@
     <color name="light_toggle_off_segments">#DCDCE0</color>
     <color name="light_knob">#FFFFFF</color>
 
-    <!-- Dark palette -->
+    <!--
+        Pitch Black: black stays the background (and the grouped background); everything on it
+        takes a little of the grapefruit's red, the text its cream, and the accent its coral.
+    -->
     <color name="dark_background">#000000</color>
     <color name="dark_grouped">#000000</color>
-    <color name="dark_surface">#16161A</color>
-    <color name="dark_bar">#121212</color>
-    <color name="dark_text">#FFFFFF</color>
-    <color name="dark_text_secondary">#9A9AA6</color>
-    <color name="dark_separator">#2A2A31</color>
-    <color name="dark_fill">#1C1C21</color>
-    <color name="dark_pressed">#2C2C2E</color>
+    <color name="dark_surface">#180A0E</color>
+    <color name="dark_bar">#12070A</color>
+    <color name="dark_text">#FFF3EE</color>
+    <color name="dark_text_secondary">#B8949A</color>
+    <color name="dark_separator">#2F161C</color>
+    <color name="dark_fill">#1E0C11</color>
+    <color name="dark_pressed">#2E141A</color>
     <color name="dark_scrim">#D9000000</color>
     <!-- Lighter than dark_surface, so fields and buttons show on dialogs too. -->
-    <color name="dark_control">#222228</color>
-    <color name="dark_control_pressed">#303038</color>
-    <color name="dark_toggle_off">#39393D</color>
-    <color name="dark_toggle_off_segments">#D1D1D6</color>
-    <color name="dark_knob">#D1D1D6</color>
+    <color name="dark_control">#261116</color>
+    <color name="dark_control_pressed">#36181F</color>
+    <color name="dark_toggle_off">#3A1D23</color>
+    <color name="dark_toggle_off_segments">#F2D0C6</color>
+    <color name="dark_knob">#F2D0C6</color>
+    <color name="dark_accent">#FF7F6B</color>
 
     <!--
         Grapefruit Light palette, from the app icon: cream rind for surfaces, peach pith for the
         background, ruby flesh for the accent, and its darkest red for text.
     -->
-    <color name="grapefruit_light_background">#FFF3EC</color>
+    <!-- Pages share Settings' peach (grouped) since 5.0 beta 9: the cream was too light. -->
+    <color name="grapefruit_light_background">#FCE4D9</color>
     <color name="grapefruit_light_grouped">#FCE4D9</color>
     <color name="grapefruit_light_surface">#FFFAF6</color>
     <color name="grapefruit_light_bar">#FDEAE1</color>
@@ -53,7 +58,7 @@
     <color name="grapefruit_light_accent">#E83850</color>
     <color name="grapefruit_light_fill">#FADCCF</color>
     <color name="grapefruit_light_pressed">#F6CCBC</color>
-    <color name="grapefruit_light_scrim">#E6FFF3EC</color>
+    <color name="grapefruit_light_scrim">#E6FCE4D9</color>
     <color name="grapefruit_light_control">#FADCCF</color>
     <color name="grapefruit_light_control_pressed">#F3C5B3</color>
     <color name="grapefruit_light_toggle_off">#F7D6C9</color>
@@ -83,7 +88,7 @@
     <color name="grapefruit_dark_knob">#F2D0C6</color>
     <!-- Navigation affordances need more contrast than decorative separators. -->
     <color name="light_disclosure">#6E6E73</color>
-    <color name="dark_disclosure">#AEAEB2</color>
+    <color name="dark_disclosure">#CBA6AC</color>
     <color name="grapefruit_light_disclosure">#8D4B56</color>
     <color name="grapefruit_dark_disclosure">#D4A5AC</color>
 
@@ -91,9 +96,9 @@
     <color name="light_accent_end">#E8455F</color>
     <color name="light_on_accent">#FFFFFF</color>
     <color name="light_outline">#E2E2E8</color>
-    <color name="dark_accent_end">#F0506E</color>
+    <color name="dark_accent_end">#F2546B</color>
     <color name="dark_on_accent">#1A0A0D</color>
-    <color name="dark_outline">#2A2A31</color>
+    <color name="dark_outline">#33181F</color>
     <color name="grapefruit_light_accent_end">#D92B4B</color>
     <color name="grapefruit_light_on_accent">#FFFFFF</color>
     <color name="grapefruit_light_outline">#F3CDBF</color>

@@ -43,7 +43,7 @@
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:windowBackground">@drawable/splash_dark</item>
         <item name="android:colorBackground">@color/dark_background</item>
-        <item name="android:textColorHighlight">#66FF6B6B</item>
+        <item name="android:textColorHighlight">#66FF7F6B</item>
         <item name="gfBackground">@color/dark_background</item>
         <item name="gfSplash">@drawable/splash_dark</item>
         <item name="gfGroupedBackground">@color/dark_grouped</item>
@@ -53,7 +53,7 @@
         <item name="gfTextSecondary">@color/dark_text_secondary</item>
         <item name="gfSeparator">@color/dark_separator</item>
         <item name="gfDisclosure">@color/dark_disclosure</item>
-        <item name="gfAccent">@color/grapefruit_bright</item>
+        <item name="gfAccent">@color/dark_accent</item>
         <item name="gfFill">@color/dark_fill</item>
         <item name="gfScrim">@color/dark_scrim</item>
         <item name="gfFieldBackground">@drawable/field_dark</item>
@@ -145,7 +145,6 @@
     <style name="Theme.Grapefruit.Launch" parent="Theme.Grapefruit.GrapefruitDark" />
 
     <!-- Android 13+ is told which of these to use for its splash screen next time (MainActivity). -->
-    <style name="Splash.Light" parent="android:Theme.Holo.Light.NoActionBar" />
     <style name="Splash.Dark" parent="android:Theme.Holo.NoActionBar" />
     <style name="Splash.GrapefruitLight" parent="android:Theme.Holo.Light.NoActionBar" />
     <style name="Splash.GrapefruitDark" parent="android:Theme.Holo.NoActionBar" />

@@ -23,8 +23,15 @@ import com.grapefruitmusic.util.Prefs;
 /** The Settings tab, as an iOS-style grouped list. */
 public final class SettingsFragment extends BaseFragment
         implements Sources.Listener, Downloads.Listener, VolumeMatch.Listener {
-    /** Theme names, in Prefs.THEME_* order from THEME_STARLIGHT. */
-    private static final String[] THEMES = {"Starlight", "Pitch Black", "Grapefruit Light", "Grapefruit Dark"};
+    /** The themes to pick from, and their names. */
+    private static final int[] THEME_IDS = {Prefs.THEME_GRAPEFRUIT_LIGHT, Prefs.THEME_GRAPEFRUIT_DARK,
+            Prefs.THEME_PITCH_BLACK};
+    private static final String[] THEMES = {"Grapefruit Light", "Grapefruit Dark", "Pitch Black"};
+
+    private static int themeIndex(int theme) {
+        for (int i = 0; i < THEME_IDS.length; i++) if (THEME_IDS[i] == theme) return i;
+        return 1;
+    }
 
     private ScrollView page;
     /** "12 of 340" while Volume Match measures songs, else null. */
@@ -84,14 +91,14 @@ public final class SettingsFragment extends BaseFragment
 
         g.section("Appearance");
         final int showing = Ui.theme(c);
-        g.value("Theme", THEMES[showing - Prefs.THEME_STARLIGHT], new View.OnClickListener() {
+        g.value("Theme", THEMES[themeIndex(showing)], new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                choose("Theme", THEMES, showing - Prefs.THEME_STARLIGHT, new Choice() {
+                choose("Theme", THEMES, themeIndex(showing), new Choice() {
                     @Override
                     public void chosen(int which) {
                         // Picking the theme already showing changes nothing.
-                        int theme = which + Prefs.THEME_STARLIGHT;
+                        int theme = THEME_IDS[which];
                         if (theme != showing) {
                             Prefs.setTheme(theme);
                             getActivity().recreate();

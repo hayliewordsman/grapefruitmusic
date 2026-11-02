@@ -98,6 +98,8 @@ final class NowPlaying {
     private final ArtworkView smallArt;
     private final TextView smallTitle;
     private final TextView smallArtist;
+    /** The lines that scroll when too long for their space. */
+    private final TextView[] marquees;
     private final DragFrame listArea;
     private final IconView prev;
     private final IconView next;
@@ -253,12 +255,10 @@ final class NowPlaying {
         smallArt = (ArtworkView) root.findViewById(R.id.np_small_art);
         smallTitle = (TextView) root.findViewById(R.id.np_small_title);
         smallArtist = (TextView) root.findViewById(R.id.np_small_artist);
-        // Text too long for its line scrolls by (marquee, in the layout) rather than end in "…".
-        // Android only scrolls a selected (or focused) line.
-        for (TextView t : new TextView[] {title, artist, smallTitle, smallArtist,
-                (TextView) root.findViewById(R.id.np_album)}) {
-            t.setSelected(true);
-        }
+        // Text too long for its line scrolls by (marquee, in the layout) rather than end in "…":
+        // three times for each song, and only while Now Playing is showing (see scrollTitles).
+        marquees = new TextView[] {title, artist, smallTitle, smallArtist,
+                (TextView) root.findViewById(R.id.np_album)};
         listArea = (DragFrame) root.findViewById(R.id.np_list_area);
         listArea.setCallback(new DragFrame.Callback() {
             @Override
@@ -837,9 +837,20 @@ final class NowPlaying {
         Bg.cancelMain(ticker);
     }
 
+    /**
+     * Long titles scroll only where they can be seen: here while Now Playing is open, in the mini
+     * player while it's closed. A scrolling line redraws (with everything over and under it) every
+     * frame, which on an older tablet takes time from Karaoke Mode and Live Mode.
+     */
+    private void scrollTitles(boolean here) {
+        for (TextView t : marquees) t.setSelected(here);
+        if (activity instanceof MainActivity) ((MainActivity) activity).setMiniTitleScrolls(!here);
+    }
+
     void open() {
         if (open || (player.current() == null && !radio.inSession())) return;
         open = true;
+        scrollTitles(true);
         update();
         card.setVisibility(View.VISIBLE);
         dim.setVisibility(View.VISIBLE);
@@ -854,6 +865,7 @@ final class NowPlaying {
     void openImmediately() {
         if (player.current() == null && !radio.inSession()) return;
         open = true;
+        scrollTitles(true);
         card.setVisibility(View.VISIBLE);
         dim.setVisibility(View.VISIBLE);
         setOffset(0);
@@ -866,6 +878,7 @@ final class NowPlaying {
     void close() {
         if (!open) return;
         open = false;
+        scrollTitles(false);
         Bg.cancelMain(ticker);
         slide(hiddenOffset()).setDuration(260).setInterpolator(new DecelerateInterpolator())
                 .setListener(new android.animation.AnimatorListenerAdapter() {

@@ -28,17 +28,19 @@ public final class Ui {
     private Ui() {
     }
 
-    /** The theme showing (a Prefs.THEME_* other than THEME_SYSTEM). */
+    /**
+     * The theme showing: Pitch Black, Grapefruit Light or Grapefruit Dark (the default). Starlight
+     * was retired in 5.0 beta 9; anyone who had it gets Grapefruit Light, its nearest.
+     */
     public static int theme(Context c) {
         int t = Prefs.theme();
-        return t >= Prefs.THEME_STARLIGHT && t <= Prefs.THEME_GRAPEFRUIT_DARK ? t : Prefs.THEME_GRAPEFRUIT_DARK;
+        if (t == Prefs.THEME_STARLIGHT) return Prefs.THEME_GRAPEFRUIT_LIGHT;
+        return t == Prefs.THEME_PITCH_BLACK || t == Prefs.THEME_GRAPEFRUIT_LIGHT || t == Prefs.THEME_GRAPEFRUIT_DARK
+                ? t : Prefs.THEME_GRAPEFRUIT_DARK;
     }
 
     public static void applyTheme(Activity a) {
         switch (theme(a)) {
-            case Prefs.THEME_STARLIGHT:
-                a.setTheme(R.style.Theme_Grapefruit_Light);
-                break;
             case Prefs.THEME_PITCH_BLACK:
                 a.setTheme(R.style.Theme_Grapefruit_Dark);
                 break;

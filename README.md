@@ -34,8 +34,9 @@ with downloads for offline listening and time-synced lyrics.
   Now Playing uses the same heading and bottom action tiles on all screen shapes, with stacked artwork
   on tall windows and two-column artwork and metadata on shorter windows.
   Lyrics and Up Next show a condensed header (small artwork and title) above the list.
-- **Themes:** Settings › Theme: *Grapefruit Dark* (the default) and *Grapefruit Light* (in the app icon's peach,
-  cream, ruby and coral), *Starlight* (white) or *Pitch Black* (black). The app icon is the same in every
+- **Themes:** Settings › Theme: *Grapefruit Dark* (the default), *Grapefruit Light* (in the app icon's peach,
+  cream, ruby and coral) or *Pitch Black* (black, with the grapefruit's coral and cream). Starlight (white) was
+  retired in 5.0 beta 9; anyone who had it gets Grapefruit Light. The app icon is the same in every
   theme: the Telegram channel's grapefruit, round, with one launcher entry (since 5.0 beta 3; before, each
   theme had its own). It's drawn by `tools/brand/logo.py`, with the logos and the splash screen.
 - **Library:** Songs is a list with small artwork and Playlists a list with medium artwork; Artists, Albums and
