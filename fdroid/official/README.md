@@ -1,8 +1,8 @@
-# Getting Grapefruit Music into f-droid.org
+# Getting Grapefruit Music & Podcasts into f-droid.org
 
 f-droid.org builds every app itself from its source, following a build recipe kept in its
 [fdroiddata](https://gitlab.com/fdroid/fdroiddata) repository on GitLab. The recipe for Grapefruit
-Music is [`io.github.hayliewordsman.grapefruitmusic.yml`](io.github.hayliewordsman.grapefruitmusic.yml)
+Music & Podcasts is [`io.github.hayliewordsman.grapefruitmusic.yml`](io.github.hayliewordsman.grapefruitmusic.yml)
 here; submitting means proposing that file to fdroiddata.
 
 ## What's ready
@@ -12,24 +12,30 @@ here; submitting means proposing that file to fdroiddata.
 - **Store listing** in `fastlane/metadata/android/en-US`: name, summary, description, icon and
   changelogs.
 - **The recipe builds with F-Droid's own tool.** `fdroid build` (fdroidserver 2.4.5, Gradle 8.14.3,
-  JDK 21) builds version 3.2.2 from commit `7c1cfe27`, and `fdroid lint` and `fdroid rewritemeta`
-  are clean. F-Droid's scanner finds no non-free code, trackers or extra signing blocks. The one
-  binary it flags, Karaoke Mode's model `app/src/main/assets/karaoke.bin`, is let through with
-  `scanignore` and explained under `MaintainerNotes`, as other apps that ship model data do. The
-  unit-test fixtures are removed before the build (`scandelete`).
+  JDK 21) builds version 4.1 from commit `cfc89d34`, and `fdroid lint` and `fdroid rewritemeta`
+  are clean. F-Droid's scanner finds no non-free code, trackers or extra signing blocks. The two
+  binaries it flags are data, let through with `scanignore` and explained under `MaintainerNotes`,
+  as other apps that ship model data do: Karaoke Mode's model `app/src/main/assets/karaoke.bin` and
+  Live Mode's synthesized crowd `app/src/main/assets/live_crowd.bin`. The unit-test fixtures are
+  removed before the build (`scandelete`). The fonts (Geist, OFL) aren't flagged.
+- **Anti-feature: NonFreeNet.** Podcast search and the podcast charts use Apple's podcast directory
+  (iTunes Search API). The recipe declares it, with that reason; playing and subscribing use each
+  podcast's own RSS feed, and a feed can be added by its address.
 - **Reproducible builds.** The same commit builds byte-for-byte the same APK on GitHub Actions as in
-  an F-Droid-style build. `fdroid build` of the recipe downloaded the APK of GitHub release v3.2.2,
+  an F-Droid-style build. `fdroid build` of the recipe downloaded the APK of GitHub release v4.1,
   compared its own build with it and accepted it ("compared built binary to supplied reference
-  binary successfully", checked on 2026-10-29). So f-droid.org will ship the APK signed with Grapefruit's own key: copies from
+  binary successfully", checked on 2026-11-02; 3.2.2 passed the same check on 2026-10-29). So f-droid.org will ship the APK signed with Grapefruit's own key: copies from
   f-droid.org, GitHub releases and Grapefruit's own F-Droid repository all update each other.
   F-Droid only allows this at submission time; it can't be added later.
 
 ## Before submitting
 
-1. **Release v3.2.2 is published** (done 2026-10-29, tagged on commit `7c1cfe27`, the commit the
+1. **Release v4.1 is published** (done 2026-11-02, tagged on commit `cfc89d34`, the commit the
    recipe names). f-droid.org downloads its signed APK
-   (`https://github.com/hayliewordsman/grapefruitmusic/releases/download/v3.2.2/grapefruit-music-3.2.2.apk`,
-   the recipe's `Binaries:` line) to compare with its own build. Later versions are released the same
+   (`https://github.com/hayliewordsman/grapefruitmusic/releases/download/v4.1/grapefruit-music-4.1.apk`,
+   the recipe's `Binaries:` line) to compare with its own build. If a newer version is out when you
+   submit, move the recipe's build to it (versionName, versionCode, commit, CurrentVersion) and
+   check it the same way. Later versions are released the same
    way: the **F-Droid repo** workflow builds, signs and tags the commit it runs on when the version
    in `app/build.gradle` goes up.
 2. **Wait for the three-month mark.** F-Droid's inclusion policy (quality point 6, which the
@@ -49,11 +55,11 @@ here; submitting means proposing that file to fdroiddata.
 2. Fork <https://gitlab.com/fdroid/fdroiddata> and keep your fork public.
 3. In the fork, make a branch (for example `grapefruit-music`) and add this folder's
    `io.github.hayliewordsman.grapefruitmusic.yml` as `metadata/io.github.hayliewordsman.grapefruitmusic.yml`.
-   Commit it as `New app: Grapefruit Music`.
+   Commit it as `New app: Grapefruit Music & Podcasts`.
 4. Push. The fork's pipeline runs F-Droid's checks and a real build; wait for it to pass. If GitLab
    asks for a phone number or card to run it, don't give one: open the merge request anyway and
    say so, and F-Droid's team runs it.
-5. Open a merge request into `fdroid/fdroiddata` `master` titled **New app: Grapefruit Music**.
+5. Open a merge request into `fdroid/fdroiddata` `master` titled **New app: Grapefruit Music & Podcasts**.
    Its template asks for an introduction and a checklist; a starting point for the introduction is
    below. Tick the reproducible-builds box: it's enabled.
 6. Answer the reviewers' questions in the merge request. Once it's merged, the app appears on
@@ -67,21 +73,23 @@ version in `app/build.gradle` goes up) is picked up automatically. Tags with a h
 
 Edit this as you like:
 
-> Grapefruit Music is a small, native music player for Android 4.2.2 and later, made for older
-> phones and tablets that most current players no longer support. It plays files on the device and
-> from your own Navidrome, Subsonic and Jellyfin servers, with offline downloads, time-synced lyrics
-> (.lrc files, the server, or LRCLIB), internet radio from Radio Browser, and FM radio on MediaTek
-> and Rockchip tablets whose built-in radio it can drive. It has Volume Match, Volume Boost, a
-> 10-band equalizer, Mono Audio (an energy-preserving mix for one earbud or hearing in one ear),
-> and Karaoke Mode, which turns down the lead vocal with a 61 KB on-device model trained on freely
-> licensed music (see MaintainerNotes). It brings its own TLS (Conscrypt) so it can still reach
-> today's HTTPS servers on Android 4.2.
+> Grapefruit Music & Podcasts is a small, native music and podcast player for Android 4.2.2 and
+> later, made for older phones and tablets that most current players no longer support. It plays
+> files on the device and from your own Navidrome, Subsonic and Jellyfin servers, with offline
+> downloads, time-synced lyrics (.lrc files, the server, or LRCLIB), podcasts (subscribe by feed or
+> find them in Apple's directory, download episodes), internet radio from Radio Browser, and FM radio
+> on MediaTek and Rockchip tablets whose built-in radio it can drive. It has Volume Match, Volume
+> Boost, a 10-band equalizer, Mono Audio (an energy-preserving mix for one earbud or hearing in one
+> ear), Karaoke Mode, which turns down the lead vocal with a 63 KB on-device model trained on CC BY
+> 4.0 stems, and Live Mode, which adds a synthesized stadium crowd (see MaintainerNotes for both). It
+> brings its own TLS (Conscrypt) so it can still reach today's HTTPS servers on Android 4.2.
 >
 > Notes for reviewers:
 > - The code was written with an AI coding assistant (Claude), directed and tested by the
 >   developer.
 > - FM radio is optional: on tablets that have one, Grapefruit uses the radio chip's driver or the
 >   manufacturer's radio service already on the device; it bundles none of their code.
+> - NonFreeNet is declared for podcast search and charts, which use Apple's podcast directory.
 > - Reproducible builds are enabled (`Binaries`, `AllowedAPKSigningKeys`). The certificate's
 >   name is "Android Debug" because it's the key the app has always been signed with; it's a
 >   private release key.
