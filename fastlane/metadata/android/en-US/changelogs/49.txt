@@ -1,0 +1,2 @@
+4.1.2
+Fixed: podcasts stuttering with the screen locked on older tablets (with the equalizer or Volume Boost on). Where you are in an episode is now saved in a way that doesn't hold up playback.

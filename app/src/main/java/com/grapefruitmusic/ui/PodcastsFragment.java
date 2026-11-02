@@ -311,7 +311,7 @@ public final class PodcastsFragment extends BaseFragment {
                                 Player.get(c).playNow(m);
                                 page.main().openNowPlaying();
                             } else if (w == 2) {
-                                Prefs.raw().edit().remove("podcast_position_" + m.id).apply();
+                                PodcastPositions.get(c).clear(m.id);
                                 if (m.sameAs(Player.get(c).current())) Player.get(c).seekTo(0);
                             } else {
                                 try {

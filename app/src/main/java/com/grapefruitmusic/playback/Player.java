@@ -545,7 +545,8 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         if (m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId) && engine != null && prepared) {
             long position = engine.getCurrentPosition(), duration = engine.getDuration();
             if (duration > 0 && position >= duration - 1500) position = 0;
-            Prefs.raw().edit().putLong("podcast_position_" + m.id, position).apply();
+            // Its own small file, not the settings: see PodcastPositions (the stutter in 4.1.1).
+            com.grapefruitmusic.podcast.PodcastPositions.get(context).set(m.id, position);
         }
     }
 
@@ -564,7 +565,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         MediaItem m = current();
         savePodcastPosition();
         load(play, m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId)
-                ? Prefs.raw().getLong("podcast_position_" + m.id, 0) : 0);
+                ? com.grapefruitmusic.podcast.PodcastPositions.get(context).get(m.id) : 0);
     }
 
     /** Loads the current song, starting at startAt ms. */
@@ -618,7 +619,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                     return;
                 }
                 if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId))
-                    Prefs.raw().edit().remove("podcast_position_" + item.id).apply();
+                    com.grapefruitmusic.podcast.PodcastPositions.get(context).clear(item.id);
                 if (repeat == REPEAT_ONE) {
                     e.seekTo(0);
                     e.start();
@@ -724,7 +725,15 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         Bg.run(new Bg.Work<Long>() {
             @Override
             public Long run() throws Exception {
-                return Mp3Length.ofFile(file);
+                // Reading the whole file: at low priority, so it never holds up playback.
+                int tid = android.os.Process.myTid();
+                int was = android.os.Process.getThreadPriority(tid);
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+                try {
+                    return Mp3Length.ofFile(file);
+                } finally {
+                    android.os.Process.setThreadPriority(was);
+                }
             }
         }, new Bg.Done<Long>() {
             @Override
