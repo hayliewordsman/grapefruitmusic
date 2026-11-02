@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -73,23 +72,20 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         boolean turned = turnedSinceLastView();
         View page;
         if (menu.wide) {
-            // Beside the menu column: Recently Added, two high if they fit, scrolling sideways.
-            FrameLayout area = new FrameLayout(c);
+            // Beside the floating chip column: Recently Added, two high if they fit, scrolling
+            // sideways (the title with them).
             grid = new HorizontalGrid(c);
-            grid.setPadding(0, Ui.dp(c, 14), 0, Ui.dp(c, 8));
+            grid.setPadding(0, 0, 0, Ui.dp(c, 8));
             int perColumn = adapter.landscapeRows(SectionMenu.WIDE_RESERVED_DP);
             adapter.setStacked(perColumn);
             grid.setShape(perColumn, adapter.cardTextHeight());
             grid.setAdapter(adapter);
-            area.addView(grid);
-            area.addView(status, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
             list = null;
-            page = area;
+            page = menu.page(grid, status);
         } else {
             list = new ListView(c);
             RowAdapter.style(list);
-            list.setPadding(0, Ui.dp(c, 4), 0, 0);
+            menu.addHeaders(list);
             list.addFooterView(status, null, false);
             list.setAdapter(adapter);
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -99,7 +95,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
                 }
             });
             grid = null;
-            page = list;
+            page = menu.page(list);
         }
         showRecent();
         if (grid != null) {
@@ -109,7 +105,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         } else {
             restoreScroll(list);
         }
-        return menu.around(page);
+        return page;
     }
 
     @Override

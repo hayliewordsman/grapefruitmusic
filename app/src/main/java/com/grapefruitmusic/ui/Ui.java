@@ -298,6 +298,52 @@ public final class Ui {
     }
 
     /**
+     * A fill in color that fades to clear over its last fadePx, at the bottom (or the right): what
+     * floating chips and bars sit on, so the page shows through as it scrolls under them.
+     * setAlpha() fades the whole fill in and out.
+     */
+    static android.graphics.drawable.Drawable fadingFill(final int color, final int fadePx, final boolean toRight) {
+        return new android.graphics.drawable.Drawable() {
+            private final android.graphics.Paint paint = new android.graphics.Paint();
+            private int alpha = 255;
+
+            @Override
+            protected void onBoundsChange(android.graphics.Rect b) {
+                int clear = color & 0x00ffffff;
+                paint.setShader(toRight
+                        ? new android.graphics.LinearGradient(b.right - fadePx, 0, b.right, 0, color, clear,
+                                android.graphics.Shader.TileMode.CLAMP)
+                        : new android.graphics.LinearGradient(0, b.bottom - fadePx, 0, b.bottom, color, clear,
+                                android.graphics.Shader.TileMode.CLAMP));
+            }
+
+            @Override
+            public void draw(android.graphics.Canvas canvas) {
+                if (alpha == 0) return;
+                paint.setAlpha(alpha);
+                canvas.drawRect(getBounds(), paint);
+            }
+
+            @Override
+            public void setAlpha(int a) {
+                if (a == alpha) return;
+                alpha = a;
+                invalidateSelf();
+            }
+
+            @Override
+            public void setColorFilter(android.graphics.ColorFilter filter) {
+                paint.setColorFilter(filter);
+            }
+
+            @Override
+            public int getOpacity() {
+                return android.graphics.PixelFormat.TRANSLUCENT;
+            }
+        };
+    }
+
+    /**
      * A list row's background: nothing, and a pill while pressed, inset from the row's ends (a bar
      * the full width of the screen was the old look).
      */

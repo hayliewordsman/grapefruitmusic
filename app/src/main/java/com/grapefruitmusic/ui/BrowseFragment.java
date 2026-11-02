@@ -161,19 +161,16 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         boolean turned = turnedSinceLastView();
         View page;
         if (sideways && menu != null) {
-            // Beside the menu column: the cards, scrolling sideways (no pill on these sections).
-            android.widget.FrameLayout area = new android.widget.FrameLayout(c);
+            // Beside the floating chip column: the cards, scrolling sideways with the title (no
+            // pill on these sections).
             grid = new HorizontalGrid(c);
-            grid.setPadding(0, Ui.dp(c, 14), 0, Ui.dp(c, 8));
+            grid.setPadding(0, 0, 0, Ui.dp(c, 8));
             int perColumn = adapter.landscapeRows(SectionMenu.WIDE_RESERVED_DP);
             adapter.setStacked(perColumn);
             grid.setShape(perColumn, adapter.cardTextHeight());
             grid.setAdapter(adapter);
-            area.addView(grid);
-            area.addView(status, new android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
             list = null;
-            page = area;
+            page = menu.page(grid, status);
         } else if (sideways) {
             // Sideways: the header stays put and the cards scroll sideways under it.
             LinearLayout column = new LinearLayout(c);
@@ -207,6 +204,8 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
             boolean longList = mode() == SONGS || mode() == ARTISTS;
             list = longList ? new FastScrollListView(c) : new ListView(c);
             RowAdapter.style(list);
+            // A Library section: the Library's title and chips first.
+            if (menu != null) menu.addHeaders(list);
             if (shuffle != null) {
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -215,7 +214,6 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
                 header.addView(shuffle, lp);
             }
             if (menu == null || shuffle != null) list.addHeaderView(header, null, false);
-            else list.setPadding(0, Ui.dp(c, 4), 0, 0);
             list.addFooterView(status, null, false);
             list.setAdapter(adapter);
             if (longList) {
@@ -266,7 +264,8 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         } else {
             load();
         }
-        return menu != null ? menu.around(page) : page;
+        if (menu != null && list != null) return menu.page(list);
+        return page;
     }
 
     @Override

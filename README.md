@@ -42,9 +42,11 @@ with downloads for offline listening and time-synced lyrics.
 - **Library:** Songs is a list with small artwork and Playlists a list with medium artwork; Artists, Albums and
   Recently Added show cards, two across, scrolling down. Recently Added mixes in playlists by the date they were
   made (as Navidrome/Subsonic, Jellyfin and the phone report it), newest first, each labelled Playlist where an
-  album shows its artist. Turned sideways, the card pages scroll sideways instead:
-  the Library's menu is the first column, then Recently Added two cards high; swipe right to left and the menu
-  slides away as more albums come in. Now Playing opens over the full window with the same responsive design in every orientation.
+  album shows its artist. The Library and Podcasts have chips for Search, where the music comes from (the
+  Library) and each section; a section chip switches the page in place. The title scrolls with the page, and
+  the chips, once scrolled to the top, stay there, floating over the page as it scrolls under them. Turned
+  sideways, the chips float in a column at the left and the card pages scroll sideways beside and under it
+  (Recently Added two cards high if they fit). Now Playing opens over the full window with the same responsive design in every orientation.
 - **Looks the same on every Android version:** Grapefruit draws its own switches, dialogs, menus, text fields,
   messages and fast-scroll thumb instead of using Android's (Holo on 4.x, Material later). Settings switches are
   little grapefruit slices that roll across a grapefruit-gradient track.

@@ -6,29 +6,39 @@ import android.content.DialogInterface;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.AbsListView;
+import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.grapefruitmusic.R;
 import com.grapefruitmusic.source.MusicSource;
 import com.grapefruitmusic.source.Sources;
+import com.grapefruitmusic.ui.widget.HorizontalGrid;
 import com.grapefruitmusic.ui.widget.IconView;
 import com.grapefruitmusic.ui.widget.Icons;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * A tab's menu, the same on each of its sections: the tab's title and a search button, then a chip
- * for each section (the Library's Recently Added, Playlists, Artists, Albums and Songs, after where
- * the music comes from; Podcasts' Discover, Subscriptions and Downloads). A chip swaps the section
- * under the menu (MainActivity.showLibrary, showPodcasts) instead of opening a page on top, so the
- * chips are always there to go to another. The first chip is the tab's first page, where Back goes
- * too. Up and down, the menu is pinned above the section; on a wide screen it is a column down the
- * left, with the chips stacked.
+ * A tab's menu, the same on each of its sections: the tab's title, then chips: Search, where the
+ * music comes from (the Library), and one for each section (the Library's Recently Added,
+ * Playlists, Artists, Albums and Songs; Podcasts' Discover, Subscriptions and Downloads). A section
+ * chip swaps the section under the menu (MainActivity.showLibrary, showPodcasts) instead of opening
+ * a page on top, so the chips are always there to go to another; the first is the tab's first
+ * page, where Back goes too.
+ *
+ * <p>The title scrolls with the page. Up and down, the chips sit in a row under it and, once the
+ * page scrolls them up to the top, stay there, floating over the page as it scrolls under them (as
+ * the mini player and tabs do at the bottom). On a wide screen the chips are stacked in a column
+ * floating at the left, and the page (title first) scrolls beside and under it.
  */
 final class SectionMenu {
     /** Each tab's first section: the Library's Recently Added, Podcasts' Discover. */
@@ -39,13 +49,15 @@ final class SectionMenu {
     static final int SUBSCRIPTIONS = 1, DOWNLOADS = 2;
     private static final String[] PODCASTS = {"Discover", "Subscriptions", "Downloads"};
 
-    /** Width of the menu column on a wide screen. */
-    private static final int COLUMN_DP = 260;
+    /** Width of the chip column on a wide screen, with the fade at its right edge. */
+    private static final int COLUMN_DP = 232;
+    /** How far pages fade out under the floating chips. */
+    private static final int FADE_DP = 20;
     /**
-     * Beside the menu column, the height cards leave for the mini player and their grid's padding
-     * (RowAdapter.landscapeRows: two cards high if they fit).
+     * On a wide screen, the height cards leave for the page's title, the mini player and their
+     * grid's padding (RowAdapter.landscapeRows: two cards high if they fit).
      */
-    static final int WIDE_RESERVED_DP = 92;
+    static final int WIDE_RESERVED_DP = 92 + 64;
 
     /** Shows a section: MainActivity.showLibrary or showPodcasts. */
     interface Picker {
@@ -58,27 +70,37 @@ final class SectionMenu {
      */
     private static final Map<String, Integer> scrolled = new HashMap<String, Integer>();
 
-    /** Stacked down a column on the left (a wide screen), or in a row across the top. */
+    /** Stacked down a floating column on the left (a wide screen), or in a row across the top. */
     final boolean wide;
+    private final Context context;
     private final String title;
-    private final View view;
-    private final LinearLayout body;
-    /** The chips: the row inside a sideways scroller, or the stack. */
+    /** The tab's title, which scrolls with the page. */
+    private final LinearLayout header;
+    /** The chips' scroller: a row that scrolls sideways, or (wide) the column. */
+    private final ViewGroup chipsView;
+    /** The chips themselves, inside chipsView. */
     private final LinearLayout chips;
+    /** Lines for this section after the title (Podcasts: how Discover's shows are chosen). */
+    private final List<View> notes = new ArrayList<View>();
     private View chosenChip;
-    /** Where the section chips start among chips (after where the music comes from). */
+    /** Where the section chips start among chips (after Search and where the music comes from). */
     private int firstSection;
     private TextView sourceName;
+    /** Up and down: the room in the page where the chips sit until they float. */
+    private View slot;
+    private int slotPosition;
 
-    /** The Library's menu, with where the music comes from before its sections. */
+    /** The Library's menu: Search, where the music comes from, and its sections. */
     static SectionMenu library(final BaseFragment page, int chosen) {
-        SectionMenu menu = new SectionMenu(page, "Library", "Search", new View.OnClickListener() {
+        SectionMenu menu = new SectionMenu(page, "Library");
+        menu.addSearch(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 page.main().showTab(MainActivity.TAB_SEARCH);
             }
         });
         menu.addSource(page);
+        menu.addRule();
         menu.addSections(LIBRARY, chosen, new Picker() {
             @Override
             public void show(int section) {
@@ -88,9 +110,11 @@ final class SectionMenu {
         return menu;
     }
 
-    /** Podcasts' menu; search opens Search Podcasts. */
+    /** Podcasts' menu: Search (Search Podcasts) and its sections. */
     static SectionMenu podcasts(final BaseFragment page, int chosen, View.OnClickListener search) {
-        SectionMenu menu = new SectionMenu(page, "Podcasts", "Search Podcasts", search);
+        SectionMenu menu = new SectionMenu(page, "Podcasts");
+        menu.addSearch(search);
+        menu.addRule();
         menu.addSections(PODCASTS, chosen, new Picker() {
             @Override
             public void show(int section) {
@@ -100,42 +124,55 @@ final class SectionMenu {
         return menu;
     }
 
-    private SectionMenu(BaseFragment page, String title, String searchLabel, View.OnClickListener search) {
+    private SectionMenu(BaseFragment page, String title) {
         Context c = page.getActivity();
+        context = c;
         this.title = title;
         wide = RowAdapter.landscape(c);
-        body = new LinearLayout(c);
-        body.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout header = Ui.header(c, null, title, null);
+        header = Ui.header(c, null, title, null);
         if (wide) header.setPadding(header.getPaddingLeft(), Ui.dp(c, 14), header.getPaddingRight(), Ui.dp(c, 6));
-        IconView button = Ui.circleButton(c, Icons.SEARCH, 42, searchLabel);
-        button.setOnClickListener(search);
-        Ui.headerAction(header, button);
-        body.addView(header);
         if (wide) {
             chips = new LinearLayout(c);
             chips.setOrientation(LinearLayout.VERTICAL);
-            chips.setPadding(Ui.dp(c, 16), Ui.dp(c, 6), Ui.dp(c, 16), Ui.dp(c, 6));
-            body.addView(chips);
+            chips.setPadding(Ui.dp(c, 16), Ui.dp(c, 16), Ui.dp(c, 16 + FADE_DP), Ui.dp(c, 8));
             ScrollView column = new ScrollView(c);
             column.setVerticalScrollBarEnabled(false);
-            column.addView(body);
-            view = column;
+            column.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            column.addView(chips);
+            // The page scrolls under the column's right edge, fading out.
+            column.setBackground(Ui.fadingFill(Ui.color(c, R.attr.gfBackground), Ui.dp(c, FADE_DP), true));
+            chipsView = column;
         } else {
             HorizontalScrollView row = Ui.chipRow(c);
             chips = (LinearLayout) row.getChildAt(0);
-            body.addView(row, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
-            view = body;
+            chipsView = row;
         }
+    }
+
+    /** A pill with an icon and a label: Search. */
+    private void addSearch(View.OnClickListener search) {
+        Context c = context;
+        LinearLayout chip = new LinearLayout(c);
+        chip.setOrientation(LinearLayout.HORIZONTAL);
+        chip.setGravity(Gravity.CENTER_VERTICAL);
+        chip.setBackground(Ui.pressable(c, Ui.color(c, R.attr.gfControl), Ui.PILL, true));
+        chip.addView(Ui.icon(c, Icons.SEARCH, Ui.color(c, R.attr.gfTextPrimary), 16));
+        TextView label = Ui.text(c, 14, R.attr.gfTextPrimary, false);
+        label.setTypeface(Fonts.medium());
+        label.setText("Search");
+        label.setPadding(Ui.dp(c, 7), 0, 0, 0);
+        chip.addView(label);
+        chip.setContentDescription(title.equals("Podcasts") ? "Search Podcasts" : "Search");
+        chip.setOnClickListener(search);
+        addTool(chip);
     }
 
     /**
      * Where the music comes from: a plain pill with an arrow (it opens a list), leaving the accent
-     * to the section showing; set apart from the sections by a hairline, or a gap when stacked.
+     * to the section showing.
      */
     private void addSource(final BaseFragment page) {
-        Context c = chips.getContext();
+        Context c = context;
         LinearLayout source = new LinearLayout(c);
         source.setOrientation(LinearLayout.HORIZONTAL);
         source.setGravity(Gravity.CENTER_VERTICAL);
@@ -156,26 +193,40 @@ final class SectionMenu {
             }
         });
         setSource(Sources.get(c).current());
+        addTool(source);
+    }
+
+    /** Search and the source: pills before the sections, padded like them. */
+    private void addTool(LinearLayout tool) {
+        Context c = context;
         if (wide) {
-            source.setMinimumHeight(Ui.dp(c, 40));
-            source.setPadding(Ui.dp(c, 20), 0, Ui.dp(c, 16), 0);
-            LinearLayout.LayoutParams lp = stacked(c);
-            lp.bottomMargin = Ui.dp(c, 14);
-            chips.addView(source, lp);
+            tool.setMinimumHeight(Ui.dp(c, 40));
+            tool.setPadding(Ui.dp(c, 18), 0, Ui.dp(c, 16), 0);
+            chips.addView(tool, stacked(c));
         } else {
-            source.setMinimumHeight(Ui.dp(c, 38));
-            source.setPadding(Ui.dp(c, 16), 0, Ui.dp(c, 12), 0);
-            chips.addView(source, inRow(c));
-            View rule = new View(c);
-            rule.setBackgroundColor(Ui.color(c, R.attr.gfOutline));
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Math.max(1, Ui.dp(c, 1)), Ui.dp(c, 22));
-            lp.rightMargin = Ui.dp(c, 8);
-            chips.addView(rule, lp);
+            tool.setMinimumHeight(Ui.dp(c, 38));
+            tool.setPadding(Ui.dp(c, 14), 0, Ui.dp(c, 14), 0);
+            chips.addView(tool, inRow(c));
         }
     }
 
+    /** Between the tools and the sections: a hairline in the row, a gap down the column. */
+    private void addRule() {
+        Context c = context;
+        if (wide) {
+            View gap = new View(c);
+            chips.addView(gap, new LinearLayout.LayoutParams(1, Ui.dp(c, 8)));
+            return;
+        }
+        View rule = new View(c);
+        rule.setBackgroundColor(Ui.color(c, R.attr.gfOutline));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Math.max(1, Ui.dp(c, 1)), Ui.dp(c, 22));
+        lp.rightMargin = Ui.dp(c, 8);
+        chips.addView(rule, lp);
+    }
+
     private void addSections(String[] names, int chosen, final Picker picker) {
-        Context c = chips.getContext();
+        Context c = context;
         firstSection = chips.getChildCount();
         for (int i = 0; i < names.length; i++) {
             final int section = i;
@@ -185,7 +236,7 @@ final class SectionMenu {
                 @Override
                 public void onClick(View v) {
                     if (v == chosenChip) return;
-                    scrolled.put(title, wide ? view.getScrollY() : ((View) chips.getParent()).getScrollX());
+                    scrolled.put(title, wide ? chipsView.getScrollY() : chipsView.getScrollX());
                     picker.show(section);
                 }
             });
@@ -218,48 +269,167 @@ final class SectionMenu {
         if (sourceName != null) sourceName.setText(s.name());
     }
 
-    /** A line for this section under the chips (Podcasts: how Discover's shows are chosen). */
+    /** A line for this section after the title (and the chips): call before addHeaders. */
     void addNote(View note) {
-        Context c = note.getContext();
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.leftMargin = Ui.dp(c, 16);
-        lp.rightMargin = Ui.dp(c, 16);
-        lp.topMargin = Ui.dp(c, wide ? 6 : 2);
-        lp.bottomMargin = Ui.dp(c, 6);
-        body.addView(note, lp);
+        Context c = context;
+        LinearLayout box = new LinearLayout(c);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(Ui.dp(c, 16), Ui.dp(c, 2), Ui.dp(c, 16), Ui.dp(c, 6));
+        box.addView(note, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        notes.add(box);
     }
 
-    /** The menu and a section together: the menu above it, or (wide) beside it. */
-    View around(View section) {
-        Context c = view.getContext();
-        LinearLayout page = new LinearLayout(c);
-        if (wide) {
-            page.setOrientation(LinearLayout.HORIZONTAL);
-            page.addView(view, new LinearLayout.LayoutParams(Ui.dp(c, COLUMN_DP), ViewGroup.LayoutParams.MATCH_PARENT));
-            page.addView(section, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
-        } else {
-            page.setOrientation(LinearLayout.VERTICAL);
-            page.addView(view, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
-            page.addView(section, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+    /**
+     * The top of a page that scrolls up and down: the title, then (up and down) the room where the
+     * chips sit until they float, then any notes. Call before the page adds its own headers and
+     * its adapter (Android 4.2 takes headers only before the adapter), then build it with page().
+     */
+    void addHeaders(ListView list) {
+        list.addHeaderView(header, null, false);
+        if (!wide) {
+            chipsView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+            slot = new View(context);
+            slot.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    chipsView.getMeasuredHeight()));
+            slotPosition = list.getHeaderViewsCount();
+            list.addHeaderView(slot, null, false);
         }
-        return page;
+        for (View note : notes) list.addHeaderView(note, null, false);
+    }
+
+    /** A page that scrolls up and down (after addHeaders), with the chips floating over it. */
+    View page(ListView list) {
+        if (wide) {
+            list.setPadding(Ui.dp(context, COLUMN_DP), list.getPaddingTop(), list.getPaddingRight(),
+                    list.getPaddingBottom());
+            return withColumn(list);
+        }
+        return new FloatingChips(list);
+    }
+
+    /**
+     * A wide screen's cards scrolling sideways: the title (and status, for loading and empty) above
+     * the first columns, scrolling with them, and the cards sliding under the chip column.
+     */
+    View page(HorizontalGrid grid, View status) {
+        LinearLayout heading = new LinearLayout(context);
+        heading.setOrientation(LinearLayout.VERTICAL);
+        heading.addView(header);
+        for (View note : notes) heading.addView(note);
+        if (status != null) heading.addView(status);
+        grid.setTitle(heading);
+        grid.setPadding(Ui.dp(context, COLUMN_DP), grid.getPaddingTop(), grid.getPaddingRight(),
+                grid.getPaddingBottom());
+        return withColumn(grid);
+    }
+
+    /** A page that doesn't scroll (Podcasts offline): the title and the chips above it, or beside it. */
+    View pinned(View body) {
+        LinearLayout column = new LinearLayout(context);
+        column.setOrientation(LinearLayout.VERTICAL);
+        column.addView(header);
+        if (!wide) {
+            column.addView(chipsView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+        for (View note : notes) column.addView(note);
+        column.addView(body, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+        if (!wide) return column;
+        column.setPadding(Ui.dp(context, COLUMN_DP), 0, 0, 0);
+        return withColumn(column);
+    }
+
+    /** A wide page with the chip column floating at its left. */
+    private View withColumn(View page) {
+        FrameLayout frame = new FrameLayout(context);
+        frame.addView(page, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        frame.addView(chipsView, new FrameLayout.LayoutParams(Ui.dp(context, COLUMN_DP),
+                ViewGroup.LayoutParams.MATCH_PARENT, Gravity.LEFT));
+        return frame;
+    }
+
+    /**
+     * Up and down: the list, and the chip row over it, kept where its slot is in the list, or at
+     * the top once the slot has scrolled past. There the page shows through a fade under the chips
+     * as it scrolls by, like the floating mini player and tabs.
+     */
+    private final class FloatingChips extends FrameLayout implements ViewTreeObserver.OnPreDrawListener {
+        private final ListView list;
+        private final android.graphics.drawable.Drawable fade;
+        private final int fadeIn;
+        private int alpha = -1;
+
+        FloatingChips(ListView list) {
+            super(list.getContext());
+            this.list = list;
+            Context c = getContext();
+            addView(list, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+            LinearLayout bar = new LinearLayout(c);
+            bar.setOrientation(LinearLayout.VERTICAL);
+            bar.setPadding(0, 0, 0, Ui.dp(c, FADE_DP));
+            bar.addView(chipsView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            fade = Ui.fadingFill(Ui.color(c, R.attr.gfBackground), Ui.dp(c, FADE_DP), false);
+            bar.setBackground(fade);
+            fadeIn = Ui.dp(c, 12);
+            addView(bar, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
+        }
+
+        @Override
+        protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            getViewTreeObserver().addOnPreDrawListener(this);
+        }
+
+        @Override
+        protected void onDetachedFromWindow() {
+            getViewTreeObserver().removeOnPreDrawListener(this);
+            super.onDetachedFromWindow();
+        }
+
+        @Override
+        public boolean onPreDraw() {
+            // Where the slot is: on screen, scrolled past the top, or (not laid out yet) under the title.
+            int y;
+            if (list.indexOfChild(slot) >= 0) y = list.getTop() + slot.getTop();
+            else if (list.getFirstVisiblePosition() > slotPosition) y = -fadeIn;
+            else y = list.getTop() + header.getHeight();
+            View bar = getChildAt(1);
+            float top = Math.max(0, y);
+            if (bar.getTranslationY() != top) bar.setTranslationY(top);
+            // The fade behind the chips comes in as the page starts to pass under them.
+            int a = y >= 0 ? 0 : Math.min(255, -y * 255 / fadeIn);
+            if (a != alpha) {
+                alpha = a;
+                fade.setAlpha(a);
+            }
+            return true;
+        }
     }
 
     /**
      * Once laid out: scrolled to where the last section's chips were, then (if need be) on so the
-     * chosen chip shows in full; at the first section, back to the start.
+     * chosen chip shows in full; at the first section, the start.
      */
     private void keepScroll() {
-        final View scroller = wide ? view : (View) chips.getParent();
+        final View scroller = chipsView;
         scroller.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
                 if (r - l == 0 || b - t == 0) return;
                 v.removeOnLayoutChangeListener(this);
+                // At the first section, the start: Search and the source show first.
+                if (chosenChip == chips.getChildAt(firstSection)) {
+                    v.scrollTo(0, 0);
+                    return;
+                }
                 Integer was = scrolled.get(title);
-                int at = was != null && chosenChip != chips.getChildAt(firstSection) ? was : 0;
+                int at = was != null ? was : 0;
                 int margin = Ui.dp(v.getContext(), 16);
                 if (wide) {
                     if (chosenChip != null) {

@@ -187,12 +187,15 @@ public final class PodcastsFragment extends BaseFragment {
                             "Browse Downloaded Episodes",
                             v -> main().showPodcasts(SectionMenu.DOWNLOADS)),
                     offlineButton);
+            if (menu != null) return menu.pinned(offline);
             body.addView(offline, new FrameLayout.LayoutParams(-1, -1));
-            return menu != null ? menu.around(root) : root;
+            return root;
         }
         ListView list = new ListView(c);
         RowAdapter.style(list);
-        body.addView(list);
+        // A section: the tab's title and chips (and its note) at the top of the list.
+        if (menu != null) menu.addHeaders(list);
+        else body.addView(list);
         status = Ui.status(c);
         list.addFooterView(status, null, false);
         adapter =
@@ -229,7 +232,7 @@ public final class PodcastsFragment extends BaseFragment {
                 });
         if (mode != SEARCH) load();
         else render();
-        return menu != null ? menu.around(root) : root;
+        return menu != null ? menu.page(list) : root;
     }
 
     private void editorialSources() {

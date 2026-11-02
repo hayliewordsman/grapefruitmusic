@@ -1,0 +1,2 @@
+5.0 beta 10
+In the Library and Podcasts, the title scrolls with the page and the chips float at the top once they reach it, with the page passing under them. Sideways, the chips float in a column at the left. Search is now a chip, first in the row (or at the top of the column).
