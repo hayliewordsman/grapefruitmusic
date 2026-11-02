@@ -280,8 +280,8 @@ def android(text, res):
 def icons(res):
     """The app's icon, the same in every theme: the launcher's (48dp; the grapefruit round, edge to
     edge but for a hairline), its adaptive layers for Android 8 and later (the picture filling a
-    108dp layer, on the picture's own colour; launchers mask it, round on most), and the About
-    page's (88dp)."""
+    108dp layer, on the picture's own colour; launchers mask it, round on most), the About
+    page's (88dp), and the store listing's (512 px)."""
     for density, scale in DENSITIES.items():
         mipmap = Path(res) / ("mipmap-" + density)
         mipmap.mkdir(parents=True, exist_ok=True)
@@ -289,6 +289,7 @@ def icons(res):
         png(svg(108, 108, "Grapefruit", adaptive_layer("a")), 108 * scale, mipmap / "ic_launcher_foreground.png")
         drawable = Path(res) / ("drawable-" + density)
         png(svg(88, 88, "Grapefruit", grapefruit(44, 44, 88, "b")), 88 * scale, drawable / "ic_about.png")
+    store_icon(Path(res).parents[3] / "fastlane" / "metadata" / "android" / "en-US" / "images" / "icon.png")
     anydpi = Path(res) / "mipmap-anydpi-v26"
     anydpi.mkdir(parents=True, exist_ok=True)
     (anydpi / "ic_launcher.xml").write_text("""<?xml version="1.0" encoding="utf-8"?>
@@ -298,6 +299,11 @@ def icons(res):
     <foreground android:drawable="@mipmap/ic_launcher_foreground" />
 </adaptive-icon>
 """)
+
+
+def store_icon(path):
+    """The store listing's icon (F-Droid, 512 px): the launcher icon, larger."""
+    png(svg(48, 48, "Grapefruit", grapefruit(24, 24, 46, "l")), 512, path)
 
 
 WORDMARK = "Grapefruit Music & Podcasts"

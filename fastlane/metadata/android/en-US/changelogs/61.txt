@@ -1,0 +1,2 @@
+5.0
+A new look: pill-shaped controls, a floating tab bar and mini player, rounded artwork and a redesigned Now Playing, with layouts for landscape and square screens. Library and Podcasts chips stay put and float as you scroll. One round app icon; Pitch Black in grapefruit colours. Podcasts skip 15 seconds. Lyrics are fetched as songs start and kept offline.
