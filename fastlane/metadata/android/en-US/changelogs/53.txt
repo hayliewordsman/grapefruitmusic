@@ -1,0 +1,2 @@
+5.0 beta 4
+Library on a wide screen (a phone on its side, a tablet): the source and Playlists, Artists, Albums and Songs are stacked down the menu column, all in view, instead of a row running off its edge.

@@ -33,7 +33,9 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
     private HorizontalGrid grid;
     private RowAdapter adapter;
     private TextView sourceName;
-    private android.widget.HorizontalScrollView chips;
+    /** The chips: a row that scrolls sideways, or (wide screens) stacked in the menu column. */
+    private LinearLayout chipBox;
+    private boolean stackChips;
     private TextView recentTitle;
     private TextView status;
     private int generation;
@@ -71,8 +73,20 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         top.addView(header);
 
         // Chips: where the music comes from (chosen, in the accent; tap to change), then its
-        // Playlists, Artists, Albums and Songs.
-        chips = Ui.chipRow(c);
+        // Playlists, Artists, Albums and Songs. In a row that scrolls sideways; on a wide screen,
+        // where they share the menu column with the title, stacked down it.
+        stackChips = RowAdapter.landscape(c);
+        View chips;
+        if (stackChips) {
+            chipBox = new LinearLayout(c);
+            chipBox.setOrientation(LinearLayout.VERTICAL);
+            chipBox.setPadding(Ui.dp(c, 16), Ui.dp(c, 6), Ui.dp(c, 16), Ui.dp(c, 6));
+            chips = chipBox;
+        } else {
+            android.widget.HorizontalScrollView row = Ui.chipRow(c);
+            chipBox = (LinearLayout) row.getChildAt(0);
+            chips = row;
+        }
         LinearLayout source = new LinearLayout(c);
         source.setOrientation(LinearLayout.HORIZONTAL);
         source.setGravity(Gravity.CENTER_VERTICAL);
@@ -82,7 +96,9 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         sourceName = Ui.text(c, 14, R.attr.gfTextPrimary, false);
         sourceName.setTypeface(Fonts.semiBold());
         sourceName.setTextColor(Ui.onAccent(c));
-        source.addView(sourceName);
+        // Stacked, the chevron goes at the far end.
+        source.addView(sourceName, stackChips ? new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1)
+                : new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         IconView down = Ui.icon(c, Icons.CHEVRON_DOWN, Ui.onAccent(c), 14);
         ((LinearLayout.LayoutParams) down.getLayoutParams()).leftMargin = Ui.dp(c, 6);
         source.addView(down);
@@ -93,7 +109,8 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
                 pickSource();
             }
         });
-        Ui.addChip(chips, source);
+        if (stackChips) source.setPadding(Ui.dp(c, 20), 0, Ui.dp(c, 16), 0);
+        addChip(source);
         top.addView(chips, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -281,9 +298,8 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
 
     private void buildRows(final MusicSource s) {
         Context c = getActivity();
-        LinearLayout row = (LinearLayout) chips.getChildAt(0);
         // The source chip stays; the others are made afresh for this source.
-        while (row.getChildCount() > 1) row.removeViewAt(1);
+        while (chipBox.getChildCount() > 1) chipBox.removeViewAt(1);
         addRow(c, "Playlists", BrowseFragment.PLAYLISTS, s);
         addRow(c, "Artists", BrowseFragment.ARTISTS, s);
         addRow(c, "Albums", BrowseFragment.ALBUMS, s);
@@ -297,7 +313,25 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
                 push(BrowseFragment.newInstance(s.id(), mode, null, "Library"));
             }
         });
-        Ui.addChip(chips, t);
+        if (stackChips) {
+            t.setGravity(Gravity.CENTER_VERTICAL);
+            t.setPadding(Ui.dp(c, 20), 0, Ui.dp(c, 16), 0);
+        }
+        addChip(t);
+    }
+
+    /** A chip into the row, or down the stack (full width, a pill each). */
+    private void addChip(View chip) {
+        Context c = chip.getContext();
+        LinearLayout.LayoutParams lp;
+        if (stackChips) {
+            lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 44));
+            lp.bottomMargin = Ui.dp(c, 8);
+        } else {
+            lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.rightMargin = Ui.dp(c, 8);
+        }
+        chipBox.addView(chip, lp);
     }
 
     private void pickSource() {
