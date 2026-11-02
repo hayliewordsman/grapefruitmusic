@@ -19,7 +19,7 @@ import android.widget.TextView;
 import com.grapefruitmusic.R;
 import com.grapefruitmusic.util.Notice;
 
-/** Settings › About Grapefruit Music. */
+/** Settings › About Grapefruit Music & Podcasts. */
 public final class AboutFragment extends BaseFragment {
     static final String COPYRIGHT = "Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER = "Haylie";
@@ -65,7 +65,7 @@ public final class AboutFragment extends BaseFragment {
         linkRow(g, "GNU GPL", "Version 3 or later", "https://www.gnu.org/licenses/gpl-3.0.html");
         linkRow(g, "Source Code", SOURCE, "https://" + SOURCE);
         g.footer(
-                "Grapefruit Music is free software: you can share and change it under the GNU"
+                "Grapefruit Music & Podcasts is free software: you can share and change it under the GNU"
                     + " General Public License, version 3 or any later version. It comes with no"
                     + " warranty.");
 
@@ -104,7 +104,9 @@ public final class AboutFragment extends BaseFragment {
                     .setPositiveButton("OK", null).show();
         });
         g.footer(
-                "Conscrypt (github.com/google/conscrypt) provides secure connections on older"
+                "The typeface is Geist, and the logo's lettering Geist Pixel, by Vercel (vercel.com/font),"
+                    + " under the SIL Open Font License 1.1. "
+                    + "Conscrypt (github.com/google/conscrypt) provides secure connections on older"
                     + " Android versions. Online lyrics come from LRCLIB (lrclib.net), a community"
                     + " database, and internet radio stations from Radio Browser"
                     + " (radio-browser.info), a free, open directory. Karaoke Mode uses"

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The splash screen: the theme's background with the logo in the middle (tools/brand/logo.py). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/light_background" />
+    <item>
+        <bitmap android:gravity="center" android:src="@drawable/splash_logo_light" />
+    </item>
+</layer-list>

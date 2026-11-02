@@ -1,0 +1,3 @@
+4.1 beta 6
+Now called Grapefruit Music & Podcasts ("Grapefruit" under its icon), with a new logo, a splash screen and the Geist typeface throughout.
+Podcasts: the time no longer runs out minutes before an episode ends. Episodes with ads added as they're served (streamed or downloaded) now show their real length.

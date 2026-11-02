@@ -1,0 +1,275 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Grapefruit Music & Podcasts' logos, as SVG with the lettering as outlines.
+
+The grapefruit is the Telegram channel's picture (a slice on a coral gradient), drawn as vectors
+and masked to a circle. The lettering is Geist Pixel (SIL Open Font License 1.1, Vercel), its
+Triangle shape: the variable font's Element Shape axis at 60 (font-variation-settings: "ELSH" 60;
+its named instance "Triangle", which Geist Pixel also ships as GeistPixel-Triangle). The outlines
+are taken from the font, shaped with HarfBuzz, so the SVGs need no font to show correctly.
+
+  logo.svg / logo-dark.svg                   grapefruit, then "Grapefruit Music & Podcasts"
+  logo-stacked.svg / logo-stacked-dark.svg   grapefruit, "Grapefruit" over "Music & Podcasts"
+  ("-dark" for dark backgrounds)
+
+With a third argument, also the splash screen's pictures for Android (PNG: Android 4.2 has no vector
+drawables) into that res folder.
+
+Needs Python 3 with fontTools, uharfbuzz and brotli (cairosvg and pngquant for the PNGs), and the
+geist npm package (1.9.0) unpacked:
+  python3 tools/brand/logo.py path/to/geist/package docs/brand app/src/main/res
+"""
+import io
+import math
+import sys
+from pathlib import Path
+
+import uharfbuzz as hb
+from fontTools.pens.recordingPen import DecomposingRecordingPen
+from fontTools.ttLib import TTFont
+from fontTools.varLib.instancer import instantiateVariableFont
+
+TRIANGLE = 60  # Geist Pixel's Element Shape (ELSH) axis: 1 square, 20 circle, 40 grid, 60 triangle, 80 line
+
+# Colours: the Telegram picture's, and the app's Grapefruit Light / Dark text.
+TOP, BOTTOM = "#FF8C6B", "#EC485C"
+RIND, PITH, FLESH = "#FFF7EE", "#FFD6C8", "#E83A52"
+LIGHT_BG = dict(name="#D8324A", rest="#4A1622")
+DARK_BG = dict(name="#FF7F6B", rest="#FFF1E8")
+
+
+class Lettering:
+    def __init__(self, geist):
+        pixel = Path(geist) / "dist/fonts/geist-pixel"
+        # The variable font's Triangle is its ELSH 60 instance. Geist Pixel also ships that instance
+        # as a font of its own, drawn cleanly (each pixel a plain triangle, where interpolating the
+        # variable font gives curved near-triangles): its outlines are used, once checked to be the
+        # same instance (the same advance for every character).
+        vf = TTFont(pixel / "GeistPixelVF.woff2")
+        named = {vf["name"].getDebugName(i.subfamilyNameID): i.coordinates for i in vf["fvar"].instances}
+        assert named["Triangle"] == {"ELSH": TRIANGLE}, named
+        instance = instantiateVariableFont(vf, {"ELSH": TRIANGLE})
+        self.font = TTFont(pixel / "GeistPixel-Triangle.woff2")
+        mine, theirs = self.font.getBestCmap(), instance.getBestCmap()
+        for text in ("Grapefruit Music & Podcasts",):
+            for c in map(ord, text):
+                assert self.font["hmtx"][mine[c]] == instance["hmtx"][theirs[c]], chr(c)
+        assert all(self.font["hmtx"][mine[c]] == instance["hmtx"][theirs[c]] for c in mine if c in theirs)
+        data = io.BytesIO()
+        self.font.flavor = None
+        self.font.save(data)
+        self.hb = hb.Font(hb.Face(data.getvalue()))
+        self.upem = self.font["head"].unitsPerEm
+        self.glyphs = self.font.getGlyphSet()
+        self.order = self.font.getGlyphOrder()
+        os2 = self.font["OS/2"]
+        self.cap = os2.sCapHeight / self.upem
+        self.ascent = self.font["hhea"].ascent / self.upem
+        self.descent = -self.font["hhea"].descent / self.upem
+
+    def width(self, text, size):
+        buf = self.shape(text)
+        return sum(p.x_advance for p in buf.glyph_positions) * size / self.upem
+
+    def shape(self, text):
+        buf = hb.Buffer()
+        buf.add_str(text)
+        buf.guess_segment_properties()
+        hb.shape(self.hb, buf, {"kern": True, "liga": True})
+        return buf
+
+    def outline(self, name):
+        """A glyph's outline as compact SVG path data, in font units (y up), relative moves."""
+        pen = DecomposingRecordingPen(self.glyphs)
+        self.glyphs[name].draw(pen)
+        out = []
+        cx = cy = 0
+        start = (0, 0)
+
+        def num(v):
+            v = round(v, 1)
+            return str(int(v)) if v == int(v) else str(v)
+
+        for op, pts in pen.value:
+            if op == "moveTo":
+                (x, y), = pts
+                out.append("M%s %s" % (num(x), num(y)))
+                cx, cy = x, y
+                start = (x, y)
+            elif op == "lineTo":
+                (x, y), = pts
+                out.append("l%s %s" % (num(x - cx), num(y - cy)))
+                cx, cy = x, y
+            elif op == "qCurveTo":
+                # TrueType: implied on-curve points between off-curve ones.
+                *offs, end = pts
+                if end is None:
+                    raise ValueError("closed off-curve contour")
+                points = []
+                for i, off in enumerate(offs):
+                    nxt = offs[i + 1] if i + 1 < len(offs) else None
+                    on = ((off[0] + nxt[0]) / 2, (off[1] + nxt[1]) / 2) if nxt else end
+                    points.append((off, on))
+                for off, on in points:
+                    out.append("q%s %s %s %s" % (num(off[0] - cx), num(off[1] - cy), num(on[0] - cx), num(on[1] - cy)))
+                    cx, cy = on
+            elif op == "curveTo":
+                (a, b, c) = pts
+                out.append("c%s %s %s %s %s %s" % tuple(num(v) for v in (a[0] - cx, a[1] - cy, b[0] - cx,
+                                                                       b[1] - cy, c[0] - cx, c[1] - cy)))
+                cx, cy = c
+            elif op in ("closePath", "endPath"):
+                out.append("z")
+                cx, cy = start
+        return "".join(out).replace(" -", "-")
+
+    def uses(self, text, size, x, baseline, defs):
+        """The text as <use>s of glyphs defined once in defs (name -> path), at size px per em."""
+        buf = self.shape(text)
+        s = size / self.upem
+        out = []
+        pen_x = 0
+        for info, pos in zip(buf.glyph_infos, buf.glyph_positions):
+            name = self.order[info.codepoint]
+            if name not in defs:
+                defs[name] = self.outline(name)
+            if defs[name]:
+                gx = x + (pen_x + pos.x_offset) * s
+                gy = baseline - pos.y_offset * s
+                out.append('<use xlink:href="#%s" transform="translate(%.2f %.2f) scale(%.5g %.5g)"/>'
+                           % (glyph_id(name), gx, gy, s, -s))
+            pen_x += pos.x_advance
+        return "".join(out)
+
+
+def glyph_id(name):
+    return "glyph-" + "".join(c if c.isalnum() else "_" for c in name)
+
+
+def glyph_defs(defs):
+    return "".join('<path id="%s" d="%s"/>' % (glyph_id(n), d) for n, d in sorted(defs.items()) if d)
+
+
+def grapefruit(cx, cy, d, uid):
+    """The Telegram picture, masked to a circle of diameter d centred at (cx, cy)."""
+    r = d * 0.34
+    r3 = r * 0.80
+    w = r * 0.07
+    spokes = []
+    for i in range(10):
+        a = 2 * math.pi * i / 10 - math.pi / 2
+        spokes.append('<line x1="%.2f" y1="%.2f" x2="%.2f" y2="%.2f"/>'
+                      % (cx, cy, cx + math.cos(a) * r3, cy + math.sin(a) * r3))
+    return f"""<defs>
+    <linearGradient id="{uid}-coral" x1="0" y1="{cy - d / 2:.2f}" x2="0" y2="{cy + d / 2:.2f}" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="{TOP}"/><stop offset="1" stop-color="{BOTTOM}"/>
+    </linearGradient>
+    <clipPath id="{uid}-round"><circle cx="{cx:.2f}" cy="{cy:.2f}" r="{d / 2:.2f}"/></clipPath>
+  </defs>
+  <g clip-path="url(#{uid}-round)">
+    <rect x="{cx - d / 2:.2f}" y="{cy - d / 2:.2f}" width="{d:.2f}" height="{d:.2f}" fill="url(#{uid}-coral)"/>
+    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r:.2f}" fill="{RIND}"/>
+    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r * 0.88:.2f}" fill="{PITH}"/>
+    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r3:.2f}" fill="{FLESH}"/>
+    <g stroke="{PITH}" stroke-width="{w:.2f}">{"".join(spokes)}</g>
+    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r * 0.10:.2f}" fill="{PITH}"/>
+  </g>"""
+
+
+def svg(width, height, title, body):
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<!-- Grapefruit Music & Podcasts. Made by tools/brand/logo.py. Lettering: Geist Pixel Triangle
+     (font-variation-settings: "ELSH" {TRIANGLE}), SIL Open Font License 1.1, as outlines. -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 {width:.2f} {height:.2f}" width="{width:.0f}" height="{height:.0f}" role="img" aria-label="{title}">
+  <title>{title}</title>
+  {body}
+</svg>
+"""
+
+
+def horizontal(text, colours):
+    d = 256.0
+    size = 124.0
+    gap = d * 0.17
+    x = d + gap
+    # The lettering's capitals sit centred on the grapefruit.
+    baseline = d / 2 + size * text.cap / 2
+    name, rest = "Grapefruit", " Music & Podcasts"
+    w1 = text.width(name, size)
+    w2 = text.width(rest, size)
+    pad = size * 0.06
+    width = x + w1 + w2 + pad
+    defs = {}
+    first = text.uses(name, size, x, baseline, defs)
+    second = text.uses(rest, size, x + w1, baseline, defs)
+    body = grapefruit(d / 2, d / 2, d, "g") + f"""
+  <defs>{glyph_defs(defs)}</defs>
+  <g fill="{colours['name']}">{first}</g>
+  <g fill="{colours['rest']}">{second}</g>"""
+    return svg(width, d, "Grapefruit Music &amp; Podcasts", body)
+
+
+def stacked(text, colours):
+    d = 256.0
+    big = 92.0
+    medium = 50.0
+    w1 = text.width("Grapefruit", big)
+    w2 = text.width("Music & Podcasts", medium)
+    width = max(d, w1, w2) + 16
+    cx = width / 2
+    top = 8.0
+    line1 = top + d + d * 0.16 + big * text.cap
+    line2 = line1 + big * 0.36 + medium * text.cap
+    height = line2 + medium * text.descent + 8
+    defs = {}
+    first = text.uses("Grapefruit", big, cx - w1 / 2, line1, defs)
+    second = text.uses("Music & Podcasts", medium, cx - w2 / 2, line2, defs)
+    body = grapefruit(cx, top + d / 2, d, "s") + f"""
+  <defs>{glyph_defs(defs)}</defs>
+  <g fill="{colours['name']}">{first}</g>
+  <g fill="{colours['rest']}">{second}</g>"""
+    return svg(width, height, "Grapefruit Music &amp; Podcasts", body)
+
+
+DENSITIES = {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}
+
+
+def png(svg_text, width, path):
+    """Rendered with a transparent background, then made small with pngquant (a dithered palette,
+    so the gradient doesn't band)."""
+    import subprocess
+    import cairosvg
+    cairosvg.svg2png(bytestring=svg_text.encode(), output_width=round(width), write_to=str(path))
+    subprocess.run(["pngquant", "--force", "--skip-if-larger", "--quality=80-100", "--speed=1",
+                    "--strip", "--output", str(path), str(path)], check=False)
+
+
+def android(text, res):
+    """The splash screen's pictures: the stacked logo (light themes, dark themes) 280dp wide at each
+    density, and Android 12's splash icon (the grapefruit, 192dp in a 288dp square)."""
+    for density, scale in DENSITIES.items():
+        folder = Path(res) / ("drawable-" + density)
+        folder.mkdir(parents=True, exist_ok=True)
+        png(stacked(text, LIGHT_BG), 280 * scale, folder / "splash_logo_light.png")
+        png(stacked(text, DARK_BG), 280 * scale, folder / "splash_logo_dark.png")
+    icon = svg(288, 288, "Grapefruit", grapefruit(144, 144, 192, "i"))
+    folder = Path(res) / "drawable-xxhdpi"
+    png(icon, 288 * 3, folder / "splash_icon.png")
+
+
+def main():
+    geist, out = sys.argv[1], Path(sys.argv[2])
+    out.mkdir(parents=True, exist_ok=True)
+    text = Lettering(geist)
+    (out / "logo.svg").write_text(horizontal(text, LIGHT_BG))
+    (out / "logo-dark.svg").write_text(horizontal(text, DARK_BG))
+    (out / "logo-stacked.svg").write_text(stacked(text, LIGHT_BG))
+    (out / "logo-stacked-dark.svg").write_text(stacked(text, DARK_BG))
+    for f in sorted(out.glob("logo*.svg")):
+        print(f, f.stat().st_size, "bytes")
+    if len(sys.argv) > 3:
+        android(text, sys.argv[3])
+
+
+if __name__ == "__main__":
+    main()

@@ -56,7 +56,7 @@ public class FastScrollListView extends ListView {
         thumbHeight = 46 * density;
         touchWidth = 40 * density;
         paint.setTextAlign(Paint.Align.CENTER);
-        paint.setTypeface(Typeface.DEFAULT_BOLD);
+        paint.setTypeface(com.grapefruitmusic.ui.Fonts.semiBold());
         paint.setTextSize(28 * getResources().getDisplayMetrics().scaledDensity);
     }
 

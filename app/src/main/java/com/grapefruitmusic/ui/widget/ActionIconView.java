@@ -63,7 +63,7 @@ public final class ActionIconView extends IconView {
         super.onDraw(canvas);
         CharSequence label = getContentDescription();
         if (labelVisible && label != null) {
-            paint.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
+            paint.setTypeface(com.grapefruitmusic.ui.Fonts.medium());
             paint.setTextSize(10 * getResources().getDisplayMetrics().scaledDensity);
             paint.setTextAlign(Paint.Align.CENTER);
             paint.setColor(tint);

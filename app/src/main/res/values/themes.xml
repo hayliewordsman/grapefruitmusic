@@ -2,10 +2,11 @@
 <resources>
     <style name="Theme.Grapefruit.Light" parent="android:Theme.Holo.Light.NoActionBar">
         <item name="android:fontFamily">sans-serif</item>
-        <item name="android:windowBackground">@color/light_background</item>
+        <item name="android:windowBackground">@drawable/splash_light</item>
         <item name="android:colorBackground">@color/light_background</item>
         <item name="android:textColorHighlight">#66F2545B</item>
         <item name="gfBackground">@color/light_background</item>
+        <item name="gfSplash">@drawable/splash_light</item>
         <item name="gfGroupedBackground">@color/light_grouped</item>
         <item name="gfSurface">@color/light_surface</item>
         <item name="gfBar">@color/light_bar</item>
@@ -39,10 +40,11 @@
 
     <style name="Theme.Grapefruit.Dark" parent="android:Theme.Holo.NoActionBar">
         <item name="android:fontFamily">sans-serif</item>
-        <item name="android:windowBackground">@color/dark_background</item>
+        <item name="android:windowBackground">@drawable/splash_dark</item>
         <item name="android:colorBackground">@color/dark_background</item>
         <item name="android:textColorHighlight">#66FF6B6B</item>
         <item name="gfBackground">@color/dark_background</item>
+        <item name="gfSplash">@drawable/splash_dark</item>
         <item name="gfGroupedBackground">@color/dark_grouped</item>
         <item name="gfSurface">@color/dark_surface</item>
         <item name="gfBar">@color/dark_bar</item>
@@ -77,10 +79,11 @@
     <!-- Grapefruit Light: on the lighter side, in the app icon's colours instead of white. -->
     <style name="Theme.Grapefruit.GrapefruitLight" parent="Theme.Grapefruit.Light">
         <item name="android:fontFamily">sans-serif</item>
-        <item name="android:windowBackground">@color/grapefruit_light_background</item>
+        <item name="android:windowBackground">@drawable/splash_grapefruit_light</item>
         <item name="android:colorBackground">@color/grapefruit_light_background</item>
         <item name="android:textColorHighlight">#66E83850</item>
         <item name="gfBackground">@color/grapefruit_light_background</item>
+        <item name="gfSplash">@drawable/splash_grapefruit_light</item>
         <item name="gfGroupedBackground">@color/grapefruit_light_grouped</item>
         <item name="gfSurface">@color/grapefruit_light_surface</item>
         <item name="gfBar">@color/grapefruit_light_bar</item>
@@ -105,10 +108,11 @@
     <!-- Grapefruit Dark: the same colours after dark, instead of black. -->
     <style name="Theme.Grapefruit.GrapefruitDark" parent="Theme.Grapefruit.Dark">
         <item name="android:fontFamily">sans-serif</item>
-        <item name="android:windowBackground">@color/grapefruit_dark_background</item>
+        <item name="android:windowBackground">@drawable/splash_grapefruit_dark</item>
         <item name="android:colorBackground">@color/grapefruit_dark_background</item>
         <item name="android:textColorHighlight">#66FF7F6B</item>
         <item name="gfBackground">@color/grapefruit_dark_background</item>
+        <item name="gfSplash">@drawable/splash_grapefruit_dark</item>
         <item name="gfGroupedBackground">@color/grapefruit_dark_grouped</item>
         <item name="gfSurface">@color/grapefruit_dark_surface</item>
         <item name="gfBar">@color/grapefruit_dark_bar</item>
@@ -131,6 +135,17 @@
     </style>
 
     <!-- Text fields: rounded fill, grapefruit cursor. -->
+    <!-- The window Android shows while Grapefruit starts (MainActivity's theme in the manifest; the
+         theme picked in Settings takes over once it's running). Android 12+ adds its own splash
+         screen: values-v31. -->
+    <style name="Theme.Grapefruit.Launch" parent="Theme.Grapefruit.GrapefruitDark" />
+
+    <!-- Android 13+ is told which of these to use for its splash screen next time (MainActivity). -->
+    <style name="Splash.Light" parent="android:Theme.Holo.Light.NoActionBar" />
+    <style name="Splash.Dark" parent="android:Theme.Holo.NoActionBar" />
+    <style name="Splash.GrapefruitLight" parent="android:Theme.Holo.Light.NoActionBar" />
+    <style name="Splash.GrapefruitDark" parent="android:Theme.Holo.NoActionBar" />
+
     <style name="GrapefruitEditText.Light" parent="android:Widget.Holo.Light.EditText">
         <item name="android:background">@drawable/field_light</item>
         <item name="android:textCursorDrawable">@drawable/cursor_light</item>

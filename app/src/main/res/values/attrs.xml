@@ -22,4 +22,6 @@
     <attr name="gfToggleOffSegments" format="color" />
     <!-- The volume slider's knob. -->
     <attr name="gfKnob" format="color" />
+    <!-- The splash screen: background and logo (a layer-list). -->
+    <attr name="gfSplash" format="reference" />
 </resources>

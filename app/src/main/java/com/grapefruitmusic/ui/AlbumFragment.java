@@ -345,6 +345,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         coverLabel.setText("Edit");
         coverLabel.setTextColor(0xffffffff);
         coverLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        coverLabel.setTypeface(Fonts.medium());
         coverLabel.setGravity(Gravity.CENTER);
         coverLabel.setPadding(0, Ui.dp(c, 5), 0, Ui.dp(c, 6));
         GradientDrawable band = new GradientDrawable();
@@ -380,7 +381,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         cancelButton.setVisibility(e ? View.VISIBLE : View.GONE);
         editButton.setVisibility(canEdit() ? View.VISIBLE : View.GONE);
         editButton.setText(saving ? "Saving…" : (e ? "Done" : "Edit"));
-        editButton.setTypeface(e ? android.graphics.Typeface.DEFAULT_BOLD : android.graphics.Typeface.DEFAULT);
+        editButton.setTypeface(e ? Fonts.semiBold() : Fonts.regular());
         editButton.setEnabled(!saving);
         cancelButton.setEnabled(!saving);
         editButton.setAlpha(saving ? 0.5f : 1f);

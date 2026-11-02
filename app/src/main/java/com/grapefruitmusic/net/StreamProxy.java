@@ -39,6 +39,15 @@ public final class StreamProxy {
         void complete();
     }
 
+    /** Hears a podcast's real length, worked out from the start of its stream. */
+    public interface LengthListener {
+        /** The length in ms. Called once, on a relay thread. */
+        void onLength(long ms);
+    }
+
+    /** How much of a podcast's start is kept to find its length (a tag with cover art comes first). */
+    private static final int LENGTH_HEAD = 1024 * 1024;
+
     /** Hears what a live stream says is playing. */
     public interface TitleListener {
         /** The station's current title ("Artist - Song"), or null. Called on a relay thread. */
@@ -56,6 +65,9 @@ public final class StreamProxy {
         boolean capturing;
         boolean captureDone;
         boolean podcast;
+        /** A podcast's length: who to tell, and whether that's been done (or given up on). */
+        LengthListener length;
+        volatile boolean lengthDone;
 
         Target(String url, Map<String, String> headers, Capture capture) {
             this.url = url;
@@ -100,10 +112,21 @@ public final class StreamProxy {
 
     /** Podcast-only redirect handling; existing authenticated music-server behavior is unchanged. */
     public String registerPodcast(String url, Map<String, String> headers, Capture capture) throws IOException {
+        return registerPodcast(url, headers, capture, null);
+    }
+
+    /**
+     * Like registerPodcast(url, headers, capture), also working out the episode's real length from
+     * the start of the stream as it's relayed (see Mp3Length): the length the player gets from an
+     * MP3's header leaves out ads put in as it's served.
+     */
+    public String registerPodcast(String url, Map<String, String> headers, Capture capture, LengthListener length)
+            throws IOException {
         ensureStarted();
         String token = Hashes.randomHex(8);
         Target target = new Target(url, headers == null ? new HashMap<String, String>() : headers, capture);
         target.podcast = true;
+        target.length = length;
         synchronized (targets) { targets.put(token, target); }
         return "http://127.0.0.1:" + server.getLocalPort() + "/s/" + token;
     }
@@ -222,9 +245,30 @@ public final class StreamProxy {
                 InputStream body = upstream.getInputStream();
                 byte[] buf = new byte[16384];
                 int n;
+                long total = target.length != null && !target.lengthDone ? lengthTotal(code, upstream) : -1;
+                byte[] first = total > 0 ? new byte[64 * 1024] : null;
+                int firstLen = 0;
+                int nextTry = 16 * 1024;
                 try {
                     while ((n = body.read(buf)) > 0) {
                         out.write(buf, 0, n);
+                        if (first != null && !target.lengthDone) {
+                            if (firstLen + n > first.length) {
+                                first = java.util.Arrays.copyOf(first, Math.min(LENGTH_HEAD, Math.max(first.length * 2, firstLen + n)));
+                            }
+                            int take = Math.min(n, first.length - firstLen);
+                            System.arraycopy(buf, 0, first, firstLen, take);
+                            firstLen += take;
+                            if (firstLen >= nextTry || firstLen == first.length) {
+                                nextTry = firstLen + 32 * 1024;
+                                long ms = com.grapefruitmusic.playback.Mp3Length.estimate(first, firstLen, total);
+                                if (ms != com.grapefruitmusic.playback.Mp3Length.MORE || firstLen >= LENGTH_HEAD) {
+                                    first = null;
+                                    target.lengthDone = true;
+                                    if (ms > 0) target.length.onLength(ms);
+                                }
+                            }
+                        }
                         if (copy != null) {
                             try {
                                 copy.write(buf, 0, n);
@@ -311,6 +355,33 @@ public final class StreamProxy {
         } finally {
             stream.close();
         }
+    }
+
+    /**
+     * The whole file's size, when this response starts at its beginning (where the length can be
+     * found) and says how big it is; -1 otherwise.
+     */
+    private static long lengthTotal(int code, HttpURLConnection c) {
+        String type = c.getHeaderField("Content-Type");
+        if (type != null) {
+            String t = type.toLowerCase(java.util.Locale.US);
+            if (t.contains("mp4") || t.contains("aac") || t.contains("ogg") || t.contains("opus")) return -1;
+        }
+        try {
+            if (code == 200) {
+                String len = c.getHeaderField("Content-Length");
+                return len != null ? Long.parseLong(len.trim()) : -1;
+            }
+            String range = c.getHeaderField("Content-Range");
+            if (code == 206 && range != null && range.startsWith("bytes 0-")) {
+                int slash = range.lastIndexOf('/');
+                String size = slash > 0 ? range.substring(slash + 1).trim() : "*";
+                return size.equals("*") ? -1 : Long.parseLong(size);
+            }
+        } catch (NumberFormatException e) {
+            // No usable size.
+        }
+        return -1;
     }
 
     /**

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ draws its own splash screen from these: the grapefruit on the theme's colour. -->
+    <style name="Theme.Grapefruit.Launch" parent="Theme.Grapefruit.GrapefruitDark">
+        <item name="android:windowSplashScreenBackground">@color/grapefruit_dark_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+    </style>
+    <style name="Splash.Light" parent="android:Theme.Holo.Light.NoActionBar">
+        <item name="android:windowSplashScreenBackground">@color/light_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+    </style>
+    <style name="Splash.Dark" parent="android:Theme.Holo.NoActionBar">
+        <item name="android:windowSplashScreenBackground">@color/dark_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+    </style>
+    <style name="Splash.GrapefruitLight" parent="android:Theme.Holo.Light.NoActionBar">
+        <item name="android:windowSplashScreenBackground">@color/grapefruit_light_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+    </style>
+    <style name="Splash.GrapefruitDark" parent="android:Theme.Holo.NoActionBar">
+        <item name="android:windowSplashScreenBackground">@color/grapefruit_dark_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+    </style>
+</resources>

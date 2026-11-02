@@ -1353,13 +1353,13 @@ final class NowPlaying {
             t.setText(text.trim().length() == 0 ? (synced ? "♪" : " ") : text);
             if (synced) {
                 t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 23);
-                t.setTypeface(Typeface.DEFAULT_BOLD);
+                t.setTypeface(Fonts.semiBold());
                 boolean now = position == current;
                 t.setTextColor(now ? primary : secondary);
                 t.setAlpha(now ? 1f : (position < current ? 0.45f : 0.6f));
             } else {
                 t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-                t.setTypeface(Typeface.DEFAULT);
+                t.setTypeface(Fonts.regular());
                 t.setTextColor(primary);
                 t.setAlpha(1f);
             }

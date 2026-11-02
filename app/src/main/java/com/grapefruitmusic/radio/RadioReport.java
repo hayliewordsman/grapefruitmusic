@@ -51,7 +51,7 @@ final class RadioReport {
         } catch (PackageManager.NameNotFoundException e) {
             // Can't happen for our own package.
         }
-        sb.append("Grapefruit Music ").append(version).append(": FM radio details\n\n");
+        sb.append("Grapefruit Music & Podcasts ").append(version).append(": FM radio details\n\n");
         sb.append("Tablet: ").append(Build.MANUFACTURER).append(' ').append(Build.MODEL)
                 .append(" (device ").append(Build.DEVICE).append(", board ").append(Build.BOARD)
                 .append(", hardware ").append(Build.HARDWARE).append(")\n");

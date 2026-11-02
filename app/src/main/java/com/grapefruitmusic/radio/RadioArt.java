@@ -67,7 +67,7 @@ public final class RadioArt {
         TextPaint text = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         text.setColor(0xffffffff);
         text.setTextAlign(Paint.Align.CENTER);
-        text.setTypeface(Typeface.DEFAULT_BOLD);
+        text.setTypeface(com.grapefruitmusic.ui.Fonts.bold());
         text.setShadowLayer(size * 0.02f, 0, size * 0.008f, 0x33000000);
         String number = Radio.format(freq);
         text.setTextSize(size * (number.length() > 5 ? 0.25f : 0.3f));
@@ -78,7 +78,7 @@ public final class RadioArt {
         c.drawText("FM", cx, size * 0.66f, text);
 
         if (name != null && name.length() > 0) {
-            text.setTypeface(Typeface.DEFAULT);
+            text.setTypeface(com.grapefruitmusic.ui.Fonts.regular());
             text.setColor(0xffffffff);
             text.setTextSize(size * 0.085f);
             CharSequence fitted = TextUtils.ellipsize(name, text, size * 0.86f, TextUtils.TruncateAt.END);
@@ -145,7 +145,7 @@ public final class RadioArt {
         }
         TextPaint text = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         text.setColor(0xffffffff);
-        text.setTypeface(Typeface.DEFAULT_BOLD);
+        text.setTypeface(com.grapefruitmusic.ui.Fonts.semiBold());
         text.setShadowLayer(size * 0.02f, 0, size * 0.008f, 0x33000000);
         int width = (int) (size * 0.8f);
         String label = name == null || name.trim().length() == 0 ? "Radio" : name.trim();

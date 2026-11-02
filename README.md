@@ -1,8 +1,9 @@
-<p align="center"><img src="docs/icon.png" width="120" alt="Grapefruit Music icon"></p>
+<p align="center"><img src="docs/brand/logo-stacked.svg" width="240" alt="Grapefruit Music &amp; Podcasts"></p>
 
-# Grapefruit Music
+# Grapefruit Music & Podcasts
 
-A small, native music player for **Android 4.2.2 (Jelly Bean) and later**, styled after the iOS 10 Music app.
+A small, native music and podcast player for **Android 4.2.2 (Jelly Bean) and later**, styled after the iOS 10
+Music app. ("Grapefruit" under its icon.)
 It plays music you own: files on the phone, and your own **Navidrome / Subsonic** or **Jellyfin** server,
 with downloads for offline listening and time-synced lyrics.
 
@@ -244,3 +245,6 @@ processor and model weights are GPL-3.0-or-later. Its training data is the
 [SiSEC18-MUS 7s Excerpts](https://zenodo.org/records/3270814), CC BY 4.0, by Fabian-Robert Stöter,
 Antoine Liutkus and Nobutaka Ito. Training/selection credits and model provenance ship in
 `app/src/main/assets/karaoke_credits.txt` and `karaoke_training.json` and are described in the app.
+
+The logos (`docs/brand`, made by `tools/brand/logo.py`) are lettered in Geist Pixel, and the app's text is set
+in Geist, both by Vercel under the SIL Open Font License 1.1 (`app/src/main/assets/fonts/Geist-OFL.txt`).

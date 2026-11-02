@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -28,6 +29,7 @@ import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.util.ArtworkLoader;
 import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Notice;
+import com.grapefruitmusic.util.Prefs;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -81,6 +83,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         Ui.applyTheme(this);
         super.onCreate(saved);
         setContentView(R.layout.activity_main);
+        Fonts.applyAll(findViewById(R.id.root));
         if (android.os.Build.VERSION.SDK_INT >= 35) {
             findViewById(R.id.root).setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
                 @Override public android.view.WindowInsets onApplyWindowInsets(View v, android.view.WindowInsets insets) {
@@ -160,6 +163,52 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             if (saved.getBoolean("now_playing_open")) nowPlaying.openImmediately();
         }
         handleIntent(getIntent());
+        splash();
+    }
+
+    /** Whether this run of the app has shown its splash screen. */
+    private static boolean splashShown;
+
+    /**
+     * The splash screen: the logo on the theme's background (also the window's background, which
+     * Android shows while Grapefruit starts), for a moment when the app starts, then fading away.
+     */
+    private void splash() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            // Android 13+ draws its own splash screen first: in this theme's colours next time.
+            int t = Ui.theme(this);
+            getSplashScreen().setSplashScreenTheme(t == Prefs.THEME_STARLIGHT ? R.style.Splash_Light
+                    : t == Prefs.THEME_PITCH_BLACK ? R.style.Splash_Dark
+                    : t == Prefs.THEME_GRAPEFRUIT_DARK ? R.style.Splash_GrapefruitDark : R.style.Splash_GrapefruitLight);
+        }
+        if (splashShown) {
+            dropWindowBackground();
+            return;
+        }
+        splashShown = true;
+        final View cover = new View(this);
+        cover.setBackgroundResource(Ui.resource(this, R.attr.gfSplash));
+        cover.setClickable(true); // nothing underneath answers a tap meanwhile
+        final FrameLayout root = (FrameLayout) findViewById(R.id.root);
+        root.addView(cover, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        Bg.mainDelayed(new Runnable() {
+            @Override
+            public void run() {
+                cover.animate().alpha(0f).setDuration(300).withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        root.removeView(cover);
+                        dropWindowBackground();
+                    }
+                }).start();
+            }
+        }, Build.VERSION.SDK_INT >= 31 ? 500 : 800); // shorter after Android 12's own splash screen
+    }
+
+    /** Pages cover the window: its background (the splash screen) needn't be drawn under them. */
+    private void dropWindowBackground() {
+        getWindow().setBackgroundDrawable(null);
     }
 
     private void buildTabBar() {
@@ -173,6 +222,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             IconView icon = Ui.icon(this, TAB_ICONS[i], 0, 26);
             item.addView(icon);
             TextView label = Ui.text(this, 10, R.attr.gfTextSecondary, false);
+            label.setTypeface(Fonts.medium());
             label.setText(TAB_NAMES[i]);
             label.setGravity(Gravity.CENTER_HORIZONTAL);
             item.addView(label, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,

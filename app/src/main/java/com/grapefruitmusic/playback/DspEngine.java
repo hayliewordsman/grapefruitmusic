@@ -53,6 +53,8 @@ final class DspEngine implements Engine {
     /** Song position of the first frame written since the track was last flushed. */
     private volatile long baseUs;
     private volatile long durationUs = -1;
+    /** The real length, when it's been worked out from the file (setLength). */
+    private volatile long lengthUs = -1;
 
     // Audio thread only.
     private int outChannels;
@@ -172,6 +174,16 @@ final class DspEngine implements Engine {
     @Override
     public int getDuration() {
         return durationUs > 0 ? (int) (durationUs / 1000) : -1;
+    }
+
+    @Override
+    public void setLength(long ms) {
+        if (ms <= 0) return;
+        lengthUs = ms * 1000;
+        if (!endKnown) {
+            durationUs = lengthUs;
+            dsp.setSongDuration(ms);
+        }
     }
 
     @Override
@@ -312,7 +324,8 @@ final class DspEngine implements Engine {
             }
             if (format == null) throw new IOException("No audio in this file");
             String mime = format.getString(MediaFormat.KEY_MIME);
-            if (format.containsKey(MediaFormat.KEY_DURATION)) durationUs = format.getLong(MediaFormat.KEY_DURATION);
+            if (lengthUs > 0) durationUs = lengthUs;
+            else if (format.containsKey(MediaFormat.KEY_DURATION)) durationUs = format.getLong(MediaFormat.KEY_DURATION);
             int channels = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
             boolean raw = "audio/raw".equals(mime); // WAV and (on older Android) FLAC come decoded
             if (!raw) {

@@ -25,7 +25,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -655,16 +657,19 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 // Don't keep the listener waiting on a slow measurement.
                 Bg.mainDelayed(measured, 2500);
             }
+            boolean podcast = com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId);
             if (file != null) {
                 player.setDataSource(file.getPath());
+                if (podcast) measureLength(player, file);
             } else {
                 MusicSource source = Sources.get(context).byId(item.sourceId);
                 StreamRequest req = source != null ? source.stream(item, Prefs.streamQuality()) : null;
                 if (req == null) throw new IOException("This song is no longer available");
                 if (item.live) {
                     player.setDataSource(StreamProxy.get().registerLive(req.url, req.headers, titlesFor(player)));
-                } else if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId)) {
-                    player.setDataSource(StreamProxy.get().registerPodcast(req.url, req.headers, volumeMatch.captureFor(item)));
+                } else if (podcast) {
+                    player.setDataSource(StreamProxy.get().registerPodcast(req.url, req.headers,
+                            volumeMatch.captureFor(item), lengthFor(player)));
                 } else {
                     player.setDataSource(StreamProxy.get().register(req.url, req.headers, volumeMatch.captureFor(item)));
                 }
@@ -681,6 +686,61 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
             return;
         }
         changed();
+    }
+
+    /** Lengths of podcast files measured this run, by path, size and date. */
+    private static final Map<String, Long> LENGTHS = new HashMap<String, Long>();
+
+    /**
+     * A downloaded episode's real length, from every frame of it (in the background, once): the
+     * length Android reads from an MP3's header leaves out ads put in when it was downloaded, and
+     * the time ran out minutes before the episode did.
+     */
+    private void measureLength(final Engine player, final File file) {
+        final String key = file.getPath() + "|" + file.length() + "|" + file.lastModified();
+        Long known;
+        synchronized (LENGTHS) {
+            known = LENGTHS.get(key);
+        }
+        if (known != null) {
+            if (known > 0) player.setLength(known);
+            return;
+        }
+        Bg.run(new Bg.Work<Long>() {
+            @Override
+            public Long run() throws Exception {
+                return Mp3Length.ofFile(file);
+            }
+        }, new Bg.Done<Long>() {
+            @Override
+            public void done(Long ms, Exception error) {
+                if (ms == null) return;
+                synchronized (LENGTHS) {
+                    LENGTHS.put(key, ms);
+                }
+                if (ms > 0 && engine == player) {
+                    player.setLength(ms);
+                    changed();
+                }
+            }
+        });
+    }
+
+    /** A streamed episode's real length, as the relay works it out from the start of the stream. */
+    private StreamProxy.LengthListener lengthFor(final Engine player) {
+        return new StreamProxy.LengthListener() {
+            @Override
+            public void onLength(final long ms) {
+                Bg.main(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (engine != player) return;
+                        player.setLength(ms);
+                        changed();
+                    }
+                });
+            }
+        };
     }
 
     /** Shows what the station says is on, while this engine is the one playing. */

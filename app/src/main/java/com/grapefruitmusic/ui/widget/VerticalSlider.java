@@ -103,9 +103,8 @@ public class VerticalSlider extends View {
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(13 * density);
         paint.setColor(sliding ? fillColor : labelColor);
-        paint.setFakeBoldText(true);
+        paint.setTypeface(com.grapefruitmusic.ui.Fonts.semiBold());
         canvas.drawText(Math.round(value * 100) + "%", pill.centerX(), getPaddingTop() + 15 * density, paint);
-        paint.setFakeBoldText(false);
 
         paint.setColor(trackColor);
         canvas.drawRoundRect(pill, r, r, paint);

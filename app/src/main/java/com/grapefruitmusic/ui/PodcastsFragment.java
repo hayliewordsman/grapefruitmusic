@@ -107,9 +107,7 @@ public final class PodcastsFragment extends BaseFragment {
             field = Ui.field(c, 16, false, "Podcast name");
             field.setSingleLine(true);
             field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
-            field.setTypeface(
-                    android.graphics.Typeface.create(
-                            "sans-serif", android.graphics.Typeface.NORMAL));
+            field.setTypeface(Fonts.regular());
             field.setMinHeight(Ui.dp(c, 48));
             addHeaderControl(header, field, 10);
             addHeaderControl(header, Ui.button(c, "Search Podcasts", v -> load()), 8);

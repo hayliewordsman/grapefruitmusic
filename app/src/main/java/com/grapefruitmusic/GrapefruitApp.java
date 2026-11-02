@@ -18,6 +18,7 @@ public final class GrapefruitApp extends Application {
     public void onCreate() {
         super.onCreate();
         Prefs.init(this);
+        com.grapefruitmusic.ui.Fonts.init(this);
         Tls.install(this);
         com.grapefruitmusic.podcast.PodcastRefresh.schedule(this);
         // Manifest connectivity broadcasts are not delivered to modern target SDKs. Keep a

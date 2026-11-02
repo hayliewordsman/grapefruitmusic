@@ -75,7 +75,7 @@ public final class Ui {
         TextView t = new TextView(c);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         t.setTextColor(color(c, colorAttr));
-        t.setTypeface(android.graphics.Typeface.create("sans-serif", bold ? Typeface.BOLD : Typeface.NORMAL));
+        t.setTypeface(Fonts.of(sp, bold));
         t.setSingleLine(true);
         t.setEllipsize(TextUtils.TruncateAt.END);
         return t;
@@ -204,7 +204,7 @@ public final class Ui {
         e.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         e.setTextColor(color(c, R.attr.gfTextPrimary));
         e.setHintTextColor(color(c, R.attr.gfTextSecondary));
-        if (bold) e.setTypeface(Typeface.DEFAULT_BOLD);
+        e.setTypeface(Fonts.of(sp, bold));
         e.setHint(hint);
         return e;
     }

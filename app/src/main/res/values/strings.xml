@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Grapefruit Music</string>
+    <string name="app_name">Grapefruit Music &amp; Podcasts</string>
+    <!-- Under the icon in the launcher, where there's room for one word. -->
+    <string name="launcher_name">Grapefruit</string>
 </resources>

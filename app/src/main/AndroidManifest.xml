@@ -32,6 +32,7 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
+            android:theme="@style/Theme.Grapefruit.Launch"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize" />
@@ -45,7 +46,7 @@
             android:enabled="true"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_grapefruit_dark"
-            android:label="@string/app_name"
+            android:label="@string/launcher_name"
             android:targetActivity=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -57,7 +58,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_grapefruit_light"
-            android:label="@string/app_name"
+            android:label="@string/launcher_name"
             android:targetActivity=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -69,7 +70,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_starlight"
-            android:label="@string/app_name"
+            android:label="@string/launcher_name"
             android:targetActivity=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -81,7 +82,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_pitch_black"
-            android:label="@string/app_name"
+            android:label="@string/launcher_name"
             android:targetActivity=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

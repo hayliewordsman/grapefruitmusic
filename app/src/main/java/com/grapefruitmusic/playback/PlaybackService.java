@@ -101,7 +101,7 @@ public final class PlaybackService extends Service implements Player.Listener, R
     public int onStartCommand(Intent intent, int flags, int startId) {
         foreground = true;
         startForeground(1, com.grapefruitmusic.compat.Platform.notification(this, "playback", "Playback")
-                .setSmallIcon(R.drawable.ic_stat_grapefruit).setContentTitle("Grapefruit Music").build());
+                .setSmallIcon(R.drawable.ic_stat_grapefruit).setContentTitle(getString(R.string.app_name)).build());
         String action = intent != null ? intent.getAction() : null;
         if (ACTION_CLOSE.equals(action)) {
             close();

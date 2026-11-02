@@ -179,7 +179,7 @@ public class EqualizerView extends View {
             canvas.drawRect(left(), y - hair / 2, getWidth() - 8 * density, y + hair / 2, paint);
         }
         text.setColor(textColor);
-        text.setTypeface(Typeface.DEFAULT);
+        text.setTypeface(com.grapefruitmusic.ui.Fonts.regular());
         text.setTextAlign(Paint.Align.RIGHT);
         float lift = (text.descent() + text.ascent()) / 2;
         canvas.drawText("+" + Math.round(maxDb), left() - 6 * density, yFor(maxDb) - lift, text);
@@ -245,7 +245,7 @@ public class EqualizerView extends View {
         }
         if (active >= 0) {
             text.setColor(BOTTOM);
-            text.setTypeface(Typeface.DEFAULT_BOLD);
+            text.setTypeface(com.grapefruitmusic.ui.Fonts.semiBold());
             float db = gains[active];
             String label = (db > 0 ? "+" : db < 0 ? "−" : "")
                     + String.format(Locale.US, db == Math.round(db) ? "%.0f" : "%.1f", Math.abs(db)) + " dB";

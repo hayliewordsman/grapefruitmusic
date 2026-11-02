@@ -34,6 +34,8 @@ public final class Dsp {
     /** Song position of the next frame in (negative while Live Mode's crowd cheers before it). */
     private long songFrame;
     private volatile long songDurationMs = -1;
+    /** songDurationMs as last given to the stage (audio thread). */
+    private long stageDurationMs = -1;
     /**
      * Live Mode borrows Karaoke Mode's separator for the lead vocal the crowd sings along to. Set
      * (for the rest of the run) if that keeps the audio thread too busy: the crowd then follows the
@@ -184,7 +186,6 @@ public final class Dsp {
     /** The song's length in ms, -1 if unknown: Live Mode's ovation starts as the music ends. */
     public void setSongDuration(long ms) {
         songDurationMs = ms;
-        if (stage != null) stage.setDuration(durationFrames());
     }
 
     private long durationFrames() {
@@ -193,6 +194,7 @@ public final class Dsp {
     }
 
     private LiveStage newStage() {
+        stageDurationMs = songDurationMs;
         return new LiveStage(rate, LiveCrowd.get(), songFrame, durationFrames());
     }
 
@@ -256,6 +258,10 @@ public final class Dsp {
             if (eqFilters[b] == null) continue;
             k[bands] = eqFilters[b];
             ks[bands++] = eqState[b];
+        }
+        if (stage != null && songDurationMs != stageDurationMs) {
+            stageDurationMs = songDurationMs;
+            stage.setDuration(durationFrames());
         }
         int boost = boostLevel;
         double g = volume * Math.pow(10, BOOST_DB[boost] / 20);

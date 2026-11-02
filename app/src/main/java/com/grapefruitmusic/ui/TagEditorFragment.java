@@ -225,6 +225,7 @@ public final class TagEditorFragment extends BaseFragment {
         e.setBackgroundColor(0);
         e.setSingleLine(true);
         e.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        e.setTypeface(Fonts.regular());
         e.setTextColor(Ui.color(c, R.attr.gfTextPrimary));
         e.setHintTextColor(Ui.color(c, R.attr.gfTextSecondary));
         e.setPadding(0, Ui.dp(c, 4), 0, Ui.dp(c, 4));

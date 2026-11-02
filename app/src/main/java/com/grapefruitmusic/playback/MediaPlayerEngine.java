@@ -13,6 +13,7 @@ final class MediaPlayerEngine implements Engine {
     private final MediaPlayer mp = new MediaPlayer();
     private Callback callback;
     private final PendingSeek seek = new PendingSeek();
+    private volatile long length = -1;
 
     MediaPlayerEngine(Context context) {
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -99,7 +100,13 @@ final class MediaPlayerEngine implements Engine {
 
     @Override
     public int getDuration() {
-        return mp.getDuration();
+        long l = length;
+        return l > 0 ? (int) Math.min(Integer.MAX_VALUE, l) : mp.getDuration();
+    }
+
+    @Override
+    public void setLength(long ms) {
+        length = ms;
     }
 
     @Override

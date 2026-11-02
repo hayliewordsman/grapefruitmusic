@@ -125,6 +125,7 @@ public class TuningDial extends View {
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(12 * density);
+        paint.setTypeface(com.grapefruitmusic.ui.Fonts.regular());
         for (int i = Math.max(0, first); i <= Math.min(steps, last); i++) {
             float x = cx + i * spacing - position;
             // Fade toward the ends, like a drum turning away.

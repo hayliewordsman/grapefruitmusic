@@ -36,6 +36,13 @@ interface Engine {
     /** In ms, or a value <= 0 if unknown. */
     int getDuration();
 
+    /**
+     * The real length in ms, found from the file itself (see {@link Mp3Length}), for when the
+     * decoder's own idea of it is wrong.
+     */
+    default void setLength(long ms) {
+    }
+
     /** Volume Match and ducking, 0 to 1. */
     void setVolume(float volume);
 

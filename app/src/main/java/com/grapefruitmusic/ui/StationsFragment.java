@@ -141,6 +141,7 @@ public final class StationsFragment extends BaseFragment implements Player.Liste
         field.setBackgroundColor(0);
         field.setSingleLine(true);
         field.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        field.setTypeface(Fonts.regular());
         field.setTextColor(Ui.color(c, R.attr.gfTextPrimary));
         field.setHintTextColor(Ui.color(c, R.attr.gfTextSecondary));
         field.setPadding(Ui.dp(c, 8), Ui.dp(c, 2), 0, Ui.dp(c, 2));
