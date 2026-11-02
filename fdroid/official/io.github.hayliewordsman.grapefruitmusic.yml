@@ -21,9 +21,9 @@ Repo: https://github.com/hayliewordsman/grapefruitmusic.git
 Binaries: https://github.com/hayliewordsman/grapefruitmusic/releases/download/v%v/grapefruit-music-%v.apk
 
 Builds:
-  - versionName: '4.1'
-    versionCode: 47
-    commit: cfc89d3495369d6d3a7ddb3fe05c636f3537d3aa
+  - versionName: 4.1.1
+    versionCode: 48
+    commit: d8abe9ea266bff1a3a24f957f9aadcc0df9a9aa9
     subdir: app
     sudo:
       - apt-get update
@@ -56,5 +56,5 @@ MaintainerNotes: |-
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9.]+$
-CurrentVersion: '4.1'
-CurrentVersionCode: 47
+CurrentVersion: 4.1.1
+CurrentVersionCode: 48
