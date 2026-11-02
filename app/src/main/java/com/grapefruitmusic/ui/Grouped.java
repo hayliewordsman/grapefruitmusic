@@ -27,7 +27,16 @@ final class Grouped {
         ScrollView scroll = new ScrollView(c);
         scroll.setBackgroundColor(Ui.color(c, R.attr.gfGroupedBackground));
         scroll.setFillViewport(true);
-        LinearLayout content = new LinearLayout(c);
+        // On a wide screen the rows keep to a readable width, centred.
+        final int widest = Ui.dp(c, 640);
+        LinearLayout content = new LinearLayout(c) {
+            @Override
+            protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                int side = Math.max(0, (MeasureSpec.getSize(widthMeasureSpec) - widest) / 2);
+                if (getPaddingLeft() != side) setPadding(side, getPaddingTop(), side, getPaddingBottom());
+                super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            }
+        };
         content.setOrientation(LinearLayout.VERTICAL);
         content.setPadding(0, 0, 0, Ui.dp(c, 32));
         scroll.addView(content);

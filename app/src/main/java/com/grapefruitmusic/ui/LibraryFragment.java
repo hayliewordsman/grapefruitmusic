@@ -131,7 +131,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
             heading.addView(recentTitle);
             heading.addView(status);
             grid.setTitle(heading);
-            int perColumn = adapter.landscapeRows(62 + 60 + 80);
+            int perColumn = adapter.landscapeRows(60 + 80);
             adapter.setStacked(perColumn);
             grid.setShape(perColumn, adapter.cardTextHeight());
             grid.setAdapter(adapter);

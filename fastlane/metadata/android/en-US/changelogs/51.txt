@@ -1,0 +1,2 @@
+5.0 beta 2
+Landscape and square screens (Unihertz Titan, Clicks Communicator): the tabs are a rail at the side, Now Playing has two columns (artwork, then the title, controls and buttons), and Settings keeps to a readable width.

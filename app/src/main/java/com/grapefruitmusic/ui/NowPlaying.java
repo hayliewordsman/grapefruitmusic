@@ -728,13 +728,18 @@ final class NowPlaying {
 
     /** Full-width shared player; only the inner arrangement changes with available room. */
     private void configureContentLayout(Configuration config) {
-        boolean landscape = config.screenWidthDp > config.screenHeightDp * 1.2f;
+        // Two columns on a wide or square screen (a phone on its side, a tablet, a Unihertz Titan):
+        // the artwork at the left; the title, the controls and the buttons at the right.
+        boolean landscape = Ui.wide(config);
         boolean compact = config.screenHeightDp < 500;
+        LinearLayout content = (LinearLayout) root.findViewById(R.id.np_content);
         LinearLayout body = (LinearLayout)root.findViewById(R.id.np_main);
         LinearLayout controls = (LinearLayout)root.findViewById(R.id.np_controls);
         View stage = root.findViewById(R.id.np_stage);
         FrameLayout artwork = (FrameLayout)root.findViewById(R.id.np_art_group);
         View metadata = root.findViewById(R.id.np_metadata);
+        View buttons = root.findViewById(R.id.np_buttons);
+        View radioRow = root.findViewById(R.id.np_radio_buttons);
         // The progress track starts 24dp in: its 14dp margin plus 10dp thumb inset.
         // PlayerMetadata already supplies a 12dp outer gap; landscape labels live in controls.
         int metadataPadding = Ui.dp(activity, landscape ? 24 : 12);
@@ -746,23 +751,41 @@ final class NowPlaying {
             if (landscape) controls.addView(metadata, 0, new LinearLayout.LayoutParams(-1, -2));
             else artwork.addView(metadata, new FrameLayout.LayoutParams(-1, -2));
         }
+        // The buttons (Lyrics, Up Next...) and the radio's row: under the controls in two columns,
+        // across the bottom otherwise.
+        ViewGroup buttonsHome = landscape ? controls : content;
+        for (View v : new View[]{radioRow, buttons}) {
+            if (v.getParent() == buttonsHome) continue;
+            ViewGroup.LayoutParams lp = v.getLayoutParams();
+            ((ViewGroup) v.getParent()).removeView(v);
+            buttonsHome.addView(v, lp);
+        }
         body.setOrientation(landscape ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL);
-        stage.setLayoutParams(landscape ? new LinearLayout.LayoutParams(0, -1, 1)
+        // The artwork takes a little less than half; the controls the rest.
+        stage.setLayoutParams(landscape ? new LinearLayout.LayoutParams(0, -1, 0.44f)
                 : new LinearLayout.LayoutParams(-1, 0, 1));
-        controls.setLayoutParams(landscape ? new LinearLayout.LayoutParams(0, -1, 1)
+        controls.setLayoutParams(landscape ? new LinearLayout.LayoutParams(0, -1, 0.56f)
                 : new LinearLayout.LayoutParams(-1, -2));
-        int padding = Ui.dp(activity, landscape ? 12 : 0);
-        controls.setPadding(padding, 0, padding, 0);
-        // Shuffle, back, play, on, repeat: smaller where the row is short of room (a short screen,
-        // a narrow phone, or half a sideways screen).
-        int across = landscape ? config.screenWidthDp / 2 : config.screenWidthDp;
-        boolean tight = compact || across < 360;
-        resizeHeight(root.findViewById(R.id.np_transport), tight ? 68 : 88);
+        int padding = Ui.dp(activity, landscape ? 8 : 0);
+        controls.setPadding(padding, 0, padding, Ui.dp(activity, landscape ? 8 : 0));
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, compact ? 20 : 24);
+        // Shuffle, back, play, on, repeat: the biggest set that fits across the row (the whole
+        // screen, or the controls' column), down to a square phone's.
+        int across = landscape ? Math.round(config.screenWidthDp * 0.56f) - 2 * 8 - 16 : config.screenWidthDp - 16;
+        int[][] sets = {{42, 54, 80, 14}, {38, 48, 68, 10}, {34, 42, 58, 8}, {30, 38, 50, 5}, {28, 34, 46, 4}};
+        int[] set = sets[sets.length - 1];
+        for (int[] s : sets) {
+            if (2 * s[0] + 2 * s[1] + s[2] + 4 * s[3] <= across && (!compact || s[2] <= 62)) {
+                set = s;
+                break;
+            }
+        }
+        int small = set[0], middle = set[1], big = set[2], gap = set[3];
+        resizeHeight(root.findViewById(R.id.np_transport), big + 8);
         resizeHeight(root.findViewById(R.id.np_volume_row), compact ? 28 : 36);
-        resizeHeight(root.findViewById(R.id.np_buttons), 60);
+        resizeHeight(buttons, compact ? 54 : 60);
         resizeHeight(root.findViewById(R.id.np_grabber), compact ? 48 : 60);
         resizeHeight(scrubber, compact ? 26 : 32);
-        int small = tight ? 36 : 42, middle = tight ? 46 : 54, big = tight ? 62 : 80, gap = tight ? 8 : 14;
         IconView[] row = {btnShuffle, prev, play, next, btnRepeat};
         for (int i = 0; i < row.length; i++) {
             IconView button = row[i];

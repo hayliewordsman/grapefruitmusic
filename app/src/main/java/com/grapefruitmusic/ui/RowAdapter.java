@@ -65,9 +65,11 @@ final class RowAdapter extends BaseAdapter {
         secondary = Ui.color(context, R.attr.gfTextSecondary);
     }
 
-    /** Is the screen sideways (library pages scroll sideways then)? */
+    /** Is the screen wide (library pages scroll sideways then)? */
     static boolean landscape(Context c) {
-        return c.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+        // Wide, not just sideways: a square screen (a Unihertz Titan) keeps the up-and-down pages.
+        Configuration config = c.getResources().getConfiguration();
+        return config.screenWidthDp > config.screenHeightDp * 1.2f;
     }
 
     /**

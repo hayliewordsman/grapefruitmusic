@@ -68,6 +68,14 @@ public final class Ui {
         return tv.resourceId;
     }
 
+    /**
+     * A wide or square screen (a phone on its side, a tablet, a Unihertz Titan): the tabs are a rail
+     * at the side, and Now Playing has two columns.
+     */
+    public static boolean wide(android.content.res.Configuration c) {
+        return c.screenWidthDp >= c.screenHeightDp * 0.85f;
+    }
+
     public static int accent(Context c) {
         return color(c, R.attr.gfAccent);
     }

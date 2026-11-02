@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:background="?attr/gfBackground">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+    <!-- The page column; on a wide or square screen the tabs are a rail at its left (MainActivity.fitBars). -->
+    <LinearLayout android:id="@+id/frame" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
+    <LinearLayout android:id="@+id/column" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical">
         <FrameLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
         <View android:id="@+id/mini_separator" android:layout_width="match_parent" android:layout_height="0dp" android:visibility="gone" />
         <LinearLayout android:id="@+id/mini_player" android:layout_width="match_parent" android:layout_height="64dp" android:layout_marginLeft="12dp" android:layout_marginRight="12dp" android:layout_marginTop="4dp" android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="10dp" android:paddingRight="8dp" android:visibility="gone">
@@ -13,7 +15,8 @@
             <com.grapefruitmusic.ui.widget.IconView android:id="@+id/mini_next" android:layout_width="44dp" android:layout_height="44dp" android:layout_marginLeft="2dp" android:padding="12dp" />
         </LinearLayout>
         <!-- The tabs: a floating pill, centred. -->
-        <LinearLayout android:id="@+id/tab_bar" android:layout_width="wrap_content" android:layout_height="60dp" android:layout_gravity="center_horizontal" android:layout_marginBottom="10dp" android:layout_marginTop="8dp" android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="6dp" android:paddingRight="6dp" />
+        <LinearLayout android:id="@+id/tab_bar" android:layout_width="wrap_content" android:layout_height="60dp" android:layout_gravity="center_horizontal" android:layout_marginBottom="10dp" android:layout_marginTop="8dp" android:gravity="center" android:orientation="horizontal" android:paddingLeft="6dp" android:paddingRight="6dp" />
+    </LinearLayout>
     </LinearLayout>
     <View android:id="@+id/np_dim" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000000" android:clickable="true" android:visibility="gone" />
     <com.grapefruitmusic.ui.widget.NowPlayingCard android:id="@+id/np_card" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="16dp" android:visibility="gone">

@@ -265,13 +265,12 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         LinearLayout bar = (LinearLayout) findViewById(R.id.tab_bar);
         // A floating pill: the page shows around it.
         bar.setBackground(Ui.shape(this, Ui.color(this, R.attr.gfSurface), Ui.dp(this, 30), true, false));
-        tabNames = getResources().getConfiguration().screenWidthDp >= 360;
+        tabNames = false;
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int index = TAB_IDS[i];
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.HORIZONTAL);
             item.setGravity(Gravity.CENTER);
-            item.setMinimumWidth(Ui.dp(this, tabNames ? 52 : 48));
             item.setPadding(Ui.dp(this, 14), 0, Ui.dp(this, 14), 0);
             item.setContentDescription(TAB_NAMES[i]);
             IconView icon = Ui.icon(this, TAB_ICONS[i], 0, 22);
@@ -462,25 +461,62 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         nowPlaying.configurationChanged();
     }
 
-    /** On a short screen (a phone turned sideways), the mini player and tabs take less height. */
+    /**
+     * The tabs: a pill along the bottom, or on a wide or square screen (a phone on its side, a tablet,
+     * a Unihertz Titan) a rail up the left, so pages keep their height. On a short screen the mini
+     * player and tabs take less room.
+     */
     private void fitBars() {
-        boolean compact = getResources().getConfiguration().screenHeightDp < 500;
-        View bar = findViewById(R.id.tab_bar);
-        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) bar.getLayoutParams();
-        lp.height = Ui.dp(this, compact ? 52 : 60);
-        lp.topMargin = Ui.dp(this, compact ? 4 : 8);
-        lp.bottomMargin = Ui.dp(this, compact ? 6 : 10);
+        Configuration config = getResources().getConfiguration();
+        boolean rail = Ui.wide(config);
+        boolean compact = config.screenHeightDp < 500;
+        LinearLayout bar = (LinearLayout) findViewById(R.id.tab_bar);
+        LinearLayout frame = (LinearLayout) findViewById(R.id.frame);
+        LinearLayout column = (LinearLayout) findViewById(R.id.column);
+        ViewGroup parent = (ViewGroup) bar.getParent();
+        if (rail && parent != frame) {
+            parent.removeView(bar);
+            frame.addView(bar, 0);
+        } else if (!rail && parent != column) {
+            parent.removeView(bar);
+            column.addView(bar);
+        }
+        bar.setOrientation(rail ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
+        int pad = Ui.dp(this, 6);
+        bar.setPadding(pad, pad, pad, pad);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                rail ? ViewGroup.LayoutParams.WRAP_CONTENT : Ui.dp(this, compact ? 52 : 60));
+        lp.gravity = rail ? Gravity.CENTER_VERTICAL : Gravity.CENTER_HORIZONTAL;
+        if (rail) {
+            lp.leftMargin = Ui.dp(this, 10);
+            lp.rightMargin = Ui.dp(this, 2);
+        } else {
+            lp.topMargin = Ui.dp(this, compact ? 4 : 8);
+            lp.bottomMargin = Ui.dp(this, compact ? 6 : 10);
+        }
         bar.setLayoutParams(lp);
+        // Names beside the chosen tab's icon: along the bottom, where there's room.
+        tabNames = !rail && config.screenWidthDp >= 360;
+        int item = Ui.dp(this, compact ? 44 : 48);
+        for (int i = 0; i < bar.getChildCount(); i++) {
+            View tab = bar.getChildAt(i);
+            LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(
+                    rail ? item : ViewGroup.LayoutParams.WRAP_CONTENT, item);
+            if (i > 0) {
+                if (rail) ip.topMargin = Ui.dp(this, compact ? 2 : 6);
+                else ip.leftMargin = Ui.dp(this, 2);
+            }
+            tab.setPadding(rail ? 0 : Ui.dp(this, 14), 0, rail ? 0 : Ui.dp(this, 14), 0);
+            tab.setMinimumWidth(rail ? 0 : Ui.dp(this, 48));
+            tab.setLayoutParams(ip);
+        }
         LinearLayout.LayoutParams mp = (LinearLayout.LayoutParams) mini.getLayoutParams();
         mp.height = Ui.dp(this, compact ? 56 : 64);
+        // With the tabs at the side, the mini player sits at the bottom with a little room under it.
+        mp.bottomMargin = rail ? Ui.dp(this, 10) : 0;
+        mp.topMargin = Ui.dp(this, rail ? 6 : 4);
         mini.setLayoutParams(mp);
-        int item = Ui.dp(this, compact ? 42 : 48);
-        LinearLayout tabs = (LinearLayout) bar;
-        for (int i = 0; i < tabs.getChildCount(); i++) {
-            ViewGroup.LayoutParams ip = tabs.getChildAt(i).getLayoutParams();
-            ip.height = item;
-            tabs.getChildAt(i).setLayoutParams(ip);
-        }
+        highlightTab();
     }
 
     @Override

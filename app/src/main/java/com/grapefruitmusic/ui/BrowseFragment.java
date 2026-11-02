@@ -157,7 +157,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
             android.widget.FrameLayout area = new android.widget.FrameLayout(c);
             grid = new HorizontalGrid(c);
             grid.setPadding(0, Ui.dp(c, 4), 0, Ui.dp(c, 8));
-            int perColumn = adapter.landscapeRows(62 + 60 + 96);
+            int perColumn = adapter.landscapeRows(60 + 96);
             adapter.setStacked(perColumn);
             grid.setShape(perColumn, adapter.cardTextHeight());
             grid.setAdapter(adapter);
