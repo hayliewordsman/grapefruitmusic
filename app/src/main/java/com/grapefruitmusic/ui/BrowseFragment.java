@@ -13,12 +13,12 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.grapefruitmusic.R;
 import com.grapefruitmusic.data.PlaylistMeta;
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.playback.Player;
 import com.grapefruitmusic.source.MusicSource;
+import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.ui.widget.FastScrollListView;
 import com.grapefruitmusic.ui.widget.HorizontalGrid;
 import com.grapefruitmusic.ui.widget.Icons;
@@ -31,13 +31,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Playlists, Artists, Albums, Songs, or one artist's albums. */
-public final class BrowseFragment extends BaseFragment implements Downloads.Listener, Player.Listener {
+/**
+ * Playlists, Artists, Albums, Songs, or one artist's albums. The first four are Library sections:
+ * shown in place under the Library's menu (SectionMenu), for the current source.
+ */
+public final class BrowseFragment extends BaseFragment implements Downloads.Listener, Player.Listener,
+        Sources.Listener {
     static final int PLAYLISTS = 1;
     static final int ARTISTS = 2;
     static final int ALBUMS = 3;
     static final int SONGS = 4;
     static final int ARTIST_ALBUMS = 5;
+    private static final String ARG_SECTION = "section";
 
     private ListView list;
     /** Landscape: the sideways grid instead of list (pages of cards only). */
@@ -55,6 +60,20 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         b.putInt(ARG_MODE, mode);
         f.setArguments(b);
         return f;
+    }
+
+    /** A Library section (mode PLAYLISTS to SONGS), for the current source, under the Library's menu. */
+    static BrowseFragment section(int mode) {
+        BrowseFragment f = new BrowseFragment();
+        Bundle b = args(null, null, null);
+        b.putInt(ARG_MODE, mode);
+        b.putBoolean(ARG_SECTION, true);
+        f.setArguments(b);
+        return f;
+    }
+
+    private boolean isSection() {
+        return getArguments().getBoolean(ARG_SECTION);
     }
 
     private int mode() {
@@ -98,12 +117,15 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
         Context c = getActivity();
         boolean sideways = RowAdapter.landscape(c) && !listed();
-        LinearLayout header = Ui.header(c, backLabel(), title(), goBack());
-        if (backLabel() == null) {
-            // Used as the Playlists tab: say which source the playlists come from.
-            TextView from = Ui.text(c, 15, R.attr.gfTextSecondary, false);
-            from.setText(source().name());
-            header.addView(from);
+        // A Library section has the Library's menu instead of a header of its own.
+        SectionMenu menu = isSection() ? SectionMenu.library(this, mode()) : null;
+        LinearLayout header;
+        if (menu != null) {
+            header = new LinearLayout(c);
+            header.setOrientation(LinearLayout.VERTICAL);
+            header.setPadding(Ui.dp(c, 16), Ui.dp(c, 4), Ui.dp(c, 16), 0);
+        } else {
+            header = Ui.header(c, backLabel(), title(), goBack());
         }
         // Under the title: Shuffle All for songs, New Playlist for playlists that can be made.
         LinearLayout shuffle = null;
@@ -138,7 +160,21 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         });
         boolean turned = turnedSinceLastView();
         View page;
-        if (sideways) {
+        if (sideways && menu != null) {
+            // Beside the menu column: the cards, scrolling sideways (no pill on these sections).
+            android.widget.FrameLayout area = new android.widget.FrameLayout(c);
+            grid = new HorizontalGrid(c);
+            grid.setPadding(0, Ui.dp(c, 14), 0, Ui.dp(c, 8));
+            int perColumn = adapter.landscapeRows(SectionMenu.WIDE_RESERVED_DP);
+            adapter.setStacked(perColumn);
+            grid.setShape(perColumn, adapter.cardTextHeight());
+            grid.setAdapter(adapter);
+            area.addView(grid);
+            area.addView(status, new android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            list = null;
+            page = area;
+        } else if (sideways) {
             // Sideways: the header stays put and the cards scroll sideways under it.
             LinearLayout column = new LinearLayout(c);
             column.setOrientation(LinearLayout.VERTICAL);
@@ -174,11 +210,12 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
             if (shuffle != null) {
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
-                lp.topMargin = Ui.dp(c, 10);
+                lp.topMargin = Ui.dp(c, menu != null ? 6 : 10);
                 lp.bottomMargin = Ui.dp(c, 6);
                 header.addView(shuffle, lp);
             }
-            list.addHeaderView(header, null, false);
+            if (menu == null || shuffle != null) list.addHeaderView(header, null, false);
+            else list.setPadding(0, Ui.dp(c, 4), 0, 0);
             list.addFooterView(status, null, false);
             list.setAdapter(adapter);
             if (longList) {
@@ -229,7 +266,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         } else {
             load();
         }
-        return page;
+        return menu != null ? menu.around(page) : page;
     }
 
     @Override
@@ -382,9 +419,24 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
         if (mode() == PLAYLISTS) load();
     }
 
+    /** Back from a Library section: to the first one, Recently Added. */
+    @Override
+    boolean onBackPressed() {
+        if (!isSection()) return false;
+        main().showLibrary(SectionMenu.FIRST);
+        return true;
+    }
+
+    /** A Library section shows the current source: another source starts the sections afresh. */
+    @Override
+    public void onSourcesChanged() {
+        if (isSection()) main().showLibrary(mode());
+    }
+
     @Override
     public void onResume() {
         super.onResume();
+        if (isSection()) Sources.get(getActivity()).addListener(this);
         Downloads.get(getActivity()).addListener(this);
         Player.get(getActivity()).addListener(this);
         // Songs whose tags were just changed show the new ones.
@@ -395,6 +447,7 @@ public final class BrowseFragment extends BaseFragment implements Downloads.List
 
     @Override
     public void onPause() {
+        Sources.get(getActivity()).removeListener(this);
         Downloads.get(getActivity()).removeListener(this);
         Player.get(getActivity()).removeListener(this);
         super.onPause();

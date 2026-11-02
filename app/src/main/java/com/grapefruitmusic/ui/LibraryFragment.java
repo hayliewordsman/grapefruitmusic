@@ -1,19 +1,15 @@
 package com.grapefruitmusic.ui;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.grapefruitmusic.R;
 import com.grapefruitmusic.data.PlaylistMeta;
 import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.model.MediaItem;
@@ -21,22 +17,20 @@ import com.grapefruitmusic.source.DownloadedSource;
 import com.grapefruitmusic.source.MusicSource;
 import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.ui.widget.HorizontalGrid;
-import com.grapefruitmusic.ui.widget.IconView;
-import com.grapefruitmusic.ui.widget.Icons;
 
 import java.util.List;
 
-/** The Library tab: source picker, Playlists / Artists / Albums / Songs, and Recently Added. */
+/**
+ * The Library tab's first section, Recently Added, under the Library's menu (where the music comes
+ * from, and chips for the other sections: see SectionMenu).
+ */
 public final class LibraryFragment extends BaseFragment implements Sources.Listener, Downloads.Listener {
     private ListView list;
-    /** Landscape: the sideways page instead of list. */
+    /** Wide screens: cards scrolling sideways instead of list. */
     private HorizontalGrid grid;
     private RowAdapter adapter;
-    private TextView sourceName;
-    /** The chips: a row that scrolls sideways, or (wide screens) stacked in the menu column. */
-    private LinearLayout chipBox;
-    private boolean stackChips;
-    private TextView recentTitle;
+    /** The title and chips, shared with the Library's other sections. */
+    private SectionMenu menu;
     private TextView status;
     private int generation;
     /** Recently Added for recentFor (a source id). Kept while an album page is on top. */
@@ -59,62 +53,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
         final Context c = getActivity();
-        LinearLayout top = new LinearLayout(c);
-        top.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout header = Ui.header(c, null, "Library", null);
-        IconView search = Ui.circleButton(c, Icons.SEARCH, 42, "Search");
-        search.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                main().showTab(MainActivity.TAB_SEARCH);
-            }
-        });
-        Ui.headerAction(header, search);
-        top.addView(header);
-
-        // Chips: where the music comes from (chosen, in the accent; tap to change), then its
-        // Playlists, Artists, Albums and Songs. In a row that scrolls sideways; on a wide screen,
-        // where they share the menu column with the title, stacked down it.
-        stackChips = RowAdapter.landscape(c);
-        View chips;
-        if (stackChips) {
-            chipBox = new LinearLayout(c);
-            chipBox.setOrientation(LinearLayout.VERTICAL);
-            chipBox.setPadding(Ui.dp(c, 16), Ui.dp(c, 6), Ui.dp(c, 16), Ui.dp(c, 6));
-            chips = chipBox;
-        } else {
-            android.widget.HorizontalScrollView row = Ui.chipRow(c);
-            chipBox = (LinearLayout) row.getChildAt(0);
-            chips = row;
-        }
-        LinearLayout source = new LinearLayout(c);
-        source.setOrientation(LinearLayout.HORIZONTAL);
-        source.setGravity(Gravity.CENTER_VERTICAL);
-        source.setMinimumHeight(Ui.dp(c, 38));
-        source.setPadding(Ui.dp(c, 16), 0, Ui.dp(c, 12), 0);
-        source.setBackground(Ui.accentFill(c, Ui.dp(c, 19), false));
-        sourceName = Ui.text(c, 14, R.attr.gfTextPrimary, false);
-        sourceName.setTypeface(Fonts.semiBold());
-        sourceName.setTextColor(Ui.onAccent(c));
-        // Stacked, the chevron goes at the far end.
-        source.addView(sourceName, stackChips ? new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1)
-                : new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        IconView down = Ui.icon(c, Icons.CHEVRON_DOWN, Ui.onAccent(c), 14);
-        ((LinearLayout.LayoutParams) down.getLayoutParams()).leftMargin = Ui.dp(c, 6);
-        source.addView(down);
-        source.setContentDescription("Choose where the music comes from");
-        source.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                pickSource();
-            }
-        });
-        if (stackChips) source.setPadding(Ui.dp(c, 20), 0, Ui.dp(c, 16), 0);
-        addChip(source);
-        top.addView(chips, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        recentTitle = Ui.sectionTitle(c, "Recently Added");
+        menu = SectionMenu.library(this, SectionMenu.FIRST);
         status = Ui.status(c);
 
         adapter = new RowAdapter(c, new RowAdapter.Listener() {
@@ -133,32 +72,24 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         });
         boolean turned = turnedSinceLastView();
         View page;
-        if (RowAdapter.landscape(c)) {
-            // Sideways: the menu is the first column, then Recently Added, two high, scrolling on.
+        if (menu.wide) {
+            // Beside the menu column: Recently Added, two high if they fit, scrolling sideways.
+            FrameLayout area = new FrameLayout(c);
             grid = new HorizontalGrid(c);
-            // Clear of the mini player and tab bar below, like the other sideways pages.
-            grid.setPadding(0, 0, 0, Ui.dp(c, 8));
-            ScrollView menu = new ScrollView(c);
-            menu.setVerticalScrollBarEnabled(false);
-            menu.addView(top);
-            menu.setLayoutParams(new ViewGroup.LayoutParams(Ui.dp(c, 300), ViewGroup.LayoutParams.MATCH_PARENT));
-            grid.setLeading(menu);
-            LinearLayout heading = new LinearLayout(c);
-            heading.setOrientation(LinearLayout.VERTICAL);
-            heading.addView(recentTitle);
-            heading.addView(status);
-            grid.setTitle(heading);
-            int perColumn = adapter.landscapeRows(60 + 80);
+            grid.setPadding(0, Ui.dp(c, 14), 0, Ui.dp(c, 8));
+            int perColumn = adapter.landscapeRows(SectionMenu.WIDE_RESERVED_DP);
             adapter.setStacked(perColumn);
             grid.setShape(perColumn, adapter.cardTextHeight());
             grid.setAdapter(adapter);
+            area.addView(grid);
+            area.addView(status, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
             list = null;
-            page = grid;
+            page = area;
         } else {
             list = new ListView(c);
             RowAdapter.style(list);
-            top.addView(recentTitle);
-            list.addHeaderView(top, null, false);
+            list.setPadding(0, Ui.dp(c, 4), 0, 0);
             list.addFooterView(status, null, false);
             list.setAdapter(adapter);
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -178,7 +109,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         } else {
             restoreScroll(list);
         }
-        return page;
+        return menu.around(page);
     }
 
     @Override
@@ -188,7 +119,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
             int position = list.getFirstVisiblePosition() - list.getHeaderViewsCount();
             firstShown = position >= 0 ? position * 2 : -1;
         } else if (grid != null) {
-            firstShown = grid.isPastLeading() ? grid.getFirstVisibleColumn() * grid.getRows() : -1;
+            firstShown = grid.getFirstVisibleColumn() * grid.getRows();
         }
         super.onDestroyView();
     }
@@ -229,8 +160,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
 
     private void refresh(boolean force) {
         final MusicSource s = Sources.get(getActivity()).current();
-        sourceName.setText(s.name());
-        buildRows(s);
+        menu.setSource(s);
         boolean sameSource = s.id().equals(recentFor);
         // Keep a server's albums; phone and download lists are cheap to re-read (and may have
         // changed, e.g. after removing a download), so refresh those quietly.
@@ -279,13 +209,11 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         MusicSource s = Sources.get(getActivity()).current();
         if (recent == null) {
             adapter.setItems(new java.util.ArrayList<MediaItem>(), true, false);
-            recentTitle.setVisibility(View.VISIBLE);
             status.setText(error != null ? error : "Loading\u2026");
             status.setVisibility(View.VISIBLE);
             return;
         }
         adapter.setItems(recent, true, false);
-        recentTitle.setVisibility(recent.isEmpty() ? View.GONE : View.VISIBLE);
         if (recent.isEmpty()) {
             status.setText(s instanceof DownloadedSource
                     ? "Nothing downloaded yet. Open an album on your server and tap Download."
@@ -294,61 +222,5 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         } else {
             status.setVisibility(View.GONE);
         }
-    }
-
-    private void buildRows(final MusicSource s) {
-        Context c = getActivity();
-        // The source chip stays; the others are made afresh for this source.
-        while (chipBox.getChildCount() > 1) chipBox.removeViewAt(1);
-        addRow(c, "Playlists", BrowseFragment.PLAYLISTS, s);
-        addRow(c, "Artists", BrowseFragment.ARTISTS, s);
-        addRow(c, "Albums", BrowseFragment.ALBUMS, s);
-        addRow(c, "Songs", BrowseFragment.SONGS, s);
-    }
-
-    private void addRow(Context c, String label, final int mode, final MusicSource s) {
-        TextView t = Ui.chip(c, label, false);
-        t.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                push(BrowseFragment.newInstance(s.id(), mode, null, "Library"));
-            }
-        });
-        if (stackChips) {
-            t.setGravity(Gravity.CENTER_VERTICAL);
-            t.setPadding(Ui.dp(c, 20), 0, Ui.dp(c, 16), 0);
-        }
-        addChip(t);
-    }
-
-    /** A chip into the row, or down the stack (full width, a pill each). */
-    private void addChip(View chip) {
-        Context c = chip.getContext();
-        LinearLayout.LayoutParams lp;
-        if (stackChips) {
-            lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 44));
-            lp.bottomMargin = Ui.dp(c, 8);
-        } else {
-            lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.rightMargin = Ui.dp(c, 8);
-        }
-        chipBox.addView(chip, lp);
-    }
-
-    private void pickSource() {
-        final Context c = getActivity();
-        final List<MusicSource> all = Sources.get(c).all();
-        String[] names = new String[all.size() + 1];
-        for (int i = 0; i < all.size(); i++) names[i] = all.get(i).name() + "  ·  " + all.get(i).typeLabel();
-        names[all.size()] = "Add a Server…";
-        Ui.dialog(c)
-                .setTitle("Show music from")
-                .setItems(names, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which < all.size()) Sources.get(c).setCurrent(all.get(which));
-                        else AddServerDialog.show(getActivity());
-                    }
-                })
-                .show();
     }
 }

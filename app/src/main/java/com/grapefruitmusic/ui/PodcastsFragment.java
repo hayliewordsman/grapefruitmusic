@@ -29,7 +29,37 @@ public final class PodcastsFragment extends BaseFragment {
         return getArguments() == null ? HOME : getArguments().getInt("podcast_mode");
     }
 
-    public static PodcastsFragment downloads() { return page(DOWNLOADED, null); }
+    /** A Podcasts section (SectionMenu.FIRST: Discover, SUBSCRIPTIONS or DOWNLOADS) under the tab's chips. */
+    static PodcastsFragment section(int section) {
+        return page(section == SectionMenu.SUBSCRIPTIONS ? SUBSCRIPTIONS
+                : section == SectionMenu.DOWNLOADS ? DOWNLOADED : HOME, null);
+    }
+
+    /** Discover, Subscriptions and Downloads are the tab's sections; a show and search open on top. */
+    private boolean isSection() {
+        int mode = mode();
+        return mode == HOME || mode == SUBSCRIPTIONS || mode == DOWNLOADED;
+    }
+
+    private int sectionNumber() {
+        int mode = mode();
+        return mode == SUBSCRIPTIONS ? SectionMenu.SUBSCRIPTIONS
+                : mode == DOWNLOADED ? SectionMenu.DOWNLOADS : SectionMenu.FIRST;
+    }
+
+    @Override
+    boolean rebuildsOnRotate() {
+        // The sections' menu is a column on a wide screen.
+        return isSection();
+    }
+
+    /** Back from Subscriptions or Downloads: to the first section, Discover. */
+    @Override
+    boolean onBackPressed() {
+        if (!isSection() || mode() == HOME) return false;
+        main().showPodcasts(SectionMenu.FIRST);
+        return true;
+    }
 
     public static PodcastsFragment show(MediaItem show) {
         return page(SHOW, show);
@@ -55,34 +85,16 @@ public final class PodcastsFragment extends BaseFragment {
         PodcastStore store = PodcastStore.get(c);
         LinearLayout root = new LinearLayout(c);
         root.setOrientation(LinearLayout.VERTICAL);
-        String title =
-                mode == SHOW
-                        ? item().title
-                        : mode == SEARCH
-                                ? "Search Podcasts"
-                                : mode == DOWNLOADED
-                                        ? "Episode Downloads"
-                                        : mode == SUBSCRIPTIONS ? "Subscriptions" : "Podcasts";
-        LinearLayout header =
-                Ui.header(
-                        c, mode == HOME ? null : "Podcasts", title, mode == HOME ? null : goBack());
-        root.addView(header);
+        // The sections share the tab's menu (title, search, chips); a show and search have a header.
+        SectionMenu menu = null;
+        LinearLayout header = null;
+        if (isSection()) {
+            menu = SectionMenu.podcasts(this, sectionNumber(), v -> main().push(page(SEARCH, null)));
+        } else {
+            header = Ui.header(c, "Podcasts", mode == SHOW ? item().title : "Search Podcasts", goBack());
+            root.addView(header);
+        }
         if (mode == HOME) {
-            // Search as a round button by the title; Subscriptions and Downloads as chips.
-            com.grapefruitmusic.ui.widget.IconView search =
-                    Ui.circleButton(c, com.grapefruitmusic.ui.widget.Icons.SEARCH, 42, "Search Podcasts");
-            search.setOnClickListener(v -> main().push(page(SEARCH, null)));
-            Ui.headerAction(header, search);
-            android.widget.HorizontalScrollView chips = Ui.chipRow(c);
-            // The header has its own side margins; the chips line up with the title.
-            chips.getChildAt(0).setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 6));
-            TextView subscriptions = Ui.chip(c, "Subscriptions", false);
-            subscriptions.setOnClickListener(v -> main().push(page(SUBSCRIPTIONS, null)));
-            Ui.addChip(chips, subscriptions);
-            TextView downloads = Ui.chip(c, "Downloads", false);
-            downloads.setOnClickListener(v -> main().push(page(DOWNLOADED, null)));
-            Ui.addChip(chips, downloads);
-            header.addView(chips);
             TextView disclosure = Ui.text(c, 12, R.attr.gfTextSecondary, false);
             disclosure.setSingleLine(false);
             disclosure.setLinkTextColor(Ui.accent(c));
@@ -110,7 +122,7 @@ public final class PodcastsFragment extends BaseFragment {
                     android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             disclosure.setText(text);
             disclosure.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
-            header.addView(disclosure);
+            menu.addNote(disclosure);
         }
         if (mode == SEARCH) {
             field = Ui.field(c, 16, false, "Podcast name");
@@ -132,8 +144,7 @@ public final class PodcastsFragment extends BaseFragment {
             hint.setSingleLine(false);
             hint.setText(
                     "Active downloads appear first. Open an episode's menu to cancel or retry.");
-            hint.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 8));
-            header.addView(hint);
+            menu.addNote(hint);
         }
         if (mode == SHOW) {
             final MediaItem show = item();
@@ -174,10 +185,10 @@ public final class PodcastsFragment extends BaseFragment {
                     Ui.button(
                             c,
                             "Browse Downloaded Episodes",
-                            v -> main().push(page(DOWNLOADED, null))),
+                            v -> main().showPodcasts(SectionMenu.DOWNLOADS)),
                     offlineButton);
             body.addView(offline, new FrameLayout.LayoutParams(-1, -1));
-            return root;
+            return menu != null ? menu.around(root) : root;
         }
         ListView list = new ListView(c);
         RowAdapter.style(list);
@@ -218,7 +229,7 @@ public final class PodcastsFragment extends BaseFragment {
                 });
         if (mode != SEARCH) load();
         else render();
-        return root;
+        return menu != null ? menu.around(root) : root;
     }
 
     private void editorialSources() {

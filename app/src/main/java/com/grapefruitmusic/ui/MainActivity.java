@@ -23,6 +23,7 @@ import com.grapefruitmusic.playback.Player;
 import com.grapefruitmusic.radio.Radio;
 import com.grapefruitmusic.radio.RadioArt;
 import com.grapefruitmusic.radio.StationText;
+import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.ui.widget.ArtworkView;
 import com.grapefruitmusic.ui.widget.IconView;
 import com.grapefruitmusic.ui.widget.Icons;
@@ -55,6 +56,10 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     private Radio radio;
     private NowPlaying nowPlaying;
     private int tab = TAB_LIBRARY;
+    /** The current tab's sections, by number, while it's open (see showSection). */
+    private final android.util.SparseArray<Fragment> sections = new android.util.SparseArray<Fragment>();
+    /** Whose sections those are: the Library's for one source, or Podcasts'. */
+    private String sectionsOwner;
     private final IconView[] tabIcons = new IconView[TAB_NAMES.length];
     private final TextView[] tabLabels = new TextView[TAB_NAMES.length];
     private TextView miniArtist;
@@ -371,19 +376,65 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
 
     /** Switches tab; tapping the current tab returns to its first page. */
     void showTab(int index) {
+        if (index == TAB_LIBRARY || index == TAB_PODCASTS) {
+            showSection(index, 0, true, false);
+            return;
+        }
         tab = index;
         highlightTab();
+        sections.clear();
         FragmentManager fm = getFragmentManager();
         if (fm.getBackStackEntryCount() > 0) {
             fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
         Fragment root;
         if (index == TAB_RADIO) root = new RadioFragment();
-        else if (index == TAB_PODCASTS) root = new PodcastsFragment();
         else if (index == TAB_SEARCH) root = new SearchFragment();
-        else if (index == TAB_SETTINGS) root = new SettingsFragment();
-        else root = new LibraryFragment();
+        else root = new SettingsFragment();
         fm.beginTransaction().replace(R.id.content, root).commit();
+    }
+
+    /** A Library section (SectionMenu.FIRST: Recently Added, or BrowseFragment.PLAYLISTS to SONGS) under its chips. */
+    void showLibrary(int section) {
+        showSection(TAB_LIBRARY, section, false, true);
+    }
+
+    /** A Podcasts section (SectionMenu.FIRST: Discover, SUBSCRIPTIONS or DOWNLOADS) under its chips. */
+    void showPodcasts(int section) {
+        showSection(TAB_PODCASTS, section, false, true);
+    }
+
+    /**
+     * Shows one of a tab's sections in place of the one showing (no slide, nothing to go Back
+     * to: the chips stay put and the page under them changes). Sections are kept while their tab
+     * is open, so each keeps what it loaded and where it was scrolled; the Library's are for one
+     * source, and start afresh for another.
+     *
+     * @param afresh drop the kept sections first (the tab was tapped)
+     * @param now    switch before returning (a chip was tapped), so quick taps can't land out of order
+     */
+    private void showSection(int tabIndex, int section, boolean afresh, boolean now) {
+        tab = tabIndex;
+        highlightTab();
+        FragmentManager fm = getFragmentManager();
+        if (fm.getBackStackEntryCount() > 0) {
+            fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+        String owner = tabIndex == TAB_LIBRARY ? "library:" + Sources.get(this).current().id() : "podcasts";
+        if (afresh || !owner.equals(sectionsOwner)) {
+            sections.clear();
+            sectionsOwner = owner;
+        }
+        Fragment showing = fm.findFragmentById(R.id.content);
+        Fragment page = sections.get(section);
+        if (page != null && page == showing) return;
+        if (page == null || page.isAdded()) {
+            if (tabIndex == TAB_PODCASTS) page = PodcastsFragment.section(section);
+            else page = section == SectionMenu.FIRST ? new LibraryFragment() : BrowseFragment.section(section);
+            sections.put(section, page);
+        }
+        fm.beginTransaction().replace(R.id.content, page).commit();
+        if (now) fm.executePendingTransactions();
     }
 
     /** Opens a page on top of the current one, sliding in like iOS. */
@@ -409,8 +460,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     private void handleIntent(Intent intent) {
         if (intent != null && intent.getBooleanExtra("open_podcast_downloads", false)) {
             intent.removeExtra("open_podcast_downloads");
-            showTab(TAB_PODCASTS);
-            push(PodcastsFragment.downloads());
+            showSection(TAB_PODCASTS, SectionMenu.DOWNLOADS, true, false);
         }
         if (intent != null && intent.getBooleanExtra("open_podcasts", false)) {
             intent.removeExtra("open_podcasts"); showTab(TAB_PODCASTS);
