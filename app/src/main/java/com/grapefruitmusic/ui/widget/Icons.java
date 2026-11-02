@@ -50,6 +50,12 @@ public final class Icons {
     public static final int CLOSE = 31;
     public static final int CHEERING = 32;
 
+    /** A circular arrow back, with "15": a podcast's 15 seconds back. */
+    public static final int BACK_15 = 33;
+
+    /** The same forward: 15 seconds on. */
+    public static final int FORWARD_15 = 34;
+
     private static final Paint PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final Path PATH = new Path();
     private static final RectF OVAL = new RectF();
@@ -60,6 +66,10 @@ public final class Icons {
     public static void draw(Canvas c, int icon, RectF bounds, int color) {
         if (icon == PLAY || icon == PAUSE || icon == NEXT || icon == PREVIOUS) {
             drawTransport(c, icon, bounds, color);
+            return;
+        }
+        if (icon == BACK_15 || icon == FORWARD_15) {
+            drawSkip(c, icon == FORWARD_15, bounds, color);
             return;
         }
         float size = Math.min(bounds.width(), bounds.height());
@@ -354,6 +364,45 @@ public final class Icons {
                 break;
         }
         c.restore();
+    }
+
+    /**
+     * 15 seconds back or on: a circular arrow round "15". In physical pixels, like the transport
+     * icons (big buttons: no blurry enlarged path texture on Android 4.x).
+     */
+    private static void drawSkip(Canvas c, boolean forward, RectF bounds, int color) {
+        float size = Math.min(bounds.width(), bounds.height());
+        float k = size / 24f;
+        float x0 = bounds.centerX() - size / 2f;
+        float y0 = bounds.centerY() - size / 2f;
+        Paint p = PAINT;
+        p.reset();
+        p.setAntiAlias(true);
+        p.setColor(color);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        p.setStrokeJoin(Paint.Join.ROUND);
+        stroke(p, 1.9f * k);
+        // Back: round from the top, clockwise to the left, with an arrowhead at the top pointing
+        // left (on round the circle the other way). Forward: the same, mirrored.
+        float dir = forward ? -1 : 1;
+        float cx = x0 + 12 * k;
+        OVAL.set(x0 + 3.5f * k, y0 + 4.5f * k, x0 + 20.5f * k, y0 + 21.5f * k);
+        if (forward) c.drawArc(OVAL, -90, -270, false, p);
+        else c.drawArc(OVAL, -90, 270, false, p);
+        Path path = PATH;
+        path.reset();
+        float top = y0 + 4.5f * k;
+        path.moveTo(cx, top);
+        path.lineTo(cx - dir * 2.4f * k, top);
+        path.moveTo(cx, top - 2.4f * k);
+        path.lineTo(cx - dir * 2.4f * k, top);
+        path.lineTo(cx, top + 2.4f * k);
+        c.drawPath(path, p);
+        p.setStyle(Paint.Style.FILL);
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setTextSize(7.4f * k);
+        p.setTypeface(com.grapefruitmusic.ui.Fonts.semiBold());
+        c.drawText("15", cx, y0 + 15.7f * k, p);
     }
 
     private static void stroke(Paint p, float width) {

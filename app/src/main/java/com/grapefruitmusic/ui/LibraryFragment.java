@@ -33,7 +33,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
     private HorizontalGrid grid;
     private RowAdapter adapter;
     private TextView sourceName;
-    private LinearLayout rows;
+    private android.widget.HorizontalScrollView chips;
     private TextView recentTitle;
     private TextView status;
     private int generation;
@@ -59,32 +59,43 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         final Context c = getActivity();
         LinearLayout top = new LinearLayout(c);
         top.setOrientation(LinearLayout.VERTICAL);
-        top.addView(Ui.header(c, null, "Library", null));
+        LinearLayout header = Ui.header(c, null, "Library", null);
+        IconView search = Ui.circleButton(c, Icons.SEARCH, 42, "Search");
+        search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                main().showTab(MainActivity.TAB_SEARCH);
+            }
+        });
+        Ui.headerAction(header, search);
+        top.addView(header);
 
-        LinearLayout chip = new LinearLayout(c);
-        chip.setOrientation(LinearLayout.HORIZONTAL);
-        chip.setGravity(Gravity.CENTER_VERTICAL);
-        chip.setPadding(Ui.dp(c, 16), Ui.dp(c, 2), Ui.dp(c, 16), Ui.dp(c, 10));
-        chip.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
-        sourceName = Ui.text(c, 15, R.attr.gfAccent, true);
-        chip.addView(sourceName);
-        IconView down = Ui.icon(c, Icons.CHEVRON_DOWN, Ui.accent(c), 16);
-        ((LinearLayout.LayoutParams) down.getLayoutParams()).leftMargin = Ui.dp(c, 4);
-        chip.addView(down);
-        chip.setOnClickListener(new View.OnClickListener() {
+        // Chips: where the music comes from (chosen, in the accent; tap to change), then its
+        // Playlists, Artists, Albums and Songs.
+        chips = Ui.chipRow(c);
+        LinearLayout source = new LinearLayout(c);
+        source.setOrientation(LinearLayout.HORIZONTAL);
+        source.setGravity(Gravity.CENTER_VERTICAL);
+        source.setMinimumHeight(Ui.dp(c, 38));
+        source.setPadding(Ui.dp(c, 16), 0, Ui.dp(c, 12), 0);
+        source.setBackground(Ui.accentFill(c, Ui.dp(c, 19), false));
+        sourceName = Ui.text(c, 14, R.attr.gfTextPrimary, false);
+        sourceName.setTypeface(Fonts.semiBold());
+        sourceName.setTextColor(Ui.onAccent(c));
+        source.addView(sourceName);
+        IconView down = Ui.icon(c, Icons.CHEVRON_DOWN, Ui.onAccent(c), 14);
+        ((LinearLayout.LayoutParams) down.getLayoutParams()).leftMargin = Ui.dp(c, 6);
+        source.addView(down);
+        source.setContentDescription("Choose where the music comes from");
+        source.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pickSource();
             }
         });
-        top.addView(chip, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+        Ui.addChip(chips, source);
+        top.addView(chips, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
-        top.addView(Ui.separator(c, 16));
-
-        rows = Ui.actionRow(c);
-        rows.setOrientation(LinearLayout.HORIZONTAL);
-        rows.setPadding(Ui.dp(c, 12), 0, Ui.dp(c, 12), 0);
-        top.addView(rows);
 
         recentTitle = Ui.sectionTitle(c, "Recently Added");
         status = Ui.status(c);
@@ -120,7 +131,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
             heading.addView(recentTitle);
             heading.addView(status);
             grid.setTitle(heading);
-            int perColumn = adapter.landscapeRows(50 + 60 + 56);
+            int perColumn = adapter.landscapeRows(62 + 60 + 80);
             adapter.setStacked(perColumn);
             grid.setShape(perColumn, adapter.cardTextHeight());
             grid.setAdapter(adapter);
@@ -270,7 +281,9 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
 
     private void buildRows(final MusicSource s) {
         Context c = getActivity();
-        rows.removeAllViews();
+        LinearLayout row = (LinearLayout) chips.getChildAt(0);
+        // The source chip stays; the others are made afresh for this source.
+        while (row.getChildCount() > 1) row.removeViewAt(1);
         addRow(c, "Playlists", BrowseFragment.PLAYLISTS, s);
         addRow(c, "Artists", BrowseFragment.ARTISTS, s);
         addRow(c, "Albums", BrowseFragment.ALBUMS, s);
@@ -278,14 +291,13 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
     }
 
     private void addRow(Context c, String label, final int mode, final MusicSource s) {
-        TextView t = Ui.button(c, label, new View.OnClickListener() {
+        TextView t = Ui.chip(c, label, false);
+        t.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
                 push(BrowseFragment.newInstance(s.id(), mode, null, "Library"));
             }
         });
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
-        lp.setMargins(Ui.dp(c, 4), Ui.dp(c, 8), Ui.dp(c, 4), Ui.dp(c, 8));
-        rows.addView(t, lp);
+        Ui.addChip(chips, t);
     }
 
     private void pickSource() {

@@ -154,13 +154,28 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     public void audioEffectsChanged() {
         MediaItem item = current();
         if (engine == null || item == null) return;
-        engine.setEffects(effects());
+        engine.setEffects(effectsFor(item));
         boolean want = wantsEffects(item);
         if (want != engine.hasEffects()) load(playWhenReady, item.live ? 0 : positionMs());
     }
 
     private boolean wantsEffects(MediaItem item) {
-        return effects().anyOn() && !item.key().equals(effectsFailedKey);
+        return effectsFor(item).anyOn() && !item.key().equals(effectsFailedKey);
+    }
+
+    /** Is this a podcast episode? */
+    public static boolean isPodcast(MediaItem item) {
+        return item != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId);
+    }
+
+    /**
+     * The sound settings for this item. Karaoke Mode and Live Mode are for music: a podcast plays
+     * without them (Volume Boost, the Equalizer and Mono Audio still apply).
+     */
+    public static Effects effectsFor(MediaItem item) {
+        Effects e = effects();
+        if (!isPodcast(item) || (!e.karaoke && !e.live)) return e;
+        return new Effects(e.boost, e.eq, e.mono, false, e.karaokeAmount, false, e.liveAmount);
     }
 
     /** The effects that are on, in a few words (for a crash report), or "". */
@@ -436,6 +451,24 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         return engine != null && prepared ? engine.getCurrentPosition() : startAtMs;
     }
 
+    /** Where the song playing is in the queue, from 1 (0 if nothing is). */
+    public int queueNumber() {
+        return current() != null ? position + 1 : 0;
+    }
+
+    /** How many songs the queue holds. */
+    public int queueLength() {
+        return order.size();
+    }
+
+    /** Jumps ms on (or back, if negative) within the song: a podcast's 15 seconds. */
+    public void skipBy(long ms) {
+        long dur = durationMs();
+        long to = Math.max(0, positionMs() + ms);
+        if (dur > 0) to = Math.min(to, Math.max(0, dur - 1000));
+        seekTo(to);
+    }
+
     public long durationMs() {
         if (engine != null && prepared) {
             int d = engine.getDuration();
@@ -589,7 +622,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         }
         playWhenReady = play && requestFocus();
         engine = wantsEffects(item) ? new DspEngine(context) : new MediaPlayerEngine(context);
-        engine.setEffects(effects());
+        engine.setEffects(effectsFor(item));
         final Engine player = engine;
         matchVolume = volumeMatch.volumeFor(item);
         measuring = false;
@@ -673,7 +706,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
             boolean podcast = com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId);
             com.grapefruitmusic.util.CrashReport.note("load " + (item.live ? "station" : podcast ? "episode" : "song")
                     + (file != null ? " (file)" : " (stream)") + " with " + player.getClass().getSimpleName()
-                    + describe(player.hasEffects() ? effects() : null) + ", from " + startAtMs / 1000 + " s");
+                    + describe(player.hasEffects() ? effectsFor(item) : null) + ", from " + startAtMs / 1000 + " s");
             if (file != null) {
                 player.setDataSource(file.getPath());
                 if (podcast) measureLength(player, file);

@@ -3,7 +3,6 @@ package com.grapefruitmusic.ui;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.InsetDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -107,11 +106,10 @@ final class RowAdapter extends BaseAdapter {
         return top.getMeasuredHeight() + c.artist.getMeasuredHeight() + Ui.dp(context, 6);
     }
 
-    /** Styles a page's ListView: inset hairlines, no Holo highlight. */
+    /** Styles a page's ListView: rows set apart by space rather than lines, no Holo highlight. */
     static void style(ListView list) {
-        Context c = list.getContext();
-        list.setDivider(new InsetDrawable(new ColorDrawable(Ui.color(c, R.attr.gfSeparator)), Ui.dp(c, 16), 0, 0, 0));
-        list.setDividerHeight(Math.max(1, Ui.dp(c, 0.5f)));
+        list.setDivider(null);
+        list.setDividerHeight(0);
         list.setSelector(new ColorDrawable(0));
         list.setCacheColorHint(0);
         list.setHeaderDividersEnabled(false);
@@ -268,8 +266,8 @@ final class RowAdapter extends BaseAdapter {
             LinearLayout row = new LinearLayout(context);
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setGravity(Gravity.CENTER_VERTICAL);
-            row.setMinimumHeight(Ui.dp(context, 56));
-            row.setPadding(Ui.dp(context, 16), Ui.dp(context, 6), Ui.dp(context, 10), Ui.dp(context, 6));
+            row.setMinimumHeight(Ui.dp(context, 64));
+            row.setPadding(Ui.dp(context, 16), Ui.dp(context, 8), Ui.dp(context, 10), Ui.dp(context, 8));
             row.setBackgroundResource(Ui.resource(context, R.attr.gfRowBackground));
             h = new RowHolder();
             h.art = Ui.artwork(context, 48);
@@ -277,8 +275,10 @@ final class RowAdapter extends BaseAdapter {
             LinearLayout texts = new LinearLayout(context);
             texts.setOrientation(LinearLayout.VERTICAL);
             texts.setPadding(Ui.dp(context, 12), 0, Ui.dp(context, 6), 0);
-            h.title = Ui.text(context, 16, R.attr.gfTextPrimary, false);
+            h.title = Ui.text(context, 15, R.attr.gfTextPrimary, false);
+            h.title.setTypeface(Fonts.medium());
             h.subtitle = Ui.text(context, 13, R.attr.gfTextSecondary, false);
+            h.subtitle.setPadding(0, Ui.dp(context, 2), 0, 0);
             texts.addView(h.title);
             texts.addView(h.subtitle);
             h.downloadStatus = Ui.text(context, 12, R.attr.gfTextSecondary, false);
@@ -351,11 +351,35 @@ final class RowAdapter extends BaseAdapter {
                 h.accessory.setVisibility(View.GONE);
             }
         } else {
-            h.accessory.setIcon(Icons.CHEVRON_RIGHT);
-            h.accessory.setColor(Ui.color(context, R.attr.gfDisclosure));
-            h.accessory.setVisibility(View.VISIBLE);
+            // A row that opens a page needs no arrow to say so.
+            h.accessory.setVisibility(View.GONE);
         }
         return convertView;
+    }
+
+    /** Plays an album, playlist or podcast (newest episode first) from its start. */
+    private void playAll(final MediaItem m) {
+        final com.grapefruitmusic.source.MusicSource source =
+                com.grapefruitmusic.source.Sources.get(context).byId(m.sourceId);
+        if (source == null) return;
+        final Context app = context.getApplicationContext();
+        com.grapefruitmusic.util.Bg.run(new com.grapefruitmusic.util.Bg.Work<List<MediaItem>>() {
+            @Override
+            public List<MediaItem> run() throws Exception {
+                return source.tracks(m);
+            }
+        }, new com.grapefruitmusic.util.Bg.Done<List<MediaItem>>() {
+            @Override
+            public void done(List<MediaItem> tracks, Exception error) {
+                if (error != null) {
+                    com.grapefruitmusic.util.Notice.show(context, "Couldn't open \u201c" + m.title + "\u201d");
+                } else if (tracks == null || tracks.isEmpty()) {
+                    com.grapefruitmusic.util.Notice.show(context, "Nothing to play in \u201c" + m.title + "\u201d yet");
+                } else {
+                    com.grapefruitmusic.playback.Player.get(app).play(tracks, 0, false);
+                }
+            }
+        });
     }
 
     static String subtitle(MediaItem m) {
@@ -378,6 +402,8 @@ final class RowAdapter extends BaseAdapter {
     private static final class Card {
         View root;
         ArtworkView art;
+        /** Plays the album, playlist or show straight away (the round button on its picture). */
+        IconView play;
         TextView title;
         TextView artist;
         IconView more;
@@ -423,16 +449,30 @@ final class RowAdapter extends BaseAdapter {
         v.setOrientation(LinearLayout.VERTICAL);
         v.setBackgroundResource(Ui.resource(context, R.attr.gfRowBackground));
         c.art = Ui.artwork(context, 0);
-        v.addView(c.art, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+        android.widget.FrameLayout picture = new android.widget.FrameLayout(context);
+        picture.addView(c.art, new android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        c.play = new IconView(context);
+        c.play.setIcon(Icons.PLAY);
+        int playPad = Ui.dp(context, 10);
+        c.play.setPadding(playPad + Ui.dp(context, 1), playPad, playPad - Ui.dp(context, 1), playPad);
+        Ui.styleCircle(c.play, true);
+        android.widget.FrameLayout.LayoutParams pl = new android.widget.FrameLayout.LayoutParams(
+                Ui.dp(context, 36), Ui.dp(context, 36), Gravity.BOTTOM | Gravity.RIGHT);
+        pl.rightMargin = pl.bottomMargin = Ui.dp(context, 8);
+        picture.addView(c.play, pl);
+        v.addView(picture, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         // Title, with a "⋯" for songs (the same menu as a long press).
         LinearLayout top = new LinearLayout(context);
         top.setOrientation(LinearLayout.HORIZONTAL);
         top.setGravity(Gravity.CENTER_VERTICAL);
         c.title = Ui.text(context, 14, R.attr.gfTextPrimary, false);
-        c.title.setPadding(0, Ui.dp(context, 5), 0, 0);
+        c.title.setTypeface(Fonts.semiBold());
+        c.title.setPadding(0, Ui.dp(context, 7), 0, 0);
         top.addView(c.title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         c.more = Ui.moreButton(context);
+        c.more.setBackground(null);
         int pad = Ui.dp(context, 3);
         c.more.setPadding(pad, Ui.dp(context, 5), 0, 0);
         c.more.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(context, 22), Ui.dp(context, 22)));
@@ -444,7 +484,8 @@ final class RowAdapter extends BaseAdapter {
         });
         top.addView(c.more);
         v.addView(top);
-        c.artist = Ui.text(context, 14, R.attr.gfTextSecondary, false);
+        c.artist = Ui.text(context, 13, R.attr.gfTextSecondary, false);
+        c.artist.setPadding(0, Ui.dp(context, 1), 0, 0);
         v.addView(c.artist);
         c.root = v;
         return c;
@@ -466,6 +507,15 @@ final class RowAdapter extends BaseAdapter {
         c.art.setCircle(m.kind == MediaItem.ARTIST);
         c.more.setTag(m);
         c.more.setVisibility(track ? View.VISIBLE : View.GONE);
+        boolean playable = m.kind == MediaItem.ALBUM || m.kind == MediaItem.PLAYLIST || m.kind == MediaItem.PODCAST;
+        c.play.setVisibility(playable ? View.VISIBLE : View.GONE);
+        c.play.setContentDescription("Play " + m.title);
+        c.play.setOnClickListener(playable ? new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playAll(m);
+            }
+        } : null);
         ArtworkLoader.get(context).into(c.art, m, Ui.dp(context, 180));
         c.root.setOnClickListener(new View.OnClickListener() {
             @Override

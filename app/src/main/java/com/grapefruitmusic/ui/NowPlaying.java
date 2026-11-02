@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.OvershootInterpolator;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
@@ -42,7 +41,6 @@ import com.grapefruitmusic.ui.widget.Scrubber;
 import com.grapefruitmusic.ui.widget.TuningDial;
 import com.grapefruitmusic.util.ArtworkLoader;
 import com.grapefruitmusic.util.Bg;
-import com.grapefruitmusic.util.Blur;
 import com.grapefruitmusic.util.Format;
 import com.grapefruitmusic.util.Notice;
 import com.grapefruitmusic.util.Prefs;
@@ -78,6 +76,11 @@ final class NowPlaying {
     private final TextView message;
     private final TextView title;
     private final TextView artist;
+    /** Where the music is from, between the round buttons at the top (the album, the show). */
+    private final TextView contextTitle;
+    private final boolean darkTheme;
+    /** A podcast episode: back and on are 15 seconds, not the previous and next episodes. */
+    private boolean skipMode;
     private final TextView elapsed;
     private final TextView remaining;
     private final Scrubber scrubber;
@@ -209,7 +212,6 @@ final class NowPlaying {
         accent = Ui.accent(a);
         secondary = Ui.color(a, R.attr.gfTextSecondary);
         primary = Ui.color(a, R.attr.gfTextPrimary);
-        int separator = Ui.color(a, R.attr.gfSeparator);
 
         dim = root.findViewById(R.id.np_dim);
         card = (NowPlayingCard) root.findViewById(R.id.np_card);
@@ -230,14 +232,17 @@ final class NowPlaying {
         prev = (IconView) root.findViewById(R.id.np_prev);
         next = (IconView) root.findViewById(R.id.np_next);
         btnLyrics = (IconView) root.findViewById(R.id.np_btn_lyrics);
-        btnShuffle = (IconView) root.findViewById(R.id.np_btn_shuffle);
-        btnRepeat = (IconView) root.findViewById(R.id.np_btn_repeat);
+        // Shuffle and repeat go either side of the transport, as small round buttons.
+        btnShuffle = Ui.circleButton(a, Icons.SHUFFLE, 42, "Shuffle");
+        btnRepeat = Ui.circleButton(a, Icons.REPEAT, 42, "Repeat");
+        LinearLayout transport = (LinearLayout) root.findViewById(R.id.np_transport);
+        transport.addView(btnShuffle, 0);
+        transport.addView(btnRepeat);
         btnKaraoke = (IconView) root.findViewById(R.id.np_btn_karaoke);
         btnLive = (IconView) root.findViewById(R.id.np_btn_live);
         btnQueue = (IconView) root.findViewById(R.id.np_btn_queue);
         btnStation = new com.grapefruitmusic.ui.widget.ActionIconView(a);
-        for (IconView button : new IconView[]{btnLyrics, btnQueue, btnKaraoke,
-                btnShuffle, btnRepeat, btnLive, btnStation}) {
+        for (IconView button : new IconView[]{btnLyrics, btnQueue, btnKaraoke, btnLive, btnStation}) {
             ((com.grapefruitmusic.ui.widget.ActionIconView)button).setLabelVisible(true);
         }
 
@@ -291,10 +296,15 @@ final class NowPlaying {
         IconView volLow = (IconView) root.findViewById(R.id.np_vol_low);
         IconView volHigh = (IconView) root.findViewById(R.id.np_vol_high);
 
-        card.setColors(Ui.color(a, R.attr.gfBackground), Ui.color(a, R.attr.gfScrim));
+        int background = Ui.color(a, R.attr.gfBackground);
+        darkTheme = ((background >> 16 & 0xff) * 299 + (background >> 8 & 0xff) * 587 + (background & 0xff) * 114) / 1000 < 128;
+        card.setColors(background, Ui.color(a, R.attr.gfScrim));
+        contextTitle = (TextView) root.findViewById(R.id.np_context);
+        contextTitle.setTypeface(Fonts.semiBold());
         art.setPlaceholderColors(Ui.color(a, R.attr.gfFill), secondary);
-        art.setCornerRadiusDp(6);
-        art.setShadowDp(14);
+        art.setCornerRadiusDp(18);
+        art.setShadowDp(18);
+        smallArt.setCornerRadiusDp(12);
         smallArt.setPlaceholderColors(Ui.color(a, R.attr.gfFill), secondary);
         root.findViewById(R.id.np_mini_header).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -302,8 +312,11 @@ final class NowPlaying {
                 setMode(MODE_ART);
             }
         });
-        scrubber.setColors(separator, secondary, secondary);
-        scrubber.setThumb(3.5f, 9, false);
+        // A thicker track filled in the accent, and a white thumb ringed with it.
+        scrubber.setColors((primary & 0x00ffffff) | 0x33000000, accent, 0xffffffff);
+        scrubber.setTrackDp(4);
+        scrubber.setThumb(7, 11, true);
+        scrubber.setThumbRing(accent, 2.5f);
         liveLabel = Ui.text(a, 12, R.attr.gfAccent, true);
         liveLabel.setText("\u25cf  LIVE");
         liveLabel.setGravity(Gravity.CENTER);
@@ -311,18 +324,21 @@ final class NowPlaying {
         ViewGroup scrubberRow = (ViewGroup) scrubber.getParent();
         scrubberRow.addView(liveLabel, scrubberRow.indexOfChild(scrubber) + 1,
                 new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(a, 30)));
-        volume.setColors(separator, secondary, Ui.color(a, R.attr.gfKnob));
+        volume.setColors((primary & 0x00ffffff) | 0x33000000, secondary, Ui.color(a, R.attr.gfKnob));
+        volume.setTrackDp(4);
         volume.setThumb(8, 10, true);
         prev.setIcon(Icons.PREVIOUS);
         next.setIcon(Icons.NEXT);
-        prev.setColor(primary);
-        next.setColor(primary);
+        Ui.styleCircle(prev, false);
+        Ui.styleCircle(next, false);
         IconView closeIcon = (IconView)root.findViewById(R.id.np_close);
-        closeIcon.setIcon(Icons.CHEVRON_DOWN);closeIcon.setColor(primary);
+        closeIcon.setIcon(Icons.CHEVRON_DOWN);
+        Ui.styleCircle(closeIcon, false);
         closeIcon.setContentDescription("Close Now Playing");
         closeIcon.setOnClickListener(v -> close());
         IconView moreIcon = (IconView)root.findViewById(R.id.np_more);
-        moreIcon.setIcon(Icons.MORE);moreIcon.setColor(primary);
+        moreIcon.setIcon(Icons.MORE);
+        Ui.styleCircle(moreIcon, false);
         moreIcon.setContentDescription("More actions");
         moreIcon.setOnClickListener(v -> {
             if (radio.inSession()) { PresetLabel.add(activity, radio.frequency()); return; }
@@ -335,8 +351,15 @@ final class NowPlaying {
                 else if (source != null) TrackActions.show((BaseFragment)fragment, current, source);
             }
         });
-        play.setColor(primary);
-        play.setBackground(GrapefruitDialog.rounded(accent, Ui.dp(a, 48)));
+        // The play button: the accent gradient, in a soft glow of it.
+        android.graphics.drawable.LayerDrawable glow = new android.graphics.drawable.LayerDrawable(
+                new android.graphics.drawable.Drawable[]{
+                        Ui.shape(a, (accent & 0x00ffffff) | 0x30000000, 0, false, true),
+                        Ui.accentPressable(a, 0, true)});
+        int glowInset = Ui.dp(a, 5);
+        glow.setLayerInset(1, glowInset, glowInset, glowInset, glowInset);
+        play.setBackground(glow);
+        play.setColor(Ui.onAccent(a));
         volLow.setIcon(Icons.SPEAKER_LOW);
         volHigh.setIcon(Icons.SPEAKER_HIGH);
         volLow.setColor(secondary);
@@ -404,6 +427,7 @@ final class NowPlaying {
             @Override
             public void onClick(View v) {
                 if (radioMode) radio.seek(false);
+                else if (skipMode) player.skipBy(-15000);
                 else player.previous();
             }
         });
@@ -411,6 +435,7 @@ final class NowPlaying {
             @Override
             public void onClick(View v) {
                 if (radioMode) radio.seek(true);
+                else if (skipMode) player.skipBy(15000);
                 else player.next();
             }
         });
@@ -728,16 +753,29 @@ final class NowPlaying {
                 : new LinearLayout.LayoutParams(-1, -2));
         int padding = Ui.dp(activity, landscape ? 12 : 0);
         controls.setPadding(padding, 0, padding, 0);
-        resizeHeight(root.findViewById(R.id.np_transport), compact ? 56 : 72);
+        // Shuffle, back, play, on, repeat: smaller where the row is short of room (a short screen,
+        // a narrow phone, or half a sideways screen).
+        int across = landscape ? config.screenWidthDp / 2 : config.screenWidthDp;
+        boolean tight = compact || across < 360;
+        resizeHeight(root.findViewById(R.id.np_transport), tight ? 68 : 88);
         resizeHeight(root.findViewById(R.id.np_volume_row), compact ? 28 : 36);
         resizeHeight(root.findViewById(R.id.np_buttons), 60);
-        resizeHeight(root.findViewById(R.id.np_grabber), compact ? 40 : 44);
-        resizeHeight(scrubber, compact ? 24 : 30);
-        for (IconView button : new IconView[]{prev, play, next}) {
-            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)button.getLayoutParams();
-            lp.width = lp.height = Ui.dp(activity, compact ? 48 : button == play ? 72 : 64);
-            if (button == play) lp.leftMargin = lp.rightMargin = Ui.dp(activity, compact ? 12 : 28);
+        resizeHeight(root.findViewById(R.id.np_grabber), compact ? 48 : 60);
+        resizeHeight(scrubber, compact ? 26 : 32);
+        int small = tight ? 36 : 42, middle = tight ? 46 : 54, big = tight ? 62 : 80, gap = tight ? 8 : 14;
+        IconView[] row = {btnShuffle, prev, play, next, btnRepeat};
+        for (int i = 0; i < row.length; i++) {
+            IconView button = row[i];
+            int size = button == play ? big : button == prev || button == next ? middle : small;
+            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) button.getLayoutParams();
+            if (lp == null) lp = new LinearLayout.LayoutParams(0, 0);
+            lp.width = lp.height = Ui.dp(activity, size);
+            lp.leftMargin = i == 0 ? 0 : Ui.dp(activity, gap);
+            lp.rightMargin = 0;
+            lp.gravity = Gravity.CENTER_VERTICAL;
             button.setLayoutParams(lp);
+            int pad = Math.round(Ui.dp(activity, size) * (button == play ? 0.33f : 0.27f));
+            button.setPadding(pad, pad, pad, pad);
         }
     }
 
@@ -821,6 +859,44 @@ final class NowPlaying {
         }).start();
     }
 
+    /** Back and on: 15 seconds in a podcast episode, else the previous and next songs. */
+    private void setSkipMode(boolean on) {
+        skipMode = on;
+        prev.setIcon(on ? Icons.BACK_15 : Icons.PREVIOUS);
+        next.setIcon(on ? Icons.FORWARD_15 : Icons.NEXT);
+        if (!radioMode) {
+            prev.setContentDescription(on ? "Back 15 seconds" : liveMode ? "Previous station" : "Previous");
+            next.setContentDescription(on ? "Forward 15 seconds" : liveMode ? "Next station" : "Next");
+        }
+    }
+
+    /**
+     * Only the buttons that do something for what's playing: a podcast has no lyrics, and Karaoke
+     * Mode and Live Mode are for music. The rest share the row.
+     */
+    private void showButtonsFor(MediaItem item) {
+        boolean podcast = Player.isPodcast(item);
+        btnLyrics.setVisibility(item.live || podcast ? View.GONE : View.VISIBLE);
+        btnKaraoke.setVisibility(podcast ? View.GONE : View.VISIBLE);
+        btnLive.setVisibility(podcast ? View.GONE : View.VISIBLE);
+        if (podcast && mode == MODE_LYRICS) setMode(MODE_ART);
+        LinearLayout row = (LinearLayout) musicButtons;
+        int shown = 0;
+        for (int i = 0; i < row.getChildCount(); i++) if (row.getChildAt(i).getVisibility() == View.VISIBLE) shown++;
+        // Three or fewer: a set width each, centred, rather than stretched across the row.
+        for (int i = 0; i < row.getChildCount(); i++) {
+            View b = row.getChildAt(i);
+            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) b.getLayoutParams();
+            int width = shown <= 3 ? Ui.dp(activity, 96) : 0;
+            float weight = shown <= 3 ? 0 : 1;
+            if (lp.width != width || lp.weight != weight) {
+                lp.width = width;
+                lp.weight = weight;
+                b.setLayoutParams(lp);
+            }
+        }
+    }
+
     private void showKaraoke() {
         btnKaraoke.setColor(Prefs.karaoke() ? accent : secondary);
         btnLive.setColor(Prefs.liveMode() ? accent : secondary);
@@ -846,9 +922,11 @@ final class NowPlaying {
         liveMode = false;
         liveLabel.setVisibility(View.GONE);
         btnLyrics.setVisibility(View.VISIBLE);
-        btnShuffle.setVisibility(View.VISIBLE);
-        btnRepeat.setVisibility(View.VISIBLE);
+        // Shuffle and repeat are by the transport now, which the radio shares: not for the radio.
+        btnShuffle.setVisibility(on ? View.GONE : View.VISIBLE);
+        btnRepeat.setVisibility(on ? View.GONE : View.VISIBLE);
         btnStation.setVisibility(View.GONE);
+        if (on) setSkipMode(false);
     }
 
     /** + or ✓: whether the station playing is in My Stations. */
@@ -879,6 +957,7 @@ final class NowPlaying {
 
     private void updateRadio() {
         int freq = radio.frequency();
+        setText(contextTitle, "FM Radio");
         setText(title, radio.title());
         setText((TextView) root.findViewById(R.id.np_album), "");
         int state = radio.state();
@@ -903,7 +982,7 @@ final class NowPlaying {
             Bitmap b = RadioArt.of(freq, radio.name(), Math.max(Ui.dp(activity, 300), 512));
             art.setBitmap(b);
             smallArt.setBitmap(b);
-            card.setBlurredArtwork(Blur.of(b));
+            tintFrom(b);
         }
         tick();
     }
@@ -914,20 +993,17 @@ final class NowPlaying {
         if (!text.equals(t.getText().toString())) t.setText(text);
     }
 
-    /** iOS 10: the artwork shrinks back when paused. */
+    /** The artwork keeps its size, playing or paused. */
     private void scaleArt(boolean playing) {
-        if (artPlaying == null || artPlaying != playing) {
-            float scale = playing ? 1f : 0.84f;
-            if (artPlaying == null || !open) {
-                art.setScaleX(scale);
-                art.setScaleY(scale);
-            } else {
-                art.animate().scaleX(scale).scaleY(scale).setDuration(380)
-                        .setInterpolator(playing ? new OvershootInterpolator(1.4f) : new DecelerateInterpolator())
-                        .setListener(null).start();
-            }
-            artPlaying = playing;
-        }
+        artPlaying = playing;
+    }
+
+    /** The background's gradient and the artwork's glow, in the artwork's colour. */
+    private void tintFrom(Bitmap b) {
+        int colour = NowPlayingCard.colourOf(b);
+        card.setTint(colour);
+        art.setShadowColor(colour == 0 ? 0x55000000
+                : (colour & 0x00ffffff) | (darkTheme ? 0x99000000 : 0x66000000));
     }
 
     /** Called whenever the player or the radio changes. */
@@ -958,13 +1034,22 @@ final class NowPlaying {
         }
         // Unchanged text is left alone, so a long station line keeps scrolling.
         setText(title, heading);
-        setText(artist, item.live ? line : item.artist);
+        String from = item.live ? "Internet Radio" : item.album;
+        setText(contextTitle, from == null || from.length() == 0 ? "Now Playing" : from);
+        String by = item.artist != null ? item.artist : "";
+        int number = player.queueNumber(), length = player.queueLength();
+        if (!item.live && length > 1 && number > 0) {
+            by = (by.length() == 0 ? "" : by + "  \u00b7  ") + number + "/" + length;
+        }
+        setText(artist, item.live ? line : by);
         setText((TextView) root.findViewById(R.id.np_album), item.live ? "" : item.album);
         setText(smallTitle, heading);
         setText(smallArtist, line);
         boolean playing = player.wantsToPlay();
         play.setIcon(playing ? (item.live ? Icons.STOP : Icons.PAUSE) : Icons.PLAY);
         if (item.live) showStationButton(item);
+        setSkipMode(Player.isPodcast(item) && !item.live);
+        showButtonsFor(item);
         btnShuffle.setColor(player.isShuffle() ? accent : secondary);
         btnRepeat.setIcon(player.repeatMode() == Player.REPEAT_ONE ? Icons.REPEAT_ONE : Icons.REPEAT);
         btnRepeat.setColor(player.repeatMode() == Player.REPEAT_OFF ? secondary : accent);
@@ -1006,7 +1091,7 @@ final class NowPlaying {
         Bitmap cached = ArtworkLoader.get(activity).cached(item, size);
         art.setBitmap(cached);
         smallArt.setBitmap(cached);
-        card.setBlurredArtwork(cached != null ? Blur.of(cached) : null);
+        tintFrom(cached);
         if (cached != null) return;
         ArtworkLoader.get(activity).load(item, size, new ArtworkLoader.Callback() {
             @Override
@@ -1014,7 +1099,7 @@ final class NowPlaying {
                 if (!key.equals(trackKey)) return;
                 art.setBitmap(bitmap);
                 smallArt.setBitmap(bitmap);
-                card.setBlurredArtwork(bitmap != null ? Blur.of(bitmap) : null);
+                tintFrom(bitmap);
             }
         });
     }
@@ -1091,7 +1176,7 @@ final class NowPlaying {
 
     private void showTimes(long pos, long dur) {
         elapsed.setText(Format.duration(pos));
-        remaining.setText(Format.remaining(pos, dur));
+        remaining.setText(Format.duration(dur));
     }
 
     private void tick() {

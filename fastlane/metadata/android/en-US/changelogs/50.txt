@@ -1,0 +1,3 @@
+5.0 beta 1
+A new look: floating tabs, big titles with round buttons, chips, rounded artwork with play buttons on album cards, and a Now Playing tinted by the artwork. Grapefruit's toggles stay.
+Podcasts: Now Playing skips 15 seconds back and on, and leaves out Lyrics, Karaoke and Live; Karaoke Mode and Live Mode no longer apply to podcasts.

@@ -172,7 +172,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
         actions.setPadding(Ui.dp(c, 16), Ui.dp(c, 8), Ui.dp(c, 16), Ui.dp(c, 4));
         boolean on = radio.wantsToPlay();
         LinearLayout listen = Ui.pill(c, on ? Icons.STOP : Icons.PLAY,
-                on ? "Stop" : "Listen to " + Radio.format(radio.frequency()));
+                on ? "Stop" : "Listen to " + Radio.format(radio.frequency()), true);
         listen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

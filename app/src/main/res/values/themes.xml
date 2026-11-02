@@ -25,6 +25,9 @@
         <item name="gfToggleOff">@color/light_toggle_off</item>
         <item name="gfToggleOffSegments">@color/light_toggle_off_segments</item>
         <item name="gfKnob">@color/light_knob</item>
+        <item name="gfAccentEnd">@color/light_accent_end</item>
+        <item name="gfOnAccent">@color/light_on_accent</item>
+        <item name="gfOutline">@color/light_outline</item>
         <!-- Grapefruit's own look for platform widgets, the same on every Android version. -->
         <item name="android:editTextStyle">@style/GrapefruitEditText.Light</item>
         <item name="android:textSelectHandle">@drawable/handle_middle</item>
@@ -63,6 +66,9 @@
         <item name="gfToggleOff">@color/dark_toggle_off</item>
         <item name="gfToggleOffSegments">@color/dark_toggle_off_segments</item>
         <item name="gfKnob">@color/dark_knob</item>
+        <item name="gfAccentEnd">@color/dark_accent_end</item>
+        <item name="gfOnAccent">@color/dark_on_accent</item>
+        <item name="gfOutline">@color/dark_outline</item>
         <!-- Grapefruit's own look for platform widgets, the same on every Android version. -->
         <item name="android:editTextStyle">@style/GrapefruitEditText.Dark</item>
         <item name="android:textSelectHandle">@drawable/handle_middle</item>
@@ -102,6 +108,9 @@
         <item name="gfToggleOff">@color/grapefruit_light_toggle_off</item>
         <item name="gfToggleOffSegments">@color/grapefruit_light_toggle_off_segments</item>
         <item name="gfKnob">@color/grapefruit_light_knob</item>
+        <item name="gfAccentEnd">@color/grapefruit_light_accent_end</item>
+        <item name="gfOnAccent">@color/grapefruit_light_on_accent</item>
+        <item name="gfOutline">@color/grapefruit_light_outline</item>
         <item name="android:editTextStyle">@style/GrapefruitEditText.GrapefruitLight</item>
     </style>
 
@@ -131,6 +140,9 @@
         <item name="gfToggleOff">@color/grapefruit_dark_toggle_off</item>
         <item name="gfToggleOffSegments">@color/grapefruit_dark_toggle_off_segments</item>
         <item name="gfKnob">@color/grapefruit_dark_knob</item>
+        <item name="gfAccentEnd">@color/grapefruit_dark_accent_end</item>
+        <item name="gfOnAccent">@color/grapefruit_dark_on_accent</item>
+        <item name="gfOutline">@color/grapefruit_dark_outline</item>
         <item name="android:editTextStyle">@style/GrapefruitEditText.GrapefruitDark</item>
     </style>
 

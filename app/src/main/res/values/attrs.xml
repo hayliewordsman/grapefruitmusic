@@ -22,6 +22,11 @@
     <attr name="gfToggleOffSegments" format="color" />
     <!-- The volume slider's knob. -->
     <attr name="gfKnob" format="color" />
+    <!-- 5.0: the accent's gradient (accent to this), what goes on it, and hairline outlines for
+         chips, round buttons and cards. -->
+    <attr name="gfAccentEnd" format="color" />
+    <attr name="gfOnAccent" format="color" />
+    <attr name="gfOutline" format="color" />
     <!-- The splash screen: background and logo (a layer-list). -->
     <attr name="gfSplash" format="reference" />
 </resources>

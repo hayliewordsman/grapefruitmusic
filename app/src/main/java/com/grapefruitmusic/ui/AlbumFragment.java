@@ -199,7 +199,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         LinearLayout buttons = Ui.actionRow(c);
         buttons.setOrientation(LinearLayout.HORIZONTAL);
         buttons.setPadding(0, Ui.dp(c, 14), 0, Ui.dp(c, 4));
-        LinearLayout playBtn = Ui.pill(c, Icons.PLAY, "Play");
+        LinearLayout playBtn = Ui.pill(c, Icons.PLAY, "Play", true);
         LinearLayout shuffleBtn = Ui.pill(c, Icons.SHUFFLE, "Shuffle");
         LinearLayout.LayoutParams l = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
         LinearLayout.LayoutParams r = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
@@ -311,7 +311,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         cancelButton = Ui.textButton(c, "Cancel", false);
         LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        cl.leftMargin = -Ui.dp(c, 10);
+        cl.leftMargin = 0;
         bar.addView(cancelButton, cl);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -323,7 +323,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         editButton = Ui.textButton(c, "Edit", false);
         LinearLayout.LayoutParams el = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        el.rightMargin = -Ui.dp(c, 10);
+        el.rightMargin = 0;
         bar.addView(editButton, el);
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override

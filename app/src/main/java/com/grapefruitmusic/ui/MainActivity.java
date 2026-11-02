@@ -42,7 +42,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     private static final int TAB_LIBRARY = 0;
     private static final int TAB_RADIO = 2;
     private static final int TAB_PODCASTS = 3;
-    private static final int TAB_SEARCH = 4;
+    static final int TAB_SEARCH = 4;
     private static final int TAB_SETTINGS = 5;
     private static final int[] TAB_IDS = {TAB_LIBRARY, TAB_RADIO, TAB_PODCASTS, TAB_SEARCH, TAB_SETTINGS};
     private static final String[] TAB_NAMES = {"Library", "Radio", "Podcasts", "Search", "Settings"};
@@ -57,6 +57,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     private int tab = TAB_LIBRARY;
     private final IconView[] tabIcons = new IconView[TAB_NAMES.length];
     private final TextView[] tabLabels = new TextView[TAB_NAMES.length];
+    private TextView miniArtist;
 
     private View mini;
     private View miniSeparator;
@@ -124,10 +125,16 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         // A title too long for the mini player scrolls by (marquee, in the layout); Android only
         // scrolls a selected line.
         miniTitle.setSelected(true);
+        miniTitle.setTypeface(Fonts.semiBold());
+        miniArtist = (TextView) findViewById(R.id.mini_artist);
+        miniArtist.setTypeface(Fonts.regular());
+        miniArt.setCornerRadiusDp(10);
+        // A card above the tabs, a shade darker while pressed.
+        mini.setBackground(Ui.pressable(this, Ui.color(this, R.attr.gfSurface), Ui.dp(this, 18), true));
         miniPlay = (IconView) findViewById(R.id.mini_play);
         IconView miniNext = (IconView) findViewById(R.id.mini_next);
         int primary = Ui.color(this, R.attr.gfTextPrimary);
-        miniPlay.setColor(primary);
+        Ui.styleCircle(miniPlay, true);
         miniNext.setColor(primary);
         miniNext.setIcon(Icons.NEXT);
         miniNext.setContentDescription("Next");
@@ -154,6 +161,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         });
 
         nowPlaying = new NowPlaying(this, findViewById(R.id.root));
+        fitBars();
 
         if (saved == null) {
             showTab(TAB_LIBRARY);
@@ -250,20 +258,29 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         getWindow().setBackgroundDrawable(null);
     }
 
+    /** Show a tab's name beside its icon when it's chosen (when there's room across). */
+    private boolean tabNames;
+
     private void buildTabBar() {
         LinearLayout bar = (LinearLayout) findViewById(R.id.tab_bar);
+        // A floating pill: the page shows around it.
+        bar.setBackground(Ui.shape(this, Ui.color(this, R.attr.gfSurface), Ui.dp(this, 30), true, false));
+        tabNames = getResources().getConfiguration().screenWidthDp >= 360;
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int index = TAB_IDS[i];
             LinearLayout item = new LinearLayout(this);
-            item.setOrientation(LinearLayout.VERTICAL);
+            item.setOrientation(LinearLayout.HORIZONTAL);
             item.setGravity(Gravity.CENTER);
-            item.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 2));
-            IconView icon = Ui.icon(this, TAB_ICONS[i], 0, 26);
+            item.setMinimumWidth(Ui.dp(this, tabNames ? 52 : 48));
+            item.setPadding(Ui.dp(this, 14), 0, Ui.dp(this, 14), 0);
+            item.setContentDescription(TAB_NAMES[i]);
+            IconView icon = Ui.icon(this, TAB_ICONS[i], 0, 22);
             item.addView(icon);
-            TextView label = Ui.text(this, 10, R.attr.gfTextSecondary, false);
+            TextView label = Ui.text(this, 14, R.attr.gfTextSecondary, false);
             label.setTypeface(Fonts.medium());
             label.setText(TAB_NAMES[i]);
-            label.setGravity(Gravity.CENTER_HORIZONTAL);
+            label.setPadding(Ui.dp(this, 8), 0, 0, 0);
+            label.setVisibility(View.GONE);
             item.addView(label, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
             item.setOnClickListener(new View.OnClickListener() {
@@ -273,18 +290,27 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
                     showTab(index);
                 }
             });
-            bar.addView(item, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    Ui.dp(this, 48));
+            if (i > 0) lp.leftMargin = Ui.dp(this, 2);
+            bar.addView(item, lp);
             tabIcons[i] = icon;
             tabLabels[i] = label;
         }
     }
 
+    /** The tab showing: its icon (and name, if there's room) on the accent pill; the others plain. */
     private void highlightTab() {
-        int accent = Ui.accent(this);
         int inactive = Ui.color(this, R.attr.gfTextSecondary);
+        int on = Ui.onAccent(this);
         for (int i = 0; i < TAB_NAMES.length; i++) {
-            tabIcons[i].setColor(TAB_IDS[i] == tab ? accent : inactive);
-            tabLabels[i].setTextColor(TAB_IDS[i] == tab ? accent : inactive);
+            boolean chosen = TAB_IDS[i] == tab;
+            View item = (View) tabIcons[i].getParent();
+            item.setBackground(chosen ? Ui.accentFill(this, Ui.dp(this, 24), false) : null);
+            item.setSelected(chosen);
+            tabIcons[i].setColor(chosen ? on : inactive);
+            tabLabels[i].setTextColor(on);
+            tabLabels[i].setVisibility(chosen && tabNames ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -432,7 +458,29 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        fitBars();
         nowPlaying.configurationChanged();
+    }
+
+    /** On a short screen (a phone turned sideways), the mini player and tabs take less height. */
+    private void fitBars() {
+        boolean compact = getResources().getConfiguration().screenHeightDp < 500;
+        View bar = findViewById(R.id.tab_bar);
+        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) bar.getLayoutParams();
+        lp.height = Ui.dp(this, compact ? 52 : 60);
+        lp.topMargin = Ui.dp(this, compact ? 4 : 8);
+        lp.bottomMargin = Ui.dp(this, compact ? 6 : 10);
+        bar.setLayoutParams(lp);
+        LinearLayout.LayoutParams mp = (LinearLayout.LayoutParams) mini.getLayoutParams();
+        mp.height = Ui.dp(this, compact ? 56 : 64);
+        mini.setLayoutParams(mp);
+        int item = Ui.dp(this, compact ? 42 : 48);
+        LinearLayout tabs = (LinearLayout) bar;
+        for (int i = 0; i < tabs.getChildCount(); i++) {
+            ViewGroup.LayoutParams ip = tabs.getChildAt(i).getLayoutParams();
+            ip.height = item;
+            tabs.getChildAt(i).setLayoutParams(ip);
+        }
     }
 
     @Override
@@ -445,6 +493,11 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     @Override
     public void onRadioChanged() {
         onPlayerChanged();
+    }
+
+    private void setMiniArtist(String text) {
+        miniArtist.setText(text == null ? "" : text);
+        miniArtist.setVisibility(text == null || text.length() == 0 ? View.GONE : View.VISIBLE);
     }
 
     /** Only when it changes: setting the same text again would start its scrolling over. */
@@ -464,12 +517,14 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         miniSeparator.setVisibility(show ? View.VISIBLE : View.GONE);
         if (onRadio) {
             setMiniTitle(radio.title());
+            setMiniArtist(radio.subtitle());
             miniPlay.setIcon(radio.wantsToPlay() ? Icons.STOP : Icons.PLAY);
             miniArt.setTag(R.id.art_request, null);
             miniArt.setBitmap(RadioArt.of(radio.frequency(), radio.name(), Ui.dp(this, 44)));
         } else if (item != null) {
-            setMiniTitle(item.live ? StationText.nowPlaying(item.title, item.artist, player.liveTitle())[0]
-                    : item.title);
+            String[] station = item.live ? StationText.nowPlaying(item.title, item.artist, player.liveTitle()) : null;
+            setMiniTitle(item.live ? station[0] : item.title);
+            setMiniArtist(item.live ? station[1] : item.artist);
             miniPlay.setIcon(player.wantsToPlay() ? (item.live ? Icons.STOP : Icons.PAUSE) : Icons.PLAY);
             ArtworkLoader.get(this).into(miniArt, item, Ui.dp(this, 44));
         }

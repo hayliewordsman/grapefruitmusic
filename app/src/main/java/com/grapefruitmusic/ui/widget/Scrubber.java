@@ -72,6 +72,23 @@ public class Scrubber extends View {
         invalidate();
     }
 
+    private float trackDp = 3;
+    private int ringColor;
+    private float ringDp;
+
+    /** The track's thickness, in dp (3 by default). */
+    public void setTrackDp(float dp) {
+        trackDp = dp;
+        invalidate();
+    }
+
+    /** A ring round the thumb, in color, ringDp thick (0: none). */
+    public void setThumbRing(int color, float ringDp) {
+        ringColor = color;
+        this.ringDp = ringDp;
+        invalidate();
+    }
+
     /** Thumb size in dp, at rest and while dragging. */
     public void setThumb(float restDp, float dragDp, boolean withShadow) {
         thumbRadius = restDp * density;
@@ -112,7 +129,7 @@ public class Scrubber extends View {
     protected void onDraw(Canvas canvas) {
         float pad = dragThumbRadius + density;
         float cy = getHeight() / 2f;
-        float h = 1.5f * density;
+        float h = trackDp / 2f * density;
         track.set(pad, cy - h, getWidth() - pad, cy + h);
         paint.clearShadowLayer();
         paint.setColor(trackColor);
@@ -121,9 +138,20 @@ public class Scrubber extends View {
         track.set(pad, cy - h, x, cy + h);
         paint.setColor(fillColor);
         canvas.drawRoundRect(track, h, h, paint);
+        float r = thumbRadius + (dragThumbRadius - thumbRadius) * grow;
+        if (ringColor != 0) {
+            // A ring in the fill's colour round the thumb.
+            paint.setColor(ringColor);
+            if (thumbShadow) paint.setShadowLayer(2 * density, 0, density, 0x40000000);
+            canvas.drawCircle(x, cy, r, paint);
+            paint.clearShadowLayer();
+            paint.setColor(thumbColor);
+            canvas.drawCircle(x, cy, Math.max(0, r - ringDp * density), paint);
+            return;
+        }
         paint.setColor(thumbColor);
         if (thumbShadow) paint.setShadowLayer(2 * density, 0, density, 0x40000000);
-        canvas.drawCircle(x, cy, thumbRadius + (dragThumbRadius - thumbRadius) * grow, paint);
+        canvas.drawCircle(x, cy, r, paint);
     }
 
     @Override

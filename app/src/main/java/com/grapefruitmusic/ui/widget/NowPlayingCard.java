@@ -2,9 +2,7 @@ package com.grapefruitmusic.ui.widget;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapShader;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -18,9 +16,9 @@ import android.widget.AbsListView;
 import android.widget.FrameLayout;
 
 /**
- * The iOS 10 Now Playing card: rounded top corners over a blurred copy of the artwork, and a
- * pull-down gesture to dismiss it. In landscape it's a panel at the right instead, rounded all
- * round and swiped right to dismiss.
+ * Now Playing: a page over everything, its background a gradient from the artwork's colour (at the
+ * top) to the theme's, pulled down to dismiss. In landscape it's a panel at the right instead,
+ * rounded all round and swiped right to dismiss.
  */
 public class NowPlayingCard extends FrameLayout {
     public interface DragListener {
@@ -32,14 +30,10 @@ public class NowPlayingCard extends FrameLayout {
     }
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
-    private final Paint scrimPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path shape = new Path();
     private final RectF rect = new RectF();
-    private final Matrix matrix = new Matrix();
     private final float radius;
     private final int touchSlop;
-    private Bitmap background;
-    private BitmapShader shader;
     private int baseColor = 0xffffffff;
     private int scrimColor = 0xe6ffffff;
 
@@ -61,21 +55,70 @@ public class NowPlayingCard extends FrameLayout {
     public NowPlayingCard(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWillNotDraw(false);
-        radius = 12 * getResources().getDisplayMetrics().density;
+        radius = 20 * getResources().getDisplayMetrics().density;
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
+    private int tint;
+    private boolean darkTheme;
+    private android.graphics.LinearGradient gradient;
+    private int gradientHeight;
+
+    /**
+     * The artwork's colour (0 for none), for the background's gradient. Stronger on dark themes;
+     * light themes only take a wash of it, so dark text stays easy to read.
+     */
+    public void setTint(int color) {
+        if (color == tint) return;
+        tint = color;
+        gradient = null;
+        invalidate();
+    }
+
+    /** The artwork's colour: the average of a small copy, livelier and kept to a middle shade. */
+    public static int colourOf(Bitmap b) {
+        if (b == null || b.getWidth() <= 0 || b.getHeight() <= 0) return 0;
+        Bitmap small;
+        try {
+            small = Bitmap.createScaledBitmap(b, 12, 12, true);
+        } catch (RuntimeException | OutOfMemoryError e) {
+            return 0;
+        }
+        long r = 0, g = 0, bl = 0;
+        int n = 0;
+        for (int y = 0; y < small.getHeight(); y++) {
+            for (int x = 0; x < small.getWidth(); x++) {
+                int px = small.getPixel(x, y);
+                r += (px >> 16) & 0xff;
+                g += (px >> 8) & 0xff;
+                bl += px & 0xff;
+                n++;
+            }
+        }
+        if (small != b) small.recycle();
+        if (n == 0) return 0;
+        float[] hsv = new float[3];
+        android.graphics.Color.RGBToHSV((int) (r / n), (int) (g / n), (int) (bl / n), hsv);
+        hsv[1] = Math.min(1f, hsv[1] * 1.35f + 0.08f);
+        hsv[2] = Math.max(0.35f, Math.min(0.75f, hsv[2]));
+        return android.graphics.Color.HSVToColor(hsv);
+    }
+
+    private static int mix(int a, int b, float t) {
+        int ar = (a >> 16) & 0xff, ag = (a >> 8) & 0xff, ab = a & 0xff;
+        int br = (b >> 16) & 0xff, bg = (b >> 8) & 0xff, bb = b & 0xff;
+        return 0xff000000 | (Math.round(ar + (br - ar) * t) << 16) | (Math.round(ag + (bg - ag) * t) << 8)
+                | Math.round(ab + (bb - ab) * t);
+    }
+
     public void setColors(int base, int scrim) {
+        darkTheme = ((base >> 16 & 0xff) * 299 + (base >> 8 & 0xff) * 587 + (base & 0xff) * 114) / 1000 < 128;
+        gradient = null;
         baseColor = base;
         scrimColor = scrim;
         invalidate();
     }
 
-    public void setBlurredArtwork(Bitmap blurred) {
-        background = blurred;
-        shader = blurred == null ? null : new BitmapShader(blurred, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
-        invalidate();
-    }
 
     /** Drags must start above this view (e.g. the scrubber). */
     public void setDragLimit(View limit) {
@@ -112,9 +155,9 @@ public class NowPlayingCard extends FrameLayout {
     private void buildShape(int w, int h) {
         shape.reset();
         rect.set(0, 0, w, h);
-        float bottom = side ? radius : 0;
-        shape.addRoundRect(rect, new float[]{radius, radius, radius, radius, bottom, bottom, bottom, bottom},
-                Path.Direction.CW);
+        // Full screen in portrait (square corners); the panel at the side is rounded all round.
+        float r = side ? radius : 0;
+        shape.addRoundRect(rect, new float[]{r, r, r, r, r, r, r, r}, Path.Direction.CW);
     }
 
     @Override
@@ -122,19 +165,18 @@ public class NowPlayingCard extends FrameLayout {
         paint.setShader(null);
         paint.setColor(baseColor);
         canvas.drawPath(shape, paint);
-        if (shader != null) {
-            float scale = Math.max(getWidth() / (float) background.getWidth(),
-                    getHeight() / (float) background.getHeight());
-            matrix.setScale(scale, scale);
-            matrix.postTranslate((getWidth() - background.getWidth() * scale) / 2f,
-                    (getHeight() - background.getHeight() * scale) / 2f);
-            shader.setLocalMatrix(matrix);
-            paint.setShader(shader);
+        if (tint != 0) {
+            if (gradient == null || gradientHeight != getHeight()) {
+                gradientHeight = getHeight();
+                int top = mix(baseColor, tint, darkTheme ? 0.55f : 0.30f);
+                int middle = mix(baseColor, tint, darkTheme ? 0.22f : 0.10f);
+                gradient = new android.graphics.LinearGradient(0, 0, 0, gradientHeight,
+                        new int[]{top, middle, baseColor}, new float[]{0f, 0.55f, 1f}, Shader.TileMode.CLAMP);
+            }
+            paint.setShader(gradient);
             canvas.drawPath(shape, paint);
             paint.setShader(null);
         }
-        scrimPaint.setColor(scrimColor);
-        canvas.drawPath(shape, scrimPaint);
     }
 
     private boolean startsInDragArea(float x, float y) {

@@ -184,7 +184,7 @@ public final class GrapefruitDialog extends Dialog {
             Context c = context;
             LinearLayout card = new LinearLayout(c);
             card.setOrientation(LinearLayout.VERTICAL);
-            card.setBackground(rounded(Ui.color(c, R.attr.gfSurface), Ui.dp(c, 16)));
+            card.setBackground(Ui.shape(c, Ui.color(c, R.attr.gfSurface), Ui.dp(c, 24), true, false));
             int pad = Ui.dp(c, 20);
             card.setPadding(pad, Ui.dp(c, 22), pad, Ui.dp(c, 16));
             if (title != null) {
@@ -234,7 +234,7 @@ public final class GrapefruitDialog extends Dialog {
             return card;
         }
 
-        /** Menu rows on a rounded sheet at the bottom, with Cancel below. */
+        /** Menu rows on a rounded sheet at the bottom: a handle, the title, the rows, then Cancel. */
         private View sheet(final GrapefruitDialog d) {
             Context c = context;
             FrameLayout frame = new FrameLayout(c);
@@ -255,33 +255,32 @@ public final class GrapefruitDialog extends Dialog {
 
             LinearLayout menu = new LinearLayout(c);
             menu.setOrientation(LinearLayout.VERTICAL);
-            menu.setBackground(rounded(Ui.color(c, R.attr.gfSurface), Ui.dp(c, 16)));
+            menu.setBackground(Ui.shape(c, Ui.color(c, R.attr.gfSurface), Ui.dp(c, 24), true, false));
+            menu.setPadding(0, 0, 0, Ui.dp(c, 12));
+            // A handle at the top, as sheets have.
+            View handle = new View(c);
+            handle.setBackground(rounded(Ui.color(c, R.attr.gfOutline), Ui.dp(c, 2)));
+            LinearLayout.LayoutParams hlp = new LinearLayout.LayoutParams(Ui.dp(c, 36), Ui.dp(c, 4));
+            hlp.gravity = Gravity.CENTER_HORIZONTAL;
+            hlp.topMargin = Ui.dp(c, 10);
+            hlp.bottomMargin = Ui.dp(c, title != null ? 2 : 8);
+            menu.addView(handle, hlp);
             if (title != null) {
-                TextView t = Ui.text(c, 14, R.attr.gfTextSecondary, true);
+                TextView t = Ui.text(c, 17, R.attr.gfTextPrimary, true);
                 t.setSingleLine(false);
                 t.setMaxLines(2);
-                t.setGravity(Gravity.CENTER_HORIZONTAL);
                 t.setText(title);
-                t.setPadding(Ui.dp(c, 20), Ui.dp(c, 14), Ui.dp(c, 20), Ui.dp(c, 12));
+                t.setPadding(Ui.dp(c, 22), Ui.dp(c, 10), Ui.dp(c, 22), Ui.dp(c, 6));
                 menu.addView(t, matchWidth());
-                menu.addView(Ui.separator(c, 0));
             }
             menu.addView(itemList(d, true), shrinkable(0));
-            column.addView(menu, shrinkable(0));
 
-            TextView cancel = Ui.text(c, 17, R.attr.gfAccent, true);
-            cancel.setText("Cancel");
-            cancel.setSingleLine(false);
-            cancel.setEllipsize(null);
-            cancel.setMinHeight(Ui.dp(c, 54));
-            cancel.setPadding(Ui.dp(c, 12), Ui.dp(c, 10), Ui.dp(c, 12), Ui.dp(c, 10));
-            cancel.setGravity(Gravity.CENTER);
-            cancel.setBackground(pressable(Ui.color(c, R.attr.gfSurface), Ui.color(c, R.attr.gfControlPressed),
-                    Ui.dp(c, 16)));
+            TextView cancel = Ui.button(c, "Cancel", null);
             LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
-            clp.topMargin = Ui.dp(c, 8);
-            column.addView(cancel, clp);
+            clp.setMargins(Ui.dp(c, 16), Ui.dp(c, 8), Ui.dp(c, 16), 0);
+            menu.addView(cancel, clp);
+            column.addView(menu, shrinkable(0));
             cancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -299,7 +298,7 @@ public final class GrapefruitDialog extends Dialog {
             rows.setOrientation(LinearLayout.VERTICAL);
             scroll.addView(rows);
             for (int i = 0; i < items.length; i++) {
-                if (i > 0) rows.addView(Ui.separator(c, inset ? 20 : 0));
+                if (i > 0 && !inset) rows.addView(Ui.separator(c, 0));
                 final int index = i;
                 LinearLayout row = new LinearLayout(c);
                 row.setOrientation(LinearLayout.HORIZONTAL);
@@ -308,7 +307,7 @@ public final class GrapefruitDialog extends Dialog {
                 int side = inset ? Ui.dp(c, 20) : 0;
                 row.setPadding(side, Ui.dp(c, 6), inset ? Ui.dp(c, 16) : 0, Ui.dp(c, 6));
                 row.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
-                TextView label = Ui.text(c, 17, R.attr.gfTextPrimary, false);
+                TextView label = Ui.text(c, 16, R.attr.gfTextPrimary, false);
                 label.setSingleLine(false);
                 label.setMaxLines(2);
                 label.setText(items[i]);
@@ -365,20 +364,23 @@ public final class GrapefruitDialog extends Dialog {
         /** Filled grapefruit (or red) for the main action, a gray pill for the other. */
         private TextView pill(CharSequence text, boolean primary) {
             Context c = context;
-            TextView b = Ui.text(c, 16, R.attr.gfAccent, true);
+            TextView b = Ui.text(c, 16, R.attr.gfTextPrimary, true);
             b.setText(text);
             b.setSingleLine(false);
             b.setEllipsize(null);
             b.setMinHeight(Ui.dp(c, 48));
             b.setGravity(Gravity.CENTER);
             b.setPadding(Ui.dp(c, 12), Ui.dp(c, 10), Ui.dp(c, 12), Ui.dp(c, 10));
-            int radius = Ui.dp(c, 23);
-            if (primary) {
-                int fill = destructive ? RED : Ui.accent(c);
+            int radius = Ui.dp(c, 24);
+            if (primary && destructive) {
                 b.setTextColor(0xffffffff);
-                b.setBackground(pressable(fill, darker(fill), radius));
+                b.setBackground(pressable(RED, darker(RED), radius));
+            } else if (primary) {
+                // The accent gradient, like every main button.
+                b.setTextColor(Ui.onAccent(c));
+                b.setBackground(Ui.accentPressable(c, radius, false));
             } else {
-                b.setBackground(pressable(Ui.color(c, R.attr.gfControl), Ui.color(c, R.attr.gfControlPressed), radius));
+                b.setBackground(Ui.pressable(c, Ui.color(c, R.attr.gfControl), radius, true));
             }
             return b;
         }

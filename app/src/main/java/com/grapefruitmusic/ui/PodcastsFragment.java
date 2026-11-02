@@ -68,12 +68,21 @@ public final class PodcastsFragment extends BaseFragment {
                         c, mode == HOME ? null : "Podcasts", title, mode == HOME ? null : goBack());
         root.addView(header);
         if (mode == HOME) {
-            LinearLayout buttons = Ui.actionRow(c);
-            buttons.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 8));
-            addButton(buttons, "Search Podcasts", v -> main().push(page(SEARCH, null)));
-            addButton(buttons, "Subscriptions", v -> main().push(page(SUBSCRIPTIONS, null)));
-            addButton(buttons, "Downloads", v -> main().push(page(DOWNLOADED, null)));
-            header.addView(buttons);
+            // Search as a round button by the title; Subscriptions and Downloads as chips.
+            com.grapefruitmusic.ui.widget.IconView search =
+                    Ui.circleButton(c, com.grapefruitmusic.ui.widget.Icons.SEARCH, 42, "Search Podcasts");
+            search.setOnClickListener(v -> main().push(page(SEARCH, null)));
+            Ui.headerAction(header, search);
+            android.widget.HorizontalScrollView chips = Ui.chipRow(c);
+            // The header has its own side margins; the chips line up with the title.
+            chips.getChildAt(0).setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 6));
+            TextView subscriptions = Ui.chip(c, "Subscriptions", false);
+            subscriptions.setOnClickListener(v -> main().push(page(SUBSCRIPTIONS, null)));
+            Ui.addChip(chips, subscriptions);
+            TextView downloads = Ui.chip(c, "Downloads", false);
+            downloads.setOnClickListener(v -> main().push(page(DOWNLOADED, null)));
+            Ui.addChip(chips, downloads);
+            header.addView(chips);
             TextView disclosure = Ui.text(c, 12, R.attr.gfTextSecondary, false);
             disclosure.setSingleLine(false);
             disclosure.setLinkTextColor(Ui.accent(c));
@@ -248,12 +257,6 @@ public final class PodcastsFragment extends BaseFragment {
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.topMargin = Ui.dp(header.getContext(), gapDp);
         header.addView(control, lp);
-    }
-
-    private void addButton(LinearLayout row, String title, View.OnClickListener action) {
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -1, 1);
-        lp.leftMargin = row.getChildCount() == 0 ? 0 : Ui.dp(row.getContext(), 8);
-        row.addView(Ui.button(getActivity(), title, action), lp);
     }
 
     private void addFeed() {

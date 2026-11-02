@@ -9,12 +9,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.grapefruitmusic.R;
-import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.ui.widget.Toggle;
 
-import java.util.Locale;
 
-/** Builds iOS-style grouped lists (Settings and its sub-pages) into a vertical container. */
+/** Builds Settings and its sub-pages: section titles over rounded rows, into a vertical container. */
 final class Grouped {
     final Context c;
     final LinearLayout content;
@@ -48,9 +46,9 @@ final class Grouped {
     }
 
     void section(String title) {
-        TextView t = Ui.text(c, 13, R.attr.gfTextSecondary, false);
-        t.setText(title.toUpperCase(Locale.US));
-        t.setPadding(Ui.dp(c, 16), Ui.dp(c, 26), Ui.dp(c, 16), Ui.dp(c, 6));
+        TextView t = Ui.text(c, 15, R.attr.gfAccent, true);
+        t.setText(title);
+        t.setPadding(Ui.dp(c, 18), Ui.dp(c, 24), Ui.dp(c, 16), Ui.dp(c, 6));
         content.addView(t);
     }
 
@@ -67,8 +65,8 @@ final class Grouped {
         LinearLayout row = new LinearLayout(c);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setMinimumHeight(Ui.dp(c, 48));
-        row.setPadding(Ui.dp(c, 16), Ui.dp(c, 6), Ui.dp(c, 12), Ui.dp(c, 6));
+        row.setMinimumHeight(Ui.dp(c, 56));
+        row.setPadding(Ui.dp(c, 18), Ui.dp(c, 8), Ui.dp(c, 14), Ui.dp(c, 8));
         row.setBackgroundColor(Ui.color(c, R.attr.gfSurface));
         if (click != null) row.setOnClickListener(click);
         return row;
@@ -84,22 +82,21 @@ final class Grouped {
     /** A label and a gray value; returns the value's view (to update it later). */
     TextView value(String label, String value, View.OnClickListener click) {
         LinearLayout row = row(click);
-        TextView l = Ui.text(c, 17, R.attr.gfTextPrimary, false);
+        TextView l = Ui.text(c, 16, R.attr.gfTextPrimary, false);
         l.setText(label);
         row.addView(l, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-        TextView v = Ui.text(c, 16, R.attr.gfTextSecondary, false);
+        TextView v = Ui.text(c, 15, R.attr.gfTextSecondary, false);
         v.setText(value);
         v.setPadding(Ui.dp(c, 8), 0, 0, 0);
         row.addView(v);
-        if (click != null) row.addView(Ui.icon(c, Icons.CHEVRON_RIGHT, Ui.color(c, R.attr.gfDisclosure), 18));
         addRow(row, click != null);
         return v;
     }
 
     void action(String label, boolean destructive, View.OnClickListener click) {
         LinearLayout row = row(click);
-        TextView l = Ui.text(c, 17, R.attr.gfAccent, false);
-        if (destructive) l.setTextColor(0xffff3b30);
+        TextView l = Ui.text(c, 16, R.attr.gfAccent, true);
+        if (destructive) l.setTextColor(0xffe5484d);
         l.setText(label);
         row.addView(l);
         addRow(row, true);
@@ -114,7 +111,7 @@ final class Grouped {
                 t.performClick();
             }
         });
-        TextView l = Ui.text(c, 17, R.attr.gfTextPrimary, false);
+        TextView l = Ui.text(c, 16, R.attr.gfTextPrimary, false);
         l.setText(label);
         row.addView(l, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         t.setOffColors(Ui.color(c, R.attr.gfToggleOff), Ui.color(c, R.attr.gfToggleOffSegments));

@@ -4,18 +4,18 @@
     <color name="grapefruit">#F2545B</color>
     <color name="grapefruit_bright">#FF6B6B</color>
 
-    <!-- Light palette (iOS 10 inspired) -->
+    <!-- Light palette (Starlight) -->
     <color name="light_background">#FFFFFF</color>
-    <color name="light_grouped">#EFEFF4</color>
+    <color name="light_grouped">#F3F3F6</color>
     <color name="light_surface">#FFFFFF</color>
     <color name="light_bar">#F7F7F7</color>
     <color name="light_text">#000000</color>
-    <color name="light_text_secondary">#8E8E93</color>
-    <color name="light_separator">#C8C7CC</color>
-    <color name="light_fill">#EEEEF0</color>
+    <color name="light_text_secondary">#6E6E78</color>
+    <color name="light_separator">#E2E2E8</color>
+    <color name="light_fill">#EFEFF3</color>
     <color name="light_pressed">#D9D9D9</color>
     <color name="light_scrim">#E6FFFFFF</color>
-    <color name="light_control">#EEEEF0</color>
+    <color name="light_control">#EFEFF3</color>
     <color name="light_control_pressed">#D9D9DE</color>
     <color name="light_toggle_off">#E3E3E8</color>
     <color name="light_toggle_off_segments">#DCDCE0</color>
@@ -24,17 +24,17 @@
     <!-- Dark palette -->
     <color name="dark_background">#000000</color>
     <color name="dark_grouped">#000000</color>
-    <color name="dark_surface">#1C1C1E</color>
+    <color name="dark_surface">#16161A</color>
     <color name="dark_bar">#121212</color>
     <color name="dark_text">#FFFFFF</color>
-    <color name="dark_text_secondary">#8E8E93</color>
-    <color name="dark_separator">#38383A</color>
-    <color name="dark_fill">#1C1C1E</color>
+    <color name="dark_text_secondary">#9A9AA6</color>
+    <color name="dark_separator">#2A2A31</color>
+    <color name="dark_fill">#1C1C21</color>
     <color name="dark_pressed">#2C2C2E</color>
     <color name="dark_scrim">#D9000000</color>
     <!-- Lighter than dark_surface, so fields and buttons show on dialogs too. -->
-    <color name="dark_control">#2C2C2E</color>
-    <color name="dark_control_pressed">#3A3A3C</color>
+    <color name="dark_control">#222228</color>
+    <color name="dark_control_pressed">#303038</color>
     <color name="dark_toggle_off">#39393D</color>
     <color name="dark_toggle_off_segments">#D1D1D6</color>
     <color name="dark_knob">#D1D1D6</color>
@@ -86,4 +86,18 @@
     <color name="dark_disclosure">#AEAEB2</color>
     <color name="grapefruit_light_disclosure">#8D4B56</color>
     <color name="grapefruit_dark_disclosure">#D4A5AC</color>
+
+    <!-- 5.0: accent gradients (accent to *_accent_end), text and icons on them, and outlines. -->
+    <color name="light_accent_end">#E8455F</color>
+    <color name="light_on_accent">#FFFFFF</color>
+    <color name="light_outline">#E2E2E8</color>
+    <color name="dark_accent_end">#F0506E</color>
+    <color name="dark_on_accent">#1A0A0D</color>
+    <color name="dark_outline">#2A2A31</color>
+    <color name="grapefruit_light_accent_end">#D92B4B</color>
+    <color name="grapefruit_light_on_accent">#FFFFFF</color>
+    <color name="grapefruit_light_outline">#F3CDBF</color>
+    <color name="grapefruit_dark_accent_end">#F2546B</color>
+    <color name="grapefruit_dark_on_accent">#2A0A10</color>
+    <color name="grapefruit_dark_outline">#46202A</color>
 </resources>

@@ -77,7 +77,15 @@ public class ArtworkView extends View {
         shadowSize = dp * getResources().getDisplayMetrics().density;
         setLayerType(shadowSize > 0 ? LAYER_TYPE_SOFTWARE : LAYER_TYPE_NONE, null);
         shadow.setColor(0xff000000);
-        shadow.setShadowLayer(shadowSize * 0.8f, 0, shadowSize * 0.35f, 0x55000000);
+        setShadowColor(shadowColor);
+    }
+
+    private int shadowColor = 0x55000000;
+
+    /** The shadow's colour: a glow in the artwork's own colour, say. */
+    public void setShadowColor(int color) {
+        shadowColor = color;
+        shadow.setShadowLayer(shadowSize * 0.9f, 0, shadowSize * 0.3f, color);
         invalidate();
     }
 
