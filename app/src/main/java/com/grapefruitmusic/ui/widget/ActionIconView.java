@@ -57,7 +57,9 @@ public final class ActionIconView extends IconView {
                 tint == Ui.accent(c)
                         ? (tint & 0x00ffffff) | 0x40000000
                         : Ui.color(c, R.attr.gfControl));
-        float gap = Ui.dp(c, 3), radius = Ui.dp(c, 12);
+        // Fully round, like the chips and buttons (a pill, or a circle when square).
+        float gap = Ui.dp(c, 3);
+        float radius = Math.min(getWidth() - 2 * gap, getHeight()) / 2f;
         canvas.drawRoundRect(
                 new RectF(gap, 0, getWidth() - gap, getHeight()), radius, radius, paint);
         super.onDraw(canvas);

@@ -75,7 +75,8 @@ final class Grouped {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setMinimumHeight(Ui.dp(c, 56));
-        row.setPadding(Ui.dp(c, 18), Ui.dp(c, 8), Ui.dp(c, 14), Ui.dp(c, 8));
+        // Inset further, for the rounder ends.
+        row.setPadding(Ui.dp(c, 22), Ui.dp(c, 8), Ui.dp(c, 16), Ui.dp(c, 8));
         row.setBackgroundColor(Ui.color(c, R.attr.gfSurface));
         if (click != null) row.setOnClickListener(click);
         return row;

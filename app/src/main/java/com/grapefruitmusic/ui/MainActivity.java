@@ -162,6 +162,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
 
         nowPlaying = new NowPlaying(this, findViewById(R.id.root));
         fitBars();
+        floatBars();
 
         if (saved == null) {
             showTab(TAB_LIBRARY);
@@ -313,6 +314,61 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         }
     }
 
+    /** Room at the bottom of a page for the mini player and tabs floating over it (px). */
+    private int barsInset;
+
+    /**
+     * The mini player and the tabs float over the bottom of the page, on a fade from the page's
+     * colour, and pages scroll out from under them (fitPage).
+     */
+    private void floatBars() {
+        View bars = findViewById(R.id.bottom_bars);
+        int page = Ui.color(this, R.attr.gfBackground) & 0x00ffffff;
+        bars.setBackground(new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
+                new int[]{page | 0xcc000000, page | 0x66000000, page}));
+        // The fade is drawn, but taps go through it to the page (the bars themselves take theirs).
+        bars.setClickable(false);
+        bars.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+                int height = b - t;
+                if (height == barsInset) return;
+                barsInset = height;
+                // After this layout pass: the page's new padding lays it out again.
+                v.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        android.app.Fragment page = getFragmentManager().findFragmentById(R.id.content);
+                        if (page != null) fitPage(page.getView());
+                    }
+                });
+            }
+        });
+    }
+
+    /** Lets a page's scrolling views scroll out from under the floating mini player and tabs. */
+    void fitPage(View page) {
+        if (page != null) inset(page, barsInset);
+    }
+
+    private static void inset(View v, int inset) {
+        if (v instanceof android.widget.AbsListView || v instanceof android.widget.ScrollView
+                || v instanceof com.grapefruitmusic.ui.widget.HorizontalGrid) {
+            Object own = v.getTag(R.id.own_bottom_padding);
+            int base = own instanceof Integer ? (Integer) own : v.getPaddingBottom();
+            if (own == null) v.setTag(R.id.own_bottom_padding, base);
+            ((ViewGroup) v).setClipToPadding(false);
+            if (v.getPaddingBottom() != base + inset) {
+                v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), base + inset);
+            }
+            return;
+        }
+        if (v instanceof ViewGroup) {
+            ViewGroup g = (ViewGroup) v;
+            for (int i = 0; i < g.getChildCount(); i++) inset(g.getChildAt(i), inset);
+        }
+    }
+
     /** Switches tab; tapping the current tab returns to its first page. */
     void showTab(int index) {
         tab = index;
@@ -429,7 +485,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             ((FrameLayout) findViewById(R.id.root)).addView(notice, lp);
         }
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) notice.getLayoutParams();
-        int above = findViewById(R.id.tab_bar).getHeight() + (mini.getVisibility() == View.VISIBLE ? mini.getHeight() : 0);
+        int above = findViewById(R.id.bottom_bars).getHeight();
         lp.bottomMargin = above + Ui.dp(this, 14);
         notice.setLayoutParams(lp);
         notice.setText(text);
@@ -472,14 +528,14 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         boolean compact = config.screenHeightDp < 500;
         LinearLayout bar = (LinearLayout) findViewById(R.id.tab_bar);
         LinearLayout frame = (LinearLayout) findViewById(R.id.frame);
-        LinearLayout column = (LinearLayout) findViewById(R.id.column);
+        LinearLayout bottom = (LinearLayout) findViewById(R.id.bottom_bars);
         ViewGroup parent = (ViewGroup) bar.getParent();
         if (rail && parent != frame) {
             parent.removeView(bar);
             frame.addView(bar, 0);
-        } else if (!rail && parent != column) {
+        } else if (!rail && parent != bottom) {
             parent.removeView(bar);
-            column.addView(bar);
+            bottom.addView(bar);
         }
         bar.setOrientation(rail ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
         int pad = Ui.dp(this, 6);

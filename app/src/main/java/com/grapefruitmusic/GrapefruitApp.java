@@ -7,7 +7,6 @@ import com.grapefruitmusic.download.Downloads;
 import com.grapefruitmusic.net.StreamProxy;
 import com.grapefruitmusic.net.Tls;
 import com.grapefruitmusic.playback.Player;
-import com.grapefruitmusic.ui.AppIcon;
 import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Prefs;
 
@@ -35,13 +34,6 @@ public final class GrapefruitApp extends Application {
         if (android.os.Build.VERSION.SDK_INT >= 33) registerReceiver(receiver, network, android.content.Context.RECEIVER_NOT_EXPORTED);
         else registerReceiver(receiver, network);
 
-        // The launcher icon in the theme's colours (after an update, or a theme picked last time).
-        Bg.execute(new Runnable() {
-            @Override
-            public void run() {
-                AppIcon.match(GrapefruitApp.this);
-            }
-        });
         Bg.execute(new Runnable() {
             @Override
             public void run() {

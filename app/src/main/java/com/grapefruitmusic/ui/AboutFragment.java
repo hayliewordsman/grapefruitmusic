@@ -40,7 +40,7 @@ public final class AboutFragment extends BaseFragment {
         hero.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 8));
         ImageView icon = new ImageView(c);
         // Drawn at exactly 88dp for each screen density, so it's never scaled up and blurry.
-        icon.setImageResource(AppIcon.about(c));
+        icon.setImageResource(R.drawable.ic_about);
         hero.addView(icon, new LinearLayout.LayoutParams(Ui.dp(c, 88), Ui.dp(c, 88)));
         // The wordmark, in the logo's lettering (Geist Pixel Triangle) and colours: "Grapefruit" in the
         // accent, "Music & Podcasts" in the text colour, on one line.

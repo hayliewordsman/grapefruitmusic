@@ -100,4 +100,7 @@
     <color name="grapefruit_dark_accent_end">#F2546B</color>
     <color name="grapefruit_dark_on_accent">#2A0A10</color>
     <color name="grapefruit_dark_outline">#46202A</color>
+
+    <!-- The app icon's background layer on Android 8+: the bottom of the Telegram picture's coral. -->
+    <color name="icon_background">#EC485C</color>
 </resources>

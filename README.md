@@ -35,11 +35,9 @@ with downloads for offline listening and time-synced lyrics.
   on tall windows and two-column artwork and metadata on shorter windows.
   Lyrics and Up Next show a condensed header (small artwork and title) above the list.
 - **Themes:** Settings › Theme: *Grapefruit Dark* (the default) and *Grapefruit Light* (in the app icon's peach,
-  cream, ruby and coral), *Starlight* (white) or *Pitch Black* (black). The app icon matches the theme: each
-  theme has its own launcher entry (an activity-alias) with its own icon, and Grapefruit turns on only the
-  theme's, since Android 4.2 can't change an app's icon. It keeps playing meanwhile (`DONT_KILL_APP`), so
-  Android 4.2 tells the launcher about 10 seconds later; a launcher may take the old icon off the home screen.
-  The icons are drawn by `tools/icons/make_icons.py`.
+  cream, ruby and coral), *Starlight* (white) or *Pitch Black* (black). The app icon is the same in every
+  theme: the Telegram channel's grapefruit, round, with one launcher entry (since 5.0 beta 3; before, each
+  theme had its own). It's drawn by `tools/brand/logo.py`, with the logos and the splash screen.
 - **Library:** Songs is a list with small artwork and Playlists a list with medium artwork; Artists, Albums and
   Recently Added show cards, two across, scrolling down. Recently Added mixes in playlists by the date they were
   made (as Navidrome/Subsonic, Jellyfin and the phone report it), newest first, each labelled Playlist where an

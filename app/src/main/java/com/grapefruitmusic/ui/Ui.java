@@ -94,9 +94,9 @@ public final class Ui {
         return t;
     }
 
-    /** A rounded card that darkens while pressed (Settings rows and the like). */
+    /** A pill-shaped row that darkens while pressed (Settings rows and the like). */
     public static android.graphics.drawable.Drawable actionBackground(Context c) {
-        return pressable(c, color(c, R.attr.gfControl), dp(c, 16), false);
+        return pressable(c, color(c, R.attr.gfControl), dp(c, 28), false);
     }
 
     /** fill, rounded by radius (px), a shade darker while pressed; with a hairline if outlined. */

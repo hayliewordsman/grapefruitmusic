@@ -25,7 +25,6 @@ import com.grapefruitmusic.model.MediaItem;
 import com.grapefruitmusic.radio.Radio;
 import com.grapefruitmusic.radio.RadioArt;
 import com.grapefruitmusic.radio.StationText;
-import com.grapefruitmusic.ui.AppIcon;
 import com.grapefruitmusic.ui.MainActivity;
 import com.grapefruitmusic.ui.widget.Icons;
 import com.grapefruitmusic.util.ArtworkLoader;
@@ -285,7 +284,7 @@ public final class PlaybackService extends Service implements Player.Listener, R
         v.setTextViewText(R.id.n_text, text);
         Bitmap fitted = fittedArt();
         if (fitted != null) v.setImageViewBitmap(R.id.n_art, fitted);
-        else v.setImageViewResource(R.id.n_art, AppIcon.launcher(this));
+        else v.setImageViewResource(R.id.n_art, R.mipmap.ic_launcher);
         v.setImageViewBitmap(R.id.n_prev, button(Icons.PREVIOUS));
         v.setImageViewBitmap(R.id.n_play, button(playing ? (onRadio ? Icons.STOP : Icons.PAUSE) : Icons.PLAY));
         v.setImageViewBitmap(R.id.n_next, button(Icons.NEXT));

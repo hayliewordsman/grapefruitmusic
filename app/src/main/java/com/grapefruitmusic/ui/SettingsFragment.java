@@ -17,7 +17,6 @@ import com.grapefruitmusic.playback.VolumeMatch;
 import com.grapefruitmusic.source.Account;
 import com.grapefruitmusic.source.Sources;
 import com.grapefruitmusic.ui.widget.Toggle;
-import com.grapefruitmusic.util.Bg;
 import com.grapefruitmusic.util.Format;
 import com.grapefruitmusic.util.Prefs;
 
@@ -95,13 +94,6 @@ public final class SettingsFragment extends BaseFragment
                         int theme = which + Prefs.THEME_STARLIGHT;
                         if (theme != showing) {
                             Prefs.setTheme(theme);
-                            final Context app = getActivity().getApplicationContext();
-                            Bg.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    AppIcon.match(app);
-                                }
-                            });
                             getActivity().recreate();
                         }
                     }
@@ -109,8 +101,6 @@ public final class SettingsFragment extends BaseFragment
             }
         });
 
-        g.footer("Grapefruit's icon matches the theme. Your launcher shows the new one within a few seconds; "
-                + "if Grapefruit was on your home screen, you may need to put it back from the app list.");
 
         final String[] layouts={"Automatic", "Stacked", "Two Columns"};
         final int layout=Prefs.raw().getInt("now_playing_layout",0);

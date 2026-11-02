@@ -12,8 +12,9 @@ are taken from the font, shaped with HarfBuzz, so the SVGs need no font to show 
   logo-stacked.svg / logo-stacked-dark.svg   grapefruit, "Grapefruit" over "Music & Podcasts"
   ("-dark" for dark backgrounds)
 
-With a third argument, also the splash screen's pictures for Android (PNG: Android 4.2 has no vector
-drawables) into that res folder.
+With a third argument, also the splash screen's pictures and the app's icons for Android (PNG:
+Android 4.2 has no vector drawables) into that res folder: the launcher icon (the grapefruit, round,
+the same in every theme), its adaptive layers for Android 8 and later, and the About page's icon.
 
 Needs Python 3 with fontTools, uharfbuzz and brotli (cairosvg and pngquant for the PNGs), and the
 geist npm package (1.9.0) unpacked:
@@ -150,8 +151,8 @@ def glyph_defs(defs):
     return "".join('<path id="%s" d="%s"/>' % (glyph_id(n), d) for n, d in sorted(defs.items()) if d)
 
 
-def grapefruit(cx, cy, d, uid):
-    """The Telegram picture, masked to a circle of diameter d centred at (cx, cy)."""
+def slice_of(cx, cy, d):
+    """The grapefruit slice of the Telegram picture, for a picture of diameter d at (cx, cy)."""
     r = d * 0.34
     r3 = r * 0.80
     w = r * 0.07
@@ -160,20 +161,37 @@ def grapefruit(cx, cy, d, uid):
         a = 2 * math.pi * i / 10 - math.pi / 2
         spokes.append('<line x1="%.2f" y1="%.2f" x2="%.2f" y2="%.2f"/>'
                       % (cx, cy, cx + math.cos(a) * r3, cy + math.sin(a) * r3))
-    return f"""<defs>
-    <linearGradient id="{uid}-coral" x1="0" y1="{cy - d / 2:.2f}" x2="0" y2="{cy + d / 2:.2f}" gradientUnits="userSpaceOnUse">
+    return f"""<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r:.2f}" fill="{RIND}"/>
+    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r * 0.88:.2f}" fill="{PITH}"/>
+    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r3:.2f}" fill="{FLESH}"/>
+    <g stroke="{PITH}" stroke-width="{w:.2f}">{"".join(spokes)}</g>
+    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r * 0.10:.2f}" fill="{PITH}"/>"""
+
+
+def coral(uid, top, bottom):
+    return f"""<linearGradient id="{uid}-coral" x1="0" y1="{top:.2f}" x2="0" y2="{bottom:.2f}" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="{TOP}"/><stop offset="1" stop-color="{BOTTOM}"/>
-    </linearGradient>
+    </linearGradient>"""
+
+
+def grapefruit(cx, cy, d, uid):
+    """The Telegram picture, masked to a circle of diameter d centred at (cx, cy)."""
+    return f"""<defs>
+    {coral(uid, cy - d / 2, cy + d / 2)}
     <clipPath id="{uid}-round"><circle cx="{cx:.2f}" cy="{cy:.2f}" r="{d / 2:.2f}"/></clipPath>
   </defs>
   <g clip-path="url(#{uid}-round)">
     <rect x="{cx - d / 2:.2f}" y="{cy - d / 2:.2f}" width="{d:.2f}" height="{d:.2f}" fill="url(#{uid}-coral)"/>
-    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r:.2f}" fill="{RIND}"/>
-    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r * 0.88:.2f}" fill="{PITH}"/>
-    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r3:.2f}" fill="{FLESH}"/>
-    <g stroke="{PITH}" stroke-width="{w:.2f}">{"".join(spokes)}</g>
-    <circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r * 0.10:.2f}" fill="{PITH}"/>
+    {slice_of(cx, cy, d)}
   </g>"""
+
+
+def adaptive_layer(uid):
+    """An adaptive icon's foreground: the Telegram picture filling the 108dp square, laid out for
+    the 72dp in the middle that launchers show (masked to their shape: a circle, on most)."""
+    return f"""<defs>{coral(uid, 18, 90)}</defs>
+  <rect x="0" y="0" width="108" height="108" fill="url(#{uid}-coral)"/>
+  {slice_of(54, 54, 72)}"""
 
 
 def svg(width, height, title, body):
@@ -255,7 +273,31 @@ def android(text, res):
     icon = svg(288, 288, "Grapefruit", grapefruit(144, 144, 192, "i"))
     folder = Path(res) / "drawable-xxhdpi"
     png(icon, 288 * 3, folder / "splash_icon.png")
+    icons(res)
     wordmark_font(text, Path(res).parent / "assets" / "fonts" / "GeistPixel-Triangle-Wordmark.ttf")
+
+
+def icons(res):
+    """The app's icon, the same in every theme: the launcher's (48dp; the grapefruit round, edge to
+    edge but for a hairline), its adaptive layers for Android 8 and later (the picture filling a
+    108dp layer, on the picture's own colour; launchers mask it, round on most), and the About
+    page's (88dp)."""
+    for density, scale in DENSITIES.items():
+        mipmap = Path(res) / ("mipmap-" + density)
+        mipmap.mkdir(parents=True, exist_ok=True)
+        png(svg(48, 48, "Grapefruit", grapefruit(24, 24, 46, "l")), 48 * scale, mipmap / "ic_launcher.png")
+        png(svg(108, 108, "Grapefruit", adaptive_layer("a")), 108 * scale, mipmap / "ic_launcher_foreground.png")
+        drawable = Path(res) / ("drawable-" + density)
+        png(svg(88, 88, "Grapefruit", grapefruit(44, 44, 88, "b")), 88 * scale, drawable / "ic_about.png")
+    anydpi = Path(res) / "mipmap-anydpi-v26"
+    anydpi.mkdir(parents=True, exist_ok=True)
+    (anydpi / "ic_launcher.xml").write_text("""<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 8 and later: the grapefruit picture as an adaptive icon (tools/brand/logo.py). -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/icon_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>
+""")
 
 
 WORDMARK = "Grapefruit Music & Podcasts"

@@ -25,70 +25,30 @@
         android:name=".GrapefruitApp"
         android:allowBackup="false"
         android:usesCleartextTraffic="true"
-        android:icon="@mipmap/ic_launcher_grapefruit_dark"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.Grapefruit.GrapefruitDark">
 
+        <!--
+            The one launcher entry, with the same round icon in every theme (until 5.0 beta 3 there was
+            one entry per theme, each with its own icon; see docs/releases/5.0-beta-3-validation.md).
+        -->
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/launcher_name"
             android:theme="@style/Theme.Grapefruit.Launch"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
             android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
-        <!--
-            The launcher icon, in the theme's colours: one entry per theme, only the theme's enabled
-            (see AppIcon). Android 4.2 can't change a component's icon, so each has its own.
-        -->
-        <activity-alias
-            android:name=".GrapefruitDarkIcon"
-            android:enabled="true"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher_grapefruit_dark"
-            android:label="@string/launcher_name"
-            android:targetActivity=".ui.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".GrapefruitLightIcon"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher_grapefruit_light"
-            android:label="@string/launcher_name"
-            android:targetActivity=".ui.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".StarlightIcon"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher_starlight"
-            android:label="@string/launcher_name"
-            android:targetActivity=".ui.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".PitchBlackIcon"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher_pitch_black"
-            android:label="@string/launcher_name"
-            android:targetActivity=".ui.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
 
         <service
             android:name=".playback.PlaybackService"

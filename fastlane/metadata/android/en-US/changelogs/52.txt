@@ -1,0 +1,2 @@
+5.0 beta 3
+One app icon for every theme: the grapefruit, round, with one launcher entry. The mini player and tabs float over the page, which scrolls out from under them. Settings rows and Now Playing's buttons are fully round.

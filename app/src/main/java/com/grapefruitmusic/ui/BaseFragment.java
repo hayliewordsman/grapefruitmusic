@@ -56,6 +56,8 @@ public abstract class BaseFragment extends Fragment {
     public void onViewCreated(View view, Bundle saved) {
         super.onViewCreated(view, saved);
         builtFor = getResources().getConfiguration().orientation;
+        // Room at the bottom for the mini player and tabs floating over the page.
+        if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).fitPage(view);
         if (view instanceof ScrollView && pageScrollY > 0) restorePageScroll((ScrollView) view, pageScrollY);
     }
 

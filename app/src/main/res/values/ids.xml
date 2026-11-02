@@ -2,4 +2,6 @@
 <resources>
     <item name="art_request" type="id" />
     <item name="notice" type="id" />
+    <!-- A page's scrolling view: its own bottom padding, before room for the floating bars. -->
+    <item name="own_bottom_padding" type="id" />
 </resources>
