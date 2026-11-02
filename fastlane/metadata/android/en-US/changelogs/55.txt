@@ -1,0 +1,2 @@
+5.0 beta 6
+The mini player is a pill, with round artwork, like the rest of the new look; so are text fields, search boxes, Radio's genre buttons, notices and the highlight on a pressed row. The ⋯ button beside a song is whole again on playlists and albums, with its dots sized to the circle. Change Artwork in the tag editor is no longer the width of the screen.

@@ -199,7 +199,7 @@ public final class KaraokeCreditsFragment extends BaseFragment {
                 row = new LinearLayout(c);
                 row.setOrientation(LinearLayout.VERTICAL);
                 row.setPadding(Ui.dp(c, 16), Ui.dp(c, 8), Ui.dp(c, 16), Ui.dp(c, 8));
-                row.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+                row.setBackground(Ui.rowBackground(c));
                 row.addView(Ui.text(c, 16, R.attr.gfTextPrimary, false));
                 row.addView(Ui.text(c, 13, R.attr.gfTextSecondary, false));
             }

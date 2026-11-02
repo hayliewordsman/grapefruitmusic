@@ -139,7 +139,7 @@ final class SectionMenu {
         LinearLayout source = new LinearLayout(c);
         source.setOrientation(LinearLayout.HORIZONTAL);
         source.setGravity(Gravity.CENTER_VERTICAL);
-        source.setBackground(Ui.pressable(c, Ui.color(c, R.attr.gfControl), Ui.dp(c, 19), true));
+        source.setBackground(Ui.pressable(c, Ui.color(c, R.attr.gfControl), Ui.PILL, true));
         sourceName = Ui.text(c, 14, R.attr.gfTextPrimary, false);
         sourceName.setTypeface(Fonts.medium());
         // Stacked, the arrow goes at the far end.

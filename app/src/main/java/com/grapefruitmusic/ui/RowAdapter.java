@@ -270,7 +270,7 @@ final class RowAdapter extends BaseAdapter {
             row.setGravity(Gravity.CENTER_VERTICAL);
             row.setMinimumHeight(Ui.dp(context, 64));
             row.setPadding(Ui.dp(context, 16), Ui.dp(context, 8), Ui.dp(context, 10), Ui.dp(context, 8));
-            row.setBackgroundResource(Ui.resource(context, R.attr.gfRowBackground));
+            row.setBackground(Ui.rowBackground(context));
             h = new RowHolder();
             h.art = Ui.artwork(context, 48);
             row.addView(h.art);
@@ -449,7 +449,7 @@ final class RowAdapter extends BaseAdapter {
         final Card c = new Card();
         LinearLayout v = new LinearLayout(context);
         v.setOrientation(LinearLayout.VERTICAL);
-        v.setBackgroundResource(Ui.resource(context, R.attr.gfRowBackground));
+        v.setBackground(Ui.cardBackground(context));
         c.art = Ui.artwork(context, 0);
         android.widget.FrameLayout picture = new android.widget.FrameLayout(context);
         picture.addView(c.art, new android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,

@@ -133,9 +133,9 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         miniTitle.setTypeface(Fonts.semiBold());
         miniArtist = (TextView) findViewById(R.id.mini_artist);
         miniArtist.setTypeface(Fonts.regular());
-        miniArt.setCornerRadiusDp(10);
-        // A card above the tabs, a shade darker while pressed.
-        mini.setBackground(Ui.pressable(this, Ui.color(this, R.attr.gfSurface), Ui.dp(this, 18), true));
+        // A pill above the tabs, a shade darker while pressed; the artwork round in its end.
+        miniArt.setCornerRadiusDp(22);
+        mini.setBackground(Ui.pressable(this, Ui.color(this, R.attr.gfSurface), Ui.PILL, true));
         miniPlay = (IconView) findViewById(R.id.mini_play);
         IconView miniNext = (IconView) findViewById(R.id.mini_next);
         int primary = Ui.color(this, R.attr.gfTextPrimary);
@@ -270,7 +270,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     private void buildTabBar() {
         LinearLayout bar = (LinearLayout) findViewById(R.id.tab_bar);
         // A floating pill: the page shows around it.
-        bar.setBackground(Ui.shape(this, Ui.color(this, R.attr.gfSurface), Ui.dp(this, 30), true, false));
+        bar.setBackground(Ui.shape(this, Ui.color(this, R.attr.gfSurface), Ui.PILL, true, false));
         tabNames = false;
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int index = TAB_IDS[i];
@@ -525,7 +525,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             notice.setPadding(Ui.dp(this, 18), Ui.dp(this, 10), Ui.dp(this, 18), Ui.dp(this, 10));
             GradientDrawable bg = new GradientDrawable();
             bg.setColor((Ui.color(this, R.attr.gfTextPrimary) & 0x00ffffff) | 0xe6000000);
-            bg.setCornerRadius(Ui.dp(this, 20));
+            bg.setCornerRadius(Ui.PILL);
             notice.setBackground(bg);
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);

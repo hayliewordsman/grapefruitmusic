@@ -1698,7 +1698,7 @@ final class NowPlaying {
                 row.setGravity(Gravity.CENTER_VERTICAL);
                 row.setMinimumHeight(Ui.dp(context, 54));
                 row.setPadding(Ui.dp(context, 20), Ui.dp(context, 4), Ui.dp(context, 6), Ui.dp(context, 4));
-                row.setBackgroundResource(Ui.resource(context, R.attr.gfRowBackground));
+                row.setBackground(Ui.rowBackground(context));
                 h = new QueueHolder();
                 h.art = Ui.artwork(context, 40);
                 row.addView(h.art);

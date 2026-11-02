@@ -94,6 +94,13 @@ public final class Ui {
         return t;
     }
 
+    /**
+     * A corner radius past any control's height: GradientDrawable keeps a radius to half the shorter
+     * side (on Android 4.2 too), so the ends come out as semicircles. Buttons, chips, fields and
+     * bars are pills whatever their height, even when their text wraps.
+     */
+    public static final float PILL = 100000f;
+
     /** A pill-shaped row that darkens while pressed (Settings rows and the like). */
     public static android.graphics.drawable.Drawable actionBackground(Context c) {
         return pressable(c, color(c, R.attr.gfControl), dp(c, 28), false);
@@ -155,7 +162,7 @@ public final class Ui {
         t.setGravity(android.view.Gravity.CENTER);
         t.setMinHeight(dp(c, 48));
         t.setPadding(dp(c, 12), dp(c, 10), dp(c, 12), dp(c, 10));
-        t.setBackground(pressable(c, color(c, R.attr.gfControl), dp(c, 24), true));
+        t.setBackground(pressable(c, color(c, R.attr.gfControl), PILL, true));
         t.setOnClickListener(action);
         return t;
     }
@@ -180,8 +187,8 @@ public final class Ui {
     public static void setChipChosen(TextView chip, boolean chosen) {
         Context c = chip.getContext();
         chip.setSelected(chosen);
-        chip.setBackground(chosen ? accentPressable(c, dp(c, 19), false)
-                : pressable(c, color(c, R.attr.gfControl), dp(c, 19), true));
+        chip.setBackground(chosen ? accentPressable(c, PILL, false)
+                : pressable(c, color(c, R.attr.gfControl), PILL, true));
         chip.setTextColor(chosen ? onAccent(c) : color(c, R.attr.gfTextPrimary));
     }
 
@@ -271,19 +278,50 @@ public final class Ui {
         IconView more = new IconView(c);
         more.setIcon(Icons.MORE);
         more.setColor(color(c, R.attr.gfTextSecondary));
-        // 32dp round, centred in a 40dp touch area.
+        // 32dp round, centred in a 40dp touch area, the dots across the middle half of it.
         int inset = dp(c, 4);
-        int pad = dp(c, 12);
-        more.setPadding(pad, pad, pad, pad);
         android.graphics.drawable.StateListDrawable states = new android.graphics.drawable.StateListDrawable();
         states.addState(new int[]{android.R.attr.state_pressed}, new android.graphics.drawable.InsetDrawable(
                 shape(c, color(c, R.attr.gfControlPressed), 0, true, true), inset));
         states.addState(new int[]{}, new android.graphics.drawable.InsetDrawable(
                 shape(c, color(c, R.attr.gfControl), 0, true, true), inset));
         more.setBackground(states);
+        // After the background: an inset background brings its inset as padding, which would draw
+        // the dots as big as the circle.
+        int pad = dp(c, 10);
+        more.setPadding(pad, pad, pad, pad);
         more.setContentDescription("More");
         more.setLayoutParams(new LinearLayout.LayoutParams(dp(c, 40), dp(c, 40)));
         return more;
+    }
+
+    /**
+     * A list row's background: nothing, and a pill while pressed, inset from the row's ends (a bar
+     * the full width of the screen was the old look).
+     */
+    public static android.graphics.drawable.Drawable rowBackground(Context c) {
+        android.graphics.drawable.StateListDrawable states = new android.graphics.drawable.StateListDrawable();
+        int side = dp(c, 6);
+        int edge = dp(c, 1);
+        states.addState(new int[]{android.R.attr.state_pressed}, new android.graphics.drawable.InsetDrawable(
+                shape(c, color(c, R.attr.gfControlPressed), PILL, false, false), side, edge, side, edge) {
+            @Override
+            public boolean getPadding(android.graphics.Rect padding) {
+                // The inset is only for drawing: the row keeps its own padding.
+                padding.set(0, 0, 0, 0);
+                return false;
+            }
+        });
+        states.addState(new int[]{}, new android.graphics.drawable.ColorDrawable(0));
+        return states;
+    }
+
+    /**
+     * What a card (artwork over its title) shows while pressed: a rounded square like its artwork.
+     * Rows get a pill (rowBackground).
+     */
+    public static android.graphics.drawable.Drawable cardBackground(Context c) {
+        return pressable(c, 0, dp(c, 18), false);
     }
 
     public static ArtworkView artwork(Context c, int sizeDp) {
@@ -352,10 +390,10 @@ public final class Ui {
         t.setGravity(Gravity.CENTER);
         t.setPadding(dp(c, 16), dp(c, 6), dp(c, 16), dp(c, 6));
         if (bold) {
-            t.setBackground(accentPressable(c, dp(c, 19), false));
+            t.setBackground(accentPressable(c, PILL, false));
             t.setTextColor(onAccent(c));
         } else {
-            t.setBackground(pressable(c, color(c, R.attr.gfControl), dp(c, 19), true));
+            t.setBackground(pressable(c, color(c, R.attr.gfControl), PILL, true));
         }
         return t;
     }
@@ -401,8 +439,8 @@ public final class Ui {
         p.setBaselineAligned(false);
         p.setMinimumHeight(dp(c, 48));
         p.setGravity(Gravity.CENTER);
-        p.setBackground(main ? accentPressable(c, dp(c, 24), false)
-                : pressable(c, color(c, R.attr.gfControl), dp(c, 24), true));
+        p.setBackground(main ? accentPressable(c, PILL, false)
+                : pressable(c, color(c, R.attr.gfControl), PILL, true));
         p.setPadding(dp(c, 16), dp(c, 10), dp(c, 16), dp(c, 10));
         IconView i = icon(c, icon, main ? onAccent(c) : accent(c), 18);
         p.addView(i);

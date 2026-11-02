@@ -305,7 +305,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
                 TextView all = Ui.text(c, 17, R.attr.gfAccent, false);
                 all.setText("See All");
                 all.setPadding(Ui.dp(c, 16), Ui.dp(c, 12), Ui.dp(c, 16), Ui.dp(c, 12));
-                all.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+                all.setBackground(Ui.rowBackground(c));
                 all.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -361,9 +361,8 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
         final MediaItem m = stations.get(index);
         LinearLayout tile = new LinearLayout(c);
         tile.setOrientation(LinearLayout.VERTICAL);
-        tile.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+        tile.setBackground(Ui.cardBackground(c));
         ArtworkView art = Ui.artwork(c, 0);
-        art.setCornerRadiusDp(8);
         ArtworkLoader.get(c).into(art, m, Ui.dp(c, 200));
         tile.addView(art, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -408,7 +407,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
         t.setMinHeight(Ui.dp(c, 54));
         int[] colors = RadioArt.colorsFor("genre:" + name);
         GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.TL_BR, colors);
-        bg.setCornerRadius(Ui.dp(c, 10));
+        bg.setCornerRadius(Ui.PILL);
         t.setBackground(bg);
         t.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -427,7 +426,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setMinimumHeight(Ui.dp(c, 56));
         row.setPadding(Ui.dp(c, 16), Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 6));
-        row.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+        row.setBackground(Ui.rowBackground(c));
         ArtworkView art = Ui.artwork(c, 44);
         ArtworkLoader.get(c).into(art, m, Ui.dp(c, 44));
         row.addView(art);
@@ -547,9 +546,8 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
     private View tile(final Context c, final Radio.Preset p) {
         LinearLayout tile = new LinearLayout(c);
         tile.setOrientation(LinearLayout.VERTICAL);
-        tile.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+        tile.setBackground(Ui.cardBackground(c));
         ArtworkView art = Ui.artwork(c, 0);
-        art.setCornerRadiusDp(8);
         art.setBitmap(RadioArt.of(p.frequency, p.name(), Ui.dp(c, 200)));
         tile.addView(art, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -600,7 +598,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setMinimumHeight(Ui.dp(c, 56));
         row.setPadding(Ui.dp(c, 16), Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 6));
-        row.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+        row.setBackground(Ui.rowBackground(c));
         ArtworkView art = Ui.artwork(c, 44);
         art.setBitmap(RadioArt.of(f, null, Ui.dp(c, 44)));
         row.addView(art);

@@ -107,7 +107,7 @@ public final class TagEditorFragment extends BaseFragment {
         LinearLayout bar = new LinearLayout(c);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setGravity(Gravity.CENTER_VERTICAL);
-        bar.setPadding(Ui.dp(c, 6), Ui.dp(c, 4), Ui.dp(c, 6), 0);
+        bar.setPadding(Ui.dp(c, 16), Ui.dp(c, 10), Ui.dp(c, 16), 0);
         TextView cancel = Ui.textButton(c, "Cancel", false);
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -145,7 +145,6 @@ public final class TagEditorFragment extends BaseFragment {
         artBox.setGravity(Gravity.CENTER_HORIZONTAL);
         artBox.setPadding(0, Ui.dp(c, 8), 0, 0);
         art = Ui.artwork(c, 150);
-        art.setCornerRadiusDp(6);
         art.setPlaceholderColors(Ui.color(c, R.attr.gfFill), Ui.color(c, R.attr.gfTextSecondary));
         showPicture();
         View.OnClickListener pick = new View.OnClickListener() {
@@ -159,7 +158,11 @@ public final class TagEditorFragment extends BaseFragment {
         artBox.addView(art);
         TextView change = Ui.textButton(c, picture != null ? "Change Artwork" : "Add Artwork", false);
         change.setOnClickListener(pick);
-        artBox.addView(change);
+        // As wide as its words, centred under the artwork (a vertical layout would stretch it).
+        LinearLayout.LayoutParams changeLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        changeLp.topMargin = Ui.dp(c, 12);
+        artBox.addView(change, changeLp);
         g.add(artBox);
 
         g.section("Song");

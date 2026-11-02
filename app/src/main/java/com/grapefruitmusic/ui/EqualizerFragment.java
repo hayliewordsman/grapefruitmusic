@@ -57,13 +57,16 @@ public final class EqualizerFragment extends BaseFragment {
                 Player.get(getActivity()).audioEffectsChanged();
             }
         });
+        // The curve on a rounded card, inset like the rows.
         LinearLayout box = new LinearLayout(c);
-        box.setBackgroundColor(Ui.color(c, R.attr.gfSurface));
-        box.setPadding(0, Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 4));
+        box.setBackground(Ui.shape(c, Ui.color(c, R.attr.gfSurface), Ui.dp(c, 24), false, false));
+        box.setPadding(Ui.dp(c, 4), Ui.dp(c, 10), Ui.dp(c, 10), Ui.dp(c, 6));
         box.addView(bands, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
-        g.add(box);
-        g.add(Ui.separator(c, 0));
+        LinearLayout.LayoutParams boxLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        boxLp.setMargins(Ui.dp(c, 12), Ui.dp(c, 4), Ui.dp(c, 12), Ui.dp(c, 4));
+        g.content.addView(box, boxLp);
         g.footer("Drag a band up or down to make your own curve (saved as Custom), or pick a preset. "
                 + "The equalizer only changes Grapefruit's sound.");
 

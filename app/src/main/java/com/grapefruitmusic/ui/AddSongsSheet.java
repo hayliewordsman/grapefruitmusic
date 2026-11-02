@@ -99,14 +99,14 @@ final class AddSongsSheet {
 
         LinearLayout card = new LinearLayout(c);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackground(GrapefruitDialog.rounded(Ui.color(c, R.attr.gfSurface), Ui.dp(c, 16)));
+        card.setBackground(GrapefruitDialog.rounded(Ui.color(c, R.attr.gfSurface), Ui.dp(c, 24)));
         card.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 8));
 
         // ‹ Albums (inside an album) | Add Songs, and how many so far | Done
         LinearLayout bar = new LinearLayout(c);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setGravity(Gravity.CENTER_VERTICAL);
-        bar.setPadding(Ui.dp(c, 6), 0, Ui.dp(c, 6), 0);
+        bar.setPadding(Ui.dp(c, 12), 0, Ui.dp(c, 12), 0);
         back = Ui.textButton(c, "‹ Albums", false);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -370,7 +370,7 @@ final class AddSongsSheet {
                 row.setGravity(Gravity.CENTER_VERTICAL);
                 row.setMinimumHeight(Ui.dp(c, 56));
                 row.setPadding(Ui.dp(c, 16), Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 6));
-                row.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+                row.setBackground(Ui.rowBackground(c));
                 h = new Holder();
                 h.art = Ui.artwork(c, 44);
                 row.addView(h.art);

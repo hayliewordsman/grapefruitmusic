@@ -171,6 +171,9 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         descriptionField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
                 | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         descriptionField.setSingleLine(false);
+        // Up to six lines: a rounded box, not a pill like the one-line fields.
+        descriptionField.setBackground(Ui.shape(c, Ui.color(c, R.attr.gfControl), Ui.dp(c, 22), false, false));
+        descriptionField.setPadding(Ui.dp(c, 16), Ui.dp(c, 10), Ui.dp(c, 16), Ui.dp(c, 10));
         descriptionField.setMinLines(2);
         descriptionField.setMaxLines(6);
         descriptionField.setGravity(Gravity.TOP);
@@ -225,7 +228,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         dl.setOrientation(LinearLayout.HORIZONTAL);
         dl.setGravity(Gravity.CENTER_VERTICAL);
         dl.setPadding(0, Ui.dp(c, 10), 0, Ui.dp(c, 6));
-        dl.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+        dl.setBackground(Ui.rowBackground(c));
         downloadIcon = Ui.icon(c, Icons.DOWNLOAD, Ui.accent(c), 22);
         dl.addView(downloadIcon);
         downloadLabel = Ui.text(c, 16, R.attr.gfAccent, false);
@@ -335,7 +338,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         return bar;
     }
 
-    /** Artwork, with an "Edit" band across the bottom in edit mode (tap to change the cover). */
+    /** Artwork, with an "Edit" pill at the bottom in edit mode (tap to change the cover). */
     private View cover(Context c) {
         FrameLayout frame = new FrameLayout(c);
         art = Ui.artwork(c, 0);
@@ -347,14 +350,15 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         coverLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         coverLabel.setTypeface(Fonts.medium());
         coverLabel.setGravity(Gravity.CENTER);
-        coverLabel.setPadding(0, Ui.dp(c, 5), 0, Ui.dp(c, 6));
-        GradientDrawable band = new GradientDrawable();
-        band.setColor(0x99000000);
-        float r = Ui.dp(c, 4); // ArtworkView's corner radius
-        band.setCornerRadii(new float[]{0, 0, 0, 0, r, r, r, r});
-        coverLabel.setBackground(band);
-        frame.addView(coverLabel, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM));
+        coverLabel.setPadding(Ui.dp(c, 16), Ui.dp(c, 5), Ui.dp(c, 16), Ui.dp(c, 6));
+        GradientDrawable pill = new GradientDrawable();
+        pill.setColor(0x99000000);
+        pill.setCornerRadius(Ui.PILL);
+        coverLabel.setBackground(pill);
+        FrameLayout.LayoutParams labelLp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        labelLp.bottomMargin = Ui.dp(c, 10);
+        frame.addView(coverLabel, labelLp);
         frame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -848,8 +852,10 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
                 row.setOrientation(LinearLayout.HORIZONTAL);
                 row.setGravity(Gravity.CENTER_VERTICAL);
                 row.setMinimumHeight(Ui.dp(context, 48));
-                row.setPadding(Ui.dp(context, 16), Ui.dp(context, 6), Ui.dp(context, 16), Ui.dp(context, 6));
-                row.setBackgroundResource(Ui.resource(context, R.attr.gfRowBackground));
+                // Less at the right, where the ⋯ button's round background has its own margin (as
+                // in the Library's song rows); pulling the button into the padding clipped it.
+                row.setPadding(Ui.dp(context, 16), Ui.dp(context, 6), Ui.dp(context, 10), Ui.dp(context, 6));
+                row.setBackground(Ui.rowBackground(context));
                 h = new Holder();
                 h.remove = new IconView(context);
                 h.remove.setIcon(Icons.REMOVE);
@@ -890,7 +896,6 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
                 h.duration.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
                 row.addView(h.duration);
                 h.more = Ui.moreButton(context);
-                ((LinearLayout.LayoutParams) h.more.getLayoutParams()).rightMargin = -Ui.dp(context, 8);
                 h.more.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

@@ -17,9 +17,7 @@
         <item name="gfAccent">@color/grapefruit</item>
         <item name="gfFill">@color/light_fill</item>
         <item name="gfScrim">@color/light_scrim</item>
-        <item name="gfRowBackground">@drawable/row_light</item>
         <item name="gfFieldBackground">@drawable/field_light</item>
-        <item name="gfPillBackground">@drawable/pill_light</item>
         <item name="gfControl">@color/light_control</item>
         <item name="gfControlPressed">@color/light_control_pressed</item>
         <item name="gfToggleOff">@color/light_toggle_off</item>
@@ -58,9 +56,7 @@
         <item name="gfAccent">@color/grapefruit_bright</item>
         <item name="gfFill">@color/dark_fill</item>
         <item name="gfScrim">@color/dark_scrim</item>
-        <item name="gfRowBackground">@drawable/row_dark</item>
         <item name="gfFieldBackground">@drawable/field_dark</item>
-        <item name="gfPillBackground">@drawable/pill_dark</item>
         <item name="gfControl">@color/dark_control</item>
         <item name="gfControlPressed">@color/dark_control_pressed</item>
         <item name="gfToggleOff">@color/dark_toggle_off</item>
@@ -100,9 +96,7 @@
         <item name="gfAccent">@color/grapefruit_light_accent</item>
         <item name="gfFill">@color/grapefruit_light_fill</item>
         <item name="gfScrim">@color/grapefruit_light_scrim</item>
-        <item name="gfRowBackground">@drawable/row_grapefruit_light</item>
         <item name="gfFieldBackground">@drawable/field_grapefruit_light</item>
-        <item name="gfPillBackground">@drawable/pill_grapefruit_light</item>
         <item name="gfControl">@color/grapefruit_light_control</item>
         <item name="gfControlPressed">@color/grapefruit_light_control_pressed</item>
         <item name="gfToggleOff">@color/grapefruit_light_toggle_off</item>
@@ -132,9 +126,7 @@
         <item name="gfAccent">@color/grapefruit_dark_accent</item>
         <item name="gfFill">@color/grapefruit_dark_fill</item>
         <item name="gfScrim">@color/grapefruit_dark_scrim</item>
-        <item name="gfRowBackground">@drawable/row_grapefruit_dark</item>
         <item name="gfFieldBackground">@drawable/field_grapefruit_dark</item>
-        <item name="gfPillBackground">@drawable/pill_grapefruit_dark</item>
         <item name="gfControl">@color/grapefruit_dark_control</item>
         <item name="gfControlPressed">@color/grapefruit_dark_control_pressed</item>
         <item name="gfToggleOff">@color/grapefruit_dark_toggle_off</item>

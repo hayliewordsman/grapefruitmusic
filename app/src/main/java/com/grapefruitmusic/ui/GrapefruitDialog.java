@@ -306,7 +306,7 @@ public final class GrapefruitDialog extends Dialog {
                 row.setMinimumHeight(Ui.dp(c, 52));
                 int side = inset ? Ui.dp(c, 20) : 0;
                 row.setPadding(side, Ui.dp(c, 6), inset ? Ui.dp(c, 16) : 0, Ui.dp(c, 6));
-                row.setBackgroundResource(Ui.resource(c, R.attr.gfRowBackground));
+                row.setBackground(Ui.rowBackground(c));
                 TextView label = Ui.text(c, 16, R.attr.gfTextPrimary, false);
                 label.setSingleLine(false);
                 label.setMaxLines(2);
@@ -371,7 +371,7 @@ public final class GrapefruitDialog extends Dialog {
             b.setMinHeight(Ui.dp(c, 48));
             b.setGravity(Gravity.CENTER);
             b.setPadding(Ui.dp(c, 12), Ui.dp(c, 10), Ui.dp(c, 12), Ui.dp(c, 10));
-            int radius = Ui.dp(c, 24);
+            float radius = Ui.PILL;
             if (primary && destructive) {
                 b.setTextColor(0xffffffff);
                 b.setBackground(pressable(RED, darker(RED), radius));

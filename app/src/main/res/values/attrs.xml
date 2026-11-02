@@ -11,9 +11,7 @@
     <attr name="gfAccent" format="color" />
     <attr name="gfFill" format="color" />
     <attr name="gfScrim" format="color" />
-    <attr name="gfRowBackground" format="reference" />
     <attr name="gfFieldBackground" format="reference" />
-    <attr name="gfPillBackground" format="reference" />
     <!-- Fill for text fields and secondary buttons; visible on pages and on dialogs. -->
     <attr name="gfControl" format="color" />
     <attr name="gfControlPressed" format="color" />
