@@ -32,6 +32,11 @@ public final class CrashReport {
     /** The last few things the app did (see note()), oldest first. */
     private static final ArrayDeque<String> notes = new ArrayDeque<String>();
     private static final SimpleDateFormat CLOCK = new SimpleDateFormat("HH:mm:ss", Locale.US);
+    /**
+     * Memory kept back and let go as a report is written, so a crash for want of memory still
+     * leaves one (writing it needs memory too).
+     */
+    private static byte[] reserve;
 
     private CrashReport() {
     }
@@ -40,13 +45,20 @@ public final class CrashReport {
     public static void install(final Context context) {
         final Context app = context.getApplicationContext();
         final Thread.UncaughtExceptionHandler android = Thread.getDefaultUncaughtExceptionHandler();
+        reserve = new byte[96 * 1024];
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable e) {
+                reserve = null;
                 try {
                     write(app, report(app, thread, e));
-                } catch (Throwable ignored) {
-                    // Nothing more can be done: Android's own handler still closes the app.
+                } catch (Throwable full) {
+                    // Too little memory for the whole report: at least what went wrong, and where.
+                    try {
+                        write(app, brief(e));
+                    } catch (Throwable ignored) {
+                        // Nothing more can be done: Android's own handler still closes the app.
+                    }
                 }
                 if (android != null) android.uncaughtException(thread, e);
             }
@@ -127,6 +139,17 @@ public final class CrashReport {
             }
         }
         return b.length() > MAX_CHARS ? b.substring(0, MAX_CHARS) + "\n[…]\n" : b.toString();
+    }
+
+    /** The fault and the first few places in the code, in as little memory as can be. */
+    static String brief(Throwable e) {
+        StringBuilder b = new StringBuilder(1024);
+        b.append("Grapefruit Music & Podcasts crash report (short)\n");
+        b.append("Android: ").append(Build.VERSION.RELEASE).append('\n');
+        b.append(e.getClass().getName()).append('\n');
+        StackTraceElement[] trace = e.getStackTrace();
+        for (int i = 0; i < trace.length && i < 12; i++) b.append("  at ").append(trace[i]).append('\n');
+        return b.toString();
     }
 
     /** Web addresses without their query strings or sign-in; file paths without their names. */

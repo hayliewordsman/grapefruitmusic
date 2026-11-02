@@ -1,6 +1,5 @@
 package com.grapefruitmusic.source;
 
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -49,12 +48,13 @@ public final class LocalSource implements MusicSource {
     private static final String IS_MUSIC = MediaStore.Audio.Media.IS_MUSIC + " != 0";
 
     private final Context context;
-    private final ContentResolver resolver;
+    /** The media library, reached so its failure can't close Grapefruit (see MediaLibrary). */
+    private final MediaLibrary library;
     private final Map<String, String> artCache = new HashMap<String, String>();
 
     public LocalSource(Context context) {
         this.context = context.getApplicationContext();
-        resolver = this.context.getContentResolver();
+        library = new MediaLibrary(this.context.getContentResolver());
     }
 
     @Override
@@ -108,9 +108,7 @@ public final class LocalSource implements MusicSource {
 
     private Cursor query(Uri uri, String[] columns, String selection, String[] args, String order) throws IOException {
         try {
-            Cursor c = resolver.query(uri, columns, selection, args, order);
-            if (c == null) throw new IOException("Media library unavailable (is the SD card mounted?)");
-            return c;
+            return library.query(uri, columns, selection, args, order);
         } catch (SecurityException e) {
             throw new IOException("Grapefruit Music isn't allowed to read music files");
         }
@@ -446,7 +444,7 @@ public final class LocalSource implements MusicSource {
         v.put(MediaStore.Audio.Playlists.DATE_MODIFIED, now);
         Uri created;
         try {
-            created = resolver.insert(PLAYLISTS, v);
+            created = library.insert(PLAYLISTS, v);
         } catch (RuntimeException e) {
             throw new IOException("This phone didn't let Grapefruit make a playlist");
         }
@@ -458,7 +456,7 @@ public final class LocalSource implements MusicSource {
     public void deletePlaylist(MediaItem playlist) throws IOException {
         int deleted;
         try {
-            deleted = resolver.delete(ContentUris.withAppendedId(PLAYLISTS, Long.parseLong(playlist.id)), null, null);
+            deleted = library.delete(ContentUris.withAppendedId(PLAYLISTS, Long.parseLong(playlist.id)), null, null);
         } catch (RuntimeException e) {
             throw new IOException("This device didn't let Grapefruit delete the playlist");
         }
@@ -475,7 +473,7 @@ public final class LocalSource implements MusicSource {
                 ContentValues v = new ContentValues();
                 v.put(MediaStore.Audio.Playlists.NAME, name);
                 v.put(MediaStore.Audio.Playlists.DATE_MODIFIED, System.currentTimeMillis() / 1000);
-                resolver.update(ContentUris.withAppendedId(PLAYLISTS, id), v, null, null);
+                library.update(ContentUris.withAppendedId(PLAYLISTS, id), v, null, null);
             }
             if (!removed.isEmpty()) {
                 StringBuilder in = new StringBuilder();
@@ -483,7 +481,7 @@ public final class LocalSource implements MusicSource {
                     if (in.length() > 0) in.append(',');
                     in.append(Long.parseLong(t.entryId));
                 }
-                resolver.delete(MediaStore.Audio.Playlists.Members.getContentUri("external", id),
+                library.delete(MediaStore.Audio.Playlists.Members.getContentUri("external", id),
                         MediaStore.Audio.Playlists.Members._ID + " IN (" + in + ")", null);
             }
         } catch (RuntimeException e) {
@@ -510,7 +508,7 @@ public final class LocalSource implements MusicSource {
             rows.add(v);
         }
         try {
-            resolver.bulkInsert(members, rows.toArray(new ContentValues[rows.size()]));
+            library.bulkInsert(members, rows.toArray(new ContentValues[rows.size()]));
         } catch (RuntimeException e) {
             throw new IOException("This phone didn't let Grapefruit change the playlist");
         }

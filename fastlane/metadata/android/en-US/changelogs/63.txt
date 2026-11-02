@@ -1,0 +1,2 @@
+5.1 beta 2
+Lyrics and Up Next on a wide or square screen take the whole left side, with the song's title above the progress bar; on a narrow column (a square phone) the lyrics are sized to fit. The playing notification always names the song. Playlists on this device are saved so that a fault in the phone's media library can't close Grapefruit, and a crash now always leaves a report.

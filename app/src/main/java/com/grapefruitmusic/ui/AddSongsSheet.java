@@ -293,6 +293,8 @@ final class AddSongsSheet {
                 for (MediaItem t : tracks) {
                     if (!target.has(t)) missing.add(t);
                 }
+                com.grapefruitmusic.util.CrashReport.note("Add Songs: an album, " + missing.size() + " of "
+                        + tracks.size() + " songs");
                 target.add(missing);
                 addedAlbums.put(album.key(), missing);
                 if (dialog.isShowing()) refresh();

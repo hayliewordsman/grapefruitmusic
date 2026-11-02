@@ -535,6 +535,9 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
         saved.artKey = album.artKey;
         saved.description = album.description;
         final Context app = getActivity().getApplicationContext();
+        String where = s.isRemote() ? "server" : s instanceof DownloadedSource ? "downloads" : "phone";
+        com.grapefruitmusic.util.CrashReport.note("playlist save (" + where + "): " + added.size() + " added, "
+                + removed.size() + " removed");
         saving = true;
         showHeader();
         bg(new Bg.Work<Void>() {
@@ -555,6 +558,7 @@ public final class AlbumFragment extends BaseFragment implements Downloads.Liste
             public void done(Void result, Exception error) {
                 saving = false;
                 if (error != null) {
+                    com.grapefruitmusic.util.CrashReport.note("playlist save failed: " + error.getClass().getSimpleName());
                     showHeader();
                     Ui.dialog(getActivity())
                             .setTitle("Couldn't Save Changes")

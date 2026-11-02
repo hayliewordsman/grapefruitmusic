@@ -127,6 +127,8 @@ final class NowPlaying {
     private int mode = MODE_ART;
     /** Laid out in two columns (a wide or square screen): see configureContentLayout. */
     private boolean twoColumns;
+    /** About how wide Lyrics and Up Next are in two columns, in dp (0: the whole width). */
+    private int lyricsColumnDp;
     private String trackKey;
     private Lyrics lyrics;
     private boolean lyricsLoading;
@@ -544,6 +546,7 @@ final class NowPlaying {
         TextView credit = Ui.text(a, 13, R.attr.gfTextSecondary, false);
         credit.setPadding(Ui.dp(a, 24), Ui.dp(a, 24), Ui.dp(a, 24), Ui.dp(a, 8));
         lyricsAdapter.credit = credit;
+        lyricsAdapter.setColumnWidth(lyricsColumnDp);
         lyricsList.addFooterView(credit, null, false);
         lyricsList.setAdapter(lyricsAdapter);
         lyricsList.setClipToPadding(false);
@@ -736,6 +739,9 @@ final class NowPlaying {
         // the artwork at the left; the title, the controls and the buttons at the right.
         boolean landscape = Ui.wide(config);
         twoColumns = landscape;
+        lyricsColumnDp = landscape ? Math.round(config.screenWidthDp * 0.44f) : 0;
+        if (lyricsAdapter != null) lyricsAdapter.setColumnWidth(lyricsColumnDp);
+        if (queueAdapter != null) queueAdapter.notifyDataSetChanged();
         boolean compact = config.screenHeightDp < 500;
         LinearLayout content = (LinearLayout) root.findViewById(R.id.np_content);
         LinearLayout body = (LinearLayout)root.findViewById(R.id.np_main);
@@ -1436,6 +1442,9 @@ final class NowPlaying {
         private Lyrics lyrics;
         private int current = -1;
         TextView credit;
+        /** Synced lines' size, and the space at each side: less in a narrow column. */
+        private float syncedSp = 23f;
+        private int sideDp = 24;
 
         LyricsAdapter(Context context, int primary, int secondary) {
             this.context = context;
@@ -1452,6 +1461,23 @@ final class NowPlaying {
 
         void setCurrent(int index) {
             current = index;
+            notifyDataSetChanged();
+        }
+
+        /**
+         * The lyrics' width in dp (0: the whole screen). In a narrow column (the left half of a
+         * square phone, like a Clicks Communicator) the lines get smaller, down to 17sp, and the
+         * sides closer, so a line still holds a phrase rather than two words.
+         */
+        void setColumnWidth(int dp) {
+            float size = dp <= 0 ? 23f : Math.max(17f, Math.min(23f, dp / 10f));
+            int side = dp > 0 && dp < 260 ? 16 : 24;
+            if (size == syncedSp && side == sideDp) return;
+            syncedSp = size;
+            sideDp = side;
+            if (credit != null) {
+                credit.setPadding(Ui.dp(context, side), Ui.dp(context, 24), Ui.dp(context, side), Ui.dp(context, 8));
+            }
             notifyDataSetChanged();
         }
 
@@ -1475,20 +1501,20 @@ final class NowPlaying {
             TextView t = (TextView) convertView;
             if (t == null) {
                 t = new TextView(context);
-                t.setPadding(Ui.dp(context, 24), Ui.dp(context, 9), Ui.dp(context, 24), Ui.dp(context, 9));
                 t.setLineSpacing(0, 1.05f);
             }
+            t.setPadding(Ui.dp(context, sideDp), Ui.dp(context, 9), Ui.dp(context, sideDp), Ui.dp(context, 9));
             String text = lyrics.lines.get(position).text;
             boolean synced = lyrics.synced;
             t.setText(text.trim().length() == 0 ? (synced ? "♪" : " ") : text);
             if (synced) {
-                t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 23);
+                t.setTextSize(TypedValue.COMPLEX_UNIT_SP, syncedSp);
                 t.setTypeface(Fonts.semiBold());
                 boolean now = position == current;
                 t.setTextColor(now ? primary : secondary);
                 t.setAlpha(now ? 1f : (position < current ? 0.45f : 0.6f));
             } else {
-                t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+                t.setTextSize(TypedValue.COMPLEX_UNIT_SP, Math.round(syncedSp * 18f / 23f));
                 t.setTypeface(Fonts.regular());
                 t.setTextColor(primary);
                 t.setAlpha(1f);
@@ -1533,6 +1559,8 @@ final class NowPlaying {
         TextView subtitle;
         IconView speaker;
         IconView handle;
+        /** Laid out for a narrow column (1) or not (0); -1 not yet. */
+        int narrow = -1;
     }
 
     private static final class SectionHolder {
@@ -1712,6 +1740,32 @@ final class NowPlaying {
             return convertView;
         }
 
+        /**
+         * In a narrow column (the left half of a square phone, like a Clicks Communicator) less
+         * space around each song and a smaller picture, so its title has room.
+         */
+        private void fitColumn(View row, QueueHolder h) {
+            int narrow = lyricsColumnDp > 0 && lyricsColumnDp < 260 ? 1 : 0;
+            if (h.narrow == narrow) return;
+            h.narrow = narrow;
+            boolean n = narrow == 1;
+            row.setPadding(Ui.dp(context, n ? 12 : 20), Ui.dp(context, 4), Ui.dp(context, n ? 2 : 6), Ui.dp(context, 4));
+            ViewGroup.LayoutParams art = h.art.getLayoutParams();
+            art.width = art.height = Ui.dp(context, n ? 34 : 40);
+            h.art.setLayoutParams(art);
+            h.texts.setPadding(Ui.dp(context, n ? 10 : 12), 0, Ui.dp(context, n ? 2 : 4), 0);
+            int box = Ui.dp(context, n ? 38 : 46);
+            for (IconView v : new IconView[]{h.speaker, h.handle}) {
+                ViewGroup.LayoutParams lp = v.getLayoutParams();
+                lp.width = lp.height = box;
+                v.setLayoutParams(lp);
+            }
+            int pad = Ui.dp(context, n ? 10 : 13);
+            h.speaker.setPadding(pad, pad, pad, pad);
+            pad = Ui.dp(context, n ? 8 : 11);
+            h.handle.setPadding(pad, pad, pad, pad);
+        }
+
         private View song(QueueEntry e, View convertView) {
             QueueHolder h;
             if (convertView == null) {
@@ -1752,6 +1806,7 @@ final class NowPlaying {
             } else {
                 h = (QueueHolder) convertView.getTag();
             }
+            fitColumn(convertView, h);
             MediaItem m = e.item;
             h.title.setText(m.title);
             h.title.setTextColor(e.role == ROLE_NOW ? accent : Ui.color(context, R.attr.gfTextPrimary));
