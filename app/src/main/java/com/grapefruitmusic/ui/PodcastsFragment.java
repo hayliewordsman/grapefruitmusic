@@ -246,7 +246,8 @@ public final class PodcastsFragment extends BaseFragment {
             }
             TextView text = Ui.text(c, 15, R.attr.gfTextPrimary, false);
             text.setSingleLine(false);
-            text.setPadding(Ui.dp(c, 20), Ui.dp(c, 8), Ui.dp(c, 20), Ui.dp(c, 16));
+            // The card has its own margins.
+            text.setPadding(Ui.dp(c, 2), 0, Ui.dp(c, 2), Ui.dp(c, 4));
             text.setText(android.text.Html.fromHtml(out.toString("UTF-8")));
             text.setLinkTextColor(Ui.accent(c));
             text.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());

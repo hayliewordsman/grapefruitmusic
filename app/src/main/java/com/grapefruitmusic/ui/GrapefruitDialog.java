@@ -182,7 +182,20 @@ public final class GrapefruitDialog extends Dialog {
         /** Title, message or form, and pill buttons on a rounded card. */
         private View card(final GrapefruitDialog d) {
             Context c = context;
-            LinearLayout card = new LinearLayout(c);
+            // Never the screen's full height: a long message or form scrolls inside a card with room
+            // above and below it (about an eighth of the screen each, at least 24dp).
+            int screen = c.getResources().getDisplayMetrics().heightPixels;
+            final int tallest = screen - 2 * Math.max(Ui.dp(c, 24), Math.round(screen * 0.12f));
+            LinearLayout card = new LinearLayout(c) {
+                @Override
+                protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                    if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.UNSPECIFIED
+                            || MeasureSpec.getSize(heightMeasureSpec) > tallest) {
+                        heightMeasureSpec = MeasureSpec.makeMeasureSpec(tallest, MeasureSpec.AT_MOST);
+                    }
+                    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+                }
+            };
             card.setOrientation(LinearLayout.VERTICAL);
             card.setBackground(Ui.shape(c, Ui.color(c, R.attr.gfSurface), Ui.dp(c, 24), true, false));
             int pad = Ui.dp(c, 20);

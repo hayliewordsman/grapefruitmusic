@@ -1,0 +1,2 @@
+5.0 beta 7
+"How discovery exclusions work" in Podcasts' Exclusions & sources is rewritten to describe the whole policy, not just the first two publishers. That popup, and any long one, now leaves room above and below instead of filling the screen's height.

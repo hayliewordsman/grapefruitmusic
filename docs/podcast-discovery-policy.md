@@ -2,7 +2,7 @@
 
 ## How discovery exclusions work
 
-The main Podcasts discovery list excludes Turning Point USA and The Daily Wire publications, including archived network publications, plus verified personal shows of their founders or executive leadership. This is a disclosed publisher/leadership editorial decision, not a claim that every show, episode, leader or guest has engaged in hate or deception. Current and former founders/executives are included where the show identity is verified. Ordinary former employees, guests, unrelated namesakes and independently published shows of former presenters are not automatically included.
+The main Podcasts discovery list leaves out some publishers and shows, each listed below with the reason and the sources behind it. A show is left out when its publisher is excluded as a network (which also covers the network’s archived shows and new shows listed under the same publisher), when it is a verified personal show of an excluded network’s current or former founders or executives, or when the show itself is excluded for documented hate or violent rhetoric, or for documented false or misleading factual claims. Shows are identified by their exact feed, directory listing and publisher name or, where a feed could not be verified, by their exact full title; never by keywords, topics, guests or political views. This is an editorial decision about what we recommend, not a claim that every show, episode, host or guest has engaged in hate or deception. Ordinary former employees, guests, unrelated namesakes and independently published shows of former presenters are not automatically included. Search, adding a show by its RSS address, subscriptions, downloads and playback are unaffected.
 
 
 
