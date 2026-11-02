@@ -1,0 +1,5 @@
+4.1
+New name: Grapefruit Music & Podcasts ("Grapefruit" in the launcher), with a new logo, a splash screen and the Geist typeface.
+Live Mode: any song as a stadium show. A synthesized crowd cheers it in, sings along with the lead vocal and gives an ovation as it ends.
+Now Playing: labelled action buttons; long titles scroll, there and in the mini player.
+Fixed: the scrubber landing away from where you let go, and podcast times running out minutes early.

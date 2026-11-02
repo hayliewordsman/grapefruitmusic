@@ -1,1 +1,1 @@
-Music player for your own files and Navidrome, Subsonic and Jellyfin servers
+Music and podcasts from your files and Navidrome, Subsonic or Jellyfin

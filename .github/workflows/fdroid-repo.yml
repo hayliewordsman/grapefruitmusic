@@ -279,6 +279,7 @@ jobs:
           if [ -d fdroid/archive ]; then cp -r fdroid/archive "$site/archive"; fi
           # The front page: an "Add to F-Droid" button, the APK for older devices, and a QR code.
           cp docs/icon.png "$site/icon.png"
+          cp docs/brand/logo-stacked.svg docs/brand/logo-stacked-dark.svg "$site/"
           python fdroid/site/render.py fdroid/site/index.html fdroid/repo/index-v2.json "$APP_ID" \
             "$FINGERPRINT" https://hayliewordsman.github.io/grapefruitmusic/ "$site"
 

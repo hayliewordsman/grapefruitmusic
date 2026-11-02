@@ -17,7 +17,7 @@ def installation_note(manifest):
     target = int(manifest.get('usesSdk', {}).get('targetSdkVersion', 0))
     if target >= 28:
         return ('Works with F-Droid and Droid-ify on Android 6 and newer. '
-                'Grapefruit Music also supports Android 4.2.2 and newer through the APK download below.')
+                'Grapefruit also runs on Android 4.2.2 and newer, through the APK download below.')
     return ("Works with F-Droid and Droid-ify on Android 6 to 13. Android 14 and newer may block "
             "the older release currently available in this repository.")
 
