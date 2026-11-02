@@ -613,6 +613,8 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         if (item != loadedItem) {
             liveTitle = null;
             liveDrops = 0;
+            // Its lyrics, ready (and saved for offline) before Lyrics is opened.
+            com.grapefruitmusic.lyrics.LyricsRepository.prefetch(context, item);
         }
         loadedItem = item;
         loadedItemStarted = false;

@@ -22,10 +22,23 @@ import java.util.Locale;
 /**
  * Finds lyrics for a song: saved copy, a .lrc file next to the song, the server, then LRCLIB
  * (a free, community-run database of synced lyrics). Results are cached so they work offline.
+ * A song's lyrics are looked up as it starts playing (prefetch), so they're ready, and kept for
+ * offline, before Lyrics is opened.
  */
 public final class LyricsRepository {
+    private static final String TAG = "GrapefruitLyrics";
     private static final long RETRY_MISSING_MS = 7L * 24 * 60 * 60 * 1000;
     private static final String LRCLIB = "https://lrclib.net/api/";
+    /** How long a song plays before its lyrics are looked up (songs skipped past aren't). */
+    private static final long PREFETCH_AFTER_MS = 3000;
+    /** One lookup at a time for a song: Lyrics opened during a prefetch waits for it, then reads the cache. */
+    private static final Object[] LOCKS = new Object[16];
+    private static final java.util.concurrent.ExecutorService PREFETCH =
+            java.util.concurrent.Executors.newSingleThreadExecutor(com.grapefruitmusic.util.Bg.named("gf-lyrics"));
+
+    static {
+        for (int i = 0; i < LOCKS.length; i++) LOCKS[i] = new Object();
+    }
 
     private LyricsRepository() {
     }
@@ -39,9 +52,43 @@ public final class LyricsRepository {
         return s == null ? "" : s.trim().toLowerCase(Locale.US).replaceAll("\\s+", " ");
     }
 
+    /**
+     * As a song starts: once it has played a few seconds (and is still the one playing), looks up
+     * its lyrics in the background, at low priority, the same way opening Lyrics does. Only the
+     * first time: after that load() finds them saved (or remembers there are none, for a week).
+     */
+    public static void prefetch(final Context context, final MediaItem track) {
+        if (track == null || track.live || track.kind != MediaItem.TRACK
+                || com.grapefruitmusic.podcast.PodcastSource.ID.equals(track.sourceId)) return;
+        final Context app = context.getApplicationContext();
+        com.grapefruitmusic.util.Bg.mainDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!track.sameAs(com.grapefruitmusic.playback.Player.get(app).current())) return;
+                PREFETCH.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+                        try {
+                            load(app, track);
+                        } catch (Throwable t) {
+                            android.util.Log.w(TAG, "couldn't look up lyrics", t);
+                        }
+                    }
+                });
+            }
+        }, PREFETCH_AFTER_MS);
+    }
+
     /** Blocking. Returns null when there are no lyrics. */
     public static Lyrics load(Context context, MediaItem track) {
         String key = songKey(track);
+        synchronized (LOCKS[(key.hashCode() & 0x7fffffff) % LOCKS.length]) {
+            return loadNow(context, track, key);
+        }
+    }
+
+    private static Lyrics loadNow(Context context, MediaItem track, String key) {
         SQLiteDatabase db = Db.get(context).getWritableDatabase();
         Cursor c = db.query("lyrics", new String[]{"synced", "body", "credit", "fetched_at"}, "song_key = ?",
                 new String[]{key}, null, null, null);

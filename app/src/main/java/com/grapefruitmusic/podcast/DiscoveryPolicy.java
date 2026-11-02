@@ -15,8 +15,7 @@ public final class DiscoveryPolicy {
                 + " disinformation sources and podcasts with known hate/violent rhetoric from the"
                 + " main Podcasts tab. You can still find it in Search. Please note that the views"
                 + " expressed on all podcasts are solely those of the creators and participants,"
-                + " and do not necessarily reflect the views of MagicFlute LLC or Grapefruit Music"
-                + " developers.";
+                + " and do not necessarily reflect the views of MagicFlute LLC or Grapefruit.";
 
     // Exact publisher names as identified in directory/RSS records. Never substring-match titles,
     // guests, political keywords, unrelated namesakes or the listener's subscriptions.

@@ -1,0 +1,2 @@
+5.0 beta 11
+A song's lyrics are looked up as it starts playing, from LRCLIB when your server or a .lrc file has none, and saved, so they're ready when you open Lyrics and work offline. The Discovery recommendations note now ends "MagicFlute LLC or Grapefruit."

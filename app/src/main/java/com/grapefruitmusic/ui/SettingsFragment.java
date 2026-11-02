@@ -305,7 +305,7 @@ public final class SettingsFragment extends BaseFragment
         });
         g.footer("When a song has no lyrics on your server or in a .lrc file next to it, Grapefruit looks "
                 + "them up on LRCLIB (lrclib.net), a free community database of time-synced lyrics, by artist "
-                + "and song title.");
+                + "and song title: as the song starts playing, and once, saving them for when you're offline.");
 
         g.section("About");
         g.value("About Grapefruit", "Version " + versionName(c), new View.OnClickListener() {

@@ -28,7 +28,8 @@ with downloads for offline listening and time-synced lyrics.
   2. your server (Navidrome's OpenSubsonic lyrics, Jellyfin 10.9+)
   3. [LRCLIB](https://lrclib.net), a free community database of synced lyrics. You can turn this off in Settings.
 
-  Lyrics are saved after the first lookup, so they work offline too.
+  A song's lyrics are looked up a few seconds after it starts playing (before Lyrics is opened) and saved,
+  so they're ready straight away and work offline too.
 - **iOS 10-style design:** large bold titles, album-art grids, a mini player above the tab bar, and a Now Playing
   card that slides up over a blurred copy of the artwork. The artwork shrinks when paused. Pull the card down to close it.
   Now Playing uses the same heading and bottom action tiles on all screen shapes, with stacked artwork
