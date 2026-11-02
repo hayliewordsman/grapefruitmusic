@@ -255,6 +255,34 @@ def android(text, res):
     icon = svg(288, 288, "Grapefruit", grapefruit(144, 144, 192, "i"))
     folder = Path(res) / "drawable-xxhdpi"
     png(icon, 288 * 3, folder / "splash_icon.png")
+    wordmark_font(text, Path(res).parent / "assets" / "fonts" / "GeistPixel-Triangle-Wordmark.ttf")
+
+
+WORDMARK = "Grapefruit Music & Podcasts"
+
+
+def wordmark_font(text, path):
+    """The About page's wordmark, set in Geist Pixel Triangle: the font, as TTF (Android 4.2 can't
+    read WOFF2), with only the letters of the name in it. (Geist Pixel's OFL names no Reserved Font
+    Name, so a subset may keep its name.)"""
+    from fontTools import subset
+    options = subset.Options()
+    options.layout_features = ["kern"]
+    options.name_IDs = ["*"]
+    options.notdef_outline = True
+    sub = subset.Subsetter(options)
+    font = TTFont(io.BytesIO(text_font_bytes(text)))
+    sub.populate(text=WORDMARK)
+    sub.subset(font)
+    font.flavor = None
+    path.parent.mkdir(parents=True, exist_ok=True)
+    font.save(path)
+
+
+def text_font_bytes(text):
+    data = io.BytesIO()
+    text.font.save(data)
+    return data.getvalue()
 
 
 def main():

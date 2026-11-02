@@ -40,6 +40,24 @@ public final class Fonts {
         }
     }
 
+    private static Typeface wordmark;
+
+    /**
+     * Geist Pixel in its Triangle shape (the variable font's ELSH 60), for the wordmark on the About
+     * page: only the letters of the app's name are in it (tools/brand/logo.py). Read when first wanted.
+     */
+    public static synchronized Typeface wordmark(Context c) {
+        if (wordmark == null) {
+            try {
+                wordmark = Typeface.createFromAsset(c.getAssets(), "fonts/GeistPixel-Triangle-Wordmark.ttf");
+            } catch (RuntimeException e) {
+                Log.w(TAG, "can't load Geist Pixel", e);
+                wordmark = bold;
+            }
+        }
+        return wordmark;
+    }
+
     public static Typeface regular() {
         return regular;
     }

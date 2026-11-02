@@ -19,7 +19,7 @@ import android.widget.TextView;
 import com.grapefruitmusic.R;
 import com.grapefruitmusic.util.Notice;
 
-/** Settings › About Grapefruit Music & Podcasts. */
+/** Settings › About Grapefruit. */
 public final class AboutFragment extends BaseFragment {
     static final String COPYRIGHT = "Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER = "Haylie";
@@ -42,9 +42,17 @@ public final class AboutFragment extends BaseFragment {
         // Drawn at exactly 88dp for each screen density, so it's never scaled up and blurry.
         icon.setImageResource(AppIcon.about(c));
         hero.addView(icon, new LinearLayout.LayoutParams(Ui.dp(c, 88), Ui.dp(c, 88)));
-        TextView name = Ui.text(c, 24, R.attr.gfTextPrimary, true);
-        name.setText(R.string.app_name);
-        name.setPadding(0, Ui.dp(c, 10), 0, 0);
+        // The wordmark, in the logo's lettering (Geist Pixel Triangle) and colours: "Grapefruit" in the
+        // accent, "Music & Podcasts" in the text colour, on one line.
+        final TextView name = Ui.text(c, WORDMARK_SP, R.attr.gfTextPrimary, false);
+        name.setTypeface(Fonts.wordmark(c));
+        android.text.SpannableString mark = new android.text.SpannableString("Grapefruit Music & Podcasts");
+        mark.setSpan(new android.text.style.ForegroundColorSpan(Ui.color(c, R.attr.gfAccent)), 0,
+                "Grapefruit".length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        name.setText(mark);
+        name.setContentDescription(getString(R.string.app_name));
+        name.setPadding(Ui.dp(c, 16), Ui.dp(c, 14), Ui.dp(c, 16), Ui.dp(c, 6));
+        fitWordmark(name);
         TextView version = Ui.text(c, 15, R.attr.gfTextSecondary, false);
         version.setText("Version " + SettingsFragment.versionName(c));
         TextView copyright = Ui.text(c, 13, R.attr.gfTextSecondary, false);
@@ -162,5 +170,28 @@ public final class AboutFragment extends BaseFragment {
                 (ClipboardManager) c.getSystemService(Context.CLIPBOARD_SERVICE);
         clipboard.setPrimaryClip(ClipData.newPlainText(text, text));
         Notice.show(c, "Copied " + text);
+    }
+
+    /** The wordmark's size where there's room; smaller on a narrow screen, to fit on one line. */
+    private static final float WORDMARK_SP = 24;
+
+    /** Keeps the wordmark on one line at the largest size up to WORDMARK_SP that fits (and on turning). */
+    private static void fitWordmark(final TextView t) {
+        t.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int l, int top, int r, int b, int ol, int ot, int or, int ob) {
+                int room = (r - l) - t.getPaddingLeft() - t.getPaddingRight();
+                if (room <= 0 || r - l == or - ol && t.getTag() != null) return;
+                t.setTag(Boolean.TRUE);
+                float max = WORDMARK_SP * t.getResources().getDisplayMetrics().scaledDensity;
+                android.graphics.Paint p = new android.graphics.Paint(t.getPaint());
+                p.setTextSize(max);
+                float width = p.measureText(t.getText().toString());
+                float size = width > room ? max * room / width * 0.98f : max;
+                if (Math.abs(size - t.getTextSize()) > 0.5f) {
+                    t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, size);
+                }
+            }
+        });
     }
 }

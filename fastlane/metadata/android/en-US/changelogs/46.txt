@@ -1,0 +1,2 @@
+4.1 beta 8
+About: the app's name under its icon is now the wordmark, in the logo's Geist Pixel Triangle lettering: "Grapefruit Music & Podcasts" on one line, "Grapefruit" in your theme's accent colour.
