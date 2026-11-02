@@ -311,7 +311,7 @@ public final class SettingsFragment extends BaseFragment
                 + "and song title.");
 
         g.section("About");
-        g.value("About Grapefruit Music", "Version " + versionName(c), new View.OnClickListener() {
+        g.value("About Grapefruit", "Version " + versionName(c), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 main().push(new AboutFragment());

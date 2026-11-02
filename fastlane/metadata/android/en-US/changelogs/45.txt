@@ -1,0 +1,3 @@
+4.1 beta 7
+The mini player's title scrolls by when it's too long, like Now Playing's.
+Settings: "About Grapefruit Music" is now "About Grapefruit".

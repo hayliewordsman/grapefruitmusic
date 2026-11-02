@@ -5,7 +5,7 @@
         <View android:id="@+id/mini_separator" android:layout_width="match_parent" android:layout_height="1px" android:background="?attr/gfSeparator" android:visibility="gone" />
         <LinearLayout android:id="@+id/mini_player" android:layout_width="match_parent" android:layout_height="60dp" android:background="?attr/gfBar" android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="10dp" android:paddingRight="4dp" android:visibility="gone">
             <com.grapefruitmusic.ui.widget.ArtworkView android:id="@+id/mini_art" android:layout_width="44dp" android:layout_height="44dp" />
-            <TextView android:id="@+id/mini_title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginLeft="12dp" android:layout_weight="1" android:ellipsize="end" android:singleLine="true" android:textColor="?attr/gfTextPrimary" android:textSize="15sp" />
+            <TextView android:id="@+id/mini_title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginLeft="12dp" android:layout_weight="1" android:ellipsize="marquee" android:marqueeRepeatLimit="marquee_forever" android:requiresFadingEdge="horizontal" android:fadingEdgeLength="16dp" android:singleLine="true" android:textColor="?attr/gfTextPrimary" android:textSize="15sp" />
             <com.grapefruitmusic.ui.widget.IconView android:id="@+id/mini_play" android:layout_width="48dp" android:layout_height="48dp" android:padding="12dp" />
             <com.grapefruitmusic.ui.widget.IconView android:id="@+id/mini_next" android:layout_width="48dp" android:layout_height="48dp" android:padding="12dp" />
         </LinearLayout>

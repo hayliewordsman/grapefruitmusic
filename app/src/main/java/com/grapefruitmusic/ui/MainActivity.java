@@ -121,6 +121,9 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         miniArt = (ArtworkView) findViewById(R.id.mini_art);
         miniArt.setPlaceholderColors(Ui.color(this, R.attr.gfFill), Ui.color(this, R.attr.gfTextSecondary));
         miniTitle = (TextView) findViewById(R.id.mini_title);
+        // A title too long for the mini player scrolls by (marquee, in the layout); Android only
+        // scrolls a selected line.
+        miniTitle.setSelected(true);
         miniPlay = (IconView) findViewById(R.id.mini_play);
         IconView miniNext = (IconView) findViewById(R.id.mini_next);
         int primary = Ui.color(this, R.attr.gfTextPrimary);
@@ -408,6 +411,12 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         onPlayerChanged();
     }
 
+    /** Only when it changes: setting the same text again would start its scrolling over. */
+    private void setMiniTitle(String text) {
+        if (text == null) text = "";
+        if (!text.equals(miniTitle.getText().toString())) miniTitle.setText(text);
+    }
+
     @Override
     public void onPlayerChanged() {
         boolean onRadio = radio.inSession();
@@ -418,12 +427,12 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         mini.setVisibility(show ? View.VISIBLE : View.GONE);
         miniSeparator.setVisibility(show ? View.VISIBLE : View.GONE);
         if (onRadio) {
-            miniTitle.setText(radio.title());
+            setMiniTitle(radio.title());
             miniPlay.setIcon(radio.wantsToPlay() ? Icons.STOP : Icons.PLAY);
             miniArt.setTag(R.id.art_request, null);
             miniArt.setBitmap(RadioArt.of(radio.frequency(), radio.name(), Ui.dp(this, 44)));
         } else if (item != null) {
-            miniTitle.setText(item.live ? StationText.nowPlaying(item.title, item.artist, player.liveTitle())[0]
+            setMiniTitle(item.live ? StationText.nowPlaying(item.title, item.artist, player.liveTitle())[0]
                     : item.title);
             miniPlay.setIcon(player.wantsToPlay() ? (item.live ? Icons.STOP : Icons.PAUSE) : Icons.PLAY);
             ArtworkLoader.get(this).into(miniArt, item, Ui.dp(this, 44));
