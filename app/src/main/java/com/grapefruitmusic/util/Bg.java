@@ -46,6 +46,12 @@ public final class Bg {
                     result = work.run();
                 } catch (Exception e) {
                     error = e;
+                } catch (Throwable t) {
+                    // An Error (out of memory, a fault in Android's own code): the work failed, and
+                    // says so, rather than take the app down (a thrown Error ends the whole app).
+                    android.util.Log.w("GrapefruitBg", "background work failed", t);
+                    CrashReport.note("background work failed: " + t);
+                    error = new Exception("Something went wrong (" + t.getClass().getSimpleName() + ")", t);
                 }
                 final T r = result;
                 final Exception err = error;
@@ -59,8 +65,19 @@ public final class Bg {
         });
     }
 
-    public static void execute(Runnable r) {
-        POOL.execute(r);
+    public static void execute(final Runnable r) {
+        POOL.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    r.run();
+                } catch (Throwable t) {
+                    // As in run(): a failure here ends this work, not the app.
+                    android.util.Log.w("GrapefruitBg", "background work failed", t);
+                    CrashReport.note("background work failed: " + t);
+                }
+            }
+        });
     }
 
     public static void main(Runnable r) {

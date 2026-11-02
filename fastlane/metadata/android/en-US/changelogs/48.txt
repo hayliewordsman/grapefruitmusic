@@ -1,0 +1,4 @@
+4.1.1
+Fixed: starting a podcast episode could close Grapefruit on Android 4.x tablets.
+Podcasts with ads added as they play stay on one copy of the episode: pausing, seeking or a dropped connection no longer makes it jump, repeat or end in the wrong place.
+If Grapefruit ever closes unexpectedly, it offers to share a short report the next time it opens. Nothing is sent unless you choose to.

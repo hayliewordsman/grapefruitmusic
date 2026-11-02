@@ -167,6 +167,42 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         }
         handleIntent(getIntent());
         splash();
+        offerCrashReport();
+    }
+
+    /**
+     * After Grapefruit closed because of a fault, offers the report it kept (CrashReport). It goes
+     * nowhere unless shared: the person picks where, and sees it there first.
+     */
+    private void offerCrashReport() {
+        final String report = com.grapefruitmusic.util.CrashReport.pending(this);
+        if (report == null) return;
+        // Once the splash screen has gone.
+        Bg.mainDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isFinishing()) return;
+                final android.content.Context c = MainActivity.this;
+                Ui.dialog(c)
+                        .setTitle("Grapefruit closed unexpectedly")
+                        .setMessage("Last time, a fault in Grapefruit closed it. It kept a short report: the app"
+                                + " and Android versions, this device's model, and where in Grapefruit's code it"
+                                + " stopped. Nothing has been sent. Sharing it with the developer helps get it fixed.")
+                        .setPositiveButton("Share Report", (d, w) -> {
+                            com.grapefruitmusic.util.CrashReport.clear(c);
+                            Intent send = new Intent(Intent.ACTION_SEND).setType("text/plain")
+                                    .putExtra(Intent.EXTRA_SUBJECT, "Grapefruit crash report")
+                                    .putExtra(Intent.EXTRA_TEXT, report);
+                            try {
+                                startActivity(Intent.createChooser(send, "Share Report"));
+                            } catch (android.content.ActivityNotFoundException e) {
+                                Notice.show(c, "No app here can share text.");
+                            }
+                        })
+                        .setNegativeButton("Dismiss", (d, w) -> com.grapefruitmusic.util.CrashReport.clear(c))
+                        .show();
+            }
+        }, 1300);
     }
 
     /** Whether this run of the app has shown its splash screen. */

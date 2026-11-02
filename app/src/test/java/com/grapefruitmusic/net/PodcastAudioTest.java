@@ -44,6 +44,87 @@ public class PodcastAudioTest {
         public void connect() {}
     }
 
+    /** An ad-inserting host: each request to the feed's address redirects to a new copy. */
+    private static final class Injector {
+        final List<URL> requests = new ArrayList<URL>();
+        final List<Connection> answers = new ArrayList<Connection>();
+        int copies;
+        boolean copiesGone;
+
+        HttpURLConnection open(URL u) {
+            requests.add(u);
+            Connection c;
+            if (u.getHost().equals("tracker.example")) {
+                c = new Connection(u, 302, "https://injector.example/ep.mp3?copy=" + (++copies));
+            } else if (copiesGone) {
+                c = new Connection(u, 404, null);
+            } else {
+                c = new Connection(u, 206, null);
+            }
+            answers.add(c);
+            return c;
+        }
+    }
+
+    private static Map<String, String> range(String r) {
+        Map<String, String> h = new HashMap<String, String>();
+        h.put("Range", r);
+        return h;
+    }
+
+    @Test
+    public void anEpisodeReadsTheSameCopyForEverySeek() throws Exception {
+        Injector host = new Injector();
+        PodcastAudio.Episode episode = new PodcastAudio.Episode("https://tracker.example/ep", host::open);
+        HttpURLConnection first = episode.open(range("bytes=0-"));
+        assertEquals("https://injector.example/ep.mp3?copy=1", first.getURL().toString());
+        // Seeks and reconnects: straight to copy 1, never back to the tracker for another copy.
+        for (String r : new String[] {"bytes=40000000-", "bytes=123-", "bytes=0-"}) {
+            HttpURLConnection c = episode.open(range(r));
+            assertEquals("https://injector.example/ep.mp3?copy=1", c.getURL().toString());
+            assertEquals(r, c.getRequestProperty("Range"));
+        }
+        assertEquals(1, host.copies);
+        assertEquals(5, host.requests.size());
+    }
+
+    @Test
+    public void anEpisodeWhoseCopyHasGoneGetsANewOne() throws Exception {
+        Injector host = new Injector();
+        PodcastAudio.Episode episode = new PodcastAudio.Episode("https://tracker.example/ep", host::open);
+        episode.open(range("bytes=0-"));
+        host.copiesGone = true;
+        HttpURLConnection c = episode.open(range("bytes=500-"));
+        // The expired copy was asked, closed, and the feed's address gave copy 2.
+        assertTrue(host.answers.get(2).closed);
+        assertEquals("https://injector.example/ep.mp3?copy=2", c.getURL().toString());
+        assertEquals(2, host.copies);
+    }
+
+    @Test
+    public void aRangePastTheEndIsTheCopysOwnAnswer() throws Exception {
+        int[] served = new int[1];
+        PodcastAudio.Episode episode = new PodcastAudio.Episode("https://tracker.example/ep", u ->
+                u.getHost().equals("tracker.example") ? new Connection(u, 302, "https://injector.example/x")
+                        : new Connection(u, served[0]++ == 0 ? 200 : 416, null));
+        episode.open(null);
+        assertEquals("https://injector.example/x", episode.copy());
+        assertEquals(416, episode.open(range("bytes=99999999-")).getResponseCode());
+        assertEquals("https://injector.example/x", episode.copy());
+    }
+
+    @Test
+    public void aPinnedCopyGetsCredentialsOnlyFromTheFeedsOwnHost() throws Exception {
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("Authorization", "Bearer private");
+        Injector host = new Injector();
+        PodcastAudio.Episode episode = new PodcastAudio.Episode("https://tracker.example/ep", host::open);
+        episode.open(headers);
+        HttpURLConnection c = episode.open(headers);
+        assertEquals("injector.example", c.getURL().getHost());
+        assertNull(c.getRequestProperty("Authorization"));
+    }
+
     @Test
     public void followsTheDailysSixRedirectsAndPreservesRange() throws Exception {
         List<Connection> seen = new ArrayList<Connection>();

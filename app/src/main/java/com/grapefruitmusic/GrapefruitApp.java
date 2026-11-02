@@ -17,6 +17,8 @@ public final class GrapefruitApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        // First, so a fault anywhere after this leaves a report to share (see CrashReport).
+        com.grapefruitmusic.util.CrashReport.install(this);
         Prefs.init(this);
         com.grapefruitmusic.ui.Fonts.init(this);
         Tls.install(this);

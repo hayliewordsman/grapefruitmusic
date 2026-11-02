@@ -173,6 +173,12 @@ public final class ArtworkLoader {
                 } catch (OutOfMemoryError e) {
                     memory.evictAll();
                     failed = true;
+                } catch (Throwable t) {
+                    // Anything else (a fault in Android's own HTTP, TLS or image code with one
+                    // podcast's pictures, say): no picture this time, rather than an app that closes.
+                    android.util.Log.w("GrapefruitArt", "artwork failed", t);
+                    CrashReport.note("artwork failed: " + t);
+                    failed = true;
                 }
                 if (InternetRadioSource.ID.equals(sourceId)) {
                     // Stations' logos are often missing or tiny: always a full picture.

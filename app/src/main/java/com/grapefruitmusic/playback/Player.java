@@ -163,6 +163,18 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         return effects().anyOn() && !item.key().equals(effectsFailedKey);
     }
 
+    /** The effects that are on, in a few words (for a crash report), or "". */
+    private static String describe(Effects e) {
+        if (e == null) return "";
+        StringBuilder b = new StringBuilder();
+        if (e.boost > Dsp.BOOST_OFF) b.append(", Volume Boost");
+        if (Equalizer.isOn(e.eq)) b.append(", EQ");
+        if (e.mono) b.append(", Mono Audio");
+        if (e.karaoke) b.append(", Karaoke");
+        if (e.live) b.append(", Live");
+        return b.length() == 0 ? "" : " (" + b.substring(2) + ")";
+    }
+
     /**
      * Gets Karaoke Mode's model ready in the background (read, and run once so Android has compiled
      * it), so turning Karaoke Mode on starts it straight away. Any thread.
@@ -658,6 +670,9 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 Bg.mainDelayed(measured, 2500);
             }
             boolean podcast = com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId);
+            com.grapefruitmusic.util.CrashReport.note("load " + (item.live ? "station" : podcast ? "episode" : "song")
+                    + (file != null ? " (file)" : " (stream)") + " with " + player.getClass().getSimpleName()
+                    + describe(player.hasEffects() ? effects() : null) + ", from " + startAtMs / 1000 + " s");
             if (file != null) {
                 player.setDataSource(file.getPath());
                 if (podcast) measureLength(player, file);

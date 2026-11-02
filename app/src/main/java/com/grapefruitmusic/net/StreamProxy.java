@@ -65,6 +65,8 @@ public final class StreamProxy {
         boolean capturing;
         boolean captureDone;
         boolean podcast;
+        /** A podcast episode: every request reads the copy the first one did (see Episode). */
+        PodcastAudio.Episode episode;
         /** A podcast's length: who to tell, and whether that's been done (or given up on). */
         LengthListener length;
         volatile boolean lengthDone;
@@ -126,6 +128,7 @@ public final class StreamProxy {
         String token = Hashes.randomHex(8);
         Target target = new Target(url, headers == null ? new HashMap<String, String>() : headers, capture);
         target.podcast = true;
+        target.episode = new PodcastAudio.Episode(url);
         target.length = length;
         synchronized (targets) { targets.put(token, target); }
         return "http://127.0.0.1:" + server.getLocalPort() + "/s/" + token;
@@ -210,7 +213,7 @@ public final class StreamProxy {
             if (target.podcast) {
                 Map<String, String> headers = new HashMap<String, String>(target.headers);
                 if (range != null) headers.put("Range", range);
-                upstream = PodcastAudio.open(target.url, headers);
+                upstream = target.episode.open(headers);
             } else {
                 upstream = (HttpURLConnection) new URL(target.url).openConnection();
                 upstream.setConnectTimeout(15000);
@@ -300,6 +303,11 @@ public final class StreamProxy {
         } catch (IOException e) {
             // MediaPlayer closes connections mid-stream when seeking; that's normal.
             Log.d(TAG, "stream ended: " + e.getMessage());
+        } catch (Throwable t) {
+            // Anything else (a fault in Android's own HTTP or TLS code, out of memory): this request
+            // ends, as if the connection had dropped, rather than take the app down with it.
+            Log.w(TAG, "stream relay failed", t);
+            com.grapefruitmusic.util.CrashReport.note("relay failed: " + t);
         } finally {
             if (upstream != null) upstream.disconnect();
             try {
