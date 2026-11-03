@@ -7,6 +7,10 @@ Music app. ("Grapefruit" under its icon.)
 It plays music you own: files on the phone, and your own **Navidrome / Subsonic** or **Jellyfin** server,
 with downloads for offline listening and time-synced lyrics.
 
+## Grapefruit FAST (second app)
+
+The repository also contains **Grapefruit FAST 1.0 beta 1**, a separate Android live-TV app with its own application ID, APKs and workflow. See [fast/README.md](fast/README.md) for building, channel availability and signing. Both apps share fonts and HTTPS support through `grapefruit-ui/`.
+
 ## Features
 
 - **Podcasts (4.0 beta):** discover and search podcasts, add an RSS address, subscribe, stream episodes,
@@ -249,4 +253,4 @@ Antoine Liutkus and Nobutaka Ito. Training/selection credits and model provenanc
 `app/src/main/assets/karaoke_credits.txt` and `karaoke_training.json` and are described in the app.
 
 The logos (`docs/brand`, made by `tools/brand/logo.py`) are lettered in Geist Pixel, and the app's text is set
-in Geist, both by Vercel under the SIL Open Font License 1.1 (`app/src/main/assets/fonts/Geist-OFL.txt`).
+in Geist, both by Vercel under the SIL Open Font License 1.1 (`grapefruit-ui/src/main/assets/fonts/Geist-OFL.txt`).

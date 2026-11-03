@@ -105,7 +105,7 @@ jobs:
         if: steps.version.outputs.exists == 'false'
         env:
           GRAPEFRUIT_KEYSTORE_PASSWORD: ${{ secrets.GRAPEFRUIT_KEYSTORE_PASSWORD }}
-        run: ./gradlew --no-daemon assembleRelease testDebugUnitTest
+        run: ./gradlew --no-daemon :app:assembleRelease :app:testDebugUnitTest
 
       - name: Remove the app signing key
         if: always()
@@ -196,7 +196,7 @@ jobs:
         run: |
           mkdir -p fdroid/repo "$RUNNER_TEMP/apks"
           gh release list --exclude-drafts --exclude-pre-releases --limit 1000 \
-            --json tagName,publishedAt --jq '.[] | "\(.tagName) \(.publishedAt)"' > "$RUNNER_TEMP/releases.txt"
+            --json tagName,publishedAt --jq '.[] | select(.tagName | startswith("v")) | "\(.tagName) \(.publishedAt)"' > "$RUNNER_TEMP/releases.txt"
           tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
           while read -r tag published; do
             dir="$RUNNER_TEMP/apks/$tag"

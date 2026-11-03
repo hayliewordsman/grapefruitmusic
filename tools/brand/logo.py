@@ -274,7 +274,7 @@ def android(text, res):
     folder = Path(res) / "drawable-xxhdpi"
     png(icon, 288 * 3, folder / "splash_icon.png")
     icons(res)
-    wordmark_font(text, Path(res).parent / "assets" / "fonts" / "GeistPixel-Triangle-Wordmark.ttf")
+    wordmark_font(text, Path(__file__).resolve().parents[2] / "grapefruit-ui" / "src" / "main" / "assets" / "fonts" / "GeistPixel-Triangle-Wordmark.ttf")
 
 
 def icons(res):

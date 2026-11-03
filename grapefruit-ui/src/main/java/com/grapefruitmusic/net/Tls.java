@@ -3,7 +3,7 @@ package com.grapefruitmusic.net;
 import android.content.Context;
 import android.util.Log;
 
-import com.grapefruitmusic.R;
+import com.grapefruit.shared.R;
 
 import org.conscrypt.Conscrypt;
 
@@ -103,7 +103,11 @@ public final class Tls {
     private static String readRaw(Context context, int id) throws IOException {
         InputStream in = context.getResources().openRawResource(id);
         try {
-            return Http.readAll(in);
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int n;
+            while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
+            return out.toString("UTF-8");
         } finally {
             in.close();
         }

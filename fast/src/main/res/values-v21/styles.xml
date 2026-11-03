@@ -1,0 +1,5 @@
+<resources>
+    <style name="FastTheme" parent="FastBase">
+        <item name="android:colorAccent">#FF7F6B</item>
+    </style>
+</resources>

@@ -1,0 +1,344 @@
+{
+  "schema": 1,
+  "reviewed": "2026-11-02",
+  "notice": "Public broadcaster/distributor CDN candidates. Regional restrictions and provider ads remain. End-to-end playback has not been verified on JP5S. CP24 excluded: no stream obtained from cp24.com.",
+  "channels": [
+    {
+      "id": "citynews-toronto",
+      "name": "CityNews 24/7 \u00b7 Toronto",
+      "country": "CA",
+      "category": "News",
+      "description": "Local headlines, weather and breaking news. Regional programming may be shared.",
+      "website": "https://toronto.citynews.ca/video/",
+      "streams": [
+        "https://citynewsregional.akamaized.net/hls/live/1024052/Regional_Live_7/master.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/ca.m3u"
+    },
+    {
+      "id": "citynews-west",
+      "name": "CityNews 24/7 \u00b7 West / Calgary & Edmonton",
+      "country": "CA",
+      "category": "News",
+      "description": "Local headlines, weather and breaking news. Regional programming may be shared.",
+      "website": "https://calgary.citynews.ca/video/",
+      "streams": [
+        "https://citynewsregional.akamaized.net/hls/live/1024053/Regional_Live_8/master.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/ca.m3u"
+    },
+    {
+      "id": "citynews-vancouver",
+      "name": "CityNews 24/7 \u00b7 Vancouver",
+      "country": "CA",
+      "category": "News",
+      "description": "Local headlines, weather and breaking news. Regional programming may be shared.",
+      "website": "https://vancouver.citynews.ca/video/",
+      "streams": [
+        "https://citynewsregional.akamaized.net/hls/live/1024054/Regional_Live_9/master.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/ca.m3u"
+    },
+    {
+      "id": "global-national",
+      "name": "Global News \u00b7 National",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/national/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/National/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-toronto",
+      "name": "Global News \u00b7 Toronto",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/toronto/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Toronto/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-winnipeg",
+      "name": "Global News \u00b7 Winnipeg",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/winnipeg/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Winnipeg/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-edmonton",
+      "name": "Global News \u00b7 Edmonton",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/edmonton/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Edmonton/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-bc",
+      "name": "Global News \u00b7 BC",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/bc/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/BC/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-calgary",
+      "name": "Global News \u00b7 Calgary",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/calgary/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Calgary/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-halifax",
+      "name": "Global News \u00b7 Halifax",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/halifax/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Halifax/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-kingston",
+      "name": "Global News \u00b7 Kingston",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/kingston/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Kingston/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-lethbridge",
+      "name": "Global News \u00b7 Lethbridge",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/lethbridge/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Lethbridge/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-montreal",
+      "name": "Global News \u00b7 Montreal",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/montreal/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Montreal/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-okanagan",
+      "name": "Global News \u00b7 Okanagan",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/okanagan/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Okanagan/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-peterborough",
+      "name": "Global News \u00b7 Peterborough",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/peterborough/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Peterborough/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-regina",
+      "name": "Global News \u00b7 Regina",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/regina/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Regina/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "global-saskatoon",
+      "name": "Global News \u00b7 Saskatoon",
+      "country": "CA",
+      "category": "News",
+      "description": "Around-the-clock national and local news from Global News.",
+      "website": "https://globalnews.ca/live/saskatoon/",
+      "streams": [
+        "https://siloh.pluto.tv/lilo/production/GlobalNews/Saskatoon/CAN/master.m3u8"
+      ],
+      "provenance": "https://github.com/glotovpa/Free-TV-IPTV/blob/master/playlist.m3u8; current channel lineup: https://github.com/iptv-org/iptv/blob/master/streams/ca_pluto.m3u"
+    },
+    {
+      "id": "nbc-news-now",
+      "name": "NBC News NOW",
+      "country": "US",
+      "category": "News",
+      "description": "Breaking news and original reporting, live around the clock.",
+      "website": "https://www.nbcnews.com/now",
+      "streams": [
+        "https://d1bl6tskrpq9ze.cloudfront.net/hls/master.m3u8?ads.xumo_channelId=99984003"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us.m3u"
+    },
+    {
+      "id": "abc-news-live",
+      "name": "ABC News Live",
+      "country": "US",
+      "category": "News",
+      "description": "Live coverage of breaking news and events.",
+      "website": "https://abcnews.com/Live",
+      "streams": [
+        "https://abcnews-streams.akamaized.net/hls/live/2023560/abcnewshudson1/master.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us_abcnews.m3u"
+    },
+    {
+      "id": "cbs-news",
+      "name": "CBS News 24/7",
+      "country": "US",
+      "category": "News",
+      "description": "The free CBS News streaming network.",
+      "website": "https://www.cbsnews.com/live/",
+      "streams": [
+        "https://cbsn-us-vtt.cbsnstream.cbsnews.com/out/v1/ef868690d34144509eda696884bf1619/master.m3u8",
+        "https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us_cbsn.m3u"
+    },
+    {
+      "id": "21-jump-street",
+      "name": "21 Jump Street",
+      "country": "US",
+      "category": "Series",
+      "description": "Classic undercover crime drama.",
+      "website": "https://www.samsungtvplus.com/",
+      "streams": [
+        "https://d1oefjzrirx6fc.cloudfront.net/21_Jump_Street_SONO6.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us_samsung.m3u"
+    },
+    {
+      "id": "baywatch",
+      "name": "Baywatch",
+      "country": "US",
+      "category": "Series",
+      "description": "Sun, surf and rescues with the classic lifeguard series.",
+      "website": "https://www.samsungtvplus.com/",
+      "streams": [
+        "https://pb-mubj6htj155c6.akamaized.net/Baywatch_SONO5.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us_samsung.m3u"
+    },
+    {
+      "id": "unsolved-mysteries",
+      "name": "Unsolved Mysteries",
+      "country": "US",
+      "category": "Reality",
+      "description": "Real mysteries, missing persons and unexplained stories.",
+      "website": "https://www.samsungtvplus.com/",
+      "streams": [
+        "https://d31z96rdrmwfsp.cloudfront.net/master.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us_samsung.m3u"
+    },
+    {
+      "id": "forensic-files",
+      "name": "Forensic Files",
+      "country": "US",
+      "category": "Reality",
+      "description": "True crime investigated through forensic science.",
+      "website": "https://www.samsungtvplus.com/",
+      "streams": [
+        "https://pb-x9qsxrudiq9d2.akamaized.net/webvtt/v1/18584c3f3a2a4df8/88886014/master.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us_samsung.m3u"
+    },
+    {
+      "id": "deal-or-no-deal",
+      "name": "Deal or No Deal",
+      "country": "US",
+      "category": "Reality",
+      "description": "Big decisions, briefcases and game-show suspense.",
+      "website": "https://www.samsungtvplus.com/",
+      "streams": [
+        "https://pb-gnznqq6l66wre.akamaized.net/Deal_or_No_Deal.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us_samsung.m3u"
+    },
+    {
+      "id": "bob-ross",
+      "name": "The Bob Ross Channel",
+      "country": "US",
+      "category": "Lifestyle",
+      "description": "A calmer kind of television. Paint along with Bob Ross.",
+      "website": "https://bobrosschannel.com/watch-bob-ross-anytime1/",
+      "streams": [
+        "https://pb-yxyesssss0re7.akamaized.net/v1/cinedigm_entertainment_corp_thebobrosschannel_1/samsungheadend_us/latest/main/hls/playlist.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us_samsung.m3u"
+    },
+    {
+      "id": "test-kitchen",
+      "name": "America\u2019s Test Kitchen",
+      "country": "US",
+      "category": "Lifestyle",
+      "description": "Recipes, cooking techniques and kitchen discoveries.",
+      "website": "https://www.americastestkitchen.com/",
+      "streams": [
+        "https://pb-zwcfuzg8t5abc.akamaized.net/Americas_Test_Kitchen.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us_samsung.m3u"
+    },
+    {
+      "id": "filmrise-westerns",
+      "name": "FilmRise Westerns",
+      "country": "US",
+      "category": "Series",
+      "description": "Western movies and television from FilmRise.",
+      "website": "https://filmrise.com/",
+      "streams": [
+        "https://dz05z8iljgvbe.cloudfront.net/master.m3u8"
+      ],
+      "provenance": "https://github.com/iptv-org/iptv/blob/master/streams/us_samsung.m3u"
+    }
+  ]
+}

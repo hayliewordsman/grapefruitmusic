@@ -1,0 +1,12 @@
+plugins { id "com.android.library" }
+android {
+    namespace "com.grapefruit.shared"
+    compileSdk 36
+    defaultConfig { minSdk 17 }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    packaging { jniLibs { keepDebugSymbols += "**/libconscrypt_jni.so" } }
+}
+dependencies { implementation "org.conscrypt:conscrypt-android:2.5.3" }
