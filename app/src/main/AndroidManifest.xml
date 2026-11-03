@@ -21,6 +21,17 @@
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Android 11+ shows an app only the packages it asks after: Grapefruit TV & Movies (and Grapefruit
+         TV before it), for the TV & Movies tab; and the apps with a launcher icon, so a later version
+         under another id is found by its name. -->
+    <queries>
+        <package android:name="io.github.hayliewordsman.grapefruitfast" />
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
     <application
         android:name=".GrapefruitApp"
         android:allowBackup="false"

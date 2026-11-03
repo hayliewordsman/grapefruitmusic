@@ -36,6 +36,11 @@ final class DspEngine implements Engine {
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Context app;
     private final Dsp dsp = new Dsp();
+    /** Faster or slower, pitch kept (TimeStretch), between decoding and the effects. */
+    private final TimeStretch stretch = new TimeStretch();
+    private volatile float speed = 1f;
+    /** The speed the current track's sound was made at (its time counts that much song time). */
+    private volatile float trackSpeed = 1f;
     private final PowerManager.WakeLock wakeLock;
     private final Object lock = new Object();
     private Callback callback;
@@ -66,6 +71,8 @@ final class DspEngine implements Engine {
     private short[] scratch = new short[0];
     /** Live Mode's crowd before the first note: frames still to make, and the song's first sound, held. */
     private boolean preRollPending;
+    /** The time-stretcher's last sound has gone out at the end of the song. */
+    private boolean stretchFlushed;
     private int preRollLeft;
     private short[] held = new short[0];
     private int heldLen;
@@ -147,6 +154,26 @@ final class DspEngine implements Engine {
         }
     }
 
+    /** A new speed: the sound already made is at the old one, so it carries on from here, afresh. */
+    @Override
+    public void setSpeed(float s) {
+        s = Math.max(0.5f, Math.min(2.5f, s));
+        if (s == speed) return;
+        int at = getCurrentPosition();
+        speed = s;
+        synchronized (lock) {
+            if (track != null && seekToUs < 0 && !completed && !released) {
+                seekToUs = Math.max(0, at) * 1000L;
+                lock.notifyAll();
+            }
+        }
+    }
+
+    /** Song time (ms) as the effects count it: in played time, so faster songs end sooner for them. */
+    private long dspTime(long songMs) {
+        return songMs <= 0 ? songMs : Math.round(songMs / (double) trackSpeed);
+    }
+
     @Override
     public int getCurrentPosition() {
         AudioTrack t;
@@ -160,7 +187,8 @@ final class DspEngine implements Engine {
             try {
                 // What's heard now went in latencyFrames() earlier (Karaoke Mode's 70 ms, mostly).
                 long heard = (t.getPlaybackHeadPosition() & 0xffffffffL) - dsp.latencyFrames() - preRollFrames;
-                us += Math.max(0, heard) * 1000000L / r;
+                // Each frame played is trackSpeed frames of the song.
+                us += Math.round(Math.max(0, heard) * 1000000.0 * trackSpeed / r);
             } catch (IllegalStateException e) {
                 // The audio thread just let go of the track (stopping, or an error on its way).
             }
@@ -182,7 +210,7 @@ final class DspEngine implements Engine {
         lengthUs = ms * 1000;
         if (!endKnown) {
             durationUs = lengthUs;
-            dsp.setSongDuration(ms);
+            dsp.setSongDuration(dspTime(ms));
         }
     }
 
@@ -346,7 +374,8 @@ final class DspEngine implements Engine {
                     }
                 }
             }
-            dsp.setSongDuration(durationUs > 0 ? durationUs / 1000 : -1);
+            trackSpeed = speed;
+            dsp.setSongDuration(durationUs > 0 ? dspTime(durationUs / 1000) : -1);
             openTrack(format.getInteger(MediaFormat.KEY_SAMPLE_RATE), channels, 0);
             // Played from the beginning (no seek before it starts): Live Mode's crowd cheers first.
             preRollPending = true;
@@ -407,11 +436,14 @@ final class DspEngine implements Engine {
             throw new IOException("AudioTrack didn't start");
         }
         bufferFrames = bytes / (2 * outChannels);
+        float s = speed;
+        if (s != 1f) stretch.configure(sampleRate, outChannels, s);
+        stretchFlushed = false;
         dsp.setFormat(sampleRate, outChannels);
-        dsp.setSongPosition(atUs / 1000);
         synchronized (lock) {
             if (track != null) track.release();
             track = t;
+            trackSpeed = s;
             rate = sampleRate;
             baseUs = atUs;
             framesWritten = 0;
@@ -419,6 +451,8 @@ final class DspEngine implements Engine {
             preRollFrames = 0;
             if (playing && !completed) t.play();
         }
+        dsp.setSongPosition(dspTime(atUs / 1000));
+        if (durationUs > 0) dsp.setSongDuration(dspTime(durationUs / 1000));
     }
 
     private long head(AudioTrack t) {
@@ -516,6 +550,21 @@ final class DspEngine implements Engine {
             // 3. End of the song: send out the effects' last few ms (and Live Mode's ovation), then
             // let it all play.
             if (outputDone) {
+                if (!stretchFlushed) {
+                    // The time-stretcher's last few ms, as they are.
+                    stretchFlushed = true;
+                    if (trackSpeed != 1f) {
+                        int n = stretch.flush();
+                        if (n > 0) {
+                            ensurePending(n);
+                            System.arraycopy(stretch.output(), 0, pending, 0, n);
+                            process(pending, n);
+                            pendingOff = 0;
+                            pendingLen = n;
+                            continue;
+                        }
+                    }
+                }
                 if (!tailFlushed) {
                     if (tailRemaining < 0) {
                         // The decoder's own end of the song, unless it looks wrong (old decoders can
@@ -665,6 +714,13 @@ final class DspEngine implements Engine {
                 pendingLen = 0;
                 return;
             }
+        }
+        if (trackSpeed != 1f) {
+            // Faster or slower: what the stretcher has ready (nothing, until it has enough).
+            int n = stretch.put(pending, 0, o);
+            ensurePending(n);
+            System.arraycopy(stretch.output(), 0, pending, 0, n);
+            o = n;
         }
         process(pending, o);
         pendingOff = 0;

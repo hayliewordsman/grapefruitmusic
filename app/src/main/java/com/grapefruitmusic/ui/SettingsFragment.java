@@ -150,7 +150,7 @@ public final class SettingsFragment extends BaseFragment
                 AddServerDialog.show(getActivity());
             }
         });
-        g.footer("Grapefruit Music & Podcasts plays music from your own Navidrome, Subsonic or Jellyfin server, "
+        g.footer("Grapefruit Audio plays music from your own Navidrome, Subsonic or Jellyfin server, "
                 + "and from music files on this phone.");
 
         g.section("On This Device");
@@ -294,7 +294,7 @@ public final class SettingsFragment extends BaseFragment
                 }
             });
         }
-        g.footer("Downloaded music plays without a connection. Find it under Library › Downloaded Music.");
+        g.footer("Downloaded music plays without a connection. Find it under Music › Downloaded Music.");
 
         g.section("Lyrics");
         g.toggle("Find Lyrics Online", Prefs.onlineLyrics(), new Toggle.Listener() {

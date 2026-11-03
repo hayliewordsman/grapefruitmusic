@@ -142,7 +142,7 @@ jobs:
             echo "::error::The APK's package or version doesn't match app/build.gradle."
             exit 1
           fi
-          out="$RUNNER_TEMP/grapefruit-${NAME// /-}.apk"
+          out="$RUNNER_TEMP/grapefruit-audio-${NAME// /-}.apk"
           cp "$apk" "$out"
           echo "path=$out" >> "$GITHUB_OUTPUT"
 

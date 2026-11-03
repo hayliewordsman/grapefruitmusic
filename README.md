@@ -1,9 +1,9 @@
-<p align="center"><img src="docs/brand/logo-stacked.svg" width="240" alt="Grapefruit Music &amp; Podcasts"></p>
+<p align="center"><img src="docs/brand/logo-stacked.svg" width="240" alt="Grapefruit Audio: Music, Podcasts, and Audiobooks"></p>
 
-# Grapefruit Music & Podcasts
+# Grapefruit Audio: Music, Podcasts, and Audiobooks
 
-A small, native music and podcast player for **Android 4.2.2 (Jelly Bean) and later**, styled after the iOS 10
-Music app. ("Grapefruit" under its icon.)
+A small, native music, podcast and audiobook player for **Android 4.2.2 (Jelly Bean) and later**, styled after
+the iOS 10 Music app. ("Grapefruit Audio" under its icon; up to 5.1 it was Grapefruit Music & Podcasts.)
 It plays music you own: files on the phone, and your own **Navidrome / Subsonic** or **Jellyfin** server,
 with downloads for offline listening and time-synced lyrics.
 
@@ -17,11 +17,22 @@ The repository also contains **Grapefruit TV 2.0** (formerly Grapefruit FAST), a
   resume listening, and download episodes for offline playback. The Podcasts tab is immediately after Radio.
   Subscriptions appear in Recently Added. New-episode notifications use periodic feed checks (about every six
   hours, subject to battery restrictions), not immediate push. Downloads follow the Wi-Fi preference.
+- **Audiobooks (6.0 beta):** the Audiobooks tab plays DRM-free audiobooks: M4B/M4A (with their chapters), MP3
+  (ID3 chapters, or a folder of parts), FLAC, Ogg Vorbis, WAV and Opus (Android 5 and later), and Libro.fm's
+  downloads (its MP3 zips are unzipped on import). Books are found in the phone's `Audiobooks` folder or added
+  with **Add**; each remembers where you were, and Now Playing has Chapters in place of Up Next. Grapefruit
+  suggests buying from [Libro.fm](https://libro.fm), whose audiobooks are DRM-free and support local bookstores.
+- **Playback speed (6.0 beta):** 0.8× to 2× with the pitch kept, chosen separately for music, podcasts and
+  audiobooks (Speed in Now Playing).
+- **Podcast subscriptions in OPML (6.0 beta):** Podcasts › Subscriptions › Import and Export, to and from other
+  podcast apps.
+- **TV & Movies tab (6.0 beta):** shown only when Grapefruit TV (or TV & Movies) is installed; it opens that app.
 - **Unified search:** music from the selected source, internet radio stations and podcasts in separate groups.
   Radio and Podcasts retain dedicated searches.
 
 - **Sources:** music files on the phone, any number of Navidrome/Subsonic and Jellyfin servers, and *Downloaded Music*.
-- **Tabs:** Library, Playlists, Radio, Search and Settings. Library and Playlists show the source picked in Library.
+- **Tabs:** Music (called Library up to 5.1), Radio, Podcasts, Audiobooks, TV & Movies (when installed), Search
+  and Settings. Tapping the tab showing, or touching and holding any tab but Settings, opens its menu.
 - **Excluded folders:** Settings › Excluded Folders hides folders (ringtones, voice messages, …) from
   *On This Device*. Grapefruit's own download folder is always kept out of it.
 - **Offline listening:** download albums, playlists or single songs from a server. Downloads keep their cover art
@@ -170,7 +181,8 @@ To keep music on the phone, use files you own (for example DRM-free purchases) o
 - **F-Droid:** open https://hayliewordsman.github.io/grapefruitmusic/ on the phone and tap **Add to F-Droid**. It
   adds Grapefruit's own repository in F-Droid or Droid-ify, which then keep the app up to date. How the
   repository is built and set up: [`fdroid/README.md`](fdroid/README.md).
-- **The APK:** download `grapefruit-<version>.apk` (up to 5.1 beta 2, `grapefruit-music-<version>.apk`) from the
+- **The APK:** download `grapefruit-audio-<version>.apk` (5.1: `grapefruit-<version>.apk`; up to 5.1 beta 2,
+  `grapefruit-music-<version>.apk`) from the
   latest release on the repository's *Releases* page. On the phone, allow *Unknown sources* (Settings › Security)
   and install it.
 - **A test build:** every push's APKs are in the `grapefruit-music-apk` artifact of its **Build APK** run, under

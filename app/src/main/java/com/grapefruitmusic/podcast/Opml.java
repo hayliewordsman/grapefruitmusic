@@ -156,7 +156,7 @@ public final class Opml {
         b.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         b.append("<opml version=\"2.0\">\n");
         b.append("  <head>\n");
-        b.append("    <title>Grapefruit Music &amp; Podcasts subscriptions</title>\n");
+        b.append("    <title>Grapefruit Audio podcast subscriptions</title>\n");
         b.append("    <dateCreated>").append(rfc822.format(new Date(now))).append("</dateCreated>\n");
         b.append("  </head>\n");
         b.append("  <body>\n");

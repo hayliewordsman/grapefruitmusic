@@ -93,6 +93,8 @@ public final class LocalSource implements MusicSource {
         List<String> out = new ArrayList<String>(Prefs.excludedFolders());
         String own = ownFolder();
         if (own != null) out.add(own);
+        // Audiobooks have their own tab: the device's Audiobooks folder isn't music.
+        out.add(Folders.normalize(com.grapefruitmusic.audiobooks.AudiobookStore.sharedFolder().getPath()));
         return out;
     }
 
@@ -110,7 +112,7 @@ public final class LocalSource implements MusicSource {
         try {
             return library.query(uri, columns, selection, args, order);
         } catch (SecurityException e) {
-            throw new IOException("Grapefruit Music isn't allowed to read music files");
+            throw new IOException("Grapefruit Audio isn't allowed to read music files");
         }
     }
 

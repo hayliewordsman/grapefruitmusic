@@ -20,6 +20,11 @@ public final class Lyrics {
     public final List<Line> lines;
     /** Where the lyrics came from, shown under them ("LRCLIB", "Navidrome" ...). */
     public final String credit;
+    /**
+     * The listener's nudge to synced lyrics' timing, in ms: positive shows each line that much
+     * later (they came in early), negative earlier. Saved per song (LyricsRepository.setOffset).
+     */
+    public long offsetMs;
 
     public Lyrics(boolean synced, List<Line> lines, String credit) {
         this.synced = synced;

@@ -74,6 +74,7 @@ public final class ActionIconView extends IconView {
             if (text.equals("Karaoke Mode")) text = "Karaoke";
             if (text.startsWith("Add to ")) text = "Save";
             if (text.startsWith("Remove from ")) text = "Saved";
+            if (text.startsWith("Speed, ")) text = text.substring(7);
             float available = Math.max(1, getWidth() - Ui.dp(c, 6));
             float measured = paint.measureText(text);
             if (measured > available) paint.setTextSize(paint.getTextSize() * available / measured);

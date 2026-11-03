@@ -42,23 +42,30 @@ public final class AboutFragment extends BaseFragment {
         // Drawn at exactly 88dp for each screen density, so it's never scaled up and blurry.
         icon.setImageResource(R.drawable.ic_about);
         hero.addView(icon, new LinearLayout.LayoutParams(Ui.dp(c, 88), Ui.dp(c, 88)));
-        // The wordmark, in the logo's lettering (Geist Pixel Triangle) and colours: "Grapefruit" in the
-        // accent, "Music & Podcasts" in the text colour, on one line.
+        // The wordmark, in the logo's lettering (Geist Pixel Triangle) and colours, on two lines as
+        // on the splash screen: "Grapefruit Audio" ("Grapefruit" in the accent), then what it plays.
         final TextView name = Ui.text(c, WORDMARK_SP, R.attr.gfTextPrimary, false);
         name.setTypeface(Fonts.wordmark(c));
-        android.text.SpannableString mark = new android.text.SpannableString("Grapefruit Music & Podcasts");
+        android.text.SpannableString mark = new android.text.SpannableString("Grapefruit Audio");
         mark.setSpan(new android.text.style.ForegroundColorSpan(Ui.color(c, R.attr.gfAccent)), 0,
                 "Grapefruit".length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         name.setText(mark);
-        name.setContentDescription(getString(R.string.app_name));
-        name.setPadding(Ui.dp(c, 16), Ui.dp(c, 14), Ui.dp(c, 16), Ui.dp(c, 6));
-        fitWordmark(name);
+        name.setContentDescription(getString(R.string.app_name) + ": Music, Podcasts, and Audiobooks");
+        name.setPadding(Ui.dp(c, 16), Ui.dp(c, 14), Ui.dp(c, 16), 0);
+        fitWordmark(name, WORDMARK_SP);
+        final TextView tagline = Ui.text(c, TAGLINE_SP, R.attr.gfTextPrimary, false);
+        tagline.setTypeface(Fonts.wordmark(c));
+        tagline.setText("Music, Podcasts, and Audiobooks");
+        // Read with the name, above.
+        tagline.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        tagline.setPadding(Ui.dp(c, 16), Ui.dp(c, 2), Ui.dp(c, 16), Ui.dp(c, 8));
+        fitWordmark(tagline, TAGLINE_SP);
         TextView version = Ui.text(c, 15, R.attr.gfTextSecondary, false);
         version.setText("Version " + SettingsFragment.versionName(c));
         TextView copyright = Ui.text(c, 13, R.attr.gfTextSecondary, false);
         copyright.setText(COPYRIGHT);
         copyright.setPadding(0, Ui.dp(c, 6), 0, 0);
-        for (TextView t : new TextView[] {name, version, copyright}) {
+        for (TextView t : new TextView[] {name, tagline, version, copyright}) {
             // Full-width lines with centered text (a plain addView would left-align them).
             t.setGravity(Gravity.CENTER_HORIZONTAL);
             hero.addView(
@@ -73,7 +80,7 @@ public final class AboutFragment extends BaseFragment {
         linkRow(g, "GNU GPL", "Version 3 or later", "https://www.gnu.org/licenses/gpl-3.0.html");
         linkRow(g, "Source Code", SOURCE, "https://" + SOURCE);
         g.footer(
-                "Grapefruit Music & Podcasts is free software: you can share and change it under the GNU"
+                "Grapefruit Audio is free software: you can share and change it under the GNU"
                     + " General Public License, version 3 or any later version. It comes with no"
                     + " warranty.");
 
@@ -172,18 +179,19 @@ public final class AboutFragment extends BaseFragment {
         Notice.show(c, "Copied " + text);
     }
 
-    /** The wordmark's size where there's room; smaller on a narrow screen, to fit on one line. */
-    private static final float WORDMARK_SP = 24;
+    /** The wordmark's sizes where there's room (the name, the line under it); smaller on a narrow screen. */
+    private static final float WORDMARK_SP = 30;
+    private static final float TAGLINE_SP = 17;
 
-    /** Keeps the wordmark on one line at the largest size up to WORDMARK_SP that fits (and on turning). */
-    private static void fitWordmark(final TextView t) {
+    /** Keeps a wordmark line on one line at the largest size up to sp that fits (and on turning). */
+    private static void fitWordmark(final TextView t, final float sp) {
         t.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int l, int top, int r, int b, int ol, int ot, int or, int ob) {
                 int room = (r - l) - t.getPaddingLeft() - t.getPaddingRight();
                 if (room <= 0 || r - l == or - ol && t.getTag() != null) return;
                 t.setTag(Boolean.TRUE);
-                float max = WORDMARK_SP * t.getResources().getDisplayMetrics().scaledDensity;
+                float max = sp * t.getResources().getDisplayMetrics().scaledDensity;
                 android.graphics.Paint p = new android.graphics.Paint(t.getPaint());
                 p.setTextSize(max);
                 float width = p.measureText(t.getText().toString());

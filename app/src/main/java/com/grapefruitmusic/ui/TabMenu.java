@@ -115,8 +115,11 @@ final class TabMenu {
         int[] barAt = new int[2];
         bar.getLocationInWindow(barAt);
         int gap = Ui.dp(c, 8);
-        // Never taller than the room beside or above the tabs.
-        int room = rail ? dm.heightPixels - 2 * margin : barAt[1] - gap - margin;
+        // Above the button (below it if there's more room there), or beside the rail.
+        int above = anchorAt[1] - gap - margin;
+        int below = dm.heightPixels - (anchorAt[1] + anchor.getHeight()) - gap - margin;
+        boolean down = !rail && below > above;
+        int room = rail ? dm.heightPixels - 2 * margin : Math.max(above, below);
         card.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(Math.max(Ui.dp(c, 96), room), View.MeasureSpec.AT_MOST));
         int height = card.getMeasuredHeight();
@@ -134,9 +137,9 @@ final class TabMenu {
         } else {
             x = anchorAt[0] + anchor.getWidth() / 2 - width / 2;
             x = Math.max(margin, Math.min(x, dm.widthPixels - width - margin));
-            y = barAt[1] - gap - height;
+            y = down ? anchorAt[1] + anchor.getHeight() + gap : anchorAt[1] - gap - height;
             pivotX = anchorAt[0] + anchor.getWidth() / 2f - x;
-            pivotY = height;
+            pivotY = down ? 0 : height;
         }
 
         PopupWindow p = new PopupWindow(card, width, height, true);

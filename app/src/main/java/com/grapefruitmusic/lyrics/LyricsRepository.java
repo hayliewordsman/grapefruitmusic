@@ -59,7 +59,8 @@ public final class LyricsRepository {
      */
     public static void prefetch(final Context context, final MediaItem track) {
         if (track == null || track.live || track.kind != MediaItem.TRACK
-                || com.grapefruitmusic.podcast.PodcastSource.ID.equals(track.sourceId)) return;
+                || com.grapefruitmusic.podcast.PodcastSource.ID.equals(track.sourceId)
+                || com.grapefruitmusic.audiobooks.AudiobookSource.ID.equals(track.sourceId)) return;
         final Context app = context.getApplicationContext();
         com.grapefruitmusic.util.Bg.mainDelayed(new Runnable() {
             @Override
@@ -80,11 +81,38 @@ public final class LyricsRepository {
         }, PREFETCH_AFTER_MS);
     }
 
-    /** Blocking. Returns null when there are no lyrics. */
+    /** Blocking. Returns null when there are no lyrics. With the song's timing nudge (offsetMs). */
     public static Lyrics load(Context context, MediaItem track) {
         String key = songKey(track);
+        Lyrics l;
         synchronized (LOCKS[(key.hashCode() & 0x7fffffff) % LOCKS.length]) {
-            return loadNow(context, track, key);
+            l = loadNow(context, track, key);
+        }
+        if (l != null && l.synced) l.offsetMs = offset(context, key);
+        return l;
+    }
+
+    private static long offset(Context context, String key) {
+        Cursor c = Db.get(context).getReadableDatabase().rawQuery(
+                "SELECT offset_ms FROM lyrics_timing WHERE song_key = ?", new String[]{key});
+        try {
+            return c.moveToFirst() ? c.getLong(0) : 0;
+        } finally {
+            c.close();
+        }
+    }
+
+    /** Saves a song's lyrics timing nudge (0: as timed). Blocking (it's quick). */
+    public static void setOffset(Context context, MediaItem track, long offsetMs) {
+        SQLiteDatabase db = Db.get(context).getWritableDatabase();
+        String key = songKey(track);
+        if (offsetMs == 0) {
+            db.delete("lyrics_timing", "song_key = ?", new String[]{key});
+        } else {
+            android.content.ContentValues v = new android.content.ContentValues();
+            v.put("song_key", key);
+            v.put("offset_ms", offsetMs);
+            db.insertWithOnConflict("lyrics_timing", null, v, SQLiteDatabase.CONFLICT_REPLACE);
         }
     }
 

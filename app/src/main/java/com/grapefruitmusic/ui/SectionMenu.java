@@ -92,7 +92,7 @@ final class SectionMenu {
 
     /** The Library's menu: Search, where the music comes from, and its sections. */
     static SectionMenu library(final BaseFragment page, int chosen) {
-        SectionMenu menu = new SectionMenu(page, "Library");
+        SectionMenu menu = new SectionMenu(page, "Music");
         menu.addSearch(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
