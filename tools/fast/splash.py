@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Splash screen and About artwork for Grapefruit FAST, as Music's (tools/brand/logo.py): from the
+"""Splash screen and About artwork for Grapefruit TV, as Music's (tools/brand/logo.py): from the
 approved TV icon (docs/fast/brand/icon.png) and Geist Pixel Triangle
-(fast/src/main/assets/fonts/GeistPixel-Triangle-FAST.ttf). Requires Pillow.
+(fast/src/main/assets/fonts/GeistPixel-Triangle-TV.ttf). Requires Pillow.
 Run from repo root: python3 tools/fast/splash.py
 
 - drawable-*/splash_logo_dark.png, splash_logo_light.png: the stacked logo, 280dp wide at each
-  density: the television over "Grapefruit" (accent) and "FAST" (text colour), for the dark and
+  density: the television over "Grapefruit" (accent) and "TV" (text colour), for the dark and
   light themes. Baked into a picture like Music's, so it shows the moment the app starts (it's also
   the window background Android draws before the app's first frame on Android 4.2 to 11).
 - drawable-*/ic_about.png: the television at exactly 88dp for the About page.
@@ -18,7 +18,7 @@ from PIL import Image, ImageDraw, ImageFont
 root = Path(__file__).resolve().parents[2]
 res = root / 'fast/src/main/res'
 icon = Image.open(root / 'docs/fast/brand/icon.png').convert('RGBA')
-FONT = str(root / 'fast/src/main/assets/fonts/GeistPixel-Triangle-FAST.ttf')
+FONT = str(root / 'fast/src/main/assets/fonts/GeistPixel-Triangle-TV.ttf')
 DENSITIES = [('mdpi', 1), ('hdpi', 1.5), ('xhdpi', 2), ('xxhdpi', 3), ('xxxhdpi', 4)]
 # Brand.java: accent and text colours of Grapefruit Dark and Grapefruit Light.
 THEMES = {'dark': ('#FF7F6B', '#FFF1E8'), 'light': ('#E83850', '#4A1622')}
@@ -33,7 +33,7 @@ def stacked(accent, text, k=8):
     fast_font = ImageFont.truetype(FONT, round(size * 0.8))
     tv = icon.resize((176 * k, 176 * k), Image.Resampling.LANCZOS)
     a = top_font.getbbox('Grapefruit')
-    b = fast_font.getbbox('FAST')
+    b = fast_font.getbbox('TV')
     gap = 10 * k
     height = tv.height + gap + (a[3] - a[1]) + 8 * k + (b[3] - b[1]) + 6 * k  # room for the triangles' overshoot
     out = Image.new('RGBA', (width, height), (0, 0, 0, 0))
@@ -42,7 +42,7 @@ def stacked(accent, text, k=8):
     y = tv.height + gap
     draw.text(((width - top_font.getlength('Grapefruit')) / 2, y - a[1]), 'Grapefruit', font=top_font, fill=accent)
     y += a[3] - a[1] + 8 * k
-    draw.text(((width - fast_font.getlength('FAST')) / 2, y - b[1]), 'FAST', font=fast_font, fill=text)
+    draw.text(((width - fast_font.getlength('TV')) / 2, y - b[1]), 'TV', font=fast_font, fill=text)
     return out
 
 

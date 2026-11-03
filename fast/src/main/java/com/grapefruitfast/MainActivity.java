@@ -17,7 +17,7 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="1.0 · build 12";
+    static final String VERSION="2.0 beta 1 · build 13";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
@@ -25,11 +25,17 @@ public final class MainActivity extends Activity {
     private static final String[] GENRES={"All","News","Series","Reality","Lifestyle"};
     private static final String[] THEMES={"Grapefruit Dark","Grapefruit Light","Pitch Black"};
     private static final String[] QUALITIES={"Auto","Data Saver","Compatibility"};
-    /** null for Settings itself, or "about" for Settings › About Grapefruit FAST. */
+    /** null for Settings itself, or "about" for Settings › About Grapefruit TV. */
     private String settingsPage;
     private android.content.SharedPreferences prefs;
     private Brand b;
     private List<Channel> channels=Collections.emptyList();
+    /** The built-in catalog, and the viewer's own sources (Settings › Your Sources). */
+    private List<Channel> builtIn=Collections.emptyList();
+    private final Map<String,List<Channel>> added=new LinkedHashMap<>();
+    private UserSources sources;
+    /** Sources refresh once a run (and on Refresh), in the background. */
+    private static boolean sourcesRefreshed;
     private final Set<String> favourites=new HashSet<>();
     private final List<Channel> visible=new ArrayList<>();
     private String tab="Live TV", category="All", country="All", query="", error;
@@ -50,8 +56,11 @@ public final class MainActivity extends Activity {
         super.onCreate(saved);
         prefs=getSharedPreferences("fast",MODE_PRIVATE);
         favourites.addAll(prefs.getStringSet("favourites",Collections.<String>emptySet()));
-        try { channels=Catalog.parse(Catalog.read(getAssets().open("channels.json"))); }
+        try { builtIn=Catalog.parse(Catalog.read(getAssets().open("channels.json"))); }
         catch(Exception e) {error="The channel list could not be opened.";}
+        sources=new UserSources(this,prefs);
+        for(UserSources.Source s:sources.list()) added.put(s.id,sources.cached(s));
+        mergeChannels();
         if(saved!=null) {
             tab=saved.getString("tab","Live TV"); category=saved.getString("category","All");
             country=saved.getString("country","All");query=saved.getString("query","");
@@ -60,7 +69,39 @@ public final class MainActivity extends Activity {
         }
         build();
         splash();
+        if(!sourcesRefreshed){sourcesRefreshed=true;refreshSources(null);}
     }
+    /** The list everything browses: built-in channels, then each of the viewer's sources' channels. */
+    private void mergeChannels() {
+        List<Channel> all=new ArrayList<>(builtIn);
+        for(List<Channel> l:added.values()) all.addAll(l);
+        channels=all;
+    }
+    /**
+     * Fetches the viewer's sources again in the background (all, or one), then updates the lists. A source
+     * that fails keeps its last channels; done (if given) gets the failure message, or null.
+     */
+    private void refreshSources(final UserSources.Source only) {
+        final List<UserSources.Source> list=only==null?sources.list():Collections.singletonList(only);
+        if(list.isEmpty())return;
+        final Handler main=new Handler(Looper.getMainLooper());
+        new Thread(()->{
+            for(final UserSources.Source s:list){
+                String failure=null;List<Channel> got=null;
+                try{got=sources.refresh(s,LivePlayer.USER_AGENT);}catch(Exception e){failure=e.getMessage()==null?"Couldn't connect.":e.getMessage();}
+                final List<Channel> result=got;final String why=failure;
+                main.post(()->{
+                    if(result!=null&&sourceExists(s.id)){added.put(s.id,result);mergeChannels();}
+                    if(only!=null){
+                        if(why!=null)ok("Couldn't refresh "+s.name,why);
+                        else Toast.makeText(this,s.name+": "+result.size()+" channels",Toast.LENGTH_SHORT).show();
+                    }
+                    if(watching==null){if(tab.equals("Settings"))settings();else if(adapter!=null)filter();}
+                });
+            }
+        },"sources").start();
+    }
+    private boolean sourceExists(String id){for(UserSources.Source s:sources.list())if(s.id.equals(id))return true;return false;}
     private Channel find(String id) {for(Channel c:channels) if(c.id.equals(id)) return c; return null;}
     private boolean wide() {Configuration c=getResources().getConfiguration();return c.screenWidthDp>=c.screenHeightDp*1.2f;} // clearly landscape: square screens (Clicks Communicator) use the portrait layout
     private int dp(float n) {return b.dp(n);}
@@ -205,7 +246,7 @@ public final class MainActivity extends Activity {
     private void browse() {
         body.removeAllViews();scroller=null;
         LinearLayout header=b.column();header.setPadding(0,dp(16),0,0);page=header;
-        title(tab,tab.equals("Favourites")?"Your channels, in one place.":tab.equals("Search")?"Channels, cities and genres.":"Free to watch. A little more live.");
+        title(tab,tab.equals("Favourites")?"Your channels, in one place.":tab.equals("Search")?"Channels, cities and genres.":null);
         LinearLayout bar=b.column();bar.setPadding(0,0,0,dp(FADE_DP));
         if(tab.equals("Search")) {
             EditText search=new EditText(this);search.setSingleLine();search.setTextColor(b.text);search.setHintTextColor(b.secondary);
@@ -222,6 +263,7 @@ public final class MainActivity extends Activity {
         }
         chips(bar);
         LinearLayout notes=b.column();
+        if(tab.equals("Live TV")) tvAppsRow(notes);
         Channel last=compact()&&prefs.getBoolean("continue",true)?find(prefs.getString("lastChannel","")):null;
         if(last!=null){View pill=continuePill(last);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(10);notes.addView(pill,lp);}
         count=b.label("",12,b.secondary);count.setPadding(dp(4),dp(2),0,dp(10));notes.addView(count);
@@ -234,6 +276,35 @@ public final class MainActivity extends Activity {
         addList(frame,header,slot,notes);
         frame.addView(bar,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
         floatBars(true);
+    }
+    /**
+     * Your TV Apps: the streaming and TV-provider apps installed here, on pills that open them, and Add App
+     * for any other. Grapefruit TV only opens them; their sign-ins and streams stay in their own apps.
+     */
+    private void tvAppsRow(LinearLayout parent) {
+        TextView label=b.text("Your TV Apps",15,true);label.setTextColor(b.accent);label.setPadding(dp(4),dp(2),0,dp(8));parent.addView(label);
+        HorizontalScrollView scroll=new HorizontalScrollView(this);scroll.setHorizontalScrollBarEnabled(false);scroll.setClipToPadding(false);
+        LinearLayout row=b.row();row.setPadding(0,0,dp(8),dp(12));scroll.addView(row);
+        for(final TvApps.App app:TvApps.row(this,prefs)) {
+            LinearLayout pill=b.row();pill.setPadding(dp(6),dp(6),dp(16),dp(6));pill.setFocusable(true);pill.setClickable(true);
+            pill.setBackground(b.interactive(false,Brand.PILL));pill.setContentDescription("Open "+app.label);
+            ImageView icon=new ImageView(this);icon.setImageDrawable(app.icon);pill.addView(icon,new LinearLayout.LayoutParams(dp(32),dp(32)));
+            TextView name=b.text(app.label,14,true);name.setPadding(dp(10),0,0,0);name.setSingleLine();pill.addView(name);
+            pill.setOnClickListener(v->{if(!TvApps.open(this,app.pkg))ok(app.label,"That app can't be opened from here.");});
+            pill.setOnLongClickListener(v->{dialog(app.label,null,new String[]{"Open","Remove from Your TV Apps"},-1,
+                new Runnable[]{()->TvApps.open(this,app.pkg),()->{TvApps.remove(prefs,app.pkg);browse();}});return true;});
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-2,dp(44));lp.rightMargin=dp(8);row.addView(pill,lp);
+        }
+        TextView add=b.button("+  Add App",false,v->addTvApp());add.setTextSize(13);
+        row.addView(add,new LinearLayout.LayoutParams(-2,dp(44)));
+        parent.addView(scroll,new LinearLayout.LayoutParams(-1,-2));
+    }
+    private void addTvApp() {
+        final List<TvApps.App> all=TvApps.installed(this);
+        if(all.isEmpty()){ok("Add App","No other apps are installed.");return;}
+        String[] names=new String[all.size()];Runnable[] picks=new Runnable[all.size()];
+        for(int i=0;i<all.size();i++){final TvApps.App a=all.get(i);names[i]=a.label;picks[i]=()->{TvApps.pin(prefs,a.pkg);browse();};}
+        dialog("Add to Your TV Apps","Pick an app to keep on the Live TV page. Grapefruit TV opens it; you watch and sign in there.",names,-1,picks);
     }
     /** How far the list fades out under the floating chips, as Music's (dp). */
     private static final int FADE_DP=20;
@@ -271,6 +342,8 @@ public final class MainActivity extends Activity {
         scroll.setClipToPadding(false);
         LinearLayout row=b.row();row.setPadding(dp(18),dp(6),dp(10),dp(6));scroll.addView(row);
         for(String label:GENRES) row.addView(chip(label,label.equals(category),()->category=label));
+        // The viewer's own sources' channels, under one chip.
+        if(!added.isEmpty()) row.addView(chip("Added",category.equals("Added"),()->category="Added"));
         View divider=new View(this);divider.setBackgroundColor(b.outline);
         LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(Math.max(1,dp(1)),dp(24));d.rightMargin=dp(8);row.addView(divider,d);
         for(String label:Channel.REGIONS)
@@ -337,7 +410,7 @@ public final class MainActivity extends Activity {
             String initials=c.initials();
             h.logo.setText(initials);h.logo.setTextSize(initials.length()>2?13:20);
             h.name.setText(c.name);
-            h.meta.setText((favourites.contains(c.id)?"★  ":"")+c.region()+"  ·  "+c.category);
+            h.meta.setText((favourites.contains(c.id)?"★  ":"")+(c.added()?c.source+(c.description.isEmpty()?"":"  ·  "+c.description):c.region()+"  ·  "+c.category));
             boolean live=watching!=null&&watching.id.equals(c.id);
             h.live.setVisibility(live?View.VISIBLE:View.GONE);h.more.setVisibility(live?View.GONE:View.VISIBLE);
             return h.wrapper;
@@ -426,7 +499,7 @@ public final class MainActivity extends Activity {
         captionsButton.setVisibility(captionsAvailable?View.VISIBLE:View.GONE);
         LinearLayout.LayoutParams cbp=new LinearLayout.LayoutParams(-2,dp(44));cbp.rightMargin=dp(6);actions.addView(captionsButton,cbp);
         action(actions,fullScreen?"Exit full screen":"Full screen",()->setFullScreen(!fullScreen));
-        action(actions,"Official site",()->website(watching));
+        if(!watching.website.isEmpty()) action(actions,"Official site",()->website(watching));
         if(fullScreen) {
             // Over the picture, along the bottom: a way back out without a remote's Back key.
             FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(-2,-2,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);ap.bottomMargin=dp(16);
@@ -468,6 +541,13 @@ public final class MainActivity extends Activity {
      */
     void onUnavailable(boolean location) {
         if(notice==null||watching==null) return;
+        if(watching.added()){
+            noticeTitle.setText(location?watching.source+" refused this channel":"This channel isn't playing right now");
+            noticeDetail.setText(location?"Check your subscription or login with "+watching.source+", or whether it's offered where you are."
+                :"Try Retry, or another channel. "+watching.source+" may be busy, or the channel may be off the air.");
+            notice.setVisibility(View.VISIBLE);if(caption!=null)caption.setVisibility(View.GONE);
+            return;
+        }
         noticeTitle.setText(location?"Not available where you are":"This channel isn't playing right now");
         String where=watching.availability.isEmpty()?"":"\nOffered in: "+watching.availability+".";
         noticeDetail.setText(location?watching.name+"'s provider doesn't offer it in your location."+where
@@ -535,6 +615,12 @@ public final class MainActivity extends Activity {
     }
     private void stop() {if(playback!=null){playback.release();playback=null;}watching=null;pendingSurface=null;}
     private void details(Channel c) {
+        if(c.added()){
+            dialog(c.name,(c.description.isEmpty()?"":c.description+"\n\n")+"From "+c.source+", one of your sources.",
+                new String[]{"Watch live",favourites.contains(c.id)?"Remove favourite":"Add favourite"},0,
+                new Runnable[]{()->tune(c),()->{favourite(c);filter();if(watching!=null&&watching.id.equals(c.id))watchPage();}});
+            return;
+        }
         dialog(c.name,c.description+"\n\n"+c.countryName()+" · "+c.category
             +(c.availability.isEmpty()?"":"\nWatch from: "+c.availability)
             +"\nChannels may be region restricted. Provider advertisements remain part of the stream.",
@@ -574,21 +660,41 @@ public final class MainActivity extends Activity {
         footer(g,"Auto changes resolution as your connection changes. Continue Watching keeps your last channel a tap away above the tabs. Captions show when a channel provides them; until you choose, they follow Android's caption setting. Keep Screen On stops the screen sleeping while a channel plays.");
 
         section(g,"Channels");
-        value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, sign-in workarounds, DRM bypass, location spoofing or ad removal. Every channel is listed wherever you are; some are offered only in certain countries (most of Xumo's in the United States, for example). If a channel's provider doesn't offer it where you are, the player says so.\n\nThe channel guide lists channels; programme schedules aren't supplied. CBC's local news channels need a CBC Gem sign-in, so they aren't included. CP24 is excluded because a public video stream could not be obtained from cp24.com."));;
+        value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability",
+            "Grapefruit TV brings live TV together in one place.\n\n"
+            +"Built-in channels: free live channels from broadcasters and their official distributors, listed wherever you are. Some are offered only in certain countries; if a channel's provider doesn't offer it where you are, the player says so. Their own advertisements play as usual.\n\n"
+            +"Your sources: add an IPTV service you subscribe to, with its M3U playlist address or its server, username and password (Settings › Your Sources). Its channels appear under Added. Grapefruit TV doesn't provide, sell or recommend any service. Only add services you're entitled to use.\n\n"
+            +"Your TV Apps: streaming and TV-provider apps installed on this device (Crave, Sling, Fibe TV and others) sit on the Live TV page and open with a tap. You sign in and watch in those apps: their live TV is protected, so it can't play in Grapefruit TV.\n\n"
+            +"Channel names only; no programme guide."));
         int saved=favourites.size();
         value(g,"Favourites",saved==0?"None":saved==1?"1 channel":saved+" channels",null);
         if(saved>0)action(g,"Clear Favourites",true,()->dialog("Clear Favourites?","Your "+(saved==1?"favourite channel":saved+" favourite channels")+" will be removed from Favourites.",
             new String[]{"Clear Favourites","Cancel"},-1,new Runnable[]{()->{favourites.clear();prefs.edit().putStringSet("favourites",new HashSet<String>()).apply();settings();},()->{}}));
         footer(g,"Streams include provider ads. Grapefruit adds no tracking SDK or extra advertisements. Playback stops when you leave the app.");
 
+        section(g,"Your Sources");
+        for(final UserSources.Source src:sources.list()) {
+            List<Channel> got=added.get(src.id);int n=got==null?0:got.size();
+            value(g,src.name,(UserSources.LOGIN.equals(src.kind)?"Login · ":"Playlist · ")+(n==1?"1 channel":n+" channels"),()->dialog(src.name,
+                (UserSources.LOGIN.equals(src.kind)?"Server: "+src.address+"\nUsername: "+src.username:"Playlist: "+src.address),
+                new String[]{"Refresh","Remove"},-1,new Runnable[]{()->refreshSources(src),()->dialog("Remove "+src.name+"?","Its channels will be removed from Grapefruit TV, and any of them in Favourites.",
+                    new String[]{"Remove","Cancel"},-1,new Runnable[]{()->{sources.remove(src.id);added.remove(src.id);mergeChannels();settings();},()->{}})}));
+        }
+        action(g,"Add a Playlist (M3U)…",false,()->form("Add a Playlist","Your IPTV service's M3U or M3U8 playlist address.",
+            new String[]{"Name","Playlist address (http:// or https://)"},new boolean[]{false,false},new String[]{"My TV",""},v->addSource(UserSources.M3U,v[0],v[1],"","")));
+        action(g,"Add a TV Login…",false,()->form("Add a TV Login","Your IPTV service's server address, username and password.",
+            new String[]{"Name","Server (e.g. http://example.com:8080)","Username","Password"},new boolean[]{false,false,false,true},new String[]{"My TV","","",""},
+            v->addSource(UserSources.LOGIN,v[0],v[1],v[2],v[3])));
+        footer(g,"Add an IPTV service you subscribe to. Grapefruit TV doesn't provide, sell or recommend any service: only add ones you're entitled to use. Channel names only; no programme guide. Logins are kept in this app's private storage on this device.");
+
         section(g,"About");
-        value(g,"About Grapefruit FAST","Version "+versionName(),()->{settingsPage="about";about();});
+        value(g,"About Grapefruit TV","Version "+versionName(),()->{settingsPage="about";about();});
         floatBars(true);backCallback();
     }
-    /** Settings › About Grapefruit FAST: the logo and wordmark, then the licence, developer and credits. */
+    /** Settings › About Grapefruit TV: the logo and wordmark, then the licence, developer and credits. */
     private void about() {
         LinearLayout g=groupedPage();
-        // Music's About page (AboutFragment), for FAST: Music's header, with its round back button...
+        // Music's About page (AboutFragment), for Grapefruit TV: Music's header, with its round back button...
         backHeader(g,null);
         // ...the icon at exactly 88dp, the wordmark in Geist Pixel Triangle on one line, the version and copyright.
         LinearLayout hero=b.column();hero.setGravity(Gravity.CENTER_HORIZONTAL);hero.setPadding(0,dp(8),0,dp(8));
@@ -603,7 +709,7 @@ public final class MainActivity extends Activity {
         section(g,"License");
         link(g,"GNU GPL","Version 3 or later","https://www.gnu.org/licenses/gpl-3.0.html");
         link(g,"Source Code",SOURCE,"https://"+SOURCE);
-        footer(g,"Grapefruit FAST is free software: you can share and change it under the GNU General Public License, version 3 or any later version. It comes with no warranty.");
+        footer(g,"Grapefruit TV is free software: you can share and change it under the GNU General Public License, version 3 or any later version. It comes with no warranty.");
 
         section(g,"Developer");
         value(g,"Developer",DEVELOPER,null);
@@ -725,7 +831,7 @@ public final class MainActivity extends Activity {
         // As Music's: the stacked logo, the television over the Geist Pixel Triangle wordmark, as one picture
         // (tools/fast/splash.py), the same one the window shows while the app starts.
         ImageView logo=new ImageView(this);logo.setImageResource(b.light?R.drawable.splash_logo_light:R.drawable.splash_logo_dark);
-        logo.setAdjustViewBounds(true);logo.setContentDescription("Grapefruit FAST");
+        logo.setAdjustViewBounds(true);logo.setContentDescription("Grapefruit TV");
         cover.addView(logo,new LinearLayout.LayoutParams(-2,-2));
         owner.addView(cover,new FrameLayout.LayoutParams(-1,-1));
         owner.postDelayed(()->cover.animate().alpha(0f).setDuration(300).withEndAction(()->owner.removeView(cover)).start(),
@@ -764,12 +870,45 @@ public final class MainActivity extends Activity {
         LinearLayout buttons=b.column();buttons.setPadding(0,dp(6),0,0);
         for(int i=0;i<labels.length;i++) {final int pos=i;TextView button=b.button(labels[i],i==chosen,v->{d.dismiss();actions[pos].run();});
             LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.topMargin=dp(8);buttons.addView(button,p);}
-        card.addView(buttons,new LinearLayout.LayoutParams(-1,-2));
+        if(labels.length>6) {
+            // A long list (Add App's apps): the options scroll.
+            ScrollView list=new ScrollView(this);list.setVerticalScrollBarEnabled(false);list.addView(buttons);
+            card.addView(list,new LinearLayout.LayoutParams(-1,0,1));
+        } else card.addView(buttons,new LinearLayout.LayoutParams(-1,-2));
         d.setContentView(card);
         Window w=d.getWindow();
         if(w!=null){w.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));}
         d.show();
         if(w!=null)w.setLayout(Math.min(dp(480),getResources().getDisplayMetrics().widthPixels-dp(32)),WindowManager.LayoutParams.WRAP_CONTENT);
+    }
+    private interface FormDone{void done(String[] values);}
+    /** A dialog with text fields (secret ones hidden), Save and Cancel. */
+    private void form(String title,String note,String[] hints,boolean[] secret,String[] values,FormDone done) {
+        final android.app.Dialog d=new android.app.Dialog(this);d.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        LinearLayout card=b.column();card.setPadding(dp(22),dp(22),dp(22),dp(18));card.setBackground(b.shape(b.surface,30,true));
+        card.addView(b.text(title,22,true));
+        TextView n=b.label(note,14,b.secondary);n.setPadding(0,dp(8),0,dp(4));n.setLineSpacing(dp(2),1);card.addView(n);
+        final EditText[] fields=new EditText[hints.length];
+        for(int i=0;i<hints.length;i++){
+            EditText f=new EditText(this);f.setSingleLine();f.setTextColor(b.text);f.setHintTextColor(b.secondary);f.setTypeface(Fonts.regular());f.setTextSize(15);
+            f.setHint(hints[i]);f.setText(values[i]);f.setPadding(dp(18),0,dp(18),0);f.setBackground(b.interactive(false,Brand.PILL));
+            f.setInputType(secret[i]?InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD:i>0?InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_URI:InputType.TYPE_CLASS_TEXT);
+            if(i>1&&!secret[i])f.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.topMargin=dp(10);card.addView(f,p);fields[i]=f;
+        }
+        LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,dp(48));bp.topMargin=dp(14);
+        card.addView(b.button("Save",true,v->{String[] out=new String[fields.length];for(int i=0;i<out.length;i++)out[i]=fields[i].getText().toString();d.dismiss();done.done(out);}),bp);
+        LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,dp(48));cp.topMargin=dp(8);
+        card.addView(b.button("Cancel",false,v->d.dismiss()),cp);
+        ScrollView scroll=new ScrollView(this);scroll.addView(card);d.setContentView(scroll);
+        Window w=d.getWindow();if(w!=null)w.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        d.show();if(w!=null)w.setLayout(Math.min(dp(480),getResources().getDisplayMetrics().widthPixels-dp(32)),WindowManager.LayoutParams.WRAP_CONTENT);
+    }
+    private void addSource(String kind,String name,String address,String user,String pass) {
+        if(address.trim().isEmpty()||(UserSources.LOGIN.equals(kind)&&user.trim().isEmpty())){ok("Add a Source","Fill in the address"+(UserSources.LOGIN.equals(kind)?" and username":"")+".");return;}
+        UserSources.Source s=sources.add(kind,name.trim().isEmpty()?"My TV":name.trim(),address,user,pass);
+        added.put(s.id,new ArrayList<Channel>());mergeChannels();settings();
+        refreshSources(s);
     }
     private void fullscreen(boolean on) {
         boolean full=on&&watching!=null;

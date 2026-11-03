@@ -5,13 +5,22 @@ public final class Channel {
     public static final String[] COUNTRIES={"CA","US","GB","DE","AU"};
     public static final String[] REGIONS={"Canada","United States","UK","Europe","Australia"};
     public final String id, name, country, category, description, website, provenance, availability;
+    /** For a channel from one of the viewer's own sources: the source's name, and a user agent it asks for. */
+    public final String source, userAgent;
     public final String[] streams;
     public Channel(String id, String name, String country, String category, String description,
                    String website, String provenance, String[] streams, String availability) {
+        this(id,name,country,category,description,website,provenance,streams,availability,"","");
+    }
+    public Channel(String id, String name, String country, String category, String description,
+                   String website, String provenance, String[] streams, String availability,
+                   String source, String userAgent) {
         this.id=id; this.name=name; this.country=country; this.category=category;
         this.description=description; this.website=website; this.provenance=provenance; this.streams=streams.clone();
-        this.availability=availability;
+        this.availability=availability; this.source=source==null?"":source; this.userAgent=userAgent==null?"":userAgent;
     }
+    /** From one of the viewer's own sources (Settings › Your Sources), not the built-in catalog. */
+    public boolean added() { return !source.isEmpty(); }
     /** The filter region this channel is from: Canada, United States, UK, Europe (outside the UK) or Australia. */
     public String region() {
         for(int i=0;i<COUNTRIES.length;i++) if(COUNTRIES[i].equals(country)) return REGIONS[i];
@@ -27,6 +36,7 @@ public final class Channel {
             .contains(query.trim().toLowerCase(Locale.US));
     }
     public String initials() {
+        if (name.trim().isEmpty()) return "TV";
         if (name.startsWith("Global")) return "G";
         if (name.startsWith("CityNews")) return "City";
         if (name.startsWith("NBC")) return "NBC";

@@ -97,14 +97,27 @@ public final class LivePlayer {
         String mode=quality==0?"Auto":quality==1?"Data saver":"Compatibility";
         listener.format(f==null?mode:mode+" · "+f.height+"p"+(f.bitrate>0?" · "+String.format(java.util.Locale.US,"%.1f Mbps",f.bitrate/1000000f):""));
     }
+    static final String USER_AGENT="GrapefruitTV/2.0-beta-1 (Android)";
+    /** An HLS playlist (.m3u8), by its address; anything else is played as a direct stream. */
+    static boolean hls(String url) {
+        String path=url.toLowerCase(java.util.Locale.US);int q=path.indexOf('?');if(q>=0)path=path.substring(0,q);
+        return path.endsWith(".m3u8")||path.endsWith(".m3u")||path.contains("/hls/")||path.contains(".m3u8/");
+    }
     private void prepare() {
         if(released||player==null) return;
         listener.status("Connecting…");
+        String url=channel.streams[sourceIndex];
+        // Built-in channels: HTTPS only, the app's own name. The viewer's own sources: whatever their service
+        // uses (HTTP or HTTPS, redirects between them), with the user agent its playlist asks for.
         DefaultHttpDataSource.Factory http=new DefaultHttpDataSource.Factory()
-            .setUserAgent("GrapefruitFAST/1.0 (Android)")
-            .setConnectTimeoutMs(15000).setReadTimeoutMs(20000).setAllowCrossProtocolRedirects(false);
-        player.setMediaSource(new HlsMediaSource.Factory(new DefaultDataSource.Factory(context,http))
-            .createMediaSource(MediaItem.fromUri(channel.streams[sourceIndex])));
+            .setUserAgent(channel.userAgent.isEmpty()?USER_AGENT:channel.userAgent)
+            .setConnectTimeoutMs(15000).setReadTimeoutMs(20000).setAllowCrossProtocolRedirects(channel.added());
+        DefaultDataSource.Factory data=new DefaultDataSource.Factory(context,http);
+        MediaItem item=MediaItem.fromUri(url);
+        player.setMediaSource(hls(url)
+            ? new HlsMediaSource.Factory(data).createMediaSource(item)
+            // An MPEG-TS (or other direct) live stream, as most IPTV services send.
+            : new com.google.android.exoplayer2.source.ProgressiveMediaSource.Factory(data).createMediaSource(item));
         player.prepare();player.setPlayWhenReady(true);
     }
     /**

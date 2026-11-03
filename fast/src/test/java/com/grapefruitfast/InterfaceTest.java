@@ -97,10 +97,10 @@ public class InterfaceTest {
         MainActivity.splashShown=false;
         try(org.robolectric.android.controller.ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup()) {
             View root=controller.get().getWindow().getDecorView();measure(root,1080,1920);
-            View logo=described(root,"Grapefruit FAST");assertTrue(logo instanceof ImageView);assertTrue(logo.getWidth()>0);
+            View logo=described(root,"Grapefruit TV");assertTrue(logo instanceof ImageView);assertTrue(logo.getWidth()>0);
             capture(root,"portrait-splash.png");
             settle();root=controller.get().getWindow().getDecorView();measure(root,1080,1920);
-            assertNull(described(root,"Grapefruit FAST"));
+            assertNull(described(root,"Grapefruit TV"));
         }
     }
     @Test public void settingsLikeMusicWithAboutAndToggles() throws Exception {
@@ -112,8 +112,8 @@ public class InterfaceTest {
             Toggle keep=null;for(View v:views(root))if(v instanceof Toggle&&"Keep Screen On".contentEquals(v.getContentDescription()))keep=(Toggle)v;
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
-            tap(text(root,"About Grapefruit FAST"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0"));assertNotNull(text(root,"Source Code"));
+            tap(text(root,"About Grapefruit TV"));root=a.getWindow().getDecorView();measure(root,1024,600);
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 2.0-beta-1"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
@@ -126,7 +126,7 @@ public class InterfaceTest {
             assertNull(text(root,"Continue watching"));
         }
     }
-    private static TextView wordmark(View root){for(View v:views(root))if(v instanceof TextView&&"Grapefruit FAST".equals(String.valueOf(((TextView)v).getText())))return(TextView)v;return null;}
+    private static TextView wordmark(View root){for(View v:views(root))if(v instanceof TextView&&"Grapefruit TV".equals(String.valueOf(((TextView)v).getText())))return(TextView)v;return null;}
     /** On a phone, Settings scrolls far enough for About to clear the floating tabs and Continue watching. */
     @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void aboutRowClearsTheFloatingBarsOnAPhone() throws Exception {
         android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
@@ -136,7 +136,7 @@ public class InterfaceTest {
             tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1233,2742);settle();measure(root,1233,2742);
             ScrollView scroll=null;for(View v:views(root))if(v instanceof ScrollView)scroll=(ScrollView)v;
             scroll.scrollTo(0,100000);measure(root,1233,2742);settle();measure(root,1233,2742);
-            View about=(View)text(root,"About Grapefruit FAST").getParent();
+            View about=(View)text(root,"About Grapefruit TV").getParent();
             int[] at=new int[2];about.getLocationInWindow(at);
             View cont=(View)text(root,"Continue watching").getParent().getParent();int[] bar=new int[2];cont.getLocationInWindow(bar);
             assertTrue("Settings scrolled",scroll.getScrollY()>0);
@@ -231,7 +231,7 @@ public class InterfaceTest {
             tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-settings.png");
             ScrollView scroll=null;for(View v:views(root))if(v instanceof ScrollView)scroll=(ScrollView)v;
             scroll.scrollTo(0,100000);measure(root,w,h);settle();measure(root,w,h);capture(root,name+"-settings-bottom.png");
-            tap(text(root,"About Grapefruit FAST"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-about.png");
+            tap(text(root,"About Grapefruit TV"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-about.png");
         }
     }
     /** A channel its provider refuses where the viewer is: listed anyway, and the player box says so. */
@@ -263,6 +263,20 @@ public class InterfaceTest {
         assertFalse(LivePlayer.locationRefusal(e404));
         assertFalse(LivePlayer.locationRefusal(new java.net.SocketTimeoutException()));
         assertFalse(LivePlayer.locationRefusal(null));
+    }
+    /** 2.0: no tagline on Live TV; Your TV Apps sits at the top; Settings › Your Sources adds IPTV sources. */
+    @Test public void grapefruitTvLiveTvAndYourSources() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1024,600);
+            assertNull(text(root,"Free to watch. A little more live."));
+            assertNotNull(text(root,"Your TV Apps"));assertNotNull(text(root,"+  Add App"));
+            capture(root,"landscape-tv.png");
+            tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1024,600);
+            ScrollView scroll=null;for(View v:views(root))if(v instanceof ScrollView)scroll=(ScrollView)v;
+            scroll.scrollTo(0,100000);measure(root,1024,600);
+            assertNotNull(text(root,"Your Sources"));assertNotNull(text(root,"Add a Playlist (M3U)…"));assertNotNull(text(root,"Add a TV Login…"));
+            capture(root,"landscape-your-sources.png");
+        }
     }
     private static void tap(View v){while(v!=null&&!v.isClickable()&&!(v.getParent() instanceof AdapterView))v=(View)v.getParent();
         if(v.getParent() instanceof AdapterView){AdapterView<?> list=(AdapterView<?>)v.getParent();int pos=list.getPositionForView(v);list.performItemClick(v,pos,list.getItemIdAtPosition(pos));}else v.performClick();}

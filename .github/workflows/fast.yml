@@ -63,7 +63,7 @@ jobs:
           SIGNED: ${{ steps.signing.outputs.signed }}
         run: |
           mkdir -p work/fast-test-apk
-          apk=work/fast-test-apk/grapefruit-fast-${{ steps.version.outputs.name }}-test.apk
+          apk=work/fast-test-apk/grapefruit-tv-${{ steps.version.outputs.name }}-test.apk
           tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
           if [ "$SIGNED" = true ]; then
             # The release build, on the permanent key: it installs over earlier and later FAST builds.
@@ -77,12 +77,12 @@ jobs:
           fi
           "$tools/apksigner" verify --verbose --print-certs --min-sdk-version 17 "$apk" > work/fast-test-apk/signature.txt
           "$tools/aapt2" dump badging "$apk" > work/fast-test-apk/package.txt
-          (cd work/fast-test-apk && sha256sum grapefruit-fast-${{ steps.version.outputs.name }}-test.apk > SHA256SUMS)
+          (cd work/fast-test-apk && sha256sum grapefruit-tv-${{ steps.version.outputs.name }}-test.apk > SHA256SUMS)
           cp docs/fast/validation.md work/fast-test-apk/verification.md
           cp docs/fast/stream-report.json docs/fast/codec-report.json work/fast-test-apk/
       - uses: actions/upload-artifact@v4
         with:
-          name: grapefruit-fast-${{ steps.version.outputs.name }}-test-apk
+          name: grapefruit-tv-${{ steps.version.outputs.name }}-test-apk
           path: work/fast-test-apk/
       - name: Remove signing key
         if: always()
@@ -129,7 +129,7 @@ jobs:
           test "$digest" = "$EXPECTED_CERT"
           "$tools/aapt2" dump badging "$apk" > badging.txt
           head -n 1 badging.txt | grep -qF "package: name='io.github.hayliewordsman.grapefruitfast'"
-          cp "$apk" "grapefruit-fast-$VERSION.apk"
+          cp "$apk" "grapefruit-tv-$VERSION.apk"
       - name: Publish FAST release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -139,8 +139,8 @@ jobs:
           if [[ "${VERSION,,}" =~ (alpha|beta|rc) ]]; then flags+=(--prerelease); fi
           notes="docs/fast/releases/$VERSION.md"
           test -f "$notes"
-          gh release create "fast-v$VERSION" "grapefruit-fast-$VERSION.apk" --target "$GITHUB_SHA" \
-            --title "Grapefruit FAST $VERSION" --notes-file "$notes" "${flags[@]}"
+          gh release create "fast-v$VERSION" "grapefruit-tv-$VERSION.apk" --target "$GITHUB_SHA" \
+            --title "Grapefruit TV $VERSION" --notes-file "$notes" "${flags[@]}"
       - name: Publish to the F-Droid repo
         # A stable release goes into Grapefruit's F-Droid repo beside Music (prereleases stay out).
         if: ${{ !contains(needs.build.outputs.version, 'alpha') && !contains(needs.build.outputs.version, 'beta') && !contains(needs.build.outputs.version, 'rc') }}
