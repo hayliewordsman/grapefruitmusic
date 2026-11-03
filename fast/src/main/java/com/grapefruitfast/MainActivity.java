@@ -62,8 +62,10 @@ public final class MainActivity extends Activity {
         splash();
     }
     private Channel find(String id) {for(Channel c:channels) if(c.id.equals(id)) return c; return null;}
-    private boolean wide() {Configuration c=getResources().getConfiguration();return c.screenWidthDp>=c.screenHeightDp*0.85f;}
+    private boolean wide() {Configuration c=getResources().getConfiguration();return c.screenWidthDp>=c.screenHeightDp*1.2f;} // clearly landscape: square screens (Clicks Communicator) use the portrait layout
     private int dp(float n) {return b.dp(n);}
+    /** A short portrait screen (square ones like the Clicks Communicator): less floats over the page. */
+    private boolean compact() {return !wide()&&getResources().getConfiguration().screenHeightDp<480;}
 
     /** Where the viewer is (Region): which providers' channels can play here. */
     private String region="";
@@ -150,7 +152,8 @@ public final class MainActivity extends Activity {
         if(bars.getParent()!=null)((ViewGroup)bars.getParent()).removeView(bars);
         if(nav.getParent()!=null&&!wide())((ViewGroup)nav.getParent()).removeView(nav);
         Channel last=resume&&prefs.getBoolean("continue",true)?find(prefs.getString("lastChannel","")):null;
-        if(last!=null) bars.addView(continuePill(last));
+        // On a short screen Continue watching sits at the top of the list instead (browse), scrolling away.
+        if(last!=null&&!compact()) bars.addView(continuePill(last));
         if(!wide()) bars.addView(nav,new LinearLayout.LayoutParams(-1,-2));
         bars.setBackground(bars.getChildCount()>0?b.fade():null);
         bars.setPadding(0,bars.getChildCount()>0?dp(22):0,0,wide()&&last!=null?dp(14):0);
@@ -222,6 +225,8 @@ public final class MainActivity extends Activity {
         }
         chips(bar);
         LinearLayout notes=b.column();
+        Channel last=compact()&&prefs.getBoolean("continue",true)?find(prefs.getString("lastChannel","")):null;
+        if(last!=null){View pill=continuePill(last);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(10);notes.addView(pill,lp);}
         count=b.label("",12,b.secondary);count.setPadding(dp(4),dp(2),0,dp(10));notes.addView(count);
         if(error!=null){TextView t=b.label(error,12,b.secondary);t.setPadding(dp(4),0,dp(4),dp(10));notes.addView(t);}
         // The slot in the list where the chips sit until they float: as tall as the bar without its fade.
@@ -397,7 +402,12 @@ public final class MainActivity extends Activity {
         FrameLayout.LayoutParams cp=new FrameLayout.LayoutParams(-2,-2,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
         cp.bottomMargin=dp(fullScreen?28:12);cp.leftMargin=cp.rightMargin=dp(16);captionLayer.addView(caption,cp);
         video.addView(captionLayer,new FrameLayout.LayoutParams(-1,-1));
-        stage.addView(video,new LinearLayout.LayoutParams(-1,wide()||fullScreen?0:-2,wide()||fullScreen?1:0));
+        if(compact()&&!fullScreen) {
+            // A short screen: the picture at most 40% of the height (16:9, centred), leaving room for the lineup.
+            int h=(int)(getResources().getDisplayMetrics().heightPixels*0.4f);
+            LinearLayout.LayoutParams vp=new LinearLayout.LayoutParams(Math.min(h*16/9,getResources().getDisplayMetrics().widthPixels-dp(28)),h);
+            vp.gravity=Gravity.CENTER_HORIZONTAL;stage.addView(video,vp);
+        } else stage.addView(video,new LinearLayout.LayoutParams(-1,wide()||fullScreen?0:-2,wide()||fullScreen?1:0));
         LinearLayout info=b.row();info.setPadding(dp(4),dp(12),dp(4),dp(10));
         state=b.text("",12,true);info.addView(state,new LinearLayout.LayoutParams(-2,-2));
         qualityLabel=b.label("Auto · adapts to your connection",12,b.secondary);qualityLabel.setSingleLine();qualityLabel.setEllipsize(TextUtils.TruncateAt.END);qualityLabel.setPadding(dp(10),0,0,0);
@@ -426,11 +436,13 @@ public final class MainActivity extends Activity {
             LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);if(!wide())ap.leftMargin=ap.rightMargin=-dp(14);
             stage.addView(actionsScroll,ap);
         }
-        if(!fullScreen){TextView description=b.label(watching.description,13,b.secondary);description.setLineSpacing(dp(2),1);description.setPadding(dp(4),dp(12),dp(4),dp(12));stage.addView(description);}
+        if(!fullScreen&&!compact()){TextView description=b.label(watching.description,13,b.secondary);description.setLineSpacing(dp(2),1);description.setPadding(dp(4),dp(12),dp(4),dp(12));stage.addView(description);}
         LinearLayout lineup=b.column();lineup.setPadding(wide()?dp(16):0,wide()?0:dp(4),0,0);
         if(!fullScreen)content.addView(lineup,new LinearLayout.LayoutParams(wide()?0:-1,wide()?-1:0,1));
         count=null;addList(lineup);
         floatBars(false);
+        // A short screen keeps the watch page for the picture, its controls and the lineup (Back has its button).
+        if(compact()){bars.setVisibility(View.GONE);barsInset=0;}
         if(playback==null && started)startPlayer(surface);else if(playback!=null){playback.attach(surface);pendingSurface=surface;}
         else pendingSurface=surface;
         fullscreen(fullScreen);

@@ -242,6 +242,29 @@ public class InterfaceTest {
             assertTrue(a.back());assertNotNull(text(a.getWindow().getDecorView(),"Appearance"));
         }
     }
+    /** Square screens (Clicks Communicator and the like) use the portrait layout: tabs along the bottom. */
+    @Test @Config(qualifiers="w360dp-h360dp-xhdpi") public void squareScreenUsesThePortraitLayout() throws Exception { square(720,720,"square-1x1"); }
+    @Test @Config(qualifiers="w360dp-h400dp-xhdpi") public void nearlySquareScreenUsesThePortraitLayout() throws Exception { square(720,800,"square-9x10"); }
+    private void square(int w,int h,String name) throws Exception {
+        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
+        c.getSharedPreferences("fast",0).edit().putString("lastChannel","cpac").commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,w,h);
+            assertNull("no side rail wordmark",text(root,"Grapefruit\nFAST"));
+            ViewGroup live=null;for(View v:views(root))if(v instanceof ViewGroup&&"Live TV".contentEquals(String.valueOf(v.getContentDescription())))live=(ViewGroup)v;
+            int[] at=new int[2];live.getLocationInWindow(at);assertTrue("tabs along the bottom",at[1]>h/2);
+            capture(root,name+"-browse.png");
+            ListView list=null;for(View v:views(root))if(v instanceof ListView)list=(ListView)v;
+            list.setSelectionFromTop(5,0);measure(root,w,h);root.getViewTreeObserver().dispatchOnPreDraw();capture(root,name+"-scrolled.png");
+            list.setSelection(0);measure(root,w,h);
+            tap(text(root,"CityNews 24/7 · Toronto"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-watch.png");
+            assertTrue(a.back());root=a.getWindow().getDecorView();measure(root,w,h);
+            tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-settings.png");
+            ScrollView scroll=null;for(View v:views(root))if(v instanceof ScrollView)scroll=(ScrollView)v;
+            scroll.scrollTo(0,100000);measure(root,w,h);settle();measure(root,w,h);capture(root,name+"-settings-bottom.png");
+            tap(text(root,"About Grapefruit FAST"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-about.png");
+        }
+    }
     private static void tap(View v){while(v!=null&&!v.isClickable()&&!(v.getParent() instanceof AdapterView))v=(View)v.getParent();
         if(v.getParent() instanceof AdapterView){AdapterView<?> list=(AdapterView<?>)v.getParent();int pos=list.getPositionForView(v);list.performItemClick(v,pos,list.getItemIdAtPosition(pos));}else v.performClick();}
     private static java.util.List<View> views(View v){java.util.List<View> all=new java.util.ArrayList<>();all.add(v);if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)all.addAll(views(g.getChildAt(i)));}return all;}
