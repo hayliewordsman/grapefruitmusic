@@ -31,6 +31,30 @@ import java.util.List;
 
 /** The Search tab: searches the source picked in Library. */
 public final class SearchFragment extends BaseFragment implements Player.Listener {
+    /**
+     * What Search looks for. Chosen in the tab bar's Search menu (MainActivity), not on the page,
+     * which has no chips; the field's hint says which.
+     */
+    static final int ALL = 0, ARTISTS = 1, ALBUMS = 2, SONGS = 3, STATIONS = 4, PODCASTS = 5;
+    static final String[] FILTERS = {"All", "Artists", "Albums", "Songs", "Stations", "Podcasts"};
+    private static final String[] HINTS = {"Music, stations and podcasts", "Artists", "Albums", "Songs",
+            "Radio stations", "Podcasts"};
+    /** Kept while the app runs, so going back to Search keeps it. */
+    private static int filter = ALL;
+
+    static int filter() {
+        return filter;
+    }
+
+    /** From the tab bar's menu: looks again, for that. */
+    void setFilter(int which) {
+        filter = which;
+        if (field == null) return;
+        field.setHint(HINTS[filter]);
+        Bg.cancelMain(debounced);
+        search();
+    }
+
     private ListView list;
     private RowAdapter adapter;
     private EditText field;
@@ -79,7 +103,7 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
         field.setPadding(Ui.dp(c, 8), Ui.dp(c, 2), 0, Ui.dp(c, 2));
         field.setInputType(InputType.TYPE_CLASS_TEXT);
         field.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
-        field.setHint("Music, stations and podcasts");
+        field.setHint(HINTS[filter]);
         box.addView(field, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -188,12 +212,31 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
             return;
         }
         final MusicSource s = source();
-        music.clear(); stations.clear(); podcasts.clear(); errors.clear(); pending = 3;
+        // Only what the filter wants is looked up (no stations' or podcasts' servers for Songs).
+        final int only = filter;
+        boolean wantMusic = only == ALL || only == ARTISTS || only == ALBUMS || only == SONGS;
+        boolean wantStations = only == ALL || only == STATIONS;
+        boolean wantPodcasts = only == ALL || only == PODCASTS;
+        music.clear(); stations.clear(); podcasts.clear(); errors.clear();
+        pending = (wantMusic ? 1 : 0) + (wantStations ? 1 : 0) + (wantPodcasts ? 1 : 0);
         results = new ArrayList<MediaItem>();
         statusText = "Searching…"; show();
-        provider(gen, "Music", music, () -> s.search(q));
-        provider(gen, "Stations", stations, () -> com.grapefruitmusic.radio.RadioBrowser.search(q));
-        provider(gen, "Podcasts", podcasts, () -> com.grapefruitmusic.podcast.PodcastDirectory.search(q));
+        if (wantMusic) provider(gen, "Music", music, () -> kinds(s.search(q), only));
+        if (wantStations) provider(gen, "Stations", stations, () -> com.grapefruitmusic.radio.RadioBrowser.search(q));
+        if (wantPodcasts) {
+            provider(gen, "Podcasts", podcasts, () -> com.grapefruitmusic.podcast.PodcastDirectory.search(q));
+        }
+    }
+
+    /** The music results the filter keeps: all of them, or only artists, albums or songs. */
+    private static List<MediaItem> kinds(List<MediaItem> found, int only) {
+        if (only == ALL || found == null) return found;
+        int kind = only == ARTISTS ? MediaItem.ARTIST : only == ALBUMS ? MediaItem.ALBUM : MediaItem.TRACK;
+        List<MediaItem> kept = new ArrayList<MediaItem>();
+        for (MediaItem m : found) {
+            if (m.kind == kind) kept.add(m);
+        }
+        return kept;
     }
 
     private void provider(final int gen, final String name, final List<MediaItem> destination,
@@ -220,7 +263,7 @@ public final class SearchFragment extends BaseFragment implements Player.Listene
         Player.get(getActivity()).addListener(this);
         if (com.grapefruitmusic.tags.SongEdits.apply(results)) show();
         onPlayerChanged();
-        field.setHint("Music, stations and podcasts");
+        field.setHint(HINTS[filter]);
     }
 
     @Override

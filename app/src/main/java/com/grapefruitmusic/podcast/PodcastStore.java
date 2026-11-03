@@ -94,6 +94,47 @@ public final class PodcastStore {
         PodcastRefresh.schedule(context);
     }
 
+    /**
+     * Subscribes to each feed not subscribed yet (an OPML import), in one go; returns the shows
+     * added. They keep the file's order at the top of Subscriptions, and get their names, artwork
+     * and episodes when their feeds are next read (refresh).
+     */
+    public List<MediaItem> subscribeAll(List<Opml.Feed> feeds) {
+        List<MediaItem> added = new ArrayList<MediaItem>();
+        SQLiteDatabase sql = db.getWritableDatabase();
+        long now = System.currentTimeMillis();
+        sql.beginTransaction();
+        try {
+            for (Opml.Feed f : feeds) {
+                if (subscribed(f.url)) continue;
+                MediaItem show = new MediaItem(MediaItem.PODCAST, PodcastSource.ID, f.url,
+                        f.title.length() > 0 ? f.title : "Podcast");
+                ContentValues v = new ContentValues();
+                v.put("feed", show.id);
+                v.put("title", show.title);
+                sql.insertWithOnConflict("podcasts", null, v, SQLiteDatabase.CONFLICT_IGNORE);
+                v.clear();
+                // Newest first in Subscriptions: the file's first podcast gets the latest time.
+                v.put("subscribed", now + feeds.size() - added.size());
+                sql.update("podcasts", v, "feed=?", new String[] {show.id});
+                added.add(show);
+            }
+            sql.setTransactionSuccessful();
+        } finally {
+            sql.endTransaction();
+        }
+        if (!added.isEmpty()) {
+            com.grapefruitmusic.util.Bg.main(new Runnable() {
+                @Override
+                public void run() {
+                    Sources.get(context).notifyChanged();
+                }
+            });
+            PodcastRefresh.schedule(context);
+        }
+        return added;
+    }
+
     /** Returns new episodes only after the initial feed snapshot. */
     public synchronized int refresh(MediaItem show) throws IOException {
         android.content.SharedPreferences prefs = Prefs.raw();

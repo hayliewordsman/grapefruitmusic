@@ -291,10 +291,26 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             item.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (nowPlaying.isOpen()) nowPlaying.close();
-                    showTab(index);
+                    if (nowPlaying.isOpen()) {
+                        nowPlaying.close();
+                        if (index == tab) return;
+                    }
+                    // The tab showing, tapped again: its menu (Settings: back to its first page).
+                    if (index == tab && index != TAB_SETTINGS) showTabMenu(index, v);
+                    else showTab(index);
                 }
             });
+            if (index != TAB_SETTINGS) {
+                // Touch and hold any tab but Settings, from anywhere: its menu.
+                item.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        if (nowPlaying.isOpen()) nowPlaying.close();
+                        showTabMenu(index, v);
+                        return true;
+                    }
+                });
+            }
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     Ui.dp(this, 48));
             if (i > 0) lp.leftMargin = Ui.dp(this, 2);
@@ -374,7 +390,152 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         }
     }
 
-    /** Switches tab; tapping the current tab returns to its first page. */
+    /** Each tab's section as last shown (Library's and Podcasts'), for the tick in their menus. */
+    private final int[] shownSection = new int[TAB_SETTINGS + 1];
+
+    /**
+     * A tab's menu, from its button (TabMenu): the tab's chips as rows, the one showing ticked.
+     * Choosing one goes to the tab (if it isn't showing) and does what the chip does.
+     */
+    private void showTabMenu(final int index, View button) {
+        TabMenu.Builder b = new TabMenu.Builder();
+        boolean here = index == tab;
+        if (index == TAB_LIBRARY) {
+            b.add("Search", Icons.SEARCH, false, new Runnable() {
+                @Override
+                public void run() {
+                    showTab(TAB_SEARCH);
+                }
+            });
+            b.add(Sources.get(this).current().name(), Icons.CHEVRON_DOWN, false, new Runnable() {
+                @Override
+                public void run() {
+                    if (tab != TAB_LIBRARY) showLibrary(SectionMenu.FIRST);
+                    SectionMenu.pickSource(MainActivity.this);
+                }
+            });
+            b.rule();
+            for (int i = 0; i < SectionMenu.LIBRARY.length; i++) {
+                final int section = i;
+                b.add(SectionMenu.LIBRARY[i], TabMenu.NO_ICON, here && shownSection[TAB_LIBRARY] == i, new Runnable() {
+                    @Override
+                    public void run() {
+                        showLibrary(section);
+                    }
+                });
+            }
+        } else if (index == TAB_PODCASTS) {
+            b.add("Search", Icons.SEARCH, false, new Runnable() {
+                @Override
+                public void run() {
+                    if (tab != TAB_PODCASTS) showPodcasts(shownSection[TAB_PODCASTS]);
+                    push(PodcastsFragment.search());
+                }
+            });
+            b.rule();
+            for (int i = 0; i < SectionMenu.PODCASTS.length; i++) {
+                final int section = i;
+                b.add(SectionMenu.PODCASTS[i], TabMenu.NO_ICON, here && shownSection[TAB_PODCASTS] == i, new Runnable() {
+                    @Override
+                    public void run() {
+                        showPodcasts(section);
+                    }
+                });
+            }
+        } else if (index == TAB_RADIO) {
+            // As the top of the Radio tab: FM or Internet Radio (on a device with FM), then that one's buttons.
+            boolean fm = radio.known() && !radio.unsupported();
+            boolean internet = !fm || Prefs.radioShowsInternet();
+            if (fm) {
+                b.add("FM Radio", TabMenu.NO_ICON, here && !internet, radioAction(new RadioStep() {
+                    @Override
+                    public void on(RadioFragment page) {
+                        page.showInternet(false);
+                    }
+                }));
+                b.add("Internet Radio", TabMenu.NO_ICON, here && internet, radioAction(new RadioStep() {
+                    @Override
+                    public void on(RadioFragment page) {
+                        page.showInternet(true);
+                    }
+                }));
+                b.rule();
+            }
+            if (internet) {
+                b.add("Search Stations", Icons.SEARCH, false, radioAction(new RadioStep() {
+                    @Override
+                    public void on(RadioFragment page) {
+                        page.searchStations();
+                    }
+                }));
+                b.add("Add by Link", Icons.PLUS, false, radioAction(new RadioStep() {
+                    @Override
+                    public void on(RadioFragment page) {
+                        page.addByLink();
+                    }
+                }));
+            } else {
+                boolean on = radio.wantsToPlay();
+                b.add(on ? "Stop" : "Listen to " + Radio.format(radio.frequency()), on ? Icons.STOP : Icons.PLAY, false,
+                        radioAction(new RadioStep() {
+                            @Override
+                            public void on(RadioFragment page) {
+                                page.listen();
+                            }
+                        }));
+                b.add("Find Stations", Icons.SEARCH, false, radioAction(new RadioStep() {
+                    @Override
+                    public void on(RadioFragment page) {
+                        page.findStations();
+                    }
+                }));
+            }
+        } else if (index == TAB_SEARCH) {
+            // Search has no chips: its menu chooses what it looks for.
+            for (int i = 0; i < SearchFragment.FILTERS.length; i++) {
+                final int filter = i;
+                b.add(SearchFragment.FILTERS[i], TabMenu.NO_ICON, SearchFragment.filter() == i, new Runnable() {
+                    @Override
+                    public void run() {
+                        SearchFragment page = (SearchFragment) rootOf(TAB_SEARCH, SearchFragment.class);
+                        if (page != null) page.setFilter(filter);
+                    }
+                });
+            }
+        } else {
+            return;
+        }
+        TabMenu.show(this, button, Ui.wide(getResources().getConfiguration()), b.items);
+    }
+
+    private interface RadioStep {
+        void on(RadioFragment page);
+    }
+
+    /** Goes to the Radio tab's own page (if it isn't showing), then does step there. */
+    private Runnable radioAction(final RadioStep step) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                RadioFragment page = (RadioFragment) rootOf(TAB_RADIO, RadioFragment.class);
+                if (page != null) step.on(page);
+            }
+        };
+    }
+
+    /** The tab's own first page, showing: switched to (or back to, from a page opened on it) first. */
+    private Fragment rootOf(int index, Class<? extends Fragment> type) {
+        FragmentManager fm = getFragmentManager();
+        Fragment showing = fm.findFragmentById(R.id.content);
+        if (tab != index || !type.isInstance(showing) || fm.getBackStackEntryCount() > 0) {
+            showTab(index);
+            fm.executePendingTransactions();
+            showing = fm.findFragmentById(R.id.content);
+        }
+        return type.isInstance(showing) && showing.getView() != null ? showing : null;
+    }
+
+    /** Switches tab, to its first page (tapping the tab showing opens its menu instead, but for Settings). */
     void showTab(int index) {
         if (index == TAB_LIBRARY || index == TAB_PODCASTS) {
             showSection(index, 0, true, false);
@@ -415,6 +576,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
      */
     private void showSection(int tabIndex, int section, boolean afresh, boolean now) {
         tab = tabIndex;
+        shownSection[tabIndex] = section;
         highlightTab();
         FragmentManager fm = getFragmentManager();
         if (fm.getBackStackEntryCount() > 0) {
@@ -514,6 +676,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
 
     @Override
     protected void onPause() {
+        TabMenu.dismiss();
         Notice.clearSink(this);
         super.onPause();
     }
@@ -568,6 +731,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        TabMenu.dismiss();
         fitBars();
         nowPlaying.configurationChanged();
     }

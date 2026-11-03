@@ -61,6 +61,11 @@ public final class PodcastsFragment extends BaseFragment {
         return true;
     }
 
+    /** Search Podcasts (the Search chip, and the tab bar's Podcasts menu). */
+    static PodcastsFragment search() {
+        return page(SEARCH, null);
+    }
+
     public static PodcastsFragment show(MediaItem show) {
         return page(SHOW, show);
     }
@@ -138,6 +143,25 @@ public final class PodcastsFragment extends BaseFragment {
                         return true;
                     });
             addHeaderControl(header, Ui.button(c, "Add by RSS address", v -> addFeed()), 8);
+        }
+        if (mode == SUBSCRIPTIONS) {
+            // Subscriptions in and out as an OPML file, the file podcast apps trade them in.
+            LinearLayout transfer = Ui.actionRow(c);
+            LinearLayout in = Ui.pill(c, com.grapefruitmusic.ui.widget.Icons.PLUS, "Import");
+            in.setContentDescription("Import subscriptions from an OPML file");
+            in.setOnClickListener(v -> OpmlTransfer.importFile(this, this::reloadSubscriptions));
+            transfer.addView(in, new LinearLayout.LayoutParams(0, Ui.dp(c, 44), 1));
+            LinearLayout out = Ui.pill(c, com.grapefruitmusic.ui.widget.Icons.DOWNLOAD, "Export");
+            out.setContentDescription("Export subscriptions to an OPML file");
+            out.setOnClickListener(v -> OpmlTransfer.export(this));
+            LinearLayout.LayoutParams outLp = new LinearLayout.LayoutParams(0, Ui.dp(c, 44), 1);
+            outLp.leftMargin = Ui.dp(c, 8);
+            transfer.addView(out, outLp);
+            menu.addNote(transfer);
+            TextView hint = Ui.text(c, 13, R.attr.gfTextSecondary, false);
+            hint.setSingleLine(false);
+            hint.setText("Move your subscriptions to or from another podcast app with an OPML file.");
+            menu.addNote(hint);
         }
         if (mode == DOWNLOADED) {
             TextView hint = Ui.text(c, 14, R.attr.gfTextSecondary, false);
@@ -450,6 +474,17 @@ public final class PodcastsFragment extends BaseFragment {
                     }
                     scheduleDownloadPoll();
                 });
+    }
+
+    /** After an import: the list again, if this page is still here. */
+    private void reloadSubscriptions() {
+        if (getActivity() != null && getView() != null && mode() == SUBSCRIPTIONS) load();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        OpmlTransfer.onResult(this, requestCode, resultCode, data, this::reloadSubscriptions);
     }
 
     @Override

@@ -149,8 +149,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
             which.setListener(new Segmented.Listener() {
                 @Override
                 public void onSelected(int index) {
-                    Prefs.setRadioShowsInternet(index == 1);
-                    build();
+                    showInternet(index == 1);
                 }
             });
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -165,6 +164,32 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
         else addInternet(c);
     }
 
+    // What the buttons at the top do; the tab's menu in the tab bar does the same (MainActivity).
+
+    /** FM Radio or Internet Radio, as the switch at the top (when the device has FM). */
+    void showInternet(boolean internet) {
+        Prefs.setRadioShowsInternet(internet);
+        if (getActivity() != null && content != null) build();
+    }
+
+    /** Listen to the FM station tuned in, or stop. */
+    void listen() {
+        if (radio.wantsToPlay()) radio.stop();
+        else main().playRadio(radio.frequency());
+    }
+
+    void findStations() {
+        radio.scan();
+    }
+
+    void searchStations() {
+        main().push(StationsFragment.newInstance(StationsFragment.SEARCH, null, "Search Stations", "Radio"));
+    }
+
+    void addByLink() {
+        if (getActivity() != null) addByLink(getActivity());
+    }
+
     /** FM: listen and scan, presets as tiles, and the stations a scan found. */
     private void addFm(final Context c) {
         LinearLayout actions = Ui.actionRow(c);
@@ -176,8 +201,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
         listen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (radio.wantsToPlay()) radio.stop();
-                else main().playRadio(radio.frequency());
+                listen();
             }
         });
         actions.addView(listen, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
@@ -260,7 +284,7 @@ public final class RadioFragment extends BaseFragment implements Radio.Listener,
         search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                main().push(StationsFragment.newInstance(StationsFragment.SEARCH, null, "Search Stations", "Radio"));
+                searchStations();
             }
         });
         actions.addView(search, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
