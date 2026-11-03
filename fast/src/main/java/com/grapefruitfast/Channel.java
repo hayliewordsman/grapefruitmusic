@@ -36,6 +36,7 @@ public final class Channel {
         if (name.startsWith("BBC")) return "BBC";
         if (name.startsWith("Sky")) return "Sky";
         if (name.startsWith("DW")) return "DW";
+        if (name.equals("CPAC")) return "CPAC";
         String[] words=name.replace("The ", "").split(" ");
         return words[0].substring(0,1)+(words.length>1?words[1].substring(0,1):"");
     }

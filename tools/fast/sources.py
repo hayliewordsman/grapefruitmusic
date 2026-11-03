@@ -5,6 +5,8 @@
   as for beta 1's Xumo channels. DRM sources are refused.
 - DW's own live page (www.dw.com/graph-api livestream data): DW English's hlsVideoSrc.
 - ABC Australia's own News Channel page (www.abc.net.au/news/newschannel): its live player source.
+- CPAC's own home page (www.cpac.ca): its live player's HLS master, recorded from the player's requests
+  in a headless browser (beta 8; the page's JW Player builds it at run time, so it isn't in the HTML).
 - Cheddar's own home page (www.cheddar.com): its live player's stream (PoWa id "cheddar-live"), found
   by opening the page in a headless browser and recording what its player loads, then read from
   the page's own player setup. Xumo's copy (US) is kept as a fallback.
@@ -287,6 +289,19 @@ def main():
     for c in catalog['channels']:
         if 'xumo.com' in c['provenance'] and not c.get('availability'):
             c['availability'] = 'United States (Xumo)'
+
+    # CPAC: Canada's Parliament and public affairs, from CPAC's own live player (found in a headless
+    # browser on www.cpac.ca; probed adaptive 360p-1080p, H.264/AAC, English and French audio).
+    cpac = 'https://cpac-ca-live.cdn.vustreams.com/groupa/live/f9809cea-1e07-47cd-a94d-2ddd3e1351db/live.isml/.m3u8'
+    add({'id': 'cpac', 'name': 'CPAC', 'country': 'CA', 'category': 'News',
+         'description': "Canada's Parliament live, committee hearings and public affairs, in full and unedited.",
+         'website': 'https://www.cpac.ca/', 'streams': [cpac], 'provenance': 'https://www.cpac.ca/',
+         'availability': 'cpac.ca (not limited to Canada)'},
+        {'id': 'cpac', 'viewing_page': 'https://www.cpac.ca/', 'source': 'https://www.cpac.ca/',
+         'evidence': {'source_field': "Live player's HLS master on CPAC's home page, recorded from the player's own requests in a headless browser (November 3, 2026)",
+                      'availability': "CPAC's public live player; no sign-in. Probed from the US.",
+                      'note': 'Non-partisan public-affairs broadcaster (Parliament of Canada coverage).'},
+         'streams': [cpac]})
 
     known = {e['id'] for e in sources.get('excluded_after_source_review', [])}
     for e in EXCLUDED_NEWS:

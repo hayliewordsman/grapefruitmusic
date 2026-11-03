@@ -1,743 +1,756 @@
 {
-  "schema": 1,
-  "reviewed": "2026-11-02",
-  "notice": "Official broadcaster/distributor sources. Regional restrictions and provider ads remain. Live probes establish reachability only; JP5S hardware playback remains untested. CP24 excluded: no stream obtained from cp24.com.",
-  "channels": [
-    {
-      "id": "citynews-toronto",
-      "name": "CityNews 24/7 · Toronto",
-      "country": "CA",
-      "category": "News",
-      "description": "Local headlines, weather and breaking news. Regional programming may be shared.",
-      "website": "https://toronto.citynews.ca/video/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/NYoux6eGTkqmdrxc0P_biw/master.m3u8"
-      ],
-      "provenance": "https://edge.api.brightcove.com/playback/v1/accounts/593482582001/videos/6272888148001"
-    },
-    {
-      "id": "citynews-west",
-      "name": "CityNews 24/7 · Alberta / Calgary & Edmonton",
-      "country": "CA",
-      "category": "News",
-      "description": "Local headlines, weather and breaking news. Regional programming may be shared.",
-      "website": "https://calgary.citynews.ca/video/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/W4j7D5LJSJuESWEpe0AP4A/master.m3u8"
-      ],
-      "provenance": "https://edge.api.brightcove.com/playback/v1/accounts/593482582001/videos/6272888153001"
-    },
-    {
-      "id": "citynews-vancouver",
-      "name": "CityNews 24/7 · Vancouver",
-      "country": "CA",
-      "category": "News",
-      "description": "Local headlines, weather and breaking news. Regional programming may be shared.",
-      "website": "https://vancouver.citynews.ca/video/",
-      "streams": [
-        "https://citynewsregional.akamaized.net/hls/live/1024054/Regional_Live_9/master.m3u8"
-      ],
-      "provenance": "https://edge.api.brightcove.com/playback/v1/accounts/593482582001/videos/6272887411001"
-    },
-    {
-      "id": "global-national",
-      "name": "Global News · National",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/national/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/cQOVg6jKSvusQAfYpTrUoQ/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%2249a91e7f-1023-430f-8d66-561055f3d0f7%22%7D/"
-    },
-    {
-      "id": "global-toronto",
-      "name": "Global News · Toronto",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/toronto/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/BblZeSsBRSSCtvkKRZ8XJQ/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22deb8cec5-87fb-460a-ab82-0929374fc5fb%22%7D/"
-    },
-    {
-      "id": "global-winnipeg",
-      "name": "Global News · Winnipeg",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/winnipeg/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/R5XZJcTAQPuyvhsVWIKRhw/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22564df695-94f9-4f27-b1b9-0a936ab01721%22%7D/"
-    },
-    {
-      "id": "global-edmonton",
-      "name": "Global News · Edmonton",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/edmonton/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/K8ZZN35nQA2N_hskrUB2oQ/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22215422c9-d1b9-4009-aaca-32e403f22b01%22%7D/"
-    },
-    {
-      "id": "global-bc",
-      "name": "Global News · BC",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/bc/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/eIIBH8jkR-SWGaD5E4MesA/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%2248a5882b-a1ec-42d7-bfd7-6c2739e737da%22%7D/"
-    },
-    {
-      "id": "global-calgary",
-      "name": "Global News · Calgary",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/calgary/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/AYQ1ssB7RcOX9D78FtdoQQ/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%228970c668-40cd-4ca9-8c4d-25fd04f619b5%22%7D/"
-    },
-    {
-      "id": "global-halifax",
-      "name": "Global News · Halifax",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/halifax/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/ljv6O6ZiSiKudWk7qwWbEw/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22b60d1d57-2851-4c29-bf5c-36feed988e57%22%7D/"
-    },
-    {
-      "id": "global-kingston",
-      "name": "Global News · Kingston",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/kingston/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/poxVVQNQSMqFBnT6qR-Lwg/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22023a9e25-f0cf-4d97-af9f-5c665b7d45b9%22%7D/"
-    },
-    {
-      "id": "global-lethbridge",
-      "name": "Global News · Lethbridge",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/lethbridge/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/hYQh95EXRwaF0IOhUrJoEQ/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22cea96246-9af2-4373-932f-cdd3f8db2bc0%22%7D/"
-    },
-    {
-      "id": "global-montreal",
-      "name": "Global News · Montreal",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/montreal/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/wI13hMWhRSKbyZ8Q1DQR3Q/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%226bfb7f13-9d9d-4211-9c50-fb56330e4ccd%22%7D/"
-    },
-    {
-      "id": "global-okanagan",
-      "name": "Global News · Okanagan",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/okanagan/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/PLPlPfeDQCCe4GaxAWpi4g/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%229fd97fb0-baa8-4191-bd2c-59aa5c9a1d48%22%7D/"
-    },
-    {
-      "id": "global-peterborough",
-      "name": "Global News · Peterborough",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/peterborough/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/CQ82MHxxS7qwe7Zvs4_sUA/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%225eb39b64-58e8-47d2-97ca-25e8cd760b63%22%7D/"
-    },
-    {
-      "id": "global-regina",
-      "name": "Global News · Regina",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/regina/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/A69Xh6OaTfOrRf2oHVLaPQ/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%223062d0e3-ed4c-4f47-8482-95648250f4b8%22%7D/"
-    },
-    {
-      "id": "global-saskatoon",
-      "name": "Global News · Saskatoon",
-      "country": "CA",
-      "category": "News",
-      "description": "Around-the-clock national and local news from Global News.",
-      "website": "https://globalnews.ca/live/saskatoon/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/cAeO9FUXSRatnrvaksoJ9A/master.m3u8"
-      ],
-      "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22f191ef59-6c28-42ba-86d0-d47df5280249%22%7D/"
-    },
-    {
-      "id": "nbc-news-now",
-      "name": "NBC News NOW",
-      "country": "US",
-      "category": "News",
-      "description": "Breaking news and original reporting, live around the clock.",
-      "website": "https://play.xumo.com/live-guide/nbc-news-now",
-      "streams": [
-        "https://d4whmvwm0rdvi.cloudfront.net/10007/99991247/hls/master.m3u8?ads.xumo_channelId=99991247&ads.asnw=169843&ads.afid=137704898&ads.sfid=16772607&ads.csid=xumo_android_NBCNewsNOW_ssai_cro&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads._fw_did=00000000-0000-0000-0000-000000000000&ads._fw_vcid2=512116%3A00000000-0000-0000-0000-000000000000&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_content_category=&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0-beta-1&ads.appName=GrapefruitFAST&ads.xumo_contentId=1828&ads.xumo_contentName=NBCNewsNOW&ads.xumo_providerId=1828&ads.xumo_providerName=NBCNewsNOW&ads.channelId=99991247&ads._fw_ifa_type="
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMESML1C8KMI4T.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "abc-news-live",
-      "name": "ABC News Live",
-      "country": "US",
-      "category": "News",
-      "description": "Live coverage of breaking news and events.",
-      "website": "https://abcnews.com/Live",
-      "streams": [
-        "https://abcnews-streams.akamaized.net/hls/live/2023570/abcnewslive_applenews/master.m3u8"
-      ],
-      "provenance": "https://abcnews.com/video/itemfeed?id=41463246"
-    },
-    {
-      "id": "cbs-news",
-      "name": "CBS News 24/7",
-      "country": "US",
-      "category": "News",
-      "description": "The free CBS News streaming network.",
-      "website": "https://www.cbsnews.com/live/",
-      "streams": [
-        "https://dai.google.com/linear/hls/event/Sid4xiTQTkCT1SLu6rjUSQ/master.m3u8"
-      ],
-      "provenance": "https://www.cbsnews.com/live/"
-    },
-    {
-      "id": "carol-burnett",
-      "name": "The Carol Burnett Show",
-      "country": "US",
-      "category": "Series",
-      "description": "Classic sketch comedy and musical variety from Carol Burnett.",
-      "website": "https://play.xumo.com/live-guide/the-carol-burnett-show",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951380/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951380&ads.xumo_streamId=99951380&ads.channelId=99951380&ads.channelName=ShoutFactoryTheCarolBurnettShow&ads.caid=ShoutFactoryTheCarolBurnettShow&ads.csid=xumo_android_ShoutFactoryTheCarolBurnettShow_ssai&ads.genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4181&ads.xumo_contentName=ShoutFactoryTheCarolBurnettShow&ads.xumo_providerId=4181&ads.xumo_providerName=ShoutFactoryTheCarolBurnettShow&ads.asnw=&ads.xumo_channelName=ShoutFactoryTheCarolBurnettShow&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM85MQPLPDLBOB.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "baywatch",
-      "name": "Baywatch",
-      "country": "US",
-      "category": "Series",
-      "description": "Sun, surf and rescues with the classic lifeguard series.",
-      "website": "https://play.xumo.com/live-guide/baywatch",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951133/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951133&ads.xumo_streamId=99951133&ads.channelId=99951133&ads.channelName=FreemantleBaywatch&ads.caid=FreemantleBaywatch&ads.csid=xumo_android_FreemantleBaywatch_ssai&ads.genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_content_genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=3535&ads.xumo_contentName=FreemantleBaywatch&ads.xumo_providerId=3535&ads.xumo_providerName=FreemantleBaywatch&ads.asnw=&ads.xumo_channelName=FreemantleBaywatch&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMW4MQPHSKTMLE.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "unsolved-mysteries",
-      "name": "Unsolved Mysteries",
-      "country": "US",
-      "category": "Reality",
-      "description": "Real mysteries, missing persons and unexplained stories.",
-      "website": "https://play.xumo.com/live-guide/unsolved-mysteries",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99991680/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991680&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=UnsolvedMysteries&ads.csid=xumo_android_UnsolvedMysteries_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_rating=&ads.xumo_contentId=260&ads.xumo_contentName=FilmRise&ads.xumo_providerId=260&ads.xumo_providerName=FilmRise&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991680&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/channels/channel/99991680/broadcast.json?hour=3",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "forensic-files",
-      "name": "Forensic Files",
-      "country": "US",
-      "category": "Reality",
-      "description": "True crime investigated through forensic science.",
-      "website": "https://play.xumo.com/live-guide/forensic-files",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99991367/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991367&ads.xumo_streamId=99991367&ads.channelId=99991367&ads.channelName=ForensicFiles&ads.caid=ForensicFiles&ads.csid=xumo_android_ForensicFiles_ssai&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_coppa=0&ads.xumo_contentId=260&ads.xumo_contentName=FilmRise&ads.xumo_providerId=260&ads.xumo_providerName=FilmRise&ads.asnw=&ads.xumo_channelName=ForensicFiles&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/channels/channel/99991367/broadcast.json?hour=3",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "deal-or-no-deal",
-      "name": "Deal or No Deal",
-      "country": "US",
-      "category": "Reality",
-      "description": "Big decisions, briefcases and game-show suspense.",
-      "website": "https://play.xumo.com/live-guide/deal-or-no-deal",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99991113/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991113&ads.xumo_streamId=99991113&ads.channelId=99991113&ads.channelName=EndemolshineDealNoDeal&ads.caid=EndemolshineDealNoDeal&ads.csid=xumo_android_EndemolshineDealNoDeal_ssai&ads.genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_content_genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=2041&ads.xumo_contentName=EndemolshineDealNoDeal&ads.xumo_providerId=2041&ads.xumo_providerName=EndemolshineDealNoDeal&ads.asnw=&ads.xumo_channelName=EndemolshineDealNoDeal&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/channels/channel/99991113/broadcast.json?hour=3",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "martha-stewart",
-      "name": "The Martha Stewart Channel",
-      "country": "US",
-      "category": "Lifestyle",
-      "description": "Cooking, home and entertaining with Martha Stewart.",
-      "website": "https://play.xumo.com/live-guide/the-martha-stewart-channel",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951513/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951513&ads.xumo_streamId=99951513&ads.channelId=99951513&ads.channelName=MarqueeBrandsMarthaStewart&ads.caid=MarqueeBrandsMarthaStewart&ads.csid=xumo_android_MarqueeBrandsMarthaStewart_ssai&ads.genre=Lifestyle%2CCooking%2CFood%2CCuisine%2CEntertainment%2CIA%2CGV&ads._fw_content_genre=Lifestyle%2CCooking%2CFood%2CCuisine%2CEntertainment%2CIA%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4380&ads.xumo_contentName=MarqueeBrandsMarthaStewart&ads.xumo_providerId=4380&ads.xumo_providerName=MarqueeBrandsMarthaStewart&ads.asnw=&ads.xumo_channelName=MarqueeBrandsMarthaStewart&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/channels/channel/99951513/broadcast.json?hour=3",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "test-kitchen",
-      "name": "America’s Test Kitchen",
-      "country": "US",
-      "category": "Lifestyle",
-      "description": "Recipes, cooking techniques and kitchen discoveries.",
-      "website": "https://play.xumo.com/live-guide/america-s-test-kitchen",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99991369/hls/8-9-878.m3u8?ads.xumo_channelId=99991369&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=AmericasTestKitchen&ads.csid=xumo_android_AmericasTestKitchen_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads.xumo_contentId=1066&ads.xumo_contentName=AmericasTestKitchen&ads.xumo_providerId=1066&ads.xumo_providerName=AmericasTestKitchen&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991369&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMTMLO6F5AXSJG.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "family-affair",
-      "name": "Family Affair Channel",
-      "country": "US",
-      "category": "Series",
-      "description": "Classic family sitcom with Uncle Bill, Mr. French and the children.",
-      "website": "https://play.xumo.com/live-guide/family-affair-channel",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951146/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951146&ads.xumo_streamId=99951146&ads.channelId=99951146&ads.channelName=MPIMediaFamilyAffair&ads.caid=MPIMediaFamilyAffair&ads.csid=xumo_android_MPIMediaFamilyAffair_ssai&ads.genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_coppa=0&ads.xumo_contentId=3769&ads.xumo_contentName=MPIMediaFamilyAffair&ads.xumo_providerId=3769&ads.xumo_providerName=MPIMediaFamilyAffair&ads.asnw=&ads.xumo_channelName=MPIMediaFamilyAffair&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/channels/channel/99951146/broadcast.json?hour=3",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "cheddar-news",
-      "name": "Cheddar News",
-      "country": "US",
-      "category": "News",
-      "description": "Your destination for the day’s top headlines and what’s trending, Weekdays from 7am to 7pm ET. Stop by throughout the day for everything you Need to…",
-      "website": "https://www.cheddar.com/",
-      "streams": [
-        "https://hls.livecdn.io/cheddar.com/cheddar/playlist.m3u8",
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99991220/hls/playlist.m3u8?ads.xumo_channelId=99991220&ads.xumo_streamId=99991220&ads.channelId=99991220&ads.channelName=cheddar_us&ads.xumo_channelName=cheddar&ads.caid=Cheddar&ads.csid=xumo_android_cheddar_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=161&ads.xumo_contentName=Cheddar&ads.xumo_providerId=161&ads.xumo_providerName=Cheddar&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://www.cheddar.com/",
-      "availability": "cheddar.com, and Xumo in the United States"
-    },
-    {
-      "id": "bbc-news",
-      "name": "BBC News",
-      "country": "GB",
-      "category": "News",
-      "description": "The BBC’s international news channel, live from London, Washington DC and Singapore bringing you breaking news and all the latest stories.",
-      "website": "https://play.xumo.com/live-guide/bbc-news",
-      "streams": [
-        "https://d3pxo1qcgzxtxs.cloudfront.net/10005/99951298/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951298&ads.xumo_streamId=99951298&ads.channelId=99951298&ads.channelName=amcbbcnews_us&ads.csid=xumo_android_AMCBBCNews_ssai&ads._fw_coppa=0&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads.xumo_contentId=4023&ads.xumo_contentName=AMCBBCNews&ads.xumo_providerId=4023&ads.xumo_providerName=AMCBBCNews&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_did=%3A00000000-0000-0000-0000-000000000000&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceType=3-Connected_TV&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_ifa_type="
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM3RMQGOX1DWRV.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "sky-news",
-      "name": "Sky News",
-      "country": "GB",
-      "category": "News",
-      "description": "Sky News delivers breaking news, headlines and top stories from business, politics, entertainment and more in the UK and worldwide.",
-      "website": "https://play.xumo.com/live-guide/sky-news",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951223/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951223&ads.xumo_streamId=99951223&ads.channelId=99951223&ads.channelName=SkyNews&ads.caid=SkyNews&ads.csid=xumo_android_SkyNews_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=3455&ads.xumo_contentName=SkyNews&ads.xumo_providerId=3455&ads.xumo_providerName=SkyNews&ads.asnw=&ads.xumo_channelName=SkyNews&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMNZMQPIUZRGHJ.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "reuters",
-      "name": "Reuters 60",
-      "country": "GB",
-      "category": "News",
-      "description": "Everything you need to know from around the world in 60 minutes, with Reuters News. No matter where the story is, Reuters is there, delivering fast…",
-      "website": "https://play.xumo.com/live-guide/reuters-60",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951197/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951197&ads.xumo_streamId=99951197&ads.channelId=99951197&ads.channelName=ReutersNow&ads.caid=ReutersNow&ads.csid=xumo_android_ReutersNow_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=3850&ads.xumo_contentName=ReutersNow&ads.xumo_providerId=3850&ads.xumo_providerName=ReutersNow&ads.asnw=&ads.xumo_channelName=ReutersNow&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMYYMQPI4RT11Z.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "bloomberg-tv-plus",
-      "name": "Bloomberg TV+",
-      "country": "US",
-      "category": "News",
-      "description": "Bloomberg delivers business and markets news, data, analysis, and video to the world, featuring stories from Businessweek and Bloomberg News.",
-      "website": "https://play.xumo.com/live-guide/bloomberg-tv",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951533/hls/index.m3u8?includeAssetTags=true&ads.xumo_channelId=99951533&ads.xumo_streamId=99951533&ads.channelId=99951533&ads.channelName=Bloomberg&ads.caid=Bloomberg&ads.csid=xumo_android_Bloomberg_ssai&ads.genre=News%2CN&ads._fw_content_genre=News%2CN&ads._fw_coppa=0&ads.xumo_contentId=39&ads.xumo_contentName=Bloomberg&ads.xumo_providerId=39&ads.xumo_providerName=Bloomberg&ads.asnw=&ads.xumo_channelName=Bloomberg&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM13MQR3AEF8MH.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "top-gear",
-      "name": "Top Gear",
-      "country": "GB",
-      "category": "Lifestyle",
-      "description": "From sliding round racetracks to road tripping with your mates, Top Gear celebrates everything brilliant about cars.",
-      "website": "https://play.xumo.com/live-guide/top-gear",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951249/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951249&ads.xumo_streamId=99951249&ads.channelId=99951249&ads.channelName=BBCTopGear&ads.caid=BBCTopGear&ads.csid=xumo_android_BBCTopGear_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=3953&ads.xumo_contentName=BBCTopGear&ads.xumo_providerId=3953&ads.xumo_providerName=BBCTopGear&ads.asnw=&ads.xumo_channelName=BBCTopGear&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1TMQPJ7CVWLQ.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "midsomer-murders",
-      "name": "Midsomer Murders",
-      "country": "GB",
-      "category": "Series",
-      "description": "In the UK's leading drama export, murder and mysteries are investigated by Detective Chief Inspector Barnaby in a quaint county with a staggering…",
-      "website": "https://play.xumo.com/live-guide/midsomer-murders",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99991698/hls/playlist.m3u8?ads.xumo_channelId=99991698&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=MidsomerMurders&ads.csid=xumo_android_MidsomerMurders_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_rating=&ads.xumo_contentId=3509&ads.xumo_contentName=MidsomerMurders&ads.xumo_providerId=3509&ads.xumo_providerName=MidsomerMurders&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991698&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMPHMT94DXB9FP.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "classic-doctor-who",
-      "name": "Classic Doctor Who",
-      "country": "GB",
-      "category": "Series",
-      "description": "Join the first 7 regenerations of The Doctor for incredible adventures through time and space. All day, every day on the Classic Doctor Who channel.",
-      "website": "https://play.xumo.com/live-guide/classic-doctor-who",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951248/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951248&ads.xumo_streamId=99951248&ads.channelId=99951248&ads.channelName=BBCClassicDoctorWho&ads.caid=BBCClassicDoctorWho&ads.csid=xumo_android_BBCClassicDoctorWho_ssai&ads.genre=Entertainment%2CDrama%2CGV%2CGD&ads._fw_content_genre=Entertainment%2CDrama%2CGV%2CGD&ads._fw_coppa=0&ads.xumo_contentId=3952&ads.xumo_contentName=BBCClassicDoctorWho&ads.xumo_providerId=3952&ads.xumo_providerName=BBCClassicDoctorWho&ads.asnw=&ads.xumo_channelName=BBCClassicDoctorWho&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1SMQPJ7CURRV.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "bbc-drama",
-      "name": "BBC Drama",
-      "country": "GB",
-      "category": "Series",
-      "description": "Get swept up in BBC Drama's collection of acclaimed British series, from addictive thrillers and crime dramas to secrets, scandals and stories that…",
-      "website": "https://play.xumo.com/live-guide/bbc-drama",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951605/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951605&ads.xumo_streamId=99951605&ads.channelId=99951605&ads.channelName=BBCDramaNew&ads.caid=BBCDramaNew&ads.csid=xumo_android_BBCDramaNew_ssai&ads.genre=Entertainment%2CDrama%2CGD&ads._fw_content_genre=Entertainment%2CDrama%2CGD&ads._fw_coppa=0&ads.xumo_contentId=4556&ads.xumo_contentName=BBCDramaNew&ads.xumo_providerId=4556&ads.xumo_providerName=BBCDramaNew&ads.asnw=&ads.xumo_channelName=BBCDramaNew&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMIKMV8D9AS3ZL.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "graham-norton",
-      "name": "The Graham Norton Show",
-      "country": "GB",
-      "category": "Series",
-      "description": "Much loved talk show host Graham Norton invites the biggest stars in the world onto his sofa to share their stories and have the best fun.",
-      "website": "https://play.xumo.com/live-guide/the-graham-norton-show",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951450/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951450&ads.xumo_streamId=99951450&ads.channelId=99951450&ads.channelName=ITVTheGrahamNortonShow&ads.caid=ITVTheGrahamNortonShow&ads.csid=xumo_android_ITVTheGrahamNortonShow_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4271&ads.xumo_contentName=ITVTheGrahamNortonShow&ads.xumo_providerId=4271&ads.xumo_providerName=ITVTheGrahamNortonShow&ads.asnw=&ads.xumo_channelName=ITVTheGrahamNortonShow&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMANMQQWUWOT8S.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "repair-shop",
-      "name": "The Repair Shop",
-      "country": "GB",
-      "category": "Reality",
-      "description": "Nestled deep in the British countryside lies a workshop where broken, battered, and beloved artifacts and antiques are brought back to life",
-      "website": "https://play.xumo.com/live-guide/the-repair-shop",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951604/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951604&ads.xumo_streamId=99951604&ads.channelId=99951604&ads.channelName=WBDTheRepairShop&ads.caid=WBDTheRepairShop&ads.csid=xumo_android_WBDTheRepairShop_ssai&ads.genre=Entertainment%2CGV&ads._fw_content_genre=Entertainment%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4550&ads.xumo_contentName=WBDTheRepairShop&ads.xumo_providerId=4550&ads.xumo_providerName=WBDTheRepairShop&ads.asnw=&ads.xumo_channelName=WBDTheRepairShop&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMIEMUXWDWUJY9.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "come-dine-with-me",
-      "name": "Come Dine With Me",
-      "country": "GB",
-      "category": "Reality",
-      "description": "Five total strangers take turns hosting the perfect dinner party for their fellow contestants, each hoping to win a cash prize and be crowned the…",
-      "website": "https://play.xumo.com/live-guide/come-dine-with-me",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951451/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951451&ads.xumo_streamId=99951451&ads.channelId=99951451&ads.channelName=ITVComeDineWithMe&ads.caid=ITVComeDineWithMe&ads.csid=xumo_android_ITVComeDineWithMe_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4272&ads.xumo_contentName=ITVComeDineWithMe&ads.xumo_providerId=4272&ads.xumo_providerName=ITVComeDineWithMe&ads.asnw=&ads.xumo_channelName=ITVComeDineWithMe&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMAOMQQWUWU3GE.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "bbc-earth",
-      "name": "BBC Earth",
-      "country": "GB",
-      "category": "Lifestyle",
-      "description": "From the oceans’ depths to the world's tallest peaks, discover the creatures – big and small – that shape planet Earth.",
-      "website": "https://play.xumo.com/live-guide/bbc-earth",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951231/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951231&ads.xumo_streamId=99951231&ads.channelId=99951231&ads.channelName=BBCEarth&ads.caid=BBCEarth&ads.csid=xumo_android_BBCEarth_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=3921&ads.xumo_contentName=BBCEarth&ads.xumo_providerId=3921&ads.xumo_providerName=BBCEarth&ads.asnw=&ads.xumo_channelName=BBCEarth&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM0XMQPJ7CQ2FJ.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "jamie-oliver",
-      "name": "The Jamie Oliver Channel",
-      "country": "GB",
-      "category": "Lifestyle",
-      "description": "Global cooking sensation, Jamie Oliver, has built his own 24/7 channel, bringing his organic, quick and easy recipes to an entirely new audience.",
-      "website": "https://play.xumo.com/live-guide/the-jamie-oliver-channel",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951153/hls/playlist.m3u8?ads.xumo_channelId=99951153&ads.xumo_streamId=99951153&ads.channelId=99951153&ads.channelName=freemantlejamieoliver_us&ads.xumo_channelName=freemantlejamieoliver&ads.caid=FreemantleJamieOliver&ads.csid=xumo_android_FreemantleJamieOliver_ssai&ads.genre=IAB8%2CIAB5%2CEntertainment%2CIA%2CFamily&ads._fw_content_genre=IAB8%2CIAB5%2CEntertainment%2CIA%2CFamily&ads._fw_coppa=0&ads.xumo_contentId=3811&ads.xumo_contentName=FreemantleJamieOliver&ads.xumo_providerId=3811&ads.xumo_providerName=FreemantleJamieOliver&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMXVMNZ11B6TUG.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "mayday",
-      "name": "Mayday: Air Disaster",
-      "country": "CA",
-      "category": "Reality",
-      "description": "Mayday: Air Disaster investigates legendary aviation disasters to find out what went wrong and why. Based on cockpit voice recorders, accident…",
-      "website": "https://play.xumo.com/live-guide/mayday-air-disaster",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951262/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951262&ads.xumo_streamId=99951262&ads.channelId=99951262&ads.channelName=CineflixRealDisasterChannel&ads.caid=CineflixRealDisasterChannel&ads.csid=xumo_android_CineflixRealDisasterChannel_ssai&ads.genre=Reality&ads._fw_content_genre=Reality&ads._fw_coppa=0&ads.xumo_contentId=3959&ads.xumo_contentName=CineflixRealDisasterChannel&ads.xumo_providerId=3959&ads.xumo_providerName=CineflixRealDisasterChannel&ads.asnw=&ads.xumo_channelName=CineflixRealDisasterChannel&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1ZMQPJK7T3RO.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "property-brothers",
-      "name": "Property Brothers",
-      "country": "CA",
-      "category": "Lifestyle",
-      "description": "Join Drew and Jonathan Scott as they help families find, buy, and transform fixer-uppers into ultimate dream homes.",
-      "website": "https://play.xumo.com/live-guide/property-brothers",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951537/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951537&ads.xumo_streamId=99951537&ads.channelId=99951537&ads.channelName=CineflixPropertyBrothers&ads.caid=CineflixPropertyBrothers&ads.csid=xumo_android_CineflixPropertyBrothers_ssai&ads.genre=IAB10%2CIA%2CIAB21&ads._fw_content_genre=IAB10%2CIA%2CIAB21&ads._fw_coppa=0&ads.xumo_contentId=4089&ads.xumo_contentName=CineflixPropertyBrothers&ads.xumo_providerId=4089&ads.xumo_providerName=CineflixPropertyBrothers&ads.asnw=&ads.xumo_channelName=CineflixPropertyBrothers&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM5LMQR3ADZSTP.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "mythbusters",
-      "name": "MythBusters",
-      "country": "US",
-      "category": "Reality",
-      "description": "Two Hollywood special effects experts put urban legends to the test with wild experiments, death-defying stunts and more.",
-      "website": "https://play.xumo.com/live-guide/mythbusters",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951396/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951396&ads.xumo_streamId=99951396&ads.channelId=99951396&ads.channelName=WBDMythbusters&ads.caid=WBDMythbusters&ads.csid=xumo_android_WBDMythbusters_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4204&ads.xumo_contentName=WBDMythbusters&ads.xumo_providerId=4204&ads.xumo_providerName=WBDMythbusters&ads.asnw=&ads.xumo_channelName=WBDMythbusters&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM8SMQQUCW8IVN.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "cbc-news",
-      "name": "CBC News",
-      "country": "CA",
-      "category": "News",
-      "description": "The big stories across Canada and around the world.",
-      "website": "https://play.xumo.com/live-guide/cbc-news",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99991276/hls/master.m3u8?ads.xumo_channelId=99991276&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=CBCNewsEnglish&ads.csid=xumo_android_CBCNewsEnglish_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_rating=&ads.xumo_contentId=207&ads.xumo_contentName=CBCNewsEnglish&ads.xumo_providerId=207&ads.xumo_providerName=CBCNewsEnglish&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991276&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM5RMKGZXENTH5.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "heartland",
-      "name": "Heartland",
-      "country": "CA",
-      "category": "Series",
-      "description": "Set against the stunning vistas of the Rocky Mountains, Heartland follows teenage horse whisperer Amy through the trials and triumphs of life on a…",
-      "website": "https://play.xumo.com/live-guide/heartland",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951494/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951494&ads.xumo_streamId=99951494&ads.channelId=99951494&ads.channelName=LionsgateHeartland&ads.caid=LionsgateHeartland&ads.csid=xumo_android_LionsgateHeartland_ssai&ads.genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_content_genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=4345&ads.xumo_contentName=LionsgateHeartland&ads.xumo_providerId=4345&ads.xumo_providerName=LionsgateHeartland&ads.asnw=&ads.xumo_channelName=LionsgateHeartland&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMCPMQQZPVGV5C.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "murdoch-mysteries",
-      "name": "Murdoch Mysteries",
-      "country": "CA",
-      "category": "Series",
-      "description": "Detective William Murdoch experiments with newly developed techniques to solve Toronto’s most dreadful murders. Cutting edge Victorian science meets…",
-      "website": "https://play.xumo.com/live-guide/murdoch-mysteries",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951452/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951452&ads.xumo_streamId=99951452&ads.channelId=99951452&ads.channelName=ITVMurdochMysteries&ads.caid=ITVMurdochMysteries&ads.csid=xumo_android_ITVMurdochMysteries_ssai&ads.genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_content_genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=4273&ads.xumo_contentName=ITVMurdochMysteries&ads.xumo_providerId=4273&ads.xumo_providerName=ITVMurdochMysteries&ads.asnw=&ads.xumo_channelName=ITVMurdochMysteries&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMAPMQQWUX0VT1.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "dw-news",
-      "name": "DW News",
-      "country": "DE",
-      "category": "News",
-      "description": "Germany's international broadcaster: world news, business and documentaries in English.",
-      "website": "https://www.dw.com/en/live-tv/channel-english",
-      "streams": [
-        "https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8"
-      ],
-      "provenance": "https://www.dw.com/en/live-tv/channel-english",
-      "availability": "Worldwide"
-    },
-    {
-      "id": "great-british-baking",
-      "name": "The Great British Baking Channel",
-      "country": "GB",
-      "category": "Lifestyle",
-      "description": "The Great British Baking Channel whisks you into the beloved baking competition, where passionate amateurs take on creative challenges to be crowned…",
-      "website": "https://play.xumo.com/live-guide/the-great-british-baking-channel",
-      "streams": [
-        "https://d38d8jwr5u7ckx.cloudfront.net/v1/master/2235ea0b65a152869ea53a8429808cfe476767a6/test-xumo-linear-main-hlsv3-ams/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951607&ads.xumo_streamId=99951607&ads.channelId=99951607&ads.asnw=&ads.caid=BBCTheGreatBritishBakingChannel&ads.csid=xumo_android_BBCTheGreatBritishBakingChannel_ssai&ads._fw_coppa=0&ads.xumo_contentId=4561&ads.xumo_contentName=BBCTheGreatBritishBakingChannel&ads.xumo_providerId=4561&ads.xumo_providerName=BBCTheGreatBritishBakingChannel&ads.channelName=BBCTheGreatBritishBakingChannel&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMIPMUOP8MF349.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "love-nature",
-      "name": "Love Nature",
-      "country": "CA",
-      "category": "Lifestyle",
-      "description": "Love Nature brings audiences closer to the beauty and wonder of nature, sharing awe-inspiring stories and shining a light on the fight for survival…",
-      "website": "https://play.xumo.com/live-guide/love-nature",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99991398/hls/playlist.m3u8?ads.xumo_channelId=99991398&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=LoveNature&ads.csid=xumo_android_LoveNature_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads.xumo_contentId=1852&ads.xumo_contentName=LoveNature&ads.xumo_providerId=1852&ads.xumo_providerName=LoveNature&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991398&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMFGLULLWV9I5R.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "gusto-tv",
-      "name": "GustoTV",
-      "country": "CA",
-      "category": "Lifestyle",
-      "description": "A delicious mix of food and lifestyle, serving up fresh fare daily!",
-      "website": "https://play.xumo.com/live-guide/gustotv",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99991328/hls/playlist.m3u8?ads.xumo_channelId=99991328&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=GustoTV&ads.csid=xumo_android_GustoTV_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads.xumo_contentId=272&ads.xumo_contentName=GustoTV&ads.xumo_providerId=272&ads.xumo_providerName=GustoTV&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991328&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM7KLULLWV7AYC.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "family-feud-classic",
-      "name": "Family Feud Classic",
-      "country": "US",
-      "category": "Reality",
-      "description": "Two families face-off in a feud to the finish as they compete to see who can guess the most popular answers to provocative surveys.",
-      "website": "https://play.xumo.com/live-guide/family-feud-classic",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951339/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951339&ads.xumo_streamId=99951339&ads.channelId=99951339&ads.channelName=FreemantleFamilyFeudClassic&ads.caid=FreemantleFamilyFeudClassic&ads.csid=xumo_android_FreemantleFamilyFeudClassic_ssai&ads.genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_content_genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=4081&ads.xumo_contentName=FreemantleFamilyFeudClassic&ads.xumo_providerId=4081&ads.xumo_providerName=FreemantleFamilyFeudClassic&ads.asnw=&ads.xumo_channelName=FreemantleFamilyFeudClassic&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM5DMQPKZNXS6E.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "pbs-nature",
-      "name": "PBS Nature",
-      "country": "US",
-      "category": "Lifestyle",
-      "description": "Travel the globe with PBS NATURE and witness the beauty and wonder of the natural world. From cats and dogs to sharks and grizzly bears, PBS NATURE…",
-      "website": "https://play.xumo.com/live-guide/pbs-nature",
-      "streams": [
-        "https://d2irko5f9gt1c5.cloudfront.net/10008/99951195/hls/playlist.m3u8?ads.xumo_channelId=99951195&ads.csid=xumo_android_PBSNature_ssai&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads.ifa_type=&ads.did=00000000-0000-0000-0000-000000000000&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads._fw_app_store_url=&ads._fw_content_category=&ads.xumo_contentName=PBSNature&ads.xumo_providerName=&ads._fw_content_language=en&ads.assetId=&ads._fw_content_genre=&ads.xumo_providerId=&ads._fw_content_rating=&ads.channelId=99951195&ads.xumo_platform=android&ads.site_id=22453"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMYXMFY05OZX85.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "little-house",
-      "name": "Little House on the Prairie",
-      "country": "US",
-      "category": "Series",
-      "description": "Set in the late 1800's, the Ingalls pack up all of their belongings and venture out west. In this heartwarming drama, watch as this family of five…",
-      "website": "https://play.xumo.com/live-guide/little-house-on-the-prairie",
-      "streams": [
-        "https://d4whmvwm0rdvi.cloudfront.net/10007/99951240/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951240&ads.xumo_streamId=99951240&ads.channelId=99951240&ads.asnw=169843&ads.afid=380744511&ads.sfid=19208008&ads.csid=xumo_android_NBCULittleHousePrairie_ssai_cro&ads._fw_coppa=0&ads.xumo_contentId=3938&ads.xumo_contentName=NBCULittleHousePrairie&ads.xumo_providerId=3938&ads.xumo_providerName=NBCULittleHousePrairie&ads.caid=&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_did=00000000-0000-0000-0000-000000000000&ads._fw_vcid2=512116%3A00000000-0000-0000-0000-000000000000&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0-beta-5&ads._fw_ifa_type=&ads.appName=GrapefruitFAST&ads._fw_content_category=&ads._fw_content_genre=&ads._fw_content_language=en&ads._fw_content_rating="
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1EMRMC6S5HYK.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "lassie",
-      "name": "Lassie",
-      "country": "US",
-      "category": "Series",
-      "description": "Join Lassie, the Martin family's beloved canine, and her human and animal companions as they embark on adventures. Learn why dogs truly are a mans…",
-      "website": "https://play.xumo.com/live-guide/lassie",
-      "streams": [
-        "https://d4whmvwm0rdvi.cloudfront.net/10007/99951259/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951259&ads.xumo_streamId=99951259&ads.channelId=99951259&ads.asnw=169843&ads.afid=380744363&ads.sfid=19316505&ads.csid=xumo_android_NBCULassie_ssai_cro&ads._fw_coppa=0&ads._fw_content_category=&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_language=&ads._fw_content_rating=&ads.xumo_contentId=3946&ads.xumo_contentName=NBCULassie&ads.xumo_providerId=3946&ads.xumo_providerName=NBCULassie&ads.caid=&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_did=00000000-0000-0000-0000-000000000000&ads._fw_vcid2=512116%3A00000000-0000-0000-0000-000000000000&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0-beta-5&ads._fw_ifa_type=&ads.appName=GrapefruitFAST&ads._fw_content_category=&ads._fw_content_genre=&ads._fw_content_language=en&ads._fw_content_rating="
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1MMQGSHMF03C.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    },
-    {
-      "id": "abc-news-australia",
-      "name": "ABC News Australia",
-      "country": "AU",
-      "category": "News",
-      "description": "The ABC's 24-hour news channel: Australian and world news, Australia's public broadcaster.",
-      "website": "https://www.abc.net.au/news/newschannel",
-      "streams": [
-        "https://abc-news-dmd-streams-1.akamaized.net/out/v1/abc83881886746b0802dc3e7ca2bc792/index.m3u8"
-      ],
-      "provenance": "https://www.abc.net.au/news/newschannel",
-      "availability": "Worldwide (ABC website)"
-    },
-    {
-      "id": "cnn-headlines",
-      "name": "CNN Headlines",
-      "country": "US",
-      "category": "News",
-      "description": "View the latest news and breaking news today for U.S., world, weather, entertainment, politics and health.",
-      "website": "https://play.xumo.com/live-guide/cnn-headlines",
-      "streams": [
-        "https://dbrb49pjoymg4.cloudfront.net/10001/99951386/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951386&ads.xumo_streamId=99951386&ads.channelId=99951386&ads.channelName=WBDCNNHeadlines&ads.caid=WBDCNNHeadlines&ads.csid=xumo_android_WBDCNNHeadlines_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=4193&ads.xumo_contentName=WBDCNNHeadlines&ads.xumo_providerId=4193&ads.xumo_providerName=WBDCNNHeadlines&ads.asnw=&ads.xumo_channelName=WBDCNNHeadlines&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
-      ],
-      "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM8HMQQTN649DS.json?f=providers&f=connectorId",
-      "availability": "United States (Xumo)"
-    }
-  ]
+ "schema": 1,
+ "reviewed": "2026-11-02",
+ "notice": "Official broadcaster/distributor sources. Regional restrictions and provider ads remain. Live probes establish reachability only; JP5S hardware playback remains untested. CP24 excluded: no stream obtained from cp24.com.",
+ "channels": [
+  {
+   "id": "citynews-toronto",
+   "name": "CityNews 24/7 · Toronto",
+   "country": "CA",
+   "category": "News",
+   "description": "Local headlines, weather and breaking news. Regional programming may be shared.",
+   "website": "https://toronto.citynews.ca/video/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/NYoux6eGTkqmdrxc0P_biw/master.m3u8"
+   ],
+   "provenance": "https://edge.api.brightcove.com/playback/v1/accounts/593482582001/videos/6272888148001"
+  },
+  {
+   "id": "citynews-west",
+   "name": "CityNews 24/7 · Alberta / Calgary & Edmonton",
+   "country": "CA",
+   "category": "News",
+   "description": "Local headlines, weather and breaking news. Regional programming may be shared.",
+   "website": "https://calgary.citynews.ca/video/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/W4j7D5LJSJuESWEpe0AP4A/master.m3u8"
+   ],
+   "provenance": "https://edge.api.brightcove.com/playback/v1/accounts/593482582001/videos/6272888153001"
+  },
+  {
+   "id": "citynews-vancouver",
+   "name": "CityNews 24/7 · Vancouver",
+   "country": "CA",
+   "category": "News",
+   "description": "Local headlines, weather and breaking news. Regional programming may be shared.",
+   "website": "https://vancouver.citynews.ca/video/",
+   "streams": [
+    "https://citynewsregional.akamaized.net/hls/live/1024054/Regional_Live_9/master.m3u8"
+   ],
+   "provenance": "https://edge.api.brightcove.com/playback/v1/accounts/593482582001/videos/6272887411001"
+  },
+  {
+   "id": "global-national",
+   "name": "Global News · National",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/national/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/cQOVg6jKSvusQAfYpTrUoQ/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%2249a91e7f-1023-430f-8d66-561055f3d0f7%22%7D/"
+  },
+  {
+   "id": "global-toronto",
+   "name": "Global News · Toronto",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/toronto/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/BblZeSsBRSSCtvkKRZ8XJQ/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22deb8cec5-87fb-460a-ab82-0929374fc5fb%22%7D/"
+  },
+  {
+   "id": "global-winnipeg",
+   "name": "Global News · Winnipeg",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/winnipeg/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/R5XZJcTAQPuyvhsVWIKRhw/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22564df695-94f9-4f27-b1b9-0a936ab01721%22%7D/"
+  },
+  {
+   "id": "global-edmonton",
+   "name": "Global News · Edmonton",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/edmonton/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/K8ZZN35nQA2N_hskrUB2oQ/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22215422c9-d1b9-4009-aaca-32e403f22b01%22%7D/"
+  },
+  {
+   "id": "global-bc",
+   "name": "Global News · BC",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/bc/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/eIIBH8jkR-SWGaD5E4MesA/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%2248a5882b-a1ec-42d7-bfd7-6c2739e737da%22%7D/"
+  },
+  {
+   "id": "global-calgary",
+   "name": "Global News · Calgary",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/calgary/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/AYQ1ssB7RcOX9D78FtdoQQ/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%228970c668-40cd-4ca9-8c4d-25fd04f619b5%22%7D/"
+  },
+  {
+   "id": "global-halifax",
+   "name": "Global News · Halifax",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/halifax/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/ljv6O6ZiSiKudWk7qwWbEw/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22b60d1d57-2851-4c29-bf5c-36feed988e57%22%7D/"
+  },
+  {
+   "id": "global-kingston",
+   "name": "Global News · Kingston",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/kingston/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/poxVVQNQSMqFBnT6qR-Lwg/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22023a9e25-f0cf-4d97-af9f-5c665b7d45b9%22%7D/"
+  },
+  {
+   "id": "global-lethbridge",
+   "name": "Global News · Lethbridge",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/lethbridge/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/hYQh95EXRwaF0IOhUrJoEQ/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22cea96246-9af2-4373-932f-cdd3f8db2bc0%22%7D/"
+  },
+  {
+   "id": "global-montreal",
+   "name": "Global News · Montreal",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/montreal/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/wI13hMWhRSKbyZ8Q1DQR3Q/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%226bfb7f13-9d9d-4211-9c50-fb56330e4ccd%22%7D/"
+  },
+  {
+   "id": "global-okanagan",
+   "name": "Global News · Okanagan",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/okanagan/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/PLPlPfeDQCCe4GaxAWpi4g/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%229fd97fb0-baa8-4191-bd2c-59aa5c9a1d48%22%7D/"
+  },
+  {
+   "id": "global-peterborough",
+   "name": "Global News · Peterborough",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/peterborough/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/CQ82MHxxS7qwe7Zvs4_sUA/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%225eb39b64-58e8-47d2-97ca-25e8cd760b63%22%7D/"
+  },
+  {
+   "id": "global-regina",
+   "name": "Global News · Regina",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/regina/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/A69Xh6OaTfOrRf2oHVLaPQ/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%223062d0e3-ed4c-4f47-8482-95648250f4b8%22%7D/"
+  },
+  {
+   "id": "global-saskatoon",
+   "name": "Global News · Saskatoon",
+   "country": "CA",
+   "category": "News",
+   "description": "Around-the-clock national and local news from Global News.",
+   "website": "https://globalnews.ca/live/saskatoon/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/cAeO9FUXSRatnrvaksoJ9A/master.m3u8"
+   ],
+   "provenance": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22f191ef59-6c28-42ba-86d0-d47df5280249%22%7D/"
+  },
+  {
+   "id": "nbc-news-now",
+   "name": "NBC News NOW",
+   "country": "US",
+   "category": "News",
+   "description": "Breaking news and original reporting, live around the clock.",
+   "website": "https://play.xumo.com/live-guide/nbc-news-now",
+   "streams": [
+    "https://d4whmvwm0rdvi.cloudfront.net/10007/99991247/hls/master.m3u8?ads.xumo_channelId=99991247&ads.asnw=169843&ads.afid=137704898&ads.sfid=16772607&ads.csid=xumo_android_NBCNewsNOW_ssai_cro&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads._fw_did=00000000-0000-0000-0000-000000000000&ads._fw_vcid2=512116%3A00000000-0000-0000-0000-000000000000&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_content_category=&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0-beta-1&ads.appName=GrapefruitFAST&ads.xumo_contentId=1828&ads.xumo_contentName=NBCNewsNOW&ads.xumo_providerId=1828&ads.xumo_providerName=NBCNewsNOW&ads.channelId=99991247&ads._fw_ifa_type="
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMESML1C8KMI4T.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "abc-news-live",
+   "name": "ABC News Live",
+   "country": "US",
+   "category": "News",
+   "description": "Live coverage of breaking news and events.",
+   "website": "https://abcnews.com/Live",
+   "streams": [
+    "https://abcnews-streams.akamaized.net/hls/live/2023570/abcnewslive_applenews/master.m3u8"
+   ],
+   "provenance": "https://abcnews.com/video/itemfeed?id=41463246"
+  },
+  {
+   "id": "cbs-news",
+   "name": "CBS News 24/7",
+   "country": "US",
+   "category": "News",
+   "description": "The free CBS News streaming network.",
+   "website": "https://www.cbsnews.com/live/",
+   "streams": [
+    "https://dai.google.com/linear/hls/event/Sid4xiTQTkCT1SLu6rjUSQ/master.m3u8"
+   ],
+   "provenance": "https://www.cbsnews.com/live/"
+  },
+  {
+   "id": "carol-burnett",
+   "name": "The Carol Burnett Show",
+   "country": "US",
+   "category": "Series",
+   "description": "Classic sketch comedy and musical variety from Carol Burnett.",
+   "website": "https://play.xumo.com/live-guide/the-carol-burnett-show",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951380/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951380&ads.xumo_streamId=99951380&ads.channelId=99951380&ads.channelName=ShoutFactoryTheCarolBurnettShow&ads.caid=ShoutFactoryTheCarolBurnettShow&ads.csid=xumo_android_ShoutFactoryTheCarolBurnettShow_ssai&ads.genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4181&ads.xumo_contentName=ShoutFactoryTheCarolBurnettShow&ads.xumo_providerId=4181&ads.xumo_providerName=ShoutFactoryTheCarolBurnettShow&ads.asnw=&ads.xumo_channelName=ShoutFactoryTheCarolBurnettShow&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM85MQPLPDLBOB.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "baywatch",
+   "name": "Baywatch",
+   "country": "US",
+   "category": "Series",
+   "description": "Sun, surf and rescues with the classic lifeguard series.",
+   "website": "https://play.xumo.com/live-guide/baywatch",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951133/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951133&ads.xumo_streamId=99951133&ads.channelId=99951133&ads.channelName=FreemantleBaywatch&ads.caid=FreemantleBaywatch&ads.csid=xumo_android_FreemantleBaywatch_ssai&ads.genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_content_genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=3535&ads.xumo_contentName=FreemantleBaywatch&ads.xumo_providerId=3535&ads.xumo_providerName=FreemantleBaywatch&ads.asnw=&ads.xumo_channelName=FreemantleBaywatch&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMW4MQPHSKTMLE.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "unsolved-mysteries",
+   "name": "Unsolved Mysteries",
+   "country": "US",
+   "category": "Reality",
+   "description": "Real mysteries, missing persons and unexplained stories.",
+   "website": "https://play.xumo.com/live-guide/unsolved-mysteries",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991680/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991680&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=UnsolvedMysteries&ads.csid=xumo_android_UnsolvedMysteries_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_rating=&ads.xumo_contentId=260&ads.xumo_contentName=FilmRise&ads.xumo_providerId=260&ads.xumo_providerName=FilmRise&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991680&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/channels/channel/99991680/broadcast.json?hour=3",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "forensic-files",
+   "name": "Forensic Files",
+   "country": "US",
+   "category": "Reality",
+   "description": "True crime investigated through forensic science.",
+   "website": "https://play.xumo.com/live-guide/forensic-files",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991367/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991367&ads.xumo_streamId=99991367&ads.channelId=99991367&ads.channelName=ForensicFiles&ads.caid=ForensicFiles&ads.csid=xumo_android_ForensicFiles_ssai&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_coppa=0&ads.xumo_contentId=260&ads.xumo_contentName=FilmRise&ads.xumo_providerId=260&ads.xumo_providerName=FilmRise&ads.asnw=&ads.xumo_channelName=ForensicFiles&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/channels/channel/99991367/broadcast.json?hour=3",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "deal-or-no-deal",
+   "name": "Deal or No Deal",
+   "country": "US",
+   "category": "Reality",
+   "description": "Big decisions, briefcases and game-show suspense.",
+   "website": "https://play.xumo.com/live-guide/deal-or-no-deal",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991113/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991113&ads.xumo_streamId=99991113&ads.channelId=99991113&ads.channelName=EndemolshineDealNoDeal&ads.caid=EndemolshineDealNoDeal&ads.csid=xumo_android_EndemolshineDealNoDeal_ssai&ads.genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_content_genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=2041&ads.xumo_contentName=EndemolshineDealNoDeal&ads.xumo_providerId=2041&ads.xumo_providerName=EndemolshineDealNoDeal&ads.asnw=&ads.xumo_channelName=EndemolshineDealNoDeal&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/channels/channel/99991113/broadcast.json?hour=3",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "martha-stewart",
+   "name": "The Martha Stewart Channel",
+   "country": "US",
+   "category": "Lifestyle",
+   "description": "Cooking, home and entertaining with Martha Stewart.",
+   "website": "https://play.xumo.com/live-guide/the-martha-stewart-channel",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951513/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951513&ads.xumo_streamId=99951513&ads.channelId=99951513&ads.channelName=MarqueeBrandsMarthaStewart&ads.caid=MarqueeBrandsMarthaStewart&ads.csid=xumo_android_MarqueeBrandsMarthaStewart_ssai&ads.genre=Lifestyle%2CCooking%2CFood%2CCuisine%2CEntertainment%2CIA%2CGV&ads._fw_content_genre=Lifestyle%2CCooking%2CFood%2CCuisine%2CEntertainment%2CIA%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4380&ads.xumo_contentName=MarqueeBrandsMarthaStewart&ads.xumo_providerId=4380&ads.xumo_providerName=MarqueeBrandsMarthaStewart&ads.asnw=&ads.xumo_channelName=MarqueeBrandsMarthaStewart&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/channels/channel/99951513/broadcast.json?hour=3",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "test-kitchen",
+   "name": "America’s Test Kitchen",
+   "country": "US",
+   "category": "Lifestyle",
+   "description": "Recipes, cooking techniques and kitchen discoveries.",
+   "website": "https://play.xumo.com/live-guide/america-s-test-kitchen",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991369/hls/8-9-878.m3u8?ads.xumo_channelId=99991369&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=AmericasTestKitchen&ads.csid=xumo_android_AmericasTestKitchen_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads.xumo_contentId=1066&ads.xumo_contentName=AmericasTestKitchen&ads.xumo_providerId=1066&ads.xumo_providerName=AmericasTestKitchen&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991369&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMTMLO6F5AXSJG.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "family-affair",
+   "name": "Family Affair Channel",
+   "country": "US",
+   "category": "Series",
+   "description": "Classic family sitcom with Uncle Bill, Mr. French and the children.",
+   "website": "https://play.xumo.com/live-guide/family-affair-channel",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951146/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951146&ads.xumo_streamId=99951146&ads.channelId=99951146&ads.channelName=MPIMediaFamilyAffair&ads.caid=MPIMediaFamilyAffair&ads.csid=xumo_android_MPIMediaFamilyAffair_ssai&ads.genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_coppa=0&ads.xumo_contentId=3769&ads.xumo_contentName=MPIMediaFamilyAffair&ads.xumo_providerId=3769&ads.xumo_providerName=MPIMediaFamilyAffair&ads.asnw=&ads.xumo_channelName=MPIMediaFamilyAffair&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/channels/channel/99951146/broadcast.json?hour=3",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "cheddar-news",
+   "name": "Cheddar News",
+   "country": "US",
+   "category": "News",
+   "description": "Your destination for the day’s top headlines and what’s trending, Weekdays from 7am to 7pm ET. Stop by throughout the day for everything you Need to…",
+   "website": "https://www.cheddar.com/",
+   "streams": [
+    "https://hls.livecdn.io/cheddar.com/cheddar/playlist.m3u8",
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991220/hls/playlist.m3u8?ads.xumo_channelId=99991220&ads.xumo_streamId=99991220&ads.channelId=99991220&ads.channelName=cheddar_us&ads.xumo_channelName=cheddar&ads.caid=Cheddar&ads.csid=xumo_android_cheddar_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=161&ads.xumo_contentName=Cheddar&ads.xumo_providerId=161&ads.xumo_providerName=Cheddar&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://www.cheddar.com/",
+   "availability": "cheddar.com, and Xumo in the United States"
+  },
+  {
+   "id": "bbc-news",
+   "name": "BBC News",
+   "country": "GB",
+   "category": "News",
+   "description": "The BBC’s international news channel, live from London, Washington DC and Singapore bringing you breaking news and all the latest stories.",
+   "website": "https://play.xumo.com/live-guide/bbc-news",
+   "streams": [
+    "https://d3pxo1qcgzxtxs.cloudfront.net/10005/99951298/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951298&ads.xumo_streamId=99951298&ads.channelId=99951298&ads.channelName=amcbbcnews_us&ads.csid=xumo_android_AMCBBCNews_ssai&ads._fw_coppa=0&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads.xumo_contentId=4023&ads.xumo_contentName=AMCBBCNews&ads.xumo_providerId=4023&ads.xumo_providerName=AMCBBCNews&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_did=%3A00000000-0000-0000-0000-000000000000&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceType=3-Connected_TV&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_ifa_type="
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM3RMQGOX1DWRV.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "sky-news",
+   "name": "Sky News",
+   "country": "GB",
+   "category": "News",
+   "description": "Sky News delivers breaking news, headlines and top stories from business, politics, entertainment and more in the UK and worldwide.",
+   "website": "https://play.xumo.com/live-guide/sky-news",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951223/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951223&ads.xumo_streamId=99951223&ads.channelId=99951223&ads.channelName=SkyNews&ads.caid=SkyNews&ads.csid=xumo_android_SkyNews_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=3455&ads.xumo_contentName=SkyNews&ads.xumo_providerId=3455&ads.xumo_providerName=SkyNews&ads.asnw=&ads.xumo_channelName=SkyNews&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMNZMQPIUZRGHJ.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "reuters",
+   "name": "Reuters 60",
+   "country": "GB",
+   "category": "News",
+   "description": "Everything you need to know from around the world in 60 minutes, with Reuters News. No matter where the story is, Reuters is there, delivering fast…",
+   "website": "https://play.xumo.com/live-guide/reuters-60",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951197/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951197&ads.xumo_streamId=99951197&ads.channelId=99951197&ads.channelName=ReutersNow&ads.caid=ReutersNow&ads.csid=xumo_android_ReutersNow_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=3850&ads.xumo_contentName=ReutersNow&ads.xumo_providerId=3850&ads.xumo_providerName=ReutersNow&ads.asnw=&ads.xumo_channelName=ReutersNow&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMYYMQPI4RT11Z.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "bloomberg-tv-plus",
+   "name": "Bloomberg TV+",
+   "country": "US",
+   "category": "News",
+   "description": "Bloomberg delivers business and markets news, data, analysis, and video to the world, featuring stories from Businessweek and Bloomberg News.",
+   "website": "https://play.xumo.com/live-guide/bloomberg-tv",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951533/hls/index.m3u8?includeAssetTags=true&ads.xumo_channelId=99951533&ads.xumo_streamId=99951533&ads.channelId=99951533&ads.channelName=Bloomberg&ads.caid=Bloomberg&ads.csid=xumo_android_Bloomberg_ssai&ads.genre=News%2CN&ads._fw_content_genre=News%2CN&ads._fw_coppa=0&ads.xumo_contentId=39&ads.xumo_contentName=Bloomberg&ads.xumo_providerId=39&ads.xumo_providerName=Bloomberg&ads.asnw=&ads.xumo_channelName=Bloomberg&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM13MQR3AEF8MH.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "top-gear",
+   "name": "Top Gear",
+   "country": "GB",
+   "category": "Lifestyle",
+   "description": "From sliding round racetracks to road tripping with your mates, Top Gear celebrates everything brilliant about cars.",
+   "website": "https://play.xumo.com/live-guide/top-gear",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951249/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951249&ads.xumo_streamId=99951249&ads.channelId=99951249&ads.channelName=BBCTopGear&ads.caid=BBCTopGear&ads.csid=xumo_android_BBCTopGear_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=3953&ads.xumo_contentName=BBCTopGear&ads.xumo_providerId=3953&ads.xumo_providerName=BBCTopGear&ads.asnw=&ads.xumo_channelName=BBCTopGear&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1TMQPJ7CVWLQ.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "midsomer-murders",
+   "name": "Midsomer Murders",
+   "country": "GB",
+   "category": "Series",
+   "description": "In the UK's leading drama export, murder and mysteries are investigated by Detective Chief Inspector Barnaby in a quaint county with a staggering…",
+   "website": "https://play.xumo.com/live-guide/midsomer-murders",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991698/hls/playlist.m3u8?ads.xumo_channelId=99991698&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=MidsomerMurders&ads.csid=xumo_android_MidsomerMurders_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_rating=&ads.xumo_contentId=3509&ads.xumo_contentName=MidsomerMurders&ads.xumo_providerId=3509&ads.xumo_providerName=MidsomerMurders&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991698&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMPHMT94DXB9FP.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "classic-doctor-who",
+   "name": "Classic Doctor Who",
+   "country": "GB",
+   "category": "Series",
+   "description": "Join the first 7 regenerations of The Doctor for incredible adventures through time and space. All day, every day on the Classic Doctor Who channel.",
+   "website": "https://play.xumo.com/live-guide/classic-doctor-who",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951248/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951248&ads.xumo_streamId=99951248&ads.channelId=99951248&ads.channelName=BBCClassicDoctorWho&ads.caid=BBCClassicDoctorWho&ads.csid=xumo_android_BBCClassicDoctorWho_ssai&ads.genre=Entertainment%2CDrama%2CGV%2CGD&ads._fw_content_genre=Entertainment%2CDrama%2CGV%2CGD&ads._fw_coppa=0&ads.xumo_contentId=3952&ads.xumo_contentName=BBCClassicDoctorWho&ads.xumo_providerId=3952&ads.xumo_providerName=BBCClassicDoctorWho&ads.asnw=&ads.xumo_channelName=BBCClassicDoctorWho&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1SMQPJ7CURRV.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "bbc-drama",
+   "name": "BBC Drama",
+   "country": "GB",
+   "category": "Series",
+   "description": "Get swept up in BBC Drama's collection of acclaimed British series, from addictive thrillers and crime dramas to secrets, scandals and stories that…",
+   "website": "https://play.xumo.com/live-guide/bbc-drama",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951605/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951605&ads.xumo_streamId=99951605&ads.channelId=99951605&ads.channelName=BBCDramaNew&ads.caid=BBCDramaNew&ads.csid=xumo_android_BBCDramaNew_ssai&ads.genre=Entertainment%2CDrama%2CGD&ads._fw_content_genre=Entertainment%2CDrama%2CGD&ads._fw_coppa=0&ads.xumo_contentId=4556&ads.xumo_contentName=BBCDramaNew&ads.xumo_providerId=4556&ads.xumo_providerName=BBCDramaNew&ads.asnw=&ads.xumo_channelName=BBCDramaNew&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMIKMV8D9AS3ZL.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "graham-norton",
+   "name": "The Graham Norton Show",
+   "country": "GB",
+   "category": "Series",
+   "description": "Much loved talk show host Graham Norton invites the biggest stars in the world onto his sofa to share their stories and have the best fun.",
+   "website": "https://play.xumo.com/live-guide/the-graham-norton-show",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951450/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951450&ads.xumo_streamId=99951450&ads.channelId=99951450&ads.channelName=ITVTheGrahamNortonShow&ads.caid=ITVTheGrahamNortonShow&ads.csid=xumo_android_ITVTheGrahamNortonShow_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4271&ads.xumo_contentName=ITVTheGrahamNortonShow&ads.xumo_providerId=4271&ads.xumo_providerName=ITVTheGrahamNortonShow&ads.asnw=&ads.xumo_channelName=ITVTheGrahamNortonShow&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMANMQQWUWOT8S.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "repair-shop",
+   "name": "The Repair Shop",
+   "country": "GB",
+   "category": "Reality",
+   "description": "Nestled deep in the British countryside lies a workshop where broken, battered, and beloved artifacts and antiques are brought back to life",
+   "website": "https://play.xumo.com/live-guide/the-repair-shop",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951604/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951604&ads.xumo_streamId=99951604&ads.channelId=99951604&ads.channelName=WBDTheRepairShop&ads.caid=WBDTheRepairShop&ads.csid=xumo_android_WBDTheRepairShop_ssai&ads.genre=Entertainment%2CGV&ads._fw_content_genre=Entertainment%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4550&ads.xumo_contentName=WBDTheRepairShop&ads.xumo_providerId=4550&ads.xumo_providerName=WBDTheRepairShop&ads.asnw=&ads.xumo_channelName=WBDTheRepairShop&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMIEMUXWDWUJY9.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "come-dine-with-me",
+   "name": "Come Dine With Me",
+   "country": "GB",
+   "category": "Reality",
+   "description": "Five total strangers take turns hosting the perfect dinner party for their fellow contestants, each hoping to win a cash prize and be crowned the…",
+   "website": "https://play.xumo.com/live-guide/come-dine-with-me",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951451/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951451&ads.xumo_streamId=99951451&ads.channelId=99951451&ads.channelName=ITVComeDineWithMe&ads.caid=ITVComeDineWithMe&ads.csid=xumo_android_ITVComeDineWithMe_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4272&ads.xumo_contentName=ITVComeDineWithMe&ads.xumo_providerId=4272&ads.xumo_providerName=ITVComeDineWithMe&ads.asnw=&ads.xumo_channelName=ITVComeDineWithMe&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMAOMQQWUWU3GE.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "bbc-earth",
+   "name": "BBC Earth",
+   "country": "GB",
+   "category": "Lifestyle",
+   "description": "From the oceans’ depths to the world's tallest peaks, discover the creatures – big and small – that shape planet Earth.",
+   "website": "https://play.xumo.com/live-guide/bbc-earth",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951231/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951231&ads.xumo_streamId=99951231&ads.channelId=99951231&ads.channelName=BBCEarth&ads.caid=BBCEarth&ads.csid=xumo_android_BBCEarth_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=3921&ads.xumo_contentName=BBCEarth&ads.xumo_providerId=3921&ads.xumo_providerName=BBCEarth&ads.asnw=&ads.xumo_channelName=BBCEarth&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM0XMQPJ7CQ2FJ.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "jamie-oliver",
+   "name": "The Jamie Oliver Channel",
+   "country": "GB",
+   "category": "Lifestyle",
+   "description": "Global cooking sensation, Jamie Oliver, has built his own 24/7 channel, bringing his organic, quick and easy recipes to an entirely new audience.",
+   "website": "https://play.xumo.com/live-guide/the-jamie-oliver-channel",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951153/hls/playlist.m3u8?ads.xumo_channelId=99951153&ads.xumo_streamId=99951153&ads.channelId=99951153&ads.channelName=freemantlejamieoliver_us&ads.xumo_channelName=freemantlejamieoliver&ads.caid=FreemantleJamieOliver&ads.csid=xumo_android_FreemantleJamieOliver_ssai&ads.genre=IAB8%2CIAB5%2CEntertainment%2CIA%2CFamily&ads._fw_content_genre=IAB8%2CIAB5%2CEntertainment%2CIA%2CFamily&ads._fw_coppa=0&ads.xumo_contentId=3811&ads.xumo_contentName=FreemantleJamieOliver&ads.xumo_providerId=3811&ads.xumo_providerName=FreemantleJamieOliver&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMXVMNZ11B6TUG.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "mayday",
+   "name": "Mayday: Air Disaster",
+   "country": "CA",
+   "category": "Reality",
+   "description": "Mayday: Air Disaster investigates legendary aviation disasters to find out what went wrong and why. Based on cockpit voice recorders, accident…",
+   "website": "https://play.xumo.com/live-guide/mayday-air-disaster",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951262/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951262&ads.xumo_streamId=99951262&ads.channelId=99951262&ads.channelName=CineflixRealDisasterChannel&ads.caid=CineflixRealDisasterChannel&ads.csid=xumo_android_CineflixRealDisasterChannel_ssai&ads.genre=Reality&ads._fw_content_genre=Reality&ads._fw_coppa=0&ads.xumo_contentId=3959&ads.xumo_contentName=CineflixRealDisasterChannel&ads.xumo_providerId=3959&ads.xumo_providerName=CineflixRealDisasterChannel&ads.asnw=&ads.xumo_channelName=CineflixRealDisasterChannel&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1ZMQPJK7T3RO.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "property-brothers",
+   "name": "Property Brothers",
+   "country": "CA",
+   "category": "Lifestyle",
+   "description": "Join Drew and Jonathan Scott as they help families find, buy, and transform fixer-uppers into ultimate dream homes.",
+   "website": "https://play.xumo.com/live-guide/property-brothers",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951537/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951537&ads.xumo_streamId=99951537&ads.channelId=99951537&ads.channelName=CineflixPropertyBrothers&ads.caid=CineflixPropertyBrothers&ads.csid=xumo_android_CineflixPropertyBrothers_ssai&ads.genre=IAB10%2CIA%2CIAB21&ads._fw_content_genre=IAB10%2CIA%2CIAB21&ads._fw_coppa=0&ads.xumo_contentId=4089&ads.xumo_contentName=CineflixPropertyBrothers&ads.xumo_providerId=4089&ads.xumo_providerName=CineflixPropertyBrothers&ads.asnw=&ads.xumo_channelName=CineflixPropertyBrothers&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM5LMQR3ADZSTP.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "mythbusters",
+   "name": "MythBusters",
+   "country": "US",
+   "category": "Reality",
+   "description": "Two Hollywood special effects experts put urban legends to the test with wild experiments, death-defying stunts and more.",
+   "website": "https://play.xumo.com/live-guide/mythbusters",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951396/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951396&ads.xumo_streamId=99951396&ads.channelId=99951396&ads.channelName=WBDMythbusters&ads.caid=WBDMythbusters&ads.csid=xumo_android_WBDMythbusters_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4204&ads.xumo_contentName=WBDMythbusters&ads.xumo_providerId=4204&ads.xumo_providerName=WBDMythbusters&ads.asnw=&ads.xumo_channelName=WBDMythbusters&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM8SMQQUCW8IVN.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "cbc-news",
+   "name": "CBC News",
+   "country": "CA",
+   "category": "News",
+   "description": "The big stories across Canada and around the world.",
+   "website": "https://play.xumo.com/live-guide/cbc-news",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991276/hls/master.m3u8?ads.xumo_channelId=99991276&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=CBCNewsEnglish&ads.csid=xumo_android_CBCNewsEnglish_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_rating=&ads.xumo_contentId=207&ads.xumo_contentName=CBCNewsEnglish&ads.xumo_providerId=207&ads.xumo_providerName=CBCNewsEnglish&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991276&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM5RMKGZXENTH5.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "heartland",
+   "name": "Heartland",
+   "country": "CA",
+   "category": "Series",
+   "description": "Set against the stunning vistas of the Rocky Mountains, Heartland follows teenage horse whisperer Amy through the trials and triumphs of life on a…",
+   "website": "https://play.xumo.com/live-guide/heartland",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951494/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951494&ads.xumo_streamId=99951494&ads.channelId=99951494&ads.channelName=LionsgateHeartland&ads.caid=LionsgateHeartland&ads.csid=xumo_android_LionsgateHeartland_ssai&ads.genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_content_genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=4345&ads.xumo_contentName=LionsgateHeartland&ads.xumo_providerId=4345&ads.xumo_providerName=LionsgateHeartland&ads.asnw=&ads.xumo_channelName=LionsgateHeartland&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMCPMQQZPVGV5C.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "murdoch-mysteries",
+   "name": "Murdoch Mysteries",
+   "country": "CA",
+   "category": "Series",
+   "description": "Detective William Murdoch experiments with newly developed techniques to solve Toronto’s most dreadful murders. Cutting edge Victorian science meets…",
+   "website": "https://play.xumo.com/live-guide/murdoch-mysteries",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951452/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951452&ads.xumo_streamId=99951452&ads.channelId=99951452&ads.channelName=ITVMurdochMysteries&ads.caid=ITVMurdochMysteries&ads.csid=xumo_android_ITVMurdochMysteries_ssai&ads.genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_content_genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=4273&ads.xumo_contentName=ITVMurdochMysteries&ads.xumo_providerId=4273&ads.xumo_providerName=ITVMurdochMysteries&ads.asnw=&ads.xumo_channelName=ITVMurdochMysteries&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMAPMQQWUX0VT1.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "dw-news",
+   "name": "DW News",
+   "country": "DE",
+   "category": "News",
+   "description": "Germany's international broadcaster: world news, business and documentaries in English.",
+   "website": "https://www.dw.com/en/live-tv/channel-english",
+   "streams": [
+    "https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8"
+   ],
+   "provenance": "https://www.dw.com/en/live-tv/channel-english",
+   "availability": "Worldwide"
+  },
+  {
+   "id": "great-british-baking",
+   "name": "The Great British Baking Channel",
+   "country": "GB",
+   "category": "Lifestyle",
+   "description": "The Great British Baking Channel whisks you into the beloved baking competition, where passionate amateurs take on creative challenges to be crowned…",
+   "website": "https://play.xumo.com/live-guide/the-great-british-baking-channel",
+   "streams": [
+    "https://d38d8jwr5u7ckx.cloudfront.net/v1/master/2235ea0b65a152869ea53a8429808cfe476767a6/test-xumo-linear-main-hlsv3-ams/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951607&ads.xumo_streamId=99951607&ads.channelId=99951607&ads.asnw=&ads.caid=BBCTheGreatBritishBakingChannel&ads.csid=xumo_android_BBCTheGreatBritishBakingChannel_ssai&ads._fw_coppa=0&ads.xumo_contentId=4561&ads.xumo_contentName=BBCTheGreatBritishBakingChannel&ads.xumo_providerId=4561&ads.xumo_providerName=BBCTheGreatBritishBakingChannel&ads.channelName=BBCTheGreatBritishBakingChannel&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMIPMUOP8MF349.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "love-nature",
+   "name": "Love Nature",
+   "country": "CA",
+   "category": "Lifestyle",
+   "description": "Love Nature brings audiences closer to the beauty and wonder of nature, sharing awe-inspiring stories and shining a light on the fight for survival…",
+   "website": "https://play.xumo.com/live-guide/love-nature",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991398/hls/playlist.m3u8?ads.xumo_channelId=99991398&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=LoveNature&ads.csid=xumo_android_LoveNature_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads.xumo_contentId=1852&ads.xumo_contentName=LoveNature&ads.xumo_providerId=1852&ads.xumo_providerName=LoveNature&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991398&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMFGLULLWV9I5R.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "gusto-tv",
+   "name": "GustoTV",
+   "country": "CA",
+   "category": "Lifestyle",
+   "description": "A delicious mix of food and lifestyle, serving up fresh fare daily!",
+   "website": "https://play.xumo.com/live-guide/gustotv",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991328/hls/playlist.m3u8?ads.xumo_channelId=99991328&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=GustoTV&ads.csid=xumo_android_GustoTV_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads.xumo_contentId=272&ads.xumo_contentName=GustoTV&ads.xumo_providerId=272&ads.xumo_providerName=GustoTV&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991328&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM7KLULLWV7AYC.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "family-feud-classic",
+   "name": "Family Feud Classic",
+   "country": "US",
+   "category": "Reality",
+   "description": "Two families face-off in a feud to the finish as they compete to see who can guess the most popular answers to provocative surveys.",
+   "website": "https://play.xumo.com/live-guide/family-feud-classic",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951339/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951339&ads.xumo_streamId=99951339&ads.channelId=99951339&ads.channelName=FreemantleFamilyFeudClassic&ads.caid=FreemantleFamilyFeudClassic&ads.csid=xumo_android_FreemantleFamilyFeudClassic_ssai&ads.genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_content_genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=4081&ads.xumo_contentName=FreemantleFamilyFeudClassic&ads.xumo_providerId=4081&ads.xumo_providerName=FreemantleFamilyFeudClassic&ads.asnw=&ads.xumo_channelName=FreemantleFamilyFeudClassic&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM5DMQPKZNXS6E.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "pbs-nature",
+   "name": "PBS Nature",
+   "country": "US",
+   "category": "Lifestyle",
+   "description": "Travel the globe with PBS NATURE and witness the beauty and wonder of the natural world. From cats and dogs to sharks and grizzly bears, PBS NATURE…",
+   "website": "https://play.xumo.com/live-guide/pbs-nature",
+   "streams": [
+    "https://d2irko5f9gt1c5.cloudfront.net/10008/99951195/hls/playlist.m3u8?ads.xumo_channelId=99951195&ads.csid=xumo_android_PBSNature_ssai&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads.ifa_type=&ads.did=00000000-0000-0000-0000-000000000000&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads._fw_app_store_url=&ads._fw_content_category=&ads.xumo_contentName=PBSNature&ads.xumo_providerName=&ads._fw_content_language=en&ads.assetId=&ads._fw_content_genre=&ads.xumo_providerId=&ads._fw_content_rating=&ads.channelId=99951195&ads.xumo_platform=android&ads.site_id=22453"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMYXMFY05OZX85.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "little-house",
+   "name": "Little House on the Prairie",
+   "country": "US",
+   "category": "Series",
+   "description": "Set in the late 1800's, the Ingalls pack up all of their belongings and venture out west. In this heartwarming drama, watch as this family of five…",
+   "website": "https://play.xumo.com/live-guide/little-house-on-the-prairie",
+   "streams": [
+    "https://d4whmvwm0rdvi.cloudfront.net/10007/99951240/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951240&ads.xumo_streamId=99951240&ads.channelId=99951240&ads.asnw=169843&ads.afid=380744511&ads.sfid=19208008&ads.csid=xumo_android_NBCULittleHousePrairie_ssai_cro&ads._fw_coppa=0&ads.xumo_contentId=3938&ads.xumo_contentName=NBCULittleHousePrairie&ads.xumo_providerId=3938&ads.xumo_providerName=NBCULittleHousePrairie&ads.caid=&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_did=00000000-0000-0000-0000-000000000000&ads._fw_vcid2=512116%3A00000000-0000-0000-0000-000000000000&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0-beta-5&ads._fw_ifa_type=&ads.appName=GrapefruitFAST&ads._fw_content_category=&ads._fw_content_genre=&ads._fw_content_language=en&ads._fw_content_rating="
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1EMRMC6S5HYK.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "lassie",
+   "name": "Lassie",
+   "country": "US",
+   "category": "Series",
+   "description": "Join Lassie, the Martin family's beloved canine, and her human and animal companions as they embark on adventures. Learn why dogs truly are a mans…",
+   "website": "https://play.xumo.com/live-guide/lassie",
+   "streams": [
+    "https://d4whmvwm0rdvi.cloudfront.net/10007/99951259/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951259&ads.xumo_streamId=99951259&ads.channelId=99951259&ads.asnw=169843&ads.afid=380744363&ads.sfid=19316505&ads.csid=xumo_android_NBCULassie_ssai_cro&ads._fw_coppa=0&ads._fw_content_category=&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_language=&ads._fw_content_rating=&ads.xumo_contentId=3946&ads.xumo_contentName=NBCULassie&ads.xumo_providerId=3946&ads.xumo_providerName=NBCULassie&ads.caid=&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_did=00000000-0000-0000-0000-000000000000&ads._fw_vcid2=512116%3A00000000-0000-0000-0000-000000000000&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0-beta-5&ads._fw_ifa_type=&ads.appName=GrapefruitFAST&ads._fw_content_category=&ads._fw_content_genre=&ads._fw_content_language=en&ads._fw_content_rating="
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1MMQGSHMF03C.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "abc-news-australia",
+   "name": "ABC News Australia",
+   "country": "AU",
+   "category": "News",
+   "description": "The ABC's 24-hour news channel: Australian and world news, Australia's public broadcaster.",
+   "website": "https://www.abc.net.au/news/newschannel",
+   "streams": [
+    "https://abc-news-dmd-streams-1.akamaized.net/out/v1/abc83881886746b0802dc3e7ca2bc792/index.m3u8"
+   ],
+   "provenance": "https://www.abc.net.au/news/newschannel",
+   "availability": "Worldwide (ABC website)"
+  },
+  {
+   "id": "cnn-headlines",
+   "name": "CNN Headlines",
+   "country": "US",
+   "category": "News",
+   "description": "View the latest news and breaking news today for U.S., world, weather, entertainment, politics and health.",
+   "website": "https://play.xumo.com/live-guide/cnn-headlines",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951386/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951386&ads.xumo_streamId=99951386&ads.channelId=99951386&ads.channelName=WBDCNNHeadlines&ads.caid=WBDCNNHeadlines&ads.csid=xumo_android_WBDCNNHeadlines_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=4193&ads.xumo_contentName=WBDCNNHeadlines&ads.xumo_providerId=4193&ads.xumo_providerName=WBDCNNHeadlines&ads.asnw=&ads.xumo_channelName=WBDCNNHeadlines&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM8HMQQTN649DS.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
+  },
+  {
+   "id": "cpac",
+   "name": "CPAC",
+   "country": "CA",
+   "category": "News",
+   "description": "Canada's Parliament live, committee hearings and public affairs, in full and unedited.",
+   "website": "https://www.cpac.ca/",
+   "streams": [
+    "https://cpac-ca-live.cdn.vustreams.com/groupa/live/f9809cea-1e07-47cd-a94d-2ddd3e1351db/live.isml/.m3u8"
+   ],
+   "provenance": "https://www.cpac.ca/",
+   "availability": "cpac.ca (not limited to Canada)"
+  }
+ ]
 }
