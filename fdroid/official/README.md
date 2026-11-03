@@ -12,7 +12,7 @@ here; submitting means proposing that file to fdroiddata.
 - **Store listing** in `fastlane/metadata/android/en-US`: name, summary, description, icon and
   changelogs.
 - **The recipe builds with F-Droid's own tool.** `fdroid build` (fdroidserver 2.4.5, Gradle 8.14.3,
-  JDK 21) builds version 5.0 from commit `3968601a`, and `fdroid lint` and `fdroid rewritemeta`
+  JDK 21) builds version 5.1 from commit `769bfa9a`, and `fdroid lint` and `fdroid rewritemeta`
   are clean. F-Droid's scanner finds no non-free code, trackers or extra signing blocks. The two
   binaries it flags are data, let through with `scanignore` and explained under `MaintainerNotes`,
   as other apps that ship model data do: Karaoke Mode's model `app/src/main/assets/karaoke.bin` and
@@ -22,17 +22,20 @@ here; submitting means proposing that file to fdroiddata.
   (iTunes Search API). The recipe declares it, with that reason; playing and subscribing use each
   podcast's own RSS feed, and a feed can be added by its address.
 - **Reproducible builds.** The same commit builds byte-for-byte the same APK on GitHub Actions as in
-  an F-Droid-style build. `fdroid build` of the recipe downloaded the APK of GitHub release v5.0,
+  an F-Droid-style build. `fdroid build` of the recipe downloaded the APK of GitHub release v5.1,
   compared its own build with it and accepted it ("compared built binary to supplied reference
-  binary successfully", checked on 2026-11-02, as were 4.1, 4.1.1 and 4.1.2; 3.2.2 passed the same check on 2026-10-29). So f-droid.org will ship the APK signed with Grapefruit's own key: copies from
-  f-droid.org, GitHub releases and Grapefruit's own F-Droid repository all update each other.
+  binary successfully", checked on 2026-11-03, with Grapefruit FAST's `fast/` in the repository, not
+  built by this recipe, and the shared `grapefruit-ui` library built from source; 5.0, 4.1, 4.1.1 and
+  4.1.2 passed the same check on 2026-11-02, and 3.2.2 on 2026-10-29). So f-droid.org will ship the
+  APK signed with Grapefruit's own key: copies from f-droid.org, GitHub releases and Grapefruit's own
+  F-Droid repository all update each other.
   F-Droid only allows this at submission time; it can't be added later.
 
 ## Before submitting
 
-1. **Release v5.0 is published** (done 2026-11-02, tagged on commit `3968601a`, the commit the
+1. **Release v5.1 is published** (done 2026-11-03, tagged on commit `769bfa9a`, the commit the
    recipe names). f-droid.org downloads its signed APK
-   (`https://github.com/hayliewordsman/grapefruitmusic/releases/download/v5.0/grapefruit-music-5.0.apk`,
+   (`https://github.com/hayliewordsman/grapefruitmusic/releases/download/v5.1/grapefruit-5.1.apk`,
    the recipe's `Binaries:` line) to compare with its own build. If a newer version is out when you
    submit, move the recipe's build to it (versionName, versionCode, commit, CurrentVersion) and
    check it the same way. Later versions are released the same
