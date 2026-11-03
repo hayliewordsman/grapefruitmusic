@@ -19,14 +19,15 @@ public final class Catalog {
             JSONObject row=rows.getJSONObject(i);
             String id=row.getString("id"), country=row.getString("country");
             if (!id.matches("[a-z0-9-]{1,80}") || !ids.add(id)) throw new IOException("Invalid channel ID");
-            if (!country.equals("CA") && !country.equals("US")) throw new IOException("Invalid country");
+            if (!Arrays.asList(Channel.COUNTRIES).contains(country)) throw new IOException("Invalid country");
             String website=row.getString("website"); secure(website);
             JSONArray urls=row.getJSONArray("streams");
             if (urls.length()==0 || urls.length()>5) throw new IOException("Missing stream");
             String[] streams=new String[urls.length()];
             for(int j=0;j<streams.length;j++) { streams[j]=urls.getString(j); secure(streams[j]); }
             result.add(new Channel(id, row.getString("name"), country, row.getString("category"),
-                row.getString("description"), website, row.getString("provenance"), streams));
+                row.getString("description"), website, row.getString("provenance"), streams,
+                row.optString("availability", "")));
         }
         return Collections.unmodifiableList(result);
     }

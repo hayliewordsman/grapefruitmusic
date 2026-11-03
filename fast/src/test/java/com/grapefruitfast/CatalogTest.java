@@ -23,7 +23,7 @@ public final class CatalogTest {
         JSONObject root=new JSONObject(bundled());JSONArray channels=root.getJSONArray("channels");channels.put(channels.getJSONObject(0));
         rejects(root.toString());
         root=new JSONObject(bundled());root.getJSONArray("channels").getJSONObject(0).getJSONArray("streams").put(0,"http://example.com/live.m3u8");rejects(root.toString());
-        root=new JSONObject(bundled());root.getJSONArray("channels").getJSONObject(0).put("country","GB");rejects(root.toString());
+        root=new JSONObject(bundled());root.getJSONArray("channels").getJSONObject(0).put("country","XX");rejects(root.toString());
     }
     @Test public void rejectsUnknownSchemaAndEmptyCatalog() throws Exception {
         rejects("{\"schema\":2,\"channels\":[]}");rejects("{\"schema\":1,\"channels\":[]}");
@@ -32,6 +32,26 @@ public final class CatalogTest {
         final boolean[] closed={false};
         InputStream stream=new ByteArrayInputStream(new byte[Catalog.MAX_BYTES+1]){public void close(){closed[0]=true;}};
         try{Catalog.read(stream);fail("Oversized catalog accepted");}catch(IOException expected){assertTrue(closed[0]);}
+    }
+    @Test public void beta5AddsUkEuropeAustraliaAndCanadianChannels() throws Exception {
+        List<Channel> channels=Catalog.parse(bundled());Set<String> ids=new HashSet<>();Set<String> regions=new HashSet<>();
+        for(Channel c:channels){ids.add(c.id);regions.add(c.region());}
+        for(String id:new String[]{"cheddar-news","bbc-news","sky-news","dw-news","abc-news-australia","cbc-news","reuters","heartland","murdoch-mysteries","top-gear"})assertTrue(id,ids.contains(id));
+        assertTrue(regions.containsAll(Arrays.asList(Channel.REGIONS)));
+        assertEquals("Australia",channels.stream().filter(c->c.id.equals("abc-news-australia")).findFirst().get().region());
+        assertEquals("Europe",channels.stream().filter(c->c.id.equals("dw-news")).findFirst().get().region());
+    }
+    /** The news policy: no right-wing, partisan, News Corp or Fox channels, and no Piers Morgan. */
+    @Test public void noRightWingPartisanNewsCorpOrFoxNews() throws Exception {
+        for(Channel c:Catalog.parse(bundled())){
+            String all=(c.id+" "+c.name+" "+c.description+" "+String.join(" ",c.streams)).toLowerCase(Locale.US);
+            for(String banned:new String[]{"newsmax","oan","one america","salem","fox","talktv","talk tv","piers morgan","gb news","gbnews","sky news australia","skynewsaustralia","tyt","young turks","cnn"})
+                assertFalse(c.id+" mentions "+banned,all.matches("(?s).*\\b"+java.util.regex.Pattern.quote(banned)+"\\b.*"));
+        }
+    }
+    @Test public void searchFindsRegionsInWords() throws Exception {
+        Channel bbc=Catalog.parse(bundled()).stream().filter(c->c.id.equals("bbc-news")).findFirst().get();
+        assertTrue(bbc.matches("uk"));assertTrue(bbc.matches("united kingdom"));
     }
     private void rejects(String json) throws Exception {try{Catalog.parse(json);fail("Bad catalog accepted");}catch(IOException expected){}}
 }

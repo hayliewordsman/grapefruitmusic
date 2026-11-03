@@ -1,6 +1,6 @@
 # Grapefruit FAST
 
-**1.0 beta 5 (build 5, in progress)** — `io.github.hayliewordsman.grapefruitfast`
+**1.0 beta 5 (build 5)** — `io.github.hayliewordsman.grapefruitfast`
 
 A second native Android app in the Grapefruit Music & Podcasts repository. Both can be installed at once. Music's application ID and version remain unchanged. Shared Geist fonts and Conscrypt TLS support live in `grapefruit-ui/`; Music's existing UI remains in `app/`.
 
@@ -23,11 +23,20 @@ A jailbroken JP5S needs no additional root permissions for this app. Actual devi
 
 ## Channel catalog
 
-`src/main/assets/channels.json` contains 28 source-reviewed channels: three distinct CityNews feeds (Toronto, Alberta/Calgary & Edmonton, Vancouver), fourteen Global News feeds (National, Toronto, Winnipeg, Edmonton, BC, Calgary, Halifax, Kingston, Lethbridge, Montreal, Okanagan, Peterborough, Regina, Saskatoon), NBC News NOW, ABC News Live, CBS News 24/7, and eight entertainment channels: The Carol Burnett Show, Baywatch, Unsolved Mysteries, Forensic Files, Deal or No Deal, The Martha Stewart Channel, America’s Test Kitchen and Family Affair Channel.
+`src/main/assets/channels.json` contains 57 source-reviewed channels, filtered by genre and by region (Canada, United States, UK, Europe, Australia):
+
+- **Canada:** three CityNews feeds, fourteen Global News feeds and CBC News; entertainment: Heartland, Murdoch Mysteries, Mayday: Air Disaster, Property Brothers, Love Nature and GustoTV.
+- **United States:** NBC News NOW, ABC News Live, CBS News 24/7, Cheddar News and Bloomberg TV+; entertainment: The Carol Burnett Show, Baywatch, Unsolved Mysteries, Forensic Files, Deal or No Deal, The Martha Stewart Channel, America's Test Kitchen, Family Affair Channel, MythBusters, Family Feud Classic, PBS Nature, Little House on the Prairie and Lassie.
+- **UK:** BBC News, Sky News and Reuters 60; entertainment: Top Gear, Midsomer Murders, Classic Doctor Who, BBC Drama, The Great British Baking Channel, The Graham Norton Show, The Repair Shop, Come Dine With Me, BBC Earth and The Jamie Oliver Channel.
+- **Europe:** DW News. **Australia:** ABC News Australia.
+
+**News policy.** News is non-partisan: no right-wing or partisan channels, nothing News Corp or Fox owned, and no Piers Morgan. Each news source record carries its Media Bias/Fact Check (and, where rated, Ad Fontes Media) rating. Every news channel included is rated Least Biased or Left-Center with High factual reporting by Media Bias/Fact Check, except Bloomberg (Left-Center; Ad Fontes Media: Middle). Excluded after review: Newsmax2, OAN Plus, Salem News, LiveNOW from FOX, Fox Weather, Sky News Australia, TalkTV, GB News, TYT and CNN Headlines. `CatalogTest` enforces the exclusions.
+
+**Availability.** DW News and ABC News Australia come from the broadcasters' own public players and stream worldwide. Most UK, Canadian and new US entertainment and news come from Xumo's official guide. Xumo is a US service, so outside the US those providers may refuse the stream. Each channel's details show where it can be watched. France 24 English (the official site plays YouTube only) and Euronews English (unavailable in the US) were not added. CBC's local news channels on CBC Gem require a CBC sign-in, so they are not included. Xumo channels assembled from on-demand episodes (McLeod's Daughters, Highway Thru Hell, Just for Laughs Gags and others) have no single live stream and were not added.
 
 **CP24 is excluded:** no public video stream was obtained from cp24.com. Do not add third-party CP24 restreams.
 
-Each entry has an official viewing page and first-party endpoint provenance. News sources come from the broadcasters' current player metadata; NBC and entertainment sources come from Xumo's official guide and HLS/SSAI metadata. Provider ads and regional restrictions remain. `docs/fast/catalog-sources.json` records the source URLs, ad-template handling and retired candidates. No community playlist is imported at runtime. A reachable public feed is not a grant of third-party redistribution rights. Review the source terms and probe from the intended region before distribution. Channel names belong to their owners; Grapefruit is not affiliated with them.
+Each entry has an official viewing page and first-party endpoint provenance. `tools/fast/sources.py` rebuilds beta 5's additions from Xumo's guide and DW's and the ABC's own pages. `docs/fast/catalog-sources.json` records the source URLs, ad-template handling, bias reviews and excluded candidates. No community playlist is imported at runtime. A reachable public feed is not a grant of third-party redistribution rights. Review the source terms and probe from the intended region before distribution. Channel names belong to their owners; Grapefruit is not affiliated with them.
 
 The beta has a channel guide, **not a programme schedule/EPG**. It does not invent programme titles or times. Stream links ship in the APK, so catalog corrections currently require an app update.
 
@@ -37,7 +46,7 @@ Source checks:
 python3 tools/fast/check_streams.py --output work/stream-report.json
 ```
 
-The checker follows every public HLS master through all video/audio renditions and bounded media samples, including initialization/key resources where present. It rejects DRM, insecure redirects, non-media responses and ended playlists without adding location workarounds or stripping ads. The refreshed catalog passed all 28 channels across the full run and a recorded follow-up; Global National and Winnipeg had intermittent runtime proxy denials in the full run. Bounded ffprobe samples identified H.264/AAC for all 28. See `docs/fast/validation.md` and the committed JSON reports for exact scope and failures. JP5S playback remains untested.
+The checker follows every public HLS master through all video/audio renditions and bounded media samples, including initialization/key resources where present. It rejects DRM, insecure redirects, non-media responses and ended playlists without adding location workarounds or stripping ads. Beta 5's full run (`docs/fast/stream-report-beta-5.json`, November 3, 2026, US egress) reached media for all 57 channels, every one adaptive, all renditions declaring H.264/AAC. Beta 1's 28 channels also passed its full run and a recorded follow-up; Global National and Winnipeg had intermittent runtime proxy denials in the full run. Bounded ffprobe samples identified H.264/AAC for all 28. See `docs/fast/validation.md` and the committed JSON reports for exact scope and failures. JP5S playback remains untested.
 
 The quality caps are strict: Global's lowest track exceeds Data saver's bitrate cap, so Global video requires Auto. Compatibility has no matching track for CityNews, Global or America's Test Kitchen. The player reports this and suggests Auto. Auto adaptation still depends on measured bandwidth and the available provider tracks.
 

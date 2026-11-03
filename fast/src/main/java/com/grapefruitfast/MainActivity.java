@@ -216,8 +216,8 @@ public final class MainActivity extends Activity {
         floatBars(true);
     }
     /**
-     * Genres and countries share one row that scrolls edge to edge. Genre chips pick one; a country chip
-     * narrows to that country and, tapped again, goes back to both.
+     * Genres and regions share one row that scrolls edge to edge. Genre chips pick one; a region chip
+     * narrows to that region and, tapped again, goes back to all of them.
      */
     private void chips(LinearLayout parent) {
         HorizontalScrollView scroll=new HorizontalScrollView(this);scroll.setHorizontalScrollBarEnabled(false);
@@ -226,7 +226,7 @@ public final class MainActivity extends Activity {
         for(String label:GENRES) row.addView(chip(label,label.equals(category),()->category=label));
         View divider=new View(this);divider.setBackgroundColor(b.outline);
         LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(Math.max(1,dp(1)),dp(24));d.rightMargin=dp(8);row.addView(divider,d);
-        for(String label:new String[]{"Canada","United States"})
+        for(String label:Channel.REGIONS)
             row.addView(chip(label,label.equals(country),()->country=label.equals(country)?"All":label));
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.leftMargin=p.rightMargin=-dp(18);
         parent.addView(scroll,p);
@@ -260,8 +260,7 @@ public final class MainActivity extends Activity {
         for(Channel c:channels) {
             if(tab.equals("Favourites")&&!favourites.contains(c.id))continue;
             if(!category.equals("All")&&!category.equals(c.category))continue;
-            if(country.equals("Canada")&&!c.country.equals("CA"))continue;
-            if(country.equals("United States")&&!c.country.equals("US"))continue;
+            if(!country.equals("All")&&!country.equals(c.region()))continue;
             if(!c.matches(query))continue;
             visible.add(c);
         }
@@ -283,7 +282,7 @@ public final class MainActivity extends Activity {
             String initials=c.initials();
             h.logo.setText(initials);h.logo.setTextSize(initials.length()>2?13:20);
             h.name.setText(c.name);
-            h.meta.setText((favourites.contains(c.id)?"★  ":"")+(c.country.equals("CA")?"Canada":"United States")+"  ·  "+c.category);
+            h.meta.setText((favourites.contains(c.id)?"★  ":"")+c.region()+"  ·  "+c.category);
             boolean live=watching!=null&&watching.id.equals(c.id);
             h.live.setVisibility(live?View.VISIBLE:View.GONE);h.more.setVisibility(live?View.GONE:View.VISIBLE);
             return h.wrapper;
@@ -400,7 +399,9 @@ public final class MainActivity extends Activity {
     }
     private void stop() {if(playback!=null){playback.release();playback=null;}watching=null;pendingSurface=null;}
     private void details(Channel c) {
-        dialog(c.name,c.description+"\n\n"+(c.country.equals("CA")?"Canada":"United States")+" · "+c.category+"\nChannels may be region restricted. Provider advertisements remain part of the stream.",
+        dialog(c.name,c.description+"\n\n"+c.countryName()+" · "+c.category
+            +(c.availability.isEmpty()?"":"\nWatch from: "+c.availability)
+            +"\nChannels may be region restricted. Provider advertisements remain part of the stream.",
             new String[]{"Watch live",favourites.contains(c.id)?"Remove favourite":"Add favourite","Official site"},0,
             new Runnable[]{()->tune(c),()->{favourite(c);filter();if(watching!=null&&watching.id.equals(c.id))watchPage();},()->website(c)});
     }
@@ -436,7 +437,7 @@ public final class MainActivity extends Activity {
         footer(g,"Auto changes resolution as your connection changes. Continue Watching keeps your last channel a tap away above the tabs. Keep Screen On stops the screen sleeping while a channel plays.");
 
         section(g,"Channels");
-        value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, DRM bypass, location spoofing or ad removal. Availability depends on your region and each provider.\n\nThe channel guide lists channels; programme schedules are not supplied in this beta.\n\nCP24 is excluded because a public video stream could not be obtained from cp24.com. JP5S hardware playback still needs device testing."));
+        value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, sign-in workarounds, DRM bypass, location spoofing or ad removal. Availability depends on where you are and each provider: DW News and ABC News Australia stream worldwide; Xumo's channels (most UK, US and many Canadian ones) are offered in the United States; CityNews and Global News are Canadian.\n\nNews is chosen to be non-partisan: no right-wing, partisan, News Corp or Fox channels. Ratings from Media Bias/Fact Check and Ad Fontes Media are noted in the source records.\n\nThe channel guide lists channels; programme schedules are not supplied in this beta. CBC's local news channels need a CBC Gem sign-in, so they aren't included. CP24 is excluded because a public video stream could not be obtained from cp24.com. JP5S hardware playback still needs device testing."));
         int saved=favourites.size();
         value(g,"Favourites",saved==0?"None":saved==1?"1 channel":saved+" channels",null);
         if(saved>0)action(g,"Clear Favourites",true,()->dialog("Clear Favourites?","Your "+(saved==1?"favourite channel":saved+" favourite channels")+" will be removed from Favourites.",
