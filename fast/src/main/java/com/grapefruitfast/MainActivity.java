@@ -3,7 +3,8 @@ package com.grapefruitfast;
 import android.app.Activity;
 import android.content.*;
 import android.content.res.Configuration;
-import android.graphics.Color;
+import android.graphics.*;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.*;
 import android.text.*;
@@ -15,6 +16,11 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
+    static final String VERSION="1.0 beta 2 · build 2";
+    private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
+    private static final String[] GENRES={"All","News","Series","Reality","Lifestyle"};
+    private static final String[] THEMES={"Grapefruit Dark","Grapefruit Light","Pitch Black"};
+    private static final String[] QUALITIES={"Auto","Data saver","Compatibility"};
     private android.content.SharedPreferences prefs;
     private Brand b;
     private List<Channel> channels=Collections.emptyList();
@@ -25,8 +31,11 @@ public final class MainActivity extends Activity {
     private LivePlayer playback;
     private TextView state, qualityLabel, count;
     private FrameLayout root, body;
-    private LinearLayout shell, page, nav;
+    private LinearLayout shell, page, nav, bars;
     private ListView list;
+    /** The page's scrolling view, padded at the bottom so it scrolls out from under the floating bars. */
+    private ViewGroup scroller;
+    private int scrollerPadding, barsInset;
     private ChannelAdapter adapter;
     private boolean fullScreen, started;
     private int listPosition;
@@ -48,85 +57,158 @@ public final class MainActivity extends Activity {
     private Channel find(String id) {for(Channel c:channels) if(c.id.equals(id)) return c; return null;}
     private boolean wide() {Configuration c=getResources().getConfiguration();return c.screenWidthDp>=c.screenHeightDp*0.85f;}
     private int dp(float n) {return b.dp(n);}
+
     private void build() {
         b=new Brand(this,prefs.getInt("theme",0));
+        windowColours();
         root=new FrameLayout(this);root.setFitsSystemWindows(true);root.setBackgroundColor(b.bg);
         shell=wide()?b.row():b.column();root.addView(shell,new FrameLayout.LayoutParams(-1,-1));
+        if(wide()) {nav=b.column();nav.setGravity(Gravity.CENTER_HORIZONTAL);nav.setPadding(dp(14),dp(18),dp(6),dp(16));shell.addView(nav,new LinearLayout.LayoutParams(dp(164),-1));}
         body=new FrameLayout(this);
-        if(wide()) {nav=b.column();nav.setPadding(dp(14),dp(22),dp(14),dp(16));shell.addView(nav,new LinearLayout.LayoutParams(dp(148),-1));}
-        shell.addView(body,new LinearLayout.LayoutParams(wide()?0:-1,wide()?-1:0,1));
-        if(!wide()) {nav=b.row();nav.setPadding(dp(10),dp(8),dp(10),dp(10));shell.addView(nav,new LinearLayout.LayoutParams(-1,-2));}
+        shell.addView(body,new LinearLayout.LayoutParams(wide()?0:-1,-1,1));
+        // The bars float over the bottom of the page: the tabs (portrait) and Continue watching.
+        bars=b.column();bars.setGravity(Gravity.CENTER_HORIZONTAL);bars.setClickable(false);
+        bars.addOnLayoutChangeListener((v,l,t,r,btm,ol,ot,or,ob)->{
+            int h=v.getVisibility()==View.VISIBLE?btm-t:0;
+            if(h!=barsInset){barsInset=h;v.post(this::inset);}
+        });
+        if(!wide()) nav=b.row();
         navigation();setContentView(root);
         if(watching!=null) watchPage();else if(tab.equals("Settings")) settings();else browse();
         fullscreen(fullScreen);
     }
-    private void navigation() {
-        nav.removeAllViews();
-        if(wide()) {
-            ImageView icon=new ImageView(this);icon.setImageResource(com.grapefruitfast.R.mipmap.ic_launcher);
-            nav.addView(icon,new LinearLayout.LayoutParams(-1,dp(80)));
-            TextView name=b.text("Grapefruit\nFAST",18,true);name.setTypeface(android.graphics.Typeface.createFromAsset(getAssets(),"fonts/GeistPixel-Triangle-FAST.ttf"));name.setTextColor(b.accent);
-            name.setGravity(Gravity.CENTER);nav.addView(name,new LinearLayout.LayoutParams(-1,dp(68)));
-        }
-        for(String label:new String[]{"Live TV","Favourites","Search","Settings"}) {
-            TextView button=b.button(label,tab.equals(label),v->{
-                stop();tab=label;query="";listPosition=0;fullScreen=false;build();
-            });
-            if(!wide()) {button.setTextSize(11);button.setPadding(dp(6),dp(8),dp(6),dp(8));}
-            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(wide()?-1:0,dp(52),wide()?0:1);
-            if(wide())p.bottomMargin=dp(10);else p.rightMargin=dp(4);
-            nav.addView(button,p);
+    private void windowColours() {
+        Window w=getWindow();w.setBackgroundDrawable(new ColorDrawable(b.bg));
+        if(Build.VERSION.SDK_INT>=21){w.setStatusBarColor(b.bg);w.setNavigationBarColor(b.bg);}
+        if(Build.VERSION.SDK_INT>=23){
+            View d=w.getDecorView();int f=d.getSystemUiVisibility();
+            d.setSystemUiVisibility(b.light?f|View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR:f&~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
     }
+    /** The tabs: a floating pill along the bottom, or down the side beside the wordmark. */
+    private void navigation() {
+        nav.removeAllViews();
+        LinearLayout pill;
+        if(wide()) {
+            ImageView icon=new ImageView(this);icon.setImageResource(com.grapefruitfast.R.mipmap.ic_launcher);
+            nav.addView(icon,new LinearLayout.LayoutParams(-1,dp(72)));
+            TextView name=b.text("Grapefruit\nFAST",18,true);name.setTypeface(Typeface.createFromAsset(getAssets(),"fonts/GeistPixel-Triangle-FAST.ttf"));name.setTextColor(b.accent);
+            name.setGravity(Gravity.CENTER);name.setLineSpacing(dp(2),1);name.setPadding(0,dp(8),0,dp(18));nav.addView(name,new LinearLayout.LayoutParams(-1,-2));
+            pill=b.column();nav.addView(pill,new LinearLayout.LayoutParams(-1,-2));
+        } else {
+            pill=b.row();
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.leftMargin=p.rightMargin=dp(16);p.bottomMargin=dp(12);p.topMargin=dp(6);
+            nav.addView(pill,p);
+        }
+        pill.setPadding(dp(5),dp(5),dp(5),dp(5));pill.setBackground(b.shape(b.surface,wide()?30:Brand.PILL,true));b.lift(pill,6);
+        for(String label:TABS) {
+            boolean chosen=tab.equals(label);
+            TextView button=b.text(label,wide()?14:12,true);button.setGravity(Gravity.CENTER);button.setFocusable(true);
+            button.setTextColor(chosen?b.onAccent:b.secondary);button.setBackground(b.interactive(chosen,Brand.PILL,0,false));
+            button.setOnClickListener(v->{stop();tab=label;query="";listPosition=0;fullScreen=false;build();});
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(wide()?-1:0,dp(46),wide()?0:1);
+            if(wide()&&!label.equals(TABS[0]))p.topMargin=dp(4);
+            pill.addView(button,p);
+        }
+    }
+    /** Fills the floating bars for this page: Continue watching (browsing pages), then the tabs (portrait). */
+    private void floatBars(boolean resume) {
+        bars.removeAllViews();
+        if(bars.getParent()!=null)((ViewGroup)bars.getParent()).removeView(bars);
+        if(nav.getParent()!=null&&!wide())((ViewGroup)nav.getParent()).removeView(nav);
+        Channel last=resume?find(prefs.getString("lastChannel","")):null;
+        if(last!=null) bars.addView(continuePill(last));
+        if(!wide()) bars.addView(nav,new LinearLayout.LayoutParams(-1,-2));
+        bars.setBackground(bars.getChildCount()>0?b.fade():null);
+        bars.setPadding(0,bars.getChildCount()>0?dp(22):0,0,wide()&&last!=null?dp(14):0);
+        bars.setVisibility(bars.getChildCount()>0?View.VISIBLE:View.GONE);
+        if(bars.getChildCount()==0)barsInset=0;
+        body.addView(bars,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
+    }
+    /** Like Music's mini player: the last channel on a floating pill. */
+    private View continuePill(Channel last) {
+        LinearLayout pill=b.row();pill.setPadding(dp(8),dp(8),dp(8),dp(8));pill.setFocusable(true);
+        pill.setBackground(b.interactive(false,Brand.PILL,b.surface,true));b.lift(pill,6);
+        pill.setOnClickListener(v->tune(last));
+        pill.addView(logo(last,44),new LinearLayout.LayoutParams(dp(44),dp(44)));
+        LinearLayout words=b.column();words.setPadding(dp(12),0,dp(8),0);
+        words.addView(b.label("Continue watching",11,b.secondary));
+        TextView name=b.text(last.name,15,true);name.setSingleLine();name.setEllipsize(TextUtils.TruncateAt.END);name.setPadding(0,dp(3),0,0);words.addView(name);
+        pill.addView(words,new LinearLayout.LayoutParams(0,-2,1));
+        TextView play=b.text("▶",15,true);play.setGravity(Gravity.CENTER);play.setTextColor(b.onAccent);play.setBackground(b.gradientCircle());
+        pill.addView(play,new LinearLayout.LayoutParams(dp(44),dp(44)));
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(wide()?dp(460):-1,-2);
+        p.leftMargin=p.rightMargin=dp(16);
+        pill.setLayoutParams(p);return pill;
+    }
+    private TextView logo(Channel c,int size) {
+        String initials=c.initials();
+        TextView logo=b.text(initials,initials.length()>2?Math.max(11,size/4):size*2/5,true);logo.setTextColor(b.onAccent);
+        logo.setGravity(Gravity.CENTER);logo.setBackground(b.gradientCircle());return logo;
+    }
+    /** Pads the page's scrolling view so its last rows can scroll up out from under the floating bars. */
+    private void inset() {
+        if(scroller==null)return;
+        scroller.setClipToPadding(false);
+        int want=scrollerPadding+barsInset;
+        if(scroller.getPaddingBottom()!=want)scroller.setPadding(scroller.getPaddingLeft(),scroller.getPaddingTop(),scroller.getPaddingRight(),want);
+    }
+    private void setScroller(ViewGroup v,int ownPadding) {scroller=v;scrollerPadding=ownPadding;inset();}
     private void newPage() {
-        body.removeAllViews();page=b.column();page.setPadding(dp(18),dp(14),dp(18),0);body.addView(page,new FrameLayout.LayoutParams(-1,-1));
+        body.removeAllViews();scroller=null;page=b.column();page.setPadding(dp(18),dp(16),dp(18),0);body.addView(page,new FrameLayout.LayoutParams(-1,-1));
     }
     private void title(String title,String subtitle) {
         TextView heading=b.text(title,30,true);page.addView(heading);
-        if(subtitle!=null) {TextView sub=b.text(subtitle,13,false);sub.setTextColor(b.secondary);sub.setPadding(0,dp(4),0,dp(14));page.addView(sub);}
+        if(subtitle!=null) {TextView sub=b.label(subtitle,13,b.secondary);sub.setPadding(0,dp(6),0,dp(10));page.addView(sub);}
     }
     private void browse() {
         newPage();
-        title(tab.equals("Live TV")?"Live TV":tab,tab.equals("Favourites")?"Your channels, in one place.":"Free to watch. A little more live.");
+        title(tab,tab.equals("Favourites")?"Your channels, in one place.":tab.equals("Search")?"Channels, cities and genres.":"Free to watch. A little more live.");
         if(tab.equals("Search")) {
             EditText search=new EditText(this);search.setSingleLine();search.setTextColor(b.text);search.setHintTextColor(b.secondary);
             search.setTypeface(Fonts.regular());search.setTextSize(16);search.setHint("Search channels, cities or genres");
-            search.setPadding(dp(18),0,dp(18),0);search.setBackground(b.shape(b.control,100,true));
-            search.setText(query);page.addView(search,new LinearLayout.LayoutParams(-1,dp(48)));
+            search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
+            search.setPadding(dp(20),0,dp(20),0);search.setBackground(b.interactive(false,Brand.PILL));
+            search.setText(query);search.setSelection(query.length());
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.bottomMargin=dp(4);page.addView(search,p);
             search.addTextChangedListener(new TextWatcher(){
                 public void beforeTextChanged(CharSequence s,int start,int count,int after){}
                 public void onTextChanged(CharSequence s,int start,int before,int count){query=s.toString();filter();}
                 public void afterTextChanged(Editable e){}
             });
         }
-        chips(new String[]{"All","News","Series","Reality","Lifestyle"},true);
-        chips(new String[]{"All","Canada","United States"},false);
-        count=b.text("",12,false);count.setTextColor(b.secondary);count.setPadding(dp(6),dp(4),0,dp(8));page.addView(count);
+        chips(page);
+        count=b.label("",12,b.secondary);count.setPadding(dp(4),dp(8),0,dp(10));page.addView(count);
         addList(page);
         if(error!=null) note(error);
-        Channel last=find(prefs.getString("lastChannel",""));
-        if(last!=null) {
-            TextView resume=b.button("Continue watching · "+last.name,false,v->tune(last));
-            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(54));p.topMargin=dp(8);p.bottomMargin=dp(8);page.addView(resume,p);
-        }
+        floatBars(true);
     }
-    private void chips(String[] labels,boolean categories) {
+    /**
+     * Genres and countries share one row that scrolls edge to edge. Genre chips pick one; a country chip
+     * narrows to that country and, tapped again, goes back to both.
+     */
+    private void chips(LinearLayout parent) {
         HorizontalScrollView scroll=new HorizontalScrollView(this);scroll.setHorizontalScrollBarEnabled(false);
-        LinearLayout row=b.row();row.setPadding(0,dp(8),0,dp(4));scroll.addView(row);
-        for(String label:labels) {
-            TextView chip=b.button(label,label.equals(categories?category:country),v->{
-                if(categories)category=label;else country=label;
-                listPosition=0;if(watching!=null)watchPage();else browse();
-            });
-            chip.setTextSize(13);chip.setMinHeight(dp(40));
-            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(42));p.rightMargin=dp(8);row.addView(chip,p);
-        }
-        page.addView(scroll,new LinearLayout.LayoutParams(-1,-2));
+        scroll.setClipToPadding(false);
+        LinearLayout row=b.row();row.setPadding(dp(18),dp(6),dp(10),dp(6));scroll.addView(row);
+        for(String label:GENRES) row.addView(chip(label,label.equals(category),()->category=label));
+        View divider=new View(this);divider.setBackgroundColor(b.outline);
+        LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(Math.max(1,dp(1)),dp(24));d.rightMargin=dp(8);row.addView(divider,d);
+        for(String label:new String[]{"Canada","United States"})
+            row.addView(chip(label,label.equals(country),()->country=label.equals(country)?"All":label));
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.leftMargin=p.rightMargin=-dp(18);
+        parent.addView(scroll,p);
+    }
+    private View chip(String label,boolean chosen,Runnable pick) {
+        TextView chip=b.button(label,chosen,v->{pick.run();listPosition=0;if(watching!=null)watchPage();else browse();});
+        chip.setTextSize(13);chip.setMinHeight(dp(40));chip.setPadding(dp(16),0,dp(16),0);
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(40));p.rightMargin=dp(8);chip.setLayoutParams(p);
+        return chip;
     }
     private void addList(LinearLayout parent) {
         list=new ListView(this);list.setDivider(null);list.setSelector(android.R.color.transparent);
-        list.setCacheColorHint(Color.TRANSPARENT);list.setClipToPadding(false);list.setPadding(0,0,0,dp(8));
-        list.setItemsCanFocus(false);
+        list.setCacheColorHint(Color.TRANSPARENT);list.setVerticalScrollBarEnabled(false);
+        list.setItemsCanFocus(false);list.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
         adapter=new ChannelAdapter();list.setAdapter(adapter);
         list.setOnItemClickListener((p,v,pos,id)->{
             ((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(v.getWindowToken(),0);
@@ -139,6 +221,7 @@ public final class MainActivity extends Activity {
             } return false;
         });
         parent.addView(list,new LinearLayout.LayoutParams(-1,0,1));filter();list.setSelection(listPosition);
+        setScroller(list,dp(10));
     }
     private void filter() {
         visible.clear();
@@ -151,32 +234,48 @@ public final class MainActivity extends Activity {
             visible.add(c);
         }
         if(adapter!=null)adapter.notifyDataSetChanged();
-        if(count!=null)count.setText(visible.size()==0?"No channels match. Try another filter.":visible.size()+" channels · tap to watch · hold for options");
+        if(count==null)return;
+        if(!visible.isEmpty())count.setText(visible.size()+(visible.size()==1?" channel":" channels")+" · tap to watch · hold for options");
+        else if(tab.equals("Favourites")&&favourites.isEmpty())count.setText("No favourites yet. Hold a channel, or press Menu, to add one.");
+        else if(tab.equals("Search")&&query.trim().length()>0)count.setText("Nothing found for “"+query.trim()+"”.");
+        else count.setText("No channels match. Try another filter.");
     }
     private class ChannelAdapter extends BaseAdapter {
         public int getCount(){return visible.size();}
         public Object getItem(int pos){return visible.get(pos);}
         public long getItemId(int pos){return pos;}
-        public View getView(int pos,View reuse,android.view.ViewGroup parent) {
+        public View getView(int pos,View reuse,ViewGroup parent) {
             Channel c=visible.get(pos);
-            LinearLayout row=b.row();row.setPadding(dp(12),dp(10),dp(12),dp(10));
-            row.setBackground(b.interactive(false,20));
-            TextView logo=b.text(c.initials(),c.initials().length()>2?14:22,true);logo.setTextColor(b.onAccent);
-            logo.setGravity(Gravity.CENTER);logo.setBackground(b.gradient(16));row.addView(logo,new LinearLayout.LayoutParams(dp(56),dp(56)));
-            LinearLayout text=b.column();text.setPadding(dp(14),0,dp(8),0);
-            TextView name=b.text(c.name,16,true);name.setMaxLines(2);text.addView(name);
-            TextView meta=b.text((favourites.contains(c.id)?"★  ":"")+c.country+"  ·  "+c.category,12,false);meta.setTextColor(b.secondary);text.addView(meta);
-            row.addView(text,new LinearLayout.LayoutParams(0,-2,1));
-            TextView live=b.text(watching!=null&&watching.id.equals(c.id)?"●":"›",23,true);live.setTextColor(b.accent);row.addView(live);
-            FrameLayout wrapper=new FrameLayout(MainActivity.this);
-            FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(-1,-2);p.bottomMargin=dp(8);wrapper.addView(row,p);
-            // The selector follows the ListView's selection for remote / keyboard navigation.
-            android.graphics.drawable.StateListDrawable selector=new android.graphics.drawable.StateListDrawable();
-            android.graphics.drawable.GradientDrawable selected=b.shape(b.control,22,false); selected.setStroke(dp(3),b.accent);
-            selector.addState(new int[]{android.R.attr.state_selected},selected);
-            selector.addState(new int[]{android.R.attr.state_pressed},selected);
-            selector.addState(new int[]{},b.shape(b.bg,22,false));wrapper.setBackground(selector);
-            return wrapper;
+            Holder h=reuse==null?null:(Holder)reuse.getTag();
+            if(h==null)h=new Holder();
+            String initials=c.initials();
+            h.logo.setText(initials);h.logo.setTextSize(initials.length()>2?13:20);
+            h.name.setText(c.name);
+            h.meta.setText((favourites.contains(c.id)?"★  ":"")+(c.country.equals("CA")?"Canada":"United States")+"  ·  "+c.category);
+            boolean live=watching!=null&&watching.id.equals(c.id);
+            h.live.setVisibility(live?View.VISIBLE:View.GONE);h.more.setVisibility(live?View.GONE:View.VISIBLE);
+            return h.wrapper;
+        }
+    }
+    private final class Holder {
+        final FrameLayout wrapper=new FrameLayout(MainActivity.this);
+        final TextView logo, name, meta, live, more;
+        Holder() {
+            // The gap between rows is the wrapper's padding; the row itself takes the list's pressed and
+            // selected states, so the focus ring is drawn on the pill and never on the gap below it.
+            wrapper.setPadding(0,0,0,dp(8));wrapper.setTag(this);
+            LinearLayout row=b.row();row.setPadding(dp(8),dp(8),dp(18),dp(8));row.setDuplicateParentStateEnabled(true);
+            row.setBackground(b.interactive(false,Brand.PILL));
+            logo=b.text("",20,true);logo.setTextColor(b.onAccent);logo.setGravity(Gravity.CENTER);logo.setBackground(b.gradientCircle());
+            row.addView(logo,new LinearLayout.LayoutParams(dp(52),dp(52)));
+            LinearLayout words=b.column();words.setPadding(dp(14),0,dp(8),0);
+            name=b.text("",16,true);name.setMaxLines(2);name.setEllipsize(TextUtils.TruncateAt.END);words.addView(name);
+            meta=b.label("",12,b.secondary);meta.setPadding(0,dp(4),0,0);words.addView(meta);
+            row.addView(words,new LinearLayout.LayoutParams(0,-2,1));
+            live=b.text("LIVE",11,true);live.setTextColor(b.onAccent);live.setGravity(Gravity.CENTER);live.setPadding(dp(10),0,dp(10),0);
+            live.setBackground(b.gradient(Brand.PILL));row.addView(live,new LinearLayout.LayoutParams(-2,dp(24)));
+            more=b.text("›",22,true);more.setTextColor(b.accent);row.addView(more);
+            wrapper.addView(row,new FrameLayout.LayoutParams(-1,-2));
         }
     }
     private void tune(Channel channel) {
@@ -184,14 +283,18 @@ public final class MainActivity extends Activity {
         watchPage();
     }
     private void watchPage() {
-        body.removeAllViews();
-        page=b.column();page.setPadding(dp(12),dp(10),dp(12),0);body.addView(page,new FrameLayout.LayoutParams(-1,-1));
-        LinearLayout header=b.row();
-        header.addView(b.button("‹ Channels",false,v->{stop();fullScreen=false;build();}));
-        TextView name=b.text(watching.name,18,true);name.setPadding(dp(14),0,0,0);name.setMaxLines(2);
-        header.addView(name,new LinearLayout.LayoutParams(0,-2,1));
-        header.addView(b.button(favourites.contains(watching.id)?"★":"☆",false,v->{favourite(watching);watchPage();}));
-        if(!fullScreen)page.addView(header,new LinearLayout.LayoutParams(-1,dp(56)));
+        body.removeAllViews();scroller=null;
+        page=b.column();page.setPadding(dp(fullScreen?0:14),dp(fullScreen?0:10),dp(fullScreen?0:14),0);body.addView(page,new FrameLayout.LayoutParams(-1,-1));
+        if(!fullScreen) {
+            LinearLayout header=b.row();
+            header.addView(b.round("‹",v->{stop();fullScreen=false;build();}),new LinearLayout.LayoutParams(dp(44),dp(44)));
+            TextView name=b.text(watching.name,18,true);name.setPadding(dp(12),0,dp(12),0);name.setMaxLines(2);name.setEllipsize(TextUtils.TruncateAt.END);
+            header.addView(name,new LinearLayout.LayoutParams(0,-2,1));
+            TextView star=b.round(favourites.contains(watching.id)?"★":"☆",v->{favourite(watching);watchPage();});
+            if(favourites.contains(watching.id))star.setTextColor(b.accent);
+            header.addView(star,new LinearLayout.LayoutParams(dp(44),dp(44)));
+            LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-1,-2);hp.bottomMargin=dp(10);page.addView(header,hp);
+        }
         LinearLayout content=wide()&&!fullScreen?b.row():b.column();page.addView(content,new LinearLayout.LayoutParams(-1,0,1));
         LinearLayout stage=b.column();stage.setGravity(Gravity.CENTER_VERTICAL);
         if(fullScreen)content.addView(stage,new LinearLayout.LayoutParams(-1,0,1));
@@ -199,35 +302,63 @@ public final class MainActivity extends Activity {
         else content.addView(stage,new LinearLayout.LayoutParams(-1,-2));
         AspectFrame video=new AspectFrame(this);currentVideo=video;video.setBackgroundColor(Color.BLACK);
         SurfaceView surface=new SurfaceView(this);video.addView(surface,new FrameLayout.LayoutParams(-1,-1,Gravity.CENTER));
+        if(!fullScreen)video.addView(new Corners(this,b.bg,dp(22)),new FrameLayout.LayoutParams(-1,-1));
         stage.addView(video,new LinearLayout.LayoutParams(-1,wide()||fullScreen?0:-2,wide()||fullScreen?1:0));
-        state=b.text("Connecting…",14,true);state.setTextColor(b.accent);state.setPadding(dp(8),dp(8),dp(8),0);stage.addView(state);
-        qualityLabel=b.text("Auto · adapts to your connection",12,false);qualityLabel.setTextColor(b.secondary);qualityLabel.setPadding(dp(8),dp(4),dp(8),dp(8));stage.addView(qualityLabel);
+        LinearLayout info=b.row();info.setPadding(dp(4),dp(12),dp(4),dp(10));
+        state=b.text("",12,true);info.addView(state,new LinearLayout.LayoutParams(-2,-2));
+        qualityLabel=b.label("Auto · adapts to your connection",12,b.secondary);qualityLabel.setSingleLine();qualityLabel.setEllipsize(TextUtils.TruncateAt.END);qualityLabel.setPadding(dp(10),0,0,0);
+        info.addView(qualityLabel,new LinearLayout.LayoutParams(0,-2,1));
+        status("Connecting…");
+        if(!fullScreen)stage.addView(info);
         HorizontalScrollView actionsScroll=new HorizontalScrollView(this);actionsScroll.setHorizontalScrollBarEnabled(false);
-        LinearLayout actions=b.row();actionsScroll.addView(actions);stage.addView(actionsScroll);
+        LinearLayout actions=b.row();actionsScroll.addView(actions);
         action(actions,"Retry",()->tune(watching));
         action(actions,"Quality",this::qualityDialog);
         action(actions,fullScreen?"Exit full screen":"Full screen",()->{fullScreen=!fullScreen;watchPage();});
         action(actions,"Official site",()->website(watching));
-        TextView description=b.text(watching.description,13,false);description.setTextColor(b.secondary);description.setPadding(dp(8),dp(10),dp(8),dp(10));if(!fullScreen)stage.addView(description);
-        LinearLayout lineup=b.column();lineup.setPadding(wide()?dp(16):0,dp(8),0,0);
+        if(fullScreen) {
+            // Over the picture, along the bottom: a way back out without a remote's Back key.
+            FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(-2,-2,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);ap.bottomMargin=dp(16);
+            actions.setPadding(dp(6),dp(6),0,dp(6));actions.setBackground(b.shape(b.surface&0xe6ffffff,Brand.PILL,true));
+            body.addView(actionsScroll,ap);actionsScroll.setVisibility(View.GONE);
+            video.setOnClickListener(v->actionsScroll.setVisibility(actionsScroll.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE));
+        } else {
+            // Edge to edge, like the chips: the last pill scrolls in from the screen's edge rather than being cut short.
+            actionsScroll.setClipToPadding(false);actions.setPadding(wide()?0:dp(14),0,dp(8),0);
+            LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);if(!wide())ap.leftMargin=ap.rightMargin=-dp(14);
+            stage.addView(actionsScroll,ap);
+        }
+        if(!fullScreen){TextView description=b.label(watching.description,13,b.secondary);description.setLineSpacing(dp(2),1);description.setPadding(dp(4),dp(12),dp(4),dp(12));stage.addView(description);}
+        LinearLayout lineup=b.column();lineup.setPadding(wide()?dp(16):0,wide()?0:dp(4),0,0);
         if(!fullScreen)content.addView(lineup,new LinearLayout.LayoutParams(wide()?0:-1,wide()?-1:0,1));
         count=null;addList(lineup);
+        floatBars(false);
         if(playback==null && started)startPlayer(surface);else if(playback!=null){playback.attach(surface);pendingSurface=surface;}
         else pendingSurface=surface;
         fullscreen(fullScreen);
+    }
+    /** LIVE on an accent pill; connecting and errors as plain accent text. */
+    private void status(String message) {
+        if(state==null)return;
+        boolean live=message.equals("LIVE");
+        state.setText(live?"●  LIVE":message);
+        state.setTextColor(live?b.onAccent:b.accent);
+        state.setBackground(live?b.gradient(Brand.PILL):null);
+        state.setPadding(live?dp(10):0,live?dp(5):0,live?dp(10):0,live?dp(5):0);
+        if(qualityLabel!=null)qualityLabel.setVisibility(message.length()>28?View.GONE:View.VISIBLE);
     }
     private SurfaceView pendingSurface;
     private AspectFrame currentVideo;
     private void startPlayer(SurfaceView surface) {
         playback=new LivePlayer(this,new LivePlayer.Listener(){
-            public void status(String message){if(state!=null)state.setText(message);}
+            public void status(String message){MainActivity.this.status(message);}
             public void format(String message){if(qualityLabel!=null)qualityLabel.setText(message);}
-            public void aspect(float ratio){if(currentVideo!=null){currentVideo.ratio=ratio;currentVideo.requestLayout();}}
+            public void aspect(float ratio){if(currentVideo!=null&&Math.abs(currentVideo.ratio-ratio)>0.001f){currentVideo.ratio=ratio;currentVideo.requestLayout();}}
         },prefs.getInt("quality",0));pendingSurface=surface;playback.attach(surface);playback.tune(watching);
     }
     private void action(LinearLayout row,String label,Runnable action) {
         TextView button=b.button(label,false,v->action.run());
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(46));p.rightMargin=dp(6);row.addView(button,p);
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(44));p.rightMargin=dp(6);row.addView(button,p);
     }
     private void favourite(Channel c) {
         if(!favourites.remove(c.id))favourites.add(c.id);
@@ -236,57 +367,91 @@ public final class MainActivity extends Activity {
     }
     private void stop() {if(playback!=null){playback.release();playback=null;}watching=null;pendingSurface=null;}
     private void details(Channel c) {
-        dialog(c.name,c.description+"\n\n"+c.country+" · "+c.category+"\nChannels may be region restricted. Provider advertisements remain part of the stream.",
-            new String[]{"Watch live",favourites.contains(c.id)?"Remove favourite":"Add favourite","Official site"},
-            new Runnable[]{()->tune(c),()->{favourite(c);filter();},()->website(c)});
+        dialog(c.name,c.description+"\n\n"+(c.country.equals("CA")?"Canada":"United States")+" · "+c.category+"\nChannels may be region restricted. Provider advertisements remain part of the stream.",
+            new String[]{"Watch live",favourites.contains(c.id)?"Remove favourite":"Add favourite","Official site"},0,
+            new Runnable[]{()->tune(c),()->{favourite(c);filter();if(watching!=null&&watching.id.equals(c.id))watchPage();},()->website(c)});
     }
     private void website(Channel c) {
         try {startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(c.website)));}
-        catch(ActivityNotFoundException e){dialog("No browser installed","This device has no app to open "+c.website,new String[]{"OK"},new Runnable[]{()->{}});}
+        catch(ActivityNotFoundException e){ok("No browser installed","This device has no app to open "+c.website);}
     }
     private void qualityDialog() {
         dialog("Playback quality","Auto changes resolution as bandwidth changes. On Android 4.x it stays at 720p or below and 30 fps. Your device still needs a supported video decoder.",
-            new String[]{"Auto · adaptive","Data saver · up to 480p","Compatibility · up to 360p"},
+            new String[]{"Auto · adaptive","Data saver · up to 480p","Compatibility · up to 360p"},prefs.getInt("quality",0),
             new Runnable[]{()->quality(0),()->quality(1),()->quality(2)});
     }
-    private void quality(int value) {prefs.edit().putInt("quality",value).apply();if(playback!=null)playback.setQuality(value);}
+    private void quality(int value) {
+        prefs.edit().putInt("quality",value).apply();if(playback!=null)playback.setQuality(value);
+        if(watching==null&&tab.equals("Settings"))settings();
+    }
     private void settings() {
         newPage();title("Settings","Make yourself comfortable.");
-        ScrollView scroll=new ScrollView(this);LinearLayout settings=b.column();scroll.addView(settings);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-        setting(settings,"Theme",()->dialog("Choose your theme",null,new String[]{"Grapefruit Dark","Grapefruit Light","Pitch Black"},new Runnable[]{()->theme(0),()->theme(1),()->theme(2)}));
-        setting(settings,"Playback quality",this::qualityDialog);
-        setting(settings,"About Grapefruit FAST",()->dialog("Grapefruit FAST","1.0 beta 1 · build 1\n\nFree live TV in the Grapefruit family. Native Android 4.2.2 and later. Fonts: Geist and Geist Pixel Triangle by Vercel (SIL OFL 1.1). GPL-3.0-or-later. ExoPlayer and Conscrypt: Apache-2.0.\n\nCopyright © 2026 MagicFlute LLC. Not affiliated with the listed broadcasters or platforms.",new String[]{"OK"},new Runnable[]{()->{}}));
-        setting(settings,"Channels & availability",()->dialog("Channels & availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, DRM bypass, location spoofing or ad removal. Availability depends on your region and each provider.\n\nThe channel guide lists channels; programme schedules are not supplied in beta 1.\n\nCP24 is excluded because a public video stream could not be obtained from cp24.com. JP5S hardware playback still needs device testing.",new String[]{"OK"},new Runnable[]{()->{}}));
-        setting(settings,"Open source licences",this::licences);
-        note("Streams include provider ads. Grapefruit adds no tracking SDK or extra advertisements. Playback stops when you leave the app.");
+        ScrollView scroll=new ScrollView(this);scroll.setVerticalScrollBarEnabled(false);LinearLayout settings=b.column();settings.setPadding(0,dp(6),0,0);scroll.addView(settings);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+        int theme=prefs.getInt("theme",0);
+        setting(settings,"Theme",THEMES[theme],()->dialog("Choose your theme",null,THEMES,theme,new Runnable[]{()->theme(0),()->theme(1),()->theme(2)}));
+        setting(settings,"Playback quality",QUALITIES[prefs.getInt("quality",0)],this::qualityDialog);
+        setting(settings,"About Grapefruit FAST",VERSION.substring(0,VERSION.indexOf(" ·")),()->ok("Grapefruit FAST",VERSION+"\n\nFree live TV in the Grapefruit family. Native Android 4.2.2 and later. Fonts: Geist and Geist Pixel Triangle by Vercel (SIL OFL 1.1). GPL-3.0-or-later. ExoPlayer and Conscrypt: Apache-2.0.\n\nCopyright © 2026 MagicFlute LLC. Not affiliated with the listed broadcasters or platforms."));
+        setting(settings,"Channels & availability",null,()->ok("Channels & availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, DRM bypass, location spoofing or ad removal. Availability depends on your region and each provider.\n\nThe channel guide lists channels; programme schedules are not supplied in this beta.\n\nCP24 is excluded because a public video stream could not be obtained from cp24.com. JP5S hardware playback still needs device testing."));
+        setting(settings,"Open source licences",null,this::licences);
+        TextView n=b.label("Streams include provider ads. Grapefruit adds no tracking SDK or extra advertisements. Playback stops when you leave the app.",12,b.secondary);
+        n.setLineSpacing(dp(2),1);n.setPadding(dp(18),dp(8),dp(18),dp(14));settings.addView(n);
+        setScroller(scroll,dp(10));
+        floatBars(true);
     }
     private void licences() {
         try {
             String text=Catalog.read(getAssets().open("fast-licences.txt"))+"\n\n"+Catalog.read(getAssets().open("fonts/Geist-OFL.txt"))+"\n\n"+Catalog.read(getAssets().open("GPL-3.0.txt"));
-            dialog("Open source licences",text,new String[]{"OK"},new Runnable[]{()->{}});
-        } catch(Exception e){dialog("Licences","See LICENSE and fast/README.md in the source repository.",new String[]{"OK"},new Runnable[]{()->{}});}
+            ok("Open source licences",text);
+        } catch(Exception e){ok("Licences","See LICENSE and fast/README.md in the source repository.");}
     }
     private void theme(int t){prefs.edit().putInt("theme",t).apply();build();}
-    private void setting(LinearLayout parent,String label,Runnable click) {
-        TextView row=b.button(label+"   ›",false,v->click.run());row.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(60));p.bottomMargin=dp(10);parent.addView(row,p);
+    /** A pill row: the setting on the left, what it's set to and › on the right. */
+    private void setting(LinearLayout parent,String label,String value,Runnable click) {
+        LinearLayout row=b.row();row.setPadding(dp(22),0,dp(18),0);row.setFocusable(true);row.setClickable(true);
+        row.setBackground(b.interactive(false,Brand.PILL));row.setOnClickListener(v->click.run());
+        row.addView(b.text(label,15,true),new LinearLayout.LayoutParams(0,-2,1));
+        if(value!=null){TextView v=b.label(value,13,b.secondary);v.setPadding(dp(8),0,dp(10),0);row.addView(v);}
+        TextView more=b.text("›",22,true);more.setTextColor(b.accent);row.addView(more);
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(58));p.bottomMargin=dp(8);parent.addView(row,p);
     }
-    private void note(String message) {TextView t=b.text(message,12,false);t.setTextColor(b.secondary);t.setPadding(dp(8),dp(12),dp(8),dp(14));page.addView(t);}
-    private void dialog(String title,String message,String[] labels,Runnable[] actions) {
+    private void note(String message) {TextView t=b.label(message,12,b.secondary);t.setPadding(dp(8),dp(12),dp(8),dp(14));page.addView(t);}
+    private void ok(String title,String message){dialog(title,message,new String[]{"OK"},-1,new Runnable[]{()->{}});}
+    /**
+     * A floating sheet that is only as tall as it needs to be (up to the screen): a long message scrolls,
+     * the buttons stay in sight below it. chosen marks the current option, or -1.
+     */
+    private void dialog(String title,String message,String[] labels,int chosen,Runnable[] actions) {
         final android.app.Dialog d=new android.app.Dialog(this);d.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        LinearLayout card=b.column();card.setPadding(dp(22),dp(20),dp(22),dp(20));card.setBackground(b.shape(b.surface,24,true));
-        TextView heading=b.text(title,23,true);card.addView(heading);
-        ScrollView scroll=new ScrollView(this);LinearLayout contents=b.column();scroll.addView(contents);
-        if(message!=null){TextView t=b.text(message,15,false);t.setPadding(0,dp(14),0,dp(14));contents.addView(t);}
-        for(int i=0;i<labels.length;i++) {final int pos=i;TextView button=b.button(labels[i],false,v->{d.dismiss();actions[pos].run();});
-            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.topMargin=dp(8);contents.addView(button,p);}
-        card.addView(scroll,new LinearLayout.LayoutParams(-1,-2));d.setContentView(card);
-        Window w=d.getWindow();if(w!=null){w.setBackgroundDrawableResource(android.R.color.transparent);w.setLayout(Math.min(dp(520),getResources().getDisplayMetrics().widthPixels-dp(32)),-2);}
-        d.show();if(w!=null){w.setLayout(Math.min(dp(520),getResources().getDisplayMetrics().widthPixels-dp(32)),Math.min(dp(520),getResources().getDisplayMetrics().heightPixels-dp(48)));}
+        final int maxHeight=getResources().getDisplayMetrics().heightPixels-dp(48);
+        LinearLayout card=new LinearLayout(this){
+            @Override protected void onMeasure(int w,int h){
+                int size=View.MeasureSpec.getSize(h);
+                super.onMeasure(w,View.MeasureSpec.makeMeasureSpec(Math.min(size>0?size:maxHeight,maxHeight),View.MeasureSpec.AT_MOST));
+            }
+        };
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(22),dp(22),dp(22),dp(18));card.setBackground(b.shape(b.surface,30,true));
+        TextView heading=b.text(title,22,true);card.addView(heading);
+        if(message!=null){
+            ScrollView scroll=new ScrollView(this);scroll.setVerticalScrollBarEnabled(false);
+            TextView t=b.label(message,15,b.text);t.setLineSpacing(dp(3),1);t.setPadding(0,dp(12),0,dp(8));scroll.addView(t);
+            card.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+        }
+        LinearLayout buttons=b.column();buttons.setPadding(0,dp(6),0,0);
+        for(int i=0;i<labels.length;i++) {final int pos=i;TextView button=b.button(labels[i],i==chosen,v->{d.dismiss();actions[pos].run();});
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.topMargin=dp(8);buttons.addView(button,p);}
+        card.addView(buttons,new LinearLayout.LayoutParams(-1,-2));
+        d.setContentView(card);
+        Window w=d.getWindow();
+        if(w!=null){w.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));}
+        d.show();
+        if(w!=null)w.setLayout(Math.min(dp(480),getResources().getDisplayMetrics().widthPixels-dp(32)),WindowManager.LayoutParams.WRAP_CONTENT);
     }
     private void fullscreen(boolean on) {
-        nav.setVisibility(on&&watching!=null?View.GONE:View.VISIBLE);
-        if(on&&watching!=null)getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        boolean full=on&&watching!=null;
+        if(wide())nav.setVisibility(full?View.GONE:View.VISIBLE);
+        if(bars!=null&&full)bars.setVisibility(View.GONE);
+        if(full)getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         if(watching!=null)getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -295,7 +460,7 @@ public final class MainActivity extends Activity {
     @Override protected void onStop(){started=false;if(playback!=null){playback.release();playback=null;}super.onStop();}
     @Override protected void onResume(){super.onResume();if(started&&watching!=null&&playback==null)watchPage();}
     @Override public void onConfigurationChanged(Configuration c){super.onConfigurationChanged(c);build();}
-    @Override public void onBackPressed(){if(fullScreen){fullScreen=false;watchPage();}else if(watching!=null){stop();build();}else if(!tab.equals("Live TV")){tab="Live TV";build();}else super.onBackPressed();}
+    @Override public void onBackPressed(){if(fullScreen){fullScreen=false;watchPage();}else if(watching!=null){stop();build();}else if(!tab.equals("Live TV")){tab="Live TV";query="";build();}else super.onBackPressed();}
     @Override public boolean onKeyDown(int key,KeyEvent event) {
         if(watching!=null&&(key==KeyEvent.KEYCODE_CHANNEL_UP||key==KeyEvent.KEYCODE_CHANNEL_DOWN)){
             List<Channel> lineup=visible.isEmpty()?channels:visible;int pos=lineup.indexOf(watching);
@@ -304,6 +469,7 @@ public final class MainActivity extends Activity {
         return super.onKeyDown(key,event);
     }
     @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);out.putString("tab",tab);out.putString("category",category);out.putString("country",country);out.putString("query",query);out.putString("watching",watching==null?null:watching.id);out.putBoolean("fullscreen",fullScreen);}
+    /** Keeps the picture at its aspect ratio inside a 16:9 frame; other children (the corner mask) fill the frame. */
     private static class AspectFrame extends FrameLayout {
         float ratio=16f/9;
         AspectFrame(Context c){super(c);}
@@ -313,8 +479,25 @@ public final class MainActivity extends Activity {
             setMeasuredDimension(width,height);
             int vw=width,vh=Math.round(width/ratio);
             if(vh>height){vh=height;vw=Math.round(height*ratio);}
-            if(getChildCount()>0){View child=getChildAt(0);FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams)child.getLayoutParams();lp.width=vw;lp.height=vh;
-                child.measure(MeasureSpec.makeMeasureSpec(vw,MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(vh,MeasureSpec.EXACTLY));}
+            for(int i=0;i<getChildCount();i++){
+                View child=getChildAt(i);FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams)child.getLayoutParams();
+                int cw=i==0?vw:width,ch=i==0?vh:height;
+                if(i==0){lp.width=vw;lp.height=vh;}
+                child.measure(MeasureSpec.makeMeasureSpec(cw,MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(ch,MeasureSpec.EXACTLY));
+            }
         }
+    }
+    /**
+     * Rounds the picture's corners by painting the page colour over them. A SurfaceView can't be clipped on
+     * Android 4.x, but the window's own views draw over its hole, so this works on every version.
+     */
+    private static final class Corners extends View {
+        private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);private final float radius;private final Path path=new Path();
+        Corners(Context c,int color,float radius){super(c);paint.setColor(color);this.radius=radius;}
+        @Override protected void onSizeChanged(int w,int h,int ow,int oh){
+            path.reset();path.setFillType(Path.FillType.INVERSE_EVEN_ODD);
+            path.addRoundRect(new RectF(0,0,w,h),radius,radius,Path.Direction.CW);
+        }
+        @Override protected void onDraw(Canvas canvas){canvas.drawPath(path,paint);}
     }
 }

@@ -19,12 +19,13 @@ public class InterfaceTest {
             assertNotNull(text(root,"Live TV"));assertNotNull(text(root,"CityNews 24/7 · Toronto"));
             capture(root,"landscape-dark.png");
             text(root,"Favourites").performClick();measure(a.getWindow().getDecorView(),1024,600);
-            assertNotNull(text(a.getWindow().getDecorView(),"No channels match. Try another filter."));
+            assertNotNull(text(a.getWindow().getDecorView(),"No favourites yet. Hold a channel, or press Menu, to add one."));
             text(a.getWindow().getDecorView(),"Search").performClick();root=a.getWindow().getDecorView();
             EditText search=edit(root);assertNotNull(search);search.setText("Winnipeg");measure(root,1024,600);
-            assertNotNull(text(root,"Global News · Winnipeg"));
+            assertNotNull(text(root,"Global News · Winnipeg"));capture(root,"landscape-search.png");
             text(root,"Settings").performClick();measure(a.getWindow().getDecorView(),1024,600);
             assertNotNull(text(a.getWindow().getDecorView(),"Make yourself comfortable."));
+            assertNotNull(text(a.getWindow().getDecorView(),"Grapefruit Dark"));capture(a.getWindow().getDecorView(),"landscape-settings.png");
         }
     }
     @Test @Config(qualifiers="w360dp-h640dp-mdpi") public void portraitUsesBottomNavigation() throws Exception {
@@ -39,6 +40,28 @@ public class InterfaceTest {
         try(org.robolectric.android.controller.ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup()) {
             View root=controller.get().getWindow().getDecorView();measure(root,1024,600);
             assertEquals(Color.parseColor("#4A1622"),heading(root).getCurrentTextColor());capture(root,"landscape-light.png");
+        }
+    }
+    @Test @Config(qualifiers="w360dp-h640dp-mdpi") public void continueWatchingFloatsAboveTabsAndWatchPageOpens() throws Exception {
+        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
+        c.getSharedPreferences("fast",0).edit().putString("lastChannel","global-winnipeg").commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,360,640);
+            assertNotNull(text(root,"Continue watching"));capture(root,"portrait-continue.png");
+            View pill=(View)text(root,"Continue watching").getParent().getParent();pill.performClick();
+            root=a.getWindow().getDecorView();measure(root,360,640);
+            assertNotNull(text(root,"Full screen"));assertNull(text(root,"Continue watching"));capture(root,"portrait-watch.png");
+        }
+    }
+    @Test public void pressedRowOutlineHugsThePill() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup()) {
+            View root=controller.get().getWindow().getDecorView();measure(root,1024,600);
+            View row=(View)text(root,"CityNews 24/7 · Toronto").getParent().getParent();
+            ViewGroup item=(ViewGroup)row.getParent();
+            // The gap between rows belongs to the item, so a pressed ring drawn on the row can't fall below it.
+            assertNull(item.getBackground());assertTrue(row.isDuplicateParentStateEnabled());
+            assertEquals(item.getHeight()-item.getPaddingBottom(),row.getBottom());
+            item.setPressed(true);item.setSelected(true);root.invalidate();capture(root,"landscape-pressed.png");
         }
     }
     private static TextView heading(View v){if(v instanceof TextView&&((TextView)v).getText().toString().equals("Live TV")&&((TextView)v).getTextSize()>=29)return(TextView)v;if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++){TextView t=heading(g.getChildAt(i));if(t!=null)return t;}}return null;}

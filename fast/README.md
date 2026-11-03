@@ -1,10 +1,10 @@
 # Grapefruit FAST
 
-**1.0 beta 1 (build 1)** — `io.github.hayliewordsman.grapefruitfast`
+**1.0 beta 2 (build 2)** — `io.github.hayliewordsman.grapefruitfast`
 
 A second native Android app in the Grapefruit Music & Podcasts repository. Both can be installed at once. Music's application ID and version remain unchanged. Shared Geist fonts and Conscrypt TLS support live in `grapefruit-ui/`; Music's existing UI remains in `app/`.
 
-FAST uses Grapefruit's Dark, Light and Pitch Black palettes, Geist UI type, Geist Pixel Triangle wordmark, rounded cards, pill controls and responsive side/bottom navigation. The launcher icon places the grapefruit inside a widescreen television, with a smaller circle based on the first approved TV design.
+FAST uses Grapefruit's Dark, Light and Pitch Black palettes, Geist UI type and the Geist Pixel Triangle wordmark. Like Music 5.x, everything is a pill and floats: the tabs ride over the page on a floating pill (along the bottom, or down the side when there's room across), the last channel waits on a Continue watching pill above them like Music's mini player, channel rows are pills with round logos, and lists scroll out from under the floating bars. The launcher icon places the grapefruit inside a widescreen television, with a smaller circle based on the first approved TV design.
 
 ## Watching
 
@@ -64,7 +64,7 @@ JDK 21, Android SDK 36, build tools 35:
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
-Debug APK: `fast/build/outputs/apk/debug/fast-debug.apk`. Debug signatures are for testing, separate from the permanent release key. PR Actions also supplies a `grapefruit-fast-1.0-beta-1-test-apk` artifact with an installable test APK, checksum and verification evidence.
+Debug APK: `fast/build/outputs/apk/debug/fast-debug.apk`. Debug signatures are for testing, separate from the permanent release key. PR Actions also supplies a `grapefruit-fast-1.0-beta-2-test-apk` artifact with an installable test APK, checksum and verification evidence.
 
 `.github/workflows/fast.yml` builds/tests/lints FAST and uploads its own APK/report artifacts. To publish, run it manually on the repository's default branch with `publish` enabled. Set these repository secrets first:
 
@@ -72,7 +72,7 @@ Debug APK: `fast/build/outputs/apk/debug/fast-debug.apk`. Debug signatures are f
 - `GRAPEFRUIT_FAST_KEYSTORE_PASSWORD`: the key/store password.
 - Repository variable `GRAPEFRUIT_FAST_CERT_SHA256`: the permanent key's lower-case SHA-256 certificate fingerprint without colons.
 
-Local signed builds use `GRAPEFRUIT_FAST_KEYSTORE` and `GRAPEFRUIT_FAST_KEYSTORE_PASSWORD`. Keep signing files outside Git. The release workflow verifies package identity and the configured certificate before publishing a `fast-v1.0-beta-1` prerelease. Music retains its `v...` tags, signing settings and F-Droid publisher; its publisher now filters Music tags so FAST APKs cannot be mistaken for Music. Beta 1 is not submitted to f-droid.org or added to the stable F-Droid feed.
+Local signed builds use `GRAPEFRUIT_FAST_KEYSTORE` and `GRAPEFRUIT_FAST_KEYSTORE_PASSWORD`. Keep signing files outside Git. The release workflow verifies package identity and the configured certificate before publishing a `fast-v1.0-beta-2` prerelease. Music retains its `v...` tags, signing settings and F-Droid publisher; its publisher now filters Music tags so FAST APKs cannot be mistaken for Music. Beta 2 is not submitted to f-droid.org or added to the stable F-Droid feed.
 
 The shared library extraction changes Music's build inputs. A future Music release must regenerate and recheck its reproducible APK against the updated source tree.
 
