@@ -16,8 +16,9 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="1.0 beta 2 · build 2";
+    static final String VERSION="1.0 beta 3 · build 3";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
+    private static final int[] TAB_ICONS={TabIcon.LIVE_TV,TabIcon.FAVOURITES,TabIcon.SEARCH,TabIcon.SETTINGS};
     private static final String[] GENRES={"All","News","Series","Reality","Lifestyle"};
     private static final String[] THEMES={"Grapefruit Dark","Grapefruit Light","Pitch Black"};
     private static final String[] QUALITIES={"Auto","Data saver","Compatibility"};
@@ -60,8 +61,16 @@ public final class MainActivity extends Activity {
 
     private void build() {
         b=new Brand(this,prefs.getInt("theme",0));
-        windowColours();
-        root=new FrameLayout(this);root.setFitsSystemWindows(true);root.setBackgroundColor(b.bg);
+        root=new FrameLayout(this);root.setBackgroundColor(b.bg);
+        if(Build.VERSION.SDK_INT>=30) {
+            // Android 15+ draws apps edge to edge: keep the page clear of the bars, the camera cutout and the
+            // keyboard (adjustResize no longer shrinks the window there). Hidden bars (full screen) inset nothing.
+            root.setOnApplyWindowInsetsListener((v,insets)->{
+                android.graphics.Insets i=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout()|WindowInsets.Type.ime());
+                v.setPadding(i.left,i.top,i.right,i.bottom);
+                return WindowInsets.CONSUMED;
+            });
+        } else root.setFitsSystemWindows(true);
         shell=wide()?b.row():b.column();root.addView(shell,new FrameLayout.LayoutParams(-1,-1));
         if(wide()) {nav=b.column();nav.setGravity(Gravity.CENTER_HORIZONTAL);nav.setPadding(dp(14),dp(18),dp(6),dp(16));shell.addView(nav,new LinearLayout.LayoutParams(dp(164),-1));}
         body=new FrameLayout(this);
@@ -74,15 +83,22 @@ public final class MainActivity extends Activity {
         });
         if(!wide()) nav=b.row();
         navigation();setContentView(root);
+        // After setContentView: on Android 11+ the window's insets controller needs its decor view.
+        windowColours();
         if(watching!=null) watchPage();else if(tab.equals("Settings")) settings();else browse();
         fullscreen(fullScreen);
     }
     private void windowColours() {
         Window w=getWindow();w.setBackgroundDrawable(new ColorDrawable(b.bg));
         if(Build.VERSION.SDK_INT>=21){w.setStatusBarColor(b.bg);w.setNavigationBarColor(b.bg);}
-        if(Build.VERSION.SDK_INT>=23){
+        if(Build.VERSION.SDK_INT>=30){
+            WindowInsetsController bars=w.getInsetsController();
+            int dark=WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS|WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+            if(bars!=null)bars.setSystemBarsAppearance(b.light?dark:0,dark);
+        } else if(Build.VERSION.SDK_INT>=23){
             View d=w.getDecorView();int f=d.getSystemUiVisibility();
-            d.setSystemUiVisibility(b.light?f|View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR:f&~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            int light=View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|(Build.VERSION.SDK_INT>=26?View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR:0);
+            d.setSystemUiVisibility(b.light?f|light:f&~light);
         }
     }
     /** The tabs: a floating pill along the bottom, or down the side beside the wordmark. */
@@ -96,19 +112,27 @@ public final class MainActivity extends Activity {
             name.setGravity(Gravity.CENTER);name.setLineSpacing(dp(2),1);name.setPadding(0,dp(8),0,dp(18));nav.addView(name,new LinearLayout.LayoutParams(-1,-2));
             pill=b.column();nav.addView(pill,new LinearLayout.LayoutParams(-1,-2));
         } else {
-            pill=b.row();
-            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.leftMargin=p.rightMargin=dp(16);p.bottomMargin=dp(12);p.topMargin=dp(6);
+            // A pill only as wide as its tabs, floating in the middle, as in Music.
+            pill=b.row();nav.setGravity(Gravity.CENTER_HORIZONTAL);
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,-2);p.bottomMargin=dp(12);p.topMargin=dp(6);
             nav.addView(pill,p);
         }
         pill.setPadding(dp(5),dp(5),dp(5),dp(5));pill.setBackground(b.shape(b.surface,wide()?30:Brand.PILL,true));b.lift(pill,6);
-        for(String label:TABS) {
-            boolean chosen=tab.equals(label);
-            TextView button=b.text(label,wide()?14:12,true);button.setGravity(Gravity.CENTER);button.setFocusable(true);
-            button.setTextColor(chosen?b.onAccent:b.secondary);button.setBackground(b.interactive(chosen,Brand.PILL,0,false));
-            button.setOnClickListener(v->{stop();tab=label;query="";listPosition=0;fullScreen=false;build();});
-            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(wide()?-1:0,dp(46),wide()?0:1);
-            if(wide()&&!label.equals(TABS[0]))p.topMargin=dp(4);
-            pill.addView(button,p);
+        for(int i=0;i<TABS.length;i++) {
+            String label=TABS[i];boolean chosen=tab.equals(label);
+            // Like Music: an icon for each tab; the chosen one on the accent pill with its name beside it.
+            // Down the side there's room for every name.
+            LinearLayout item=b.row();item.setGravity(wide()?Gravity.CENTER_VERTICAL|Gravity.START:Gravity.CENTER);
+            item.setPadding(dp(14),0,dp(wide()?10:14),0);item.setFocusable(true);item.setClickable(true);item.setContentDescription(label);
+            item.setBackground(b.interactive(chosen,Brand.PILL,0,false));
+            item.setOnClickListener(v->{stop();tab=label;query="";listPosition=0;fullScreen=false;build();});
+            TabIcon icon=new TabIcon(this,TAB_ICONS[i],chosen?b.onAccent:b.secondary);item.addView(icon,new LinearLayout.LayoutParams(dp(22),dp(22)));
+            TextView name=b.text(label,13,true);name.setTextColor(chosen?b.onAccent:b.secondary);name.setPadding(dp(wide()?10:8),0,0,0);
+            name.setSingleLine();name.setVisibility(chosen||wide()?View.VISIBLE:View.GONE);
+            item.addView(name,new LinearLayout.LayoutParams(-2,-2));
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(wide()?-1:-2,dp(46));
+            if(i>0){if(wide())p.topMargin=dp(4);else p.leftMargin=dp(2);}
+            pill.addView(item,p);
         }
     }
     /** Fills the floating bars for this page: Continue watching (browsing pages), then the tabs (portrait). */
@@ -451,8 +475,16 @@ public final class MainActivity extends Activity {
         boolean full=on&&watching!=null;
         if(wide())nav.setVisibility(full?View.GONE:View.VISIBLE);
         if(bars!=null&&full)bars.setVisibility(View.GONE);
-        if(full)getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        if(Build.VERSION.SDK_INT>=30) {
+            // FLAG_FULLSCREEN is ignored edge to edge: hide the status and navigation bars; a swipe shows them for a moment.
+            WindowInsetsController bars=getWindow().getInsetsController();
+            if(bars!=null){
+                bars.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                if(full)bars.hide(WindowInsets.Type.systemBars());else bars.show(WindowInsets.Type.systemBars());
+            }
+        } else if(full)getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        backCallback();
         if(watching!=null)getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
@@ -460,7 +492,34 @@ public final class MainActivity extends Activity {
     @Override protected void onStop(){started=false;if(playback!=null){playback.release();playback=null;}super.onStop();}
     @Override protected void onResume(){super.onResume();if(started&&watching!=null&&playback==null)watchPage();}
     @Override public void onConfigurationChanged(Configuration c){super.onConfigurationChanged(c);build();}
-    @Override public void onBackPressed(){if(fullScreen){fullScreen=false;watchPage();}else if(watching!=null){stop();build();}else if(!tab.equals("Live TV")){tab="Live TV";query="";build();}else super.onBackPressed();}
+    @Override public void onBackPressed(){if(!back())super.onBackPressed();}
+    /** One step back inside the app: out of full screen, off the watch page, back to Live TV. False at the start. */
+    boolean back(){
+        if(fullScreen){fullScreen=false;watchPage();}
+        else if(watching!=null){stop();build();}
+        else if(!tab.equals("Live TV")){tab="Live TV";query="";build();}
+        else return false;
+        return true;
+    }
+    private Object backCallback;
+    /**
+     * Android 13+ with predictive back (always on for apps targeting Android 16) never calls onBackPressed:
+     * Back goes to whoever registered for it. Register while there's somewhere in the app to go back to,
+     * and step aside on Live TV so Back shows the system's go-home animation.
+     */
+    private void backCallback() {
+        if(Build.VERSION.SDK_INT<33)return;
+        boolean inside=fullScreen||watching!=null||!tab.equals("Live TV");
+        android.window.OnBackInvokedDispatcher dispatcher=getOnBackInvokedDispatcher();
+        if(inside&&backCallback==null){
+            android.window.OnBackInvokedCallback callback=()->back();
+            backCallback=callback;
+            dispatcher.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,callback);
+        } else if(!inside&&backCallback!=null){
+            dispatcher.unregisterOnBackInvokedCallback((android.window.OnBackInvokedCallback)backCallback);
+            backCallback=null;
+        }
+    }
     @Override public boolean onKeyDown(int key,KeyEvent event) {
         if(watching!=null&&(key==KeyEvent.KEYCODE_CHANNEL_UP||key==KeyEvent.KEYCODE_CHANNEL_DOWN)){
             List<Channel> lineup=visible.isEmpty()?channels:visible;int pos=lineup.indexOf(watching);

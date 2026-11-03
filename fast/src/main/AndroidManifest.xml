@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
@@ -6,7 +7,8 @@
     <application android:name=".FastApp" android:label="Grapefruit FAST"
         android:icon="@mipmap/ic_launcher" android:banner="@drawable/tv_banner"
         android:theme="@style/FastTheme" android:allowBackup="false"
-        android:usesCleartextTraffic="false" android:supportsRtl="true">
+        android:usesCleartextTraffic="false" android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true" tools:targetApi="33">
         <activity android:name=".MainActivity" android:exported="true" android:configChanges="orientation|screenSize|keyboardHidden"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

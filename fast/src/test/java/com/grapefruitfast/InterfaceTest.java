@@ -18,12 +18,12 @@ public class InterfaceTest {
             View root=a.getWindow().getDecorView();measure(root,1024,600);
             assertNotNull(text(root,"Live TV"));assertNotNull(text(root,"CityNews 24/7 · Toronto"));
             capture(root,"landscape-dark.png");
-            text(root,"Favourites").performClick();measure(a.getWindow().getDecorView(),1024,600);
+            tap(text(root,"Favourites"));measure(a.getWindow().getDecorView(),1024,600);
             assertNotNull(text(a.getWindow().getDecorView(),"No favourites yet. Hold a channel, or press Menu, to add one."));
-            text(a.getWindow().getDecorView(),"Search").performClick();root=a.getWindow().getDecorView();
+            tap(text(a.getWindow().getDecorView(),"Search"));root=a.getWindow().getDecorView();
             EditText search=edit(root);assertNotNull(search);search.setText("Winnipeg");measure(root,1024,600);
             assertNotNull(text(root,"Global News · Winnipeg"));capture(root,"landscape-search.png");
-            text(root,"Settings").performClick();measure(a.getWindow().getDecorView(),1024,600);
+            tap(text(root,"Settings"));measure(a.getWindow().getDecorView(),1024,600);
             assertNotNull(text(a.getWindow().getDecorView(),"Make yourself comfortable."));
             assertNotNull(text(a.getWindow().getDecorView(),"Grapefruit Dark"));capture(a.getWindow().getDecorView(),"landscape-settings.png");
         }
@@ -64,6 +64,31 @@ public class InterfaceTest {
             item.setPressed(true);item.setSelected(true);root.invalidate();capture(root,"landscape-pressed.png");
         }
     }
+    @Test @Config(qualifiers="w360dp-h640dp-mdpi") public void tabsAreIconsWithTheChosenOnesName() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup()) {
+            View root=controller.get().getWindow().getDecorView();measure(root,360,640);
+            ViewGroup chosen=null,other=null;
+            for(View v:views(root))if(v instanceof ViewGroup&&"Live TV".contentEquals(String.valueOf(v.getContentDescription())))chosen=(ViewGroup)v;
+            for(View v:views(root))if(v instanceof ViewGroup&&"Search".contentEquals(String.valueOf(v.getContentDescription())))other=(ViewGroup)v;
+            assertTrue(chosen.getChildAt(0) instanceof TabIcon);assertEquals(View.VISIBLE,chosen.getChildAt(1).getVisibility());
+            assertTrue(other.getChildAt(0) instanceof TabIcon);assertEquals(View.GONE,other.getChildAt(1).getVisibility());
+            capture(root,"portrait-tabs.png");
+        }
+    }
+    /** Android 15 (edge to edge, predictive back): Back steps out of the watch page and tabs, then leaves. */
+    @Test @Config(sdk=35,qualifiers="w411dp-h914dp-xxhdpi") public void modernAndroidBackSteps() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"CityNews 24/7 · Toronto"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Full screen"));
+            assertTrue(a.back());root=a.getWindow().getDecorView();assertNull(text(root,"Full screen"));
+            tap(text(root,"Settings"));root=a.getWindow().getDecorView();assertNotNull(text(root,"Make yourself comfortable."));
+            assertTrue(a.back());assertFalse(a.back());
+        }
+    }
+    private static void tap(View v){while(v!=null&&!v.isClickable()&&!(v.getParent() instanceof AdapterView))v=(View)v.getParent();
+        if(v.getParent() instanceof AdapterView){AdapterView<?> list=(AdapterView<?>)v.getParent();int pos=list.getPositionForView(v);list.performItemClick(v,pos,list.getItemIdAtPosition(pos));}else v.performClick();}
+    private static java.util.List<View> views(View v){java.util.List<View> all=new java.util.ArrayList<>();all.add(v);if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)all.addAll(views(g.getChildAt(i)));}return all;}
     private static TextView heading(View v){if(v instanceof TextView&&((TextView)v).getText().toString().equals("Live TV")&&((TextView)v).getTextSize()>=29)return(TextView)v;if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++){TextView t=heading(g.getChildAt(i));if(t!=null)return t;}}return null;}
     private static void measure(View v,int w,int h){v.measure(View.MeasureSpec.makeMeasureSpec(w,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(h,View.MeasureSpec.EXACTLY));v.layout(0,0,w,h);}
     private static TextView text(View v,String s){if(v instanceof TextView&&((TextView)v).getText().toString().equals(s))return(TextView)v;if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++){TextView t=text(g.getChildAt(i),s);if(t!=null)return t;}}return null;}
