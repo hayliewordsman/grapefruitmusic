@@ -62,28 +62,28 @@ jobs:
         env:
           SIGNED: ${{ steps.signing.outputs.signed }}
         run: |
-          mkdir -p work/fast-test-apk
-          apk=work/fast-test-apk/grapefruit-tv-${{ steps.version.outputs.name }}-test.apk
+          mkdir -p work/tv-test-apk
+          apk=work/tv-test-apk/grapefruit-tv-${{ steps.version.outputs.name }}-test.apk
           tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
           if [ "$SIGNED" = true ]; then
             # The release build, on the permanent key: it installs over earlier and later Grapefruit TV builds.
-            cp tv/build/outputs/apk/release/fast-release.apk "$apk"
+            cp tv/build/outputs/apk/release/tv-release.apk "$apk"
             digest=$("$tools/apksigner" verify --print-certs --min-sdk-version 17 "$apk" | sed -n 's/^.*certificate SHA-256 digest: *//p' | sort -u)
             test "$digest" = "$GRAPEFRUIT_CERT_SHA256"
           else
             # No key here (a fork's pull request): debug-signed, and it won't install over permanent-key builds.
-            cp tv/build/outputs/apk/debug/fast-debug.apk "$apk"
+            cp tv/build/outputs/apk/debug/tv-debug.apk "$apk"
             echo "::warning::No permanent key: this test APK is debug-signed and won't install over signed Grapefruit TV builds."
           fi
-          "$tools/apksigner" verify --verbose --print-certs --min-sdk-version 17 "$apk" > work/fast-test-apk/signature.txt
-          "$tools/aapt2" dump badging "$apk" > work/fast-test-apk/package.txt
-          (cd work/fast-test-apk && sha256sum grapefruit-tv-${{ steps.version.outputs.name }}-test.apk > SHA256SUMS)
-          cp docs/tv/validation.md work/fast-test-apk/verification.md
-          cp docs/tv/stream-report.json docs/tv/codec-report.json work/fast-test-apk/
+          "$tools/apksigner" verify --verbose --print-certs --min-sdk-version 17 "$apk" > work/tv-test-apk/signature.txt
+          "$tools/aapt2" dump badging "$apk" > work/tv-test-apk/package.txt
+          (cd work/tv-test-apk && sha256sum grapefruit-tv-${{ steps.version.outputs.name }}-test.apk > SHA256SUMS)
+          cp docs/tv/validation.md work/tv-test-apk/verification.md
+          cp docs/tv/stream-report.json docs/tv/codec-report.json work/tv-test-apk/
       - uses: actions/upload-artifact@v4
         with:
           name: grapefruit-tv-${{ steps.version.outputs.name }}-test-apk
-          path: work/fast-test-apk/
+          path: work/tv-test-apk/
       - name: Remove signing key
         if: always()
         run: rm -f "$RUNNER_TEMP/grapefruit.p12"
@@ -123,7 +123,7 @@ jobs:
           VERSION: ${{ needs.build.outputs.version }}
         run: |
           test -n "$EXPECTED_CERT"
-          apk=artifacts/release/fast-release.apk
+          apk=artifacts/release/tv-release.apk
           tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
           digest=$("$tools/apksigner" verify --print-certs --min-sdk-version 17 "$apk" | sed -n 's/^.*certificate SHA-256 digest: *//p' | sort -u)
           test "$digest" = "$EXPECTED_CERT"

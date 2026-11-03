@@ -79,7 +79,7 @@ JDK 21, Android SDK 36, build tools 35:
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
-Debug APK: `tv/build/outputs/apk/debug/fast-debug.apk`. Debug signatures are for testing, separate from the permanent release key. PR Actions also supplies a `grapefruit-tv-1.0-test-apk` artifact with an installable test APK, checksum and verification evidence.
+Debug APK: `tv/build/outputs/apk/debug/tv-debug.apk`. Debug signatures are for testing, separate from the permanent release key. PR Actions also supplies a `grapefruit-tv-1.0-test-apk` artifact with an installable test APK, checksum and verification evidence.
 
 `.github/workflows/tv.yml` builds/tests/lints Grapefruit TV and uploads its own APK/report artifacts. To publish, run it manually on the repository's default branch with `publish` enabled.
 
