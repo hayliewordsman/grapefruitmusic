@@ -17,7 +17,7 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="2.0 beta 2 · build 14";
+    static final String VERSION="2.0 beta 3 · build 15";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
@@ -70,6 +70,7 @@ public final class MainActivity extends Activity {
         build();
         splash();
         if(!sourcesRefreshed){sourcesRefreshed=true;refreshSources(null);}
+        offerCrashReport();
     }
     /** The list everything browses: built-in channels, then each of the viewer's sources' channels. */
     private void mergeChannels() {
@@ -897,7 +898,18 @@ public final class MainActivity extends Activity {
             // A prefilled field ("My TV") selects its text on a tap, so typing replaces it.
             if(!values[i].isEmpty())f.setSelectAllOnFocus(true);
             noSelectionBar(f);
-            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.topMargin=dp(10);card.addView(f,p);fields[i]=f;
+            fields[i]=f;
+            if(i>0&&!secret[i]) {
+                // Grapefruit's own Paste, beside addresses and usernames (on Android 4.x the system's paste pop-up is off in dialogs).
+                LinearLayout row=b.row();
+                row.addView(f,new LinearLayout.LayoutParams(0,dp(48),1));
+                TextView paste=b.button("Paste",false,v->{CharSequence clip=clipboardText();if(clip!=null){f.setText(clip.toString().trim());f.setSelection(f.getText().length());}});
+                paste.setTextSize(13);paste.setPadding(dp(14),0,dp(14),0);
+                LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-2,dp(48));pp.leftMargin=dp(8);row.addView(paste,pp);
+                LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,dp(48));rp.topMargin=dp(10);card.addView(row,rp);
+            } else {
+                LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.topMargin=dp(10);card.addView(f,p);
+            }
         }
         LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,dp(48));bp.topMargin=dp(14);
         card.addView(b.button("Save",true,v->{String[] out=new String[fields.length];for(int i=0;i<out.length;i++)out[i]=fields[i].getText().toString();d.dismiss();done.done(out);}),bp);
@@ -914,12 +926,34 @@ public final class MainActivity extends Activity {
      */
     static void noSelectionBar(EditText f) {
         if(Build.VERSION.SDK_INT>=23) return;
+        // No long-press pop-up (Paste, Select): Jelly Bean's crashes in a dialog. The form has its own Paste.
+        f.setLongClickable(false);
         f.setCustomSelectionActionModeCallback(new android.view.ActionMode.Callback(){
             public boolean onCreateActionMode(android.view.ActionMode m,Menu menu){return false;}
             public boolean onPrepareActionMode(android.view.ActionMode m,Menu menu){return false;}
             public boolean onActionItemClicked(android.view.ActionMode m,MenuItem item){return false;}
             public void onDestroyActionMode(android.view.ActionMode m){}
         });
+    }
+    /** As Music: after a crash, offer to share its report (nothing is sent unless the person shares it). */
+    private void offerCrashReport() {
+        final String report=CrashReport.pending(this);
+        if(report==null)return;
+        new Handler(Looper.getMainLooper()).postDelayed(()->{
+            if(isFinishing())return;
+            dialog("Grapefruit TV closed unexpectedly","Last time, a fault in Grapefruit TV closed it. It kept a short report: the app and Android versions, this device's model, and where in Grapefruit TV's code it stopped. Logins and addresses are left out. Nothing has been sent. Sharing it with the developer helps get it fixed.",
+                new String[]{"Share Report","Dismiss"},-1,new Runnable[]{()->{
+                    CrashReport.clear(this);
+                    Intent send=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT,"Grapefruit TV crash report").putExtra(Intent.EXTRA_TEXT,report);
+                    try{startActivity(Intent.createChooser(send,"Share Report"));}catch(ActivityNotFoundException e){copy(report);}
+                },()->CrashReport.clear(this)});
+        },1300);
+    }
+    /** The clipboard's text, or null. */
+    private CharSequence clipboardText() {
+        android.content.ClipboardManager cm=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+        if(cm==null||!cm.hasPrimaryClip()||cm.getPrimaryClip().getItemCount()==0)return null;
+        return cm.getPrimaryClip().getItemAt(0).coerceToText(this);
     }
     private void addSource(String kind,String name,String address,String user,String pass) {
         if(address.trim().isEmpty()||(UserSources.LOGIN.equals(kind)&&user.trim().isEmpty())){ok("Add a Source","Fill in the address"+(UserSources.LOGIN.equals(kind)?" and username":"")+".");return;}

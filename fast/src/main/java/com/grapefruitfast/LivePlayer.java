@@ -97,7 +97,7 @@ public final class LivePlayer {
         String mode=quality==0?"Auto":quality==1?"Data saver":"Compatibility";
         listener.format(f==null?mode:mode+" · "+f.height+"p"+(f.bitrate>0?" · "+String.format(java.util.Locale.US,"%.1f Mbps",f.bitrate/1000000f):""));
     }
-    static final String USER_AGENT="GrapefruitTV/2.0-beta-2 (Android)";
+    static final String USER_AGENT="GrapefruitTV/2.0-beta-3 (Android)";
     /** An HLS playlist (.m3u8), by its address; anything else is played as a direct stream. */
     static boolean hls(String url) {
         String path=url.toLowerCase(java.util.Locale.US);int q=path.indexOf('?');if(q>=0)path=path.substring(0,q);

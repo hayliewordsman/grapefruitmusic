@@ -113,7 +113,7 @@ public class InterfaceTest {
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
             tap(text(root,"About Grapefruit TV"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 2.0-beta-2"));assertNotNull(text(root,"Source Code"));
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 2.0-beta-3"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
@@ -302,6 +302,24 @@ public class InterfaceTest {
             name.selectAll();
             assertTrue(name.onTextContextMenuItem(android.R.id.copy)||true);
         }
+    }
+    /** The form's own Paste fills an address from the clipboard. */
+    @Test public void pasteFillsTheAddress() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1024,600);
+            ((android.content.ClipboardManager)a.getSystemService(android.content.Context.CLIPBOARD_SERVICE)).setPrimaryClip(android.content.ClipData.newPlainText("u"," https://tv.example.com/list.m3u "));
+            tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1024,600);
+            tap(text(root,"Add a Playlist (M3U)…"));
+            View form=org.robolectric.shadows.ShadowDialog.getLatestDialog().getWindow().getDecorView();measure(form,900,1200);
+            text(form,"Paste").performClick();
+            EditText address=null;for(View v:views(form))if(v instanceof EditText&&String.valueOf(((EditText)v).getHint()).startsWith("Playlist address"))address=(EditText)v;
+            assertEquals("https://tv.example.com/list.m3u",address.getText().toString());
+            capture(form,"form-add-playlist.png");
+        }
+    }
+    @Test public void crashReportsLeaveOutLogins() {
+        String r=CrashReport.redact("at http://iptv.example.com:8080/live/alice/s3cret/123.ts and https://a.example/x.m3u8?token=abc and http://bob:pw@host/x");
+        assertFalse(r,r.contains("alice")||r.contains("s3cret")||r.contains("token=abc")||r.contains("bob:pw"));
     }
     private static void tap(View v){while(v!=null&&!v.isClickable()&&!(v.getParent() instanceof AdapterView))v=(View)v.getParent();
         if(v.getParent() instanceof AdapterView){AdapterView<?> list=(AdapterView<?>)v.getParent();int pos=list.getPositionForView(v);list.performItemClick(v,pos,list.getItemIdAtPosition(pos));}else v.performClick();}
