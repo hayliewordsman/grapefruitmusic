@@ -113,7 +113,7 @@ public class InterfaceTest {
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
             tap(text(root,"About Grapefruit FAST"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0-beta-9"));assertNotNull(text(root,"Source Code"));
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0-beta-10"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
@@ -226,6 +226,22 @@ public class InterfaceTest {
         assertEquals("First line\nSecond line",LivePlayer.joined(cues).toString());
     }
     private static View visible(View root,String s){for(View v:views(root))if(v instanceof TextView&&s.equals(String.valueOf(((TextView)v).getText()))&&v.getVisibility()==View.VISIBLE)return v;return null;}
+    /** Test Channels: a channel it found playing here is listed outside the US from then on. */
+    @Test public void testChannelsUnlocksWhatPlaysHere() throws Exception {
+        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
+        c.getSharedPreferences("fast",0).edit().putString("region","CA").putStringSet("unlocked_CA",new java.util.HashSet<>(java.util.Arrays.asList("nbc-news-now"))).commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1024,600);
+            TextView count=null;for(View v:views(root))if(v instanceof TextView&&String.valueOf(((TextView)v).getText()).contains("channels · tap"))count=(TextView)v;
+            int offered=0;for(Channel ch:Catalog.parse(Catalog.read(c.getAssets().open("channels.json"))))if(Region.offered(ch,"CA"))offered++;
+            assertTrue(count.getText().toString(),count.getText().toString().startsWith((offered+1)+" channels"));
+            tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1024,600);
+            tap(text(root,"Test Channels"));root=a.getWindow().getDecorView();measure(root,1024,600);
+            assertNotNull(text(root,"Test All Channels"));assertNotNull(text(root,"Region: Canada"));
+            capture(root,"landscape-test-channels.png");
+            assertTrue(a.back());assertNotNull(text(a.getWindow().getDecorView(),"Appearance"));
+        }
+    }
     private static void tap(View v){while(v!=null&&!v.isClickable()&&!(v.getParent() instanceof AdapterView))v=(View)v.getParent();
         if(v.getParent() instanceof AdapterView){AdapterView<?> list=(AdapterView<?>)v.getParent();int pos=list.getPositionForView(v);list.performItemClick(v,pos,list.getItemIdAtPosition(pos));}else v.performClick();}
     private static java.util.List<View> views(View v){java.util.List<View> all=new java.util.ArrayList<>();all.add(v);if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)all.addAll(views(g.getChildAt(i)));}return all;}

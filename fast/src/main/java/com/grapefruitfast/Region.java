@@ -46,6 +46,9 @@ public final class Region {
         switch(country){case "CA":case "US":case "GB":case "AU":return country;default:return "XX";}
     }
 
+    /** The preference holding channels Test Channels unlocked in a region. */
+    public static String unlockedKey(String region) { return "unlocked_"+(region.isEmpty()?"unknown":region); }
+
     public static String name(String code) {
         for(int i=0;i<CODES.length;i++) if(CODES[i].equals(code)) return NAMES[i];
         return "Unknown";
@@ -53,7 +56,11 @@ public final class Region {
 
     /** Whether a channel has a source offered in this region ("" = unknown: show everything). */
     public static boolean offered(Channel channel,String region) {
-        if(region.isEmpty()||"US".equals(region)) return true;
+        return offered(channel,region,java.util.Collections.<String>emptySet());
+    }
+    /** As offered(), and also any channel Test Channels found playing here (unlocked). */
+    public static boolean offered(Channel channel,String region,java.util.Set<String> unlocked) {
+        if(region.isEmpty()||"US".equals(region)||unlocked.contains(channel.id)) return true;
         // Xumo is a US service: a channel only Xumo carries isn't offered elsewhere.
         return !channel.availability.startsWith("United States");
     }
