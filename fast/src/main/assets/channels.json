@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "reviewed": "2026-11-02",
- "notice": "Official broadcaster/distributor sources. Regional restrictions and provider ads remain. Live probes establish reachability only; JP5S hardware playback remains untested. CP24 excluded: no stream obtained from cp24.com. News is reviewed for bias: no right-wing, partisan, News Corp or Fox channels.",
+ "notice": "Official broadcaster/distributor sources. Regional restrictions and provider ads remain. Live probes establish reachability only; JP5S hardware playback remains untested. CP24 excluded: no stream obtained from cp24.com.",
  "channels": [
   {
    "id": "citynews-toronto",
@@ -345,12 +345,13 @@
    "country": "US",
    "category": "News",
    "description": "Your destination for the day’s top headlines and what’s trending, Weekdays from 7am to 7pm ET. Stop by throughout the day for everything you Need to…",
-   "website": "https://play.xumo.com/live-guide/cheddar-news",
+   "website": "https://www.cheddar.com/",
    "streams": [
+    "https://hls.livecdn.io/cheddar.com/cheddar/playlist.m3u8",
     "https://dbrb49pjoymg4.cloudfront.net/10001/99991220/hls/playlist.m3u8?ads.xumo_channelId=99991220&ads.xumo_streamId=99991220&ads.channelId=99991220&ads.channelName=cheddar_us&ads.xumo_channelName=cheddar&ads.caid=Cheddar&ads.csid=xumo_android_cheddar_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=161&ads.xumo_contentName=Cheddar&ads.xumo_providerId=161&ads.xumo_providerName=Cheddar&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
    ],
-   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM4HMP5RYJN563.json?f=providers&f=connectorId",
-   "availability": "United States (Xumo)"
+   "provenance": "https://www.cheddar.com/",
+   "availability": "cheddar.com, and Xumo in the United States"
   },
   {
    "id": "bbc-news",
@@ -715,6 +716,19 @@
    ],
    "provenance": "https://www.abc.net.au/news/newschannel",
    "availability": "Worldwide (ABC website)"
+  },
+  {
+   "id": "cnn-headlines",
+   "name": "CNN Headlines",
+   "country": "US",
+   "category": "News",
+   "description": "View the latest news and breaking news today for U.S., world, weather, entertainment, politics and health.",
+   "website": "https://play.xumo.com/live-guide/cnn-headlines",
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951386/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951386&ads.xumo_streamId=99951386&ads.channelId=99951386&ads.channelName=WBDCNNHeadlines&ads.caid=WBDCNNHeadlines&ads.csid=xumo_android_WBDCNNHeadlines_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=4193&ads.xumo_contentName=WBDCNNHeadlines&ads.xumo_providerId=4193&ads.xumo_providerName=WBDCNNHeadlines&ads.asnw=&ads.xumo_channelName=WBDCNNHeadlines&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST"
+   ],
+   "provenance": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM8HMQQTN649DS.json?f=providers&f=connectorId",
+   "availability": "United States (Xumo)"
   }
  ]
 }

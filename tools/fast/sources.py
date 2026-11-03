@@ -5,6 +5,9 @@
   as for beta 1's Xumo channels. DRM sources are refused.
 - DW's own live page (www.dw.com/graph-api livestream data): DW English's hlsVideoSrc.
 - ABC Australia's own News Channel page (www.abc.net.au/news/newschannel): its live player source.
+- Cheddar's own home page (www.cheddar.com): its live player's stream (PoWa id "cheddar-live"), found
+  by opening the page in a headless browser and recording what its player loads, then read from
+  the page's own player setup. Xumo's copy (US) is kept as a fallback.
 
 No community playlists, no proxies, no location or ad workarounds. Provider ads remain.
 Run from repo root: python3 tools/fast/sources.py  (then tools/fast/check_streams.py)
@@ -45,6 +48,7 @@ XUMO_CHANNELS = [
     ('sky-news', 99951223, 'Sky News', 'GB', 'News'),
     ('reuters', 99951197, 'Reuters 60', 'GB', 'News'),
     ('bloomberg-tv-plus', 99951533, 'Bloomberg TV+', 'US', 'News'),
+    ('cnn-headlines', 99951386, 'CNN Headlines', 'US', 'News'),
     # UK entertainment
     ('top-gear', 99951249, 'Top Gear', 'GB', 'Lifestyle'),
     ('midsomer-murders', 99991698, 'Midsomer Murders', 'GB', 'Series'),
@@ -90,6 +94,7 @@ NEWS_REVIEW = {
     'sky-news': 'Media Bias/Fact Check: Least Biased, High factual; Ad Fontes: Middle, reliable (mediabiasfactcheck.com/sky-news). Owned by Comcast (Sky Group), not News Corp; Ofcom impartiality rules. Not Sky News Australia (News Corp, excluded).',
     'reuters': 'Media Bias/Fact Check: Least Biased, Very High factual; Ad Fontes: Middle, reliable (mediabiasfactcheck.com/reuters).',
     'bloomberg-tv-plus': 'Media Bias/Fact Check: Left-Center; Ad Fontes: Middle (adfontesmedia.com/bloomberg-news-bias-and-reliability). Business news.',
+    'cnn-headlines': 'Media Bias/Fact Check: Left (mediabiasfactcheck.com/cnn); Ad Fontes Media: Skews Left.',
     'dw-news': 'Media Bias/Fact Check: Left-Center, High factual (mediabiasfactcheck.com/dw-news). Germany\'s international public broadcaster.',
     'abc-news-australia': 'Media Bias/Fact Check: Left-Center, High factual (mediabiasfactcheck.com/abc-news-australia). Australia\'s public broadcaster (not News Corp; Sky News Australia excluded).',
     'cbc-news': 'Media Bias/Fact Check: Left-Center, High factual; Ad Fontes: Middle, reliable (mediabiasfactcheck.com/cbc-news). Canada\'s public broadcaster.',
@@ -105,7 +110,6 @@ EXCLUDED_NEWS = [
     {'id': 'talktv', 'reason': 'News Corp owned; Piers Morgan. Excluded by policy.'},
     {'id': 'gb-news', 'reason': 'Right-wing news. Excluded by policy.'},
     {'id': 'tyt', 'reason': 'Partisan (left) commentary rather than non-partisan news. Excluded by policy.'},
-    {'id': 'cnn-headlines', 'reason': 'Media Bias/Fact Check: Left. Excluded to keep news non-partisan.'},
     {'id': 'france-24-english', 'reason': 'Official site plays France 24 English through YouTube only; no first-party HLS for a non-WebView app. Not added.'},
     {'id': 'euronews-english', 'reason': 'Euronews states its English stream is unavailable in the USA; not globally available, and no first-party HLS was obtained. Not added.'},
     {'id': 'cbc-news-local', 'reason': 'CBC Gem offers its local CBC News channels to signed-in members only. Grapefruit requires no account and does not get around sign-in, so they are not added.'},
@@ -251,6 +255,34 @@ def main():
     except Exception as e:
         failed.append(('abc-news-australia', str(e)))
 
+    # Cheddar News, first-party: Cheddar's own live player, ahead of Xumo's US copy.
+    try:
+        page = 'https://www.cheddar.com/'
+        req = urllib.request.Request(page, headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) Chrome/130 Safari/537.36'})
+        html = urllib.request.urlopen(req, timeout=30).read().decode('utf-8', 'replace')
+        start = html.index('id: \\"cheddar-live\\"')
+        start = html.index("stream: '", start) + len("stream: '")
+        stream = html[start:html.index("'", start)]
+        if not stream.startswith('https://') or '.m3u8' not in stream:
+            raise ValueError('Cheddar stream not HTTPS HLS')
+        for c in catalog['channels']:
+            if c['id'] == 'cheddar-news' and c['streams'][0] != stream:
+                c['streams'] = [stream] + [u for u in c['streams'] if u != stream]
+                c['website'] = page
+                c['provenance'] = page
+                c['availability'] = 'cheddar.com, and Xumo in the United States'
+        for r in sources['sources']:
+            if r['id'] == 'cheddar-news' and r['streams'][0] != stream:
+                r['xumo_fallback'] = {'source': r['source'], 'evidence': r['evidence']}
+                r['viewing_page'] = page
+                r['source'] = page
+                r['evidence'] = {'source_field': 'PoWa player id "cheddar-live" stream (the page\'s own live player); confirmed by the player\'s requests in a headless browser',
+                                 'availability': "Cheddar's own public live player; no sign-in. Availability outside the US not established.",
+                                 'bias_review': NEWS_REVIEW['cheddar-news']}
+                r['streams'] = [stream] + [u for u in r['streams'] if u != stream]
+    except Exception as e:
+        failed.append(('cheddar-news first-party', str(e)))
+
     known = {e['id'] for e in sources.get('excluded_after_source_review', [])}
     for e in EXCLUDED_NEWS:
         if e['id'] not in known:
@@ -258,8 +290,7 @@ def main():
     catalog['schema'] = 1
     catalog['notice'] = ('Official broadcaster/distributor sources. Regional restrictions and provider ads remain. '
                          'Live probes establish reachability only; JP5S hardware playback remains untested. '
-                         'CP24 excluded: no stream obtained from cp24.com. News is reviewed for bias: no right-wing, '
-                         'partisan, News Corp or Fox channels.')
+                         'CP24 excluded: no stream obtained from cp24.com.')
     CATALOG.write_text(json.dumps(catalog, indent=1, ensure_ascii=False) + '\n')
     SOURCES.write_text(json.dumps(sources, indent=1, ensure_ascii=False) + '\n')
     print('added %d: %s' % (len(added), ', '.join(added)))

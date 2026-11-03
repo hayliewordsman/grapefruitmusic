@@ -41,11 +41,11 @@ public final class CatalogTest {
         assertEquals("Australia",channels.stream().filter(c->c.id.equals("abc-news-australia")).findFirst().get().region());
         assertEquals("Europe",channels.stream().filter(c->c.id.equals("dw-news")).findFirst().get().region());
     }
-    /** The news policy: no right-wing, partisan, News Corp or Fox channels, and no Piers Morgan. */
+    /** The news policy: no right-wing, partisan, News Corp or Fox channels, and no Piers Morgan. (CNN Headlines is included.) */
     @Test public void noRightWingPartisanNewsCorpOrFoxNews() throws Exception {
         for(Channel c:Catalog.parse(bundled())){
             String all=(c.id+" "+c.name+" "+c.description+" "+String.join(" ",c.streams)).toLowerCase(Locale.US);
-            for(String banned:new String[]{"newsmax","oan","one america","salem","fox","talktv","talk tv","piers morgan","gb news","gbnews","sky news australia","skynewsaustralia","tyt","young turks","cnn"})
+            for(String banned:new String[]{"newsmax","oan","one america","salem","fox","talktv","talk tv","piers morgan","gb news","gbnews","sky news australia","skynewsaustralia","tyt","young turks"})
                 assertFalse(c.id+" mentions "+banned,all.matches("(?s).*\\b"+java.util.regex.Pattern.quote(banned)+"\\b.*"));
         }
     }
