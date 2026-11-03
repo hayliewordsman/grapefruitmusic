@@ -106,6 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write # starts the F-Droid repo workflow, which publishes the new release there
     steps:
       - uses: actions/checkout@v4
       - name: Require permanent FAST key
@@ -140,3 +141,9 @@ jobs:
           test -f "$notes"
           gh release create "fast-v$VERSION" "grapefruit-fast-$VERSION.apk" --target "$GITHUB_SHA" \
             --title "Grapefruit FAST $VERSION" --notes-file "$notes" "${flags[@]}"
+      - name: Publish to the F-Droid repo
+        # A stable release goes into Grapefruit's F-Droid repo beside Music (prereleases stay out).
+        if: ${{ !contains(needs.build.outputs.version, 'alpha') && !contains(needs.build.outputs.version, 'beta') && !contains(needs.build.outputs.version, 'rc') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run fdroid-repo.yml --ref "$GITHUB_REF_NAME"

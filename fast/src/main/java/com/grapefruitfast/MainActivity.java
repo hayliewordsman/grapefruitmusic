@@ -17,7 +17,7 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="1.0 beta 11 · build 11";
+    static final String VERSION="1.0 · build 12";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
@@ -67,11 +67,8 @@ public final class MainActivity extends Activity {
     /** A short portrait screen (square ones like the Clicks Communicator): less floats over the page. */
     private boolean compact() {return !wide()&&getResources().getConfiguration().screenHeightDp<480;}
 
-    /** Where the viewer is (Region): which providers' channels can play here. */
-    private String region="";
     private void build() {
         b=new Brand(this,prefs.getInt("theme",0));
-        region=Region.current(this,prefs);
         root=new FrameLayout(this);root.setBackgroundColor(b.bg);
         if(Build.VERSION.SDK_INT>=30) {
             // Android 15+ draws apps edge to edge: keep the page clear of the bars, the camera cutout and the
@@ -319,7 +316,6 @@ public final class MainActivity extends Activity {
             if(tab.equals("Favourites")&&!favourites.contains(c.id))continue;
             if(!category.equals("All")&&!category.equals(c.category))continue;
             if(!country.equals("All")&&!country.equals(c.region()))continue;
-            if(!Region.offered(c,region,unlocked()))continue;
             if(!c.matches(query))continue;
             visible.add(c);
         }
@@ -402,6 +398,13 @@ public final class MainActivity extends Activity {
         FrameLayout.LayoutParams cp=new FrameLayout.LayoutParams(-2,-2,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
         cp.bottomMargin=dp(fullScreen?28:12);cp.leftMargin=cp.rightMargin=dp(16);captionLayer.addView(caption,cp);
         video.addView(captionLayer,new FrameLayout.LayoutParams(-1,-1));
+        // When nothing plays: a notice on the picture, saying whether it's the viewer's location.
+        notice=b.column();notice.setGravity(Gravity.CENTER);notice.setPadding(dp(20),dp(12),dp(20),dp(12));
+        notice.setBackgroundColor(0xD9000000);notice.setVisibility(View.GONE);notice.setClickable(false);
+        noticeTitle=b.text("",fullScreen?20:16,true);noticeTitle.setTextColor(Color.WHITE);noticeTitle.setGravity(Gravity.CENTER);
+        noticeDetail=b.label("",fullScreen?15:13,0xFFD9C9C4);noticeDetail.setGravity(Gravity.CENTER);noticeDetail.setPadding(0,dp(6),0,0);noticeDetail.setLineSpacing(dp(2),1);
+        notice.addView(noticeTitle,new LinearLayout.LayoutParams(-1,-2));notice.addView(noticeDetail,new LinearLayout.LayoutParams(-1,-2));
+        video.addView(notice,new FrameLayout.LayoutParams(-1,-1));
         if(compact()&&!fullScreen) {
             // A short screen: the picture at most 40% of the height (16:9, centred), leaving room for the lineup.
             int h=(int)(getResources().getDisplayMetrics().heightPixels*0.4f);
@@ -457,7 +460,21 @@ public final class MainActivity extends Activity {
         state.setPadding(live?dp(10):0,live?dp(5):0,live?dp(10):0,live?dp(5):0);
         if(qualityLabel!=null)qualityLabel.setVisibility(message.length()>28?View.GONE:View.VISIBLE);
     }
-    private TextView caption, captionsButton;
+    private TextView caption, captionsButton, noticeTitle, noticeDetail;
+    private LinearLayout notice;
+    /**
+     * The player box's notice when no source played. location: every source's provider refused it for
+     * where the viewer is (a 403 or 451), so the channel isn't offered there; otherwise a passing fault.
+     */
+    void onUnavailable(boolean location) {
+        if(notice==null||watching==null) return;
+        noticeTitle.setText(location?"Not available where you are":"This channel isn't playing right now");
+        String where=watching.availability.isEmpty()?"":"\nOffered in: "+watching.availability+".";
+        noticeDetail.setText(location?watching.name+"'s provider doesn't offer it in your location."+where
+            :"Try Retry, or another channel. It may be a passing problem with the stream or your connection.");
+        notice.setVisibility(View.VISIBLE);
+        if(caption!=null)caption.setVisibility(View.GONE);
+    }
     /** Whether the playing stream offers captions (set by the player). */
     private boolean captionsAvailable;
     /** Captions on? The viewer's choice; until they choose, Android's own captions setting (4.4+). */
@@ -503,6 +520,7 @@ public final class MainActivity extends Activity {
             public void format(String message){if(qualityLabel!=null)qualityLabel.setText(message);}
             public void captionsAvailable(boolean available){onCaptionsAvailable(available);}
             public void captions(CharSequence text){onCaptions(text);}
+            public void unavailable(boolean location){onUnavailable(location);}
             public void aspect(float ratio){if(currentVideo!=null&&Math.abs(currentVideo.ratio-ratio)>0.001f){currentVideo.ratio=ratio;currentVideo.requestLayout();}}
         },prefs.getInt("quality",0));pendingSurface=surface;applyCaptions();playback.attach(surface);playback.tune(watching);
     }
@@ -542,7 +560,6 @@ public final class MainActivity extends Activity {
      */
     private void settings() {
         if("about".equals(settingsPage)){about();return;}
-        if("test".equals(settingsPage)){testPage();return;}
         LinearLayout g=groupedPage();
         TextView heading=b.text("Settings",30,true);heading.setPadding(dp(18),dp(16),dp(18),dp(4));g.addView(heading);
         int theme=prefs.getInt("theme",0);
@@ -550,22 +567,15 @@ public final class MainActivity extends Activity {
         value(g,"Theme",THEMES[theme],()->dialog("Theme",null,THEMES,theme,new Runnable[]{()->theme(0),()->theme(1),()->theme(2)}));
 
         section(g,"Watching");
-        String chosen=prefs.getString("region","auto");
-        String shown="auto".equals(chosen)?(region.isEmpty()?"Automatic":"Automatic ("+Region.name(region)+")"):Region.name(chosen);
-        int at=java.util.Arrays.asList(Region.CODES).indexOf(chosen);
-        Runnable[] picks=new Runnable[Region.CODES.length];
-        for(int i=0;i<picks.length;i++){final String code=Region.CODES[i];picks[i]=()->{prefs.edit().putString("region",code).apply();build();};}
-        value(g,"Region",shown,()->dialog("Region","Automatic uses this phone's mobile network or SIM country, then its region setting. Nothing is sent anywhere. Channels only offered in the United States are hidden elsewhere.",Region.NAMES,at,picks));
         value(g,"Playback Quality",QUALITIES[prefs.getInt("quality",0)],this::qualityDialog);
         toggle(g,"Continue Watching",prefs.getBoolean("continue",true),on->{prefs.edit().putBoolean("continue",on).apply();floatBars(true);});
         toggle(g,"Captions",captionsOn(),on->{prefs.edit().putBoolean("captions",on).apply();applyCaptions();});
         toggle(g,"Keep Screen On",prefs.getBoolean("keepScreenOn",true),on->prefs.edit().putBoolean("keepScreenOn",on).apply());
-        footer(g,"Region decides which channels are listed. Auto changes resolution as your connection changes. Continue Watching keeps your last channel a tap away above the tabs. Captions show when a channel provides them; until you choose, they follow Android's caption setting. Keep Screen On stops the screen sleeping while a channel plays.");
+        footer(g,"Auto changes resolution as your connection changes. Continue Watching keeps your last channel a tap away above the tabs. Captions show when a channel provides them; until you choose, they follow Android's caption setting. Keep Screen On stops the screen sleeping while a channel plays.");
 
         section(g,"Channels");
-        value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, sign-in workarounds, DRM bypass, location spoofing or ad removal. Availability depends on where you are and each provider: DW News and ABC News Australia stream worldwide; Xumo's channels (most UK, US and many Canadian ones) are offered in the United States; CityNews and Global News are Canadian.\n\nThe channel guide lists channels; programme schedules are not supplied in this beta. CBC's local news channels need a CBC Gem sign-in, so they aren't included. CP24 is excluded because a public video stream could not be obtained from cp24.com. JP5S hardware playback still needs device testing."));
+        value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, sign-in workarounds, DRM bypass, location spoofing or ad removal. Every channel is listed wherever you are; some are offered only in certain countries (most of Xumo's in the United States, for example). If a channel's provider doesn't offer it where you are, the player says so.\n\nThe channel guide lists channels; programme schedules aren't supplied. CBC's local news channels need a CBC Gem sign-in, so they aren't included. CP24 is excluded because a public video stream could not be obtained from cp24.com."));;
         int saved=favourites.size();
-        value(g,"Test Channels",prefs.getString("testSummary_"+region,"Not yet"),()->{settingsPage="test";testPage();});
         value(g,"Favourites",saved==0?"None":saved==1?"1 channel":saved+" channels",null);
         if(saved>0)action(g,"Clear Favourites",true,()->dialog("Clear Favourites?","Your "+(saved==1?"favourite channel":saved+" favourite channels")+" will be removed from Favourites.",
             new String[]{"Clear Favourites","Cancel"},-1,new Runnable[]{()->{favourites.clear();prefs.edit().putStringSet("favourites",new HashSet<String>()).apply();settings();},()->{}}));
@@ -618,88 +628,6 @@ public final class MainActivity extends Activity {
         LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(dp(40),dp(40));bp.bottomMargin=dp(6);top.addView(back,bp);
         if(title!=null){TextView t=b.text(title,30,true);top.addView(t);}
         g.addView(top);
-    }
-    /** Channels Test Channels found playing in this region (shown even if their provider is elsewhere). */
-    private Set<String> unlocked() {return prefs.getStringSet(Region.unlockedKey(region),Collections.<String>emptySet());}
-
-    // Settings › Test Channels: checks every channel from this device, wherever it is.
-    private java.util.concurrent.ExecutorService testing;
-    private final Map<String,ChannelTest.Outcome> testResults=new LinkedHashMap<>();
-    private int testDone;
-    private TextView testProgress;
-    private final Map<String,TextView> testRows=new HashMap<>();
-    private void testPage() {
-        LinearLayout g=groupedPage();
-        backHeader(g,"Test Channels");
-        footer(g,"Checks every channel from this device, wherever you are, and lists the ones that play here, including channels whose provider usually serves another country. Only the channels' own servers are contacted; nothing is sent anywhere else.");
-        section(g,"Region: "+(region.isEmpty()?"Unknown":Region.name(region)));
-        testProgress=value(g,testing!=null?"Testing…":testResults.isEmpty()?"Not tested yet":"Tested",progressText(),null);
-        if(testing==null) action(g,testResults.isEmpty()?"Test All Channels":"Test Again",false,this::startTest);
-        else action(g,"Stop",true,this::stopTest);
-        if(!testResults.isEmpty()&&testing==null) action(g,"Share Results",false,this::shareTest);
-        section(g,"Channels");
-        testRows.clear();
-        for(Channel c:channels) testRows.put(c.id,value(g,c.name,resultText(testResults.get(c.id)),null));
-        footer(g,"A channel that plays here is listed from now on, in this region. One that doesn't is left as it was: a failed check can be a passing network problem.");
-        floatBars(true);backCallback();
-    }
-    private String progressText() {
-        if(testing!=null) return testDone+" of "+channels.size();
-        if(testResults.isEmpty()) return "";
-        int plays=0;for(ChannelTest.Outcome o:testResults.values())if(o.result==ChannelTest.Result.PLAYS)plays++;
-        return plays+" of "+testResults.size()+" play here";
-    }
-    private static String resultText(ChannelTest.Outcome o) {
-        if(o==null) return "";
-        switch(o.result){case PLAYS:return "Plays here";case REFUSED:return "Not offered here";default:return "Couldn't check";}
-    }
-    private void startTest() {
-        if(testing!=null) return;
-        testResults.clear();testDone=0;
-        final ChannelTest tester=new ChannelTest(ChannelTest.https(versionName()));
-        final java.util.concurrent.ExecutorService pool=java.util.concurrent.Executors.newFixedThreadPool(3);
-        testing=pool;
-        final Handler main=new Handler(Looper.getMainLooper());
-        final List<Channel> all=new ArrayList<>(channels);
-        for(final Channel c:all) pool.execute(()->{
-            final ChannelTest.Outcome o=tester.test(c);
-            main.post(()->{
-                if(testing!=pool) return; // stopped, or a newer test
-                testResults.put(c.id,o);testDone++;
-                TextView row=testRows.get(c.id);if(row!=null)row.setText(resultText(o));
-                if(testDone==all.size()) finishTest();
-                else if(testProgress!=null) testProgress.setText(progressText());
-            });
-        });
-        pool.shutdown();
-        if("test".equals(settingsPage)&&watching==null) testPage();
-    }
-    private void stopTest() {
-        if(testing!=null){testing.shutdownNow();testing=null;}
-        if("test".equals(settingsPage)&&watching==null) testPage();
-    }
-    /** Unlocks channels that played here; a refusal (the provider said no) locks one again; failures change nothing. */
-    private void finishTest() {
-        testing=null;
-        Set<String> open=new HashSet<>(unlocked());
-        int plays=0;
-        for(Map.Entry<String,ChannelTest.Outcome> e:testResults.entrySet()) {
-            if(e.getValue().result==ChannelTest.Result.PLAYS){open.add(e.getKey());plays++;}
-            else if(e.getValue().result==ChannelTest.Result.REFUSED) open.remove(e.getKey());
-        }
-        String when=new java.text.SimpleDateFormat("MMM d",Locale.getDefault()).format(new Date());
-        prefs.edit().putStringSet(Region.unlockedKey(region),open).putString("testSummary_"+region,plays+" of "+testResults.size()+" · "+when).apply();
-        if("test".equals(settingsPage)&&watching==null) testPage();
-    }
-    private void shareTest() {
-        StringBuilder r=new StringBuilder("Grapefruit FAST "+versionName()+" channel test\n");
-        r.append("Region: ").append(region.isEmpty()?"Unknown":Region.name(region)).append("auto".equals(prefs.getString("region","auto"))?" (automatic)":" (chosen)").append('\n');
-        r.append("Android ").append(Build.VERSION.RELEASE).append(" (API ").append(Build.VERSION.SDK_INT).append(")\n");
-        r.append(progressText()).append("\n\n");
-        for(Channel c:channels){ChannelTest.Outcome o=testResults.get(c.id);if(o==null)continue;
-            r.append(o.result==ChannelTest.Result.PLAYS?"✓ ":o.result==ChannelTest.Result.REFUSED?"✕ ":"? ").append(c.name).append(" — ").append(o.detail).append('\n');}
-        Intent send=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT,"Grapefruit FAST channel test").putExtra(Intent.EXTRA_TEXT,r.toString());
-        try{startActivity(Intent.createChooser(send,"Share Results"));}catch(ActivityNotFoundException e){copy(r.toString());}
     }
     /** The installed version, as Music shows it ("1.0-beta-5"). */
     String versionName(){
@@ -860,7 +788,6 @@ public final class MainActivity extends Activity {
         if(watching!=null&&prefs.getBoolean("keepScreenOn",true))getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
-    @Override protected void onDestroy(){if(testing!=null){testing.shutdownNow();testing=null;}super.onDestroy();}
     @Override protected void onStart(){super.onStart();started=true;if(watching!=null&&playback==null&&pendingSurface!=null)startPlayer(pendingSurface);}
     @Override protected void onStop(){started=false;if(playback!=null){playback.release();playback=null;}super.onStop();}
     @Override protected void onResume(){super.onResume();if(started&&watching!=null&&playback==null)watchPage();}

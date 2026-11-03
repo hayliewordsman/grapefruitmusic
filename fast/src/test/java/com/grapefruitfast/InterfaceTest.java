@@ -113,7 +113,7 @@ public class InterfaceTest {
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
             tap(text(root,"About Grapefruit FAST"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0-beta-11"));assertNotNull(text(root,"Source Code"));
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
@@ -179,21 +179,6 @@ public class InterfaceTest {
             capture(root,"portrait-scrolled.png");
         }
     }
-    /** Outside the US, channels only Xumo carries (a US service) aren't listed; Settings › Region can change it. */
-    @Test public void regionHidesUsOnlyChannelsElsewhere() throws Exception {
-        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
-        c.getSharedPreferences("fast",0).edit().putString("region","CA").commit();
-        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
-            View root=controller.get().getWindow().getDecorView();measure(root,1024,600);
-            assertNull(text(root,"Baywatch"));assertNotNull(text(root,"CityNews 24/7 · Toronto"));
-            TextView count=null;for(View v:views(root))if(v instanceof TextView&&String.valueOf(((TextView)v).getText()).contains("channels · tap"))count=(TextView)v;
-            int offered=0;for(Channel ch:Catalog.parse(Catalog.read(c.getAssets().open("channels.json"))))if(Region.offered(ch,"CA"))offered++;
-            assertTrue(count.getText().toString(),count.getText().toString().startsWith(offered+" channels"));
-            assertTrue(offered<58);
-        }
-        assertTrue(Region.offered(new Channel("x","DW","DE","News","","https://x","https://x",new String[]{"https://x"},"Worldwide"),"GB"));
-        assertEquals("EU",Region.group("FR"));assertEquals("XX",Region.group("JP"));
-    }
     private static View visibleText(ListView list,String s){for(int i=0;i<list.getChildCount();i++){for(View v:views(list.getChildAt(i)))if(v instanceof TextView&&s.equals(String.valueOf(((TextView)v).getText()))&&((TextView)v).getTextSize()>=29)return v;}return null;}
     /** Captions: the pill appears once the stream says it has captions; on, the text shows over the picture. */
     @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void captionsWhereTheStreamProvidesThem() throws Exception {
@@ -226,22 +211,6 @@ public class InterfaceTest {
         assertEquals("First line\nSecond line",LivePlayer.joined(cues).toString());
     }
     private static View visible(View root,String s){for(View v:views(root))if(v instanceof TextView&&s.equals(String.valueOf(((TextView)v).getText()))&&v.getVisibility()==View.VISIBLE)return v;return null;}
-    /** Test Channels: a channel it found playing here is listed outside the US from then on. */
-    @Test public void testChannelsUnlocksWhatPlaysHere() throws Exception {
-        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
-        c.getSharedPreferences("fast",0).edit().putString("region","CA").putStringSet("unlocked_CA",new java.util.HashSet<>(java.util.Arrays.asList("nbc-news-now"))).commit();
-        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
-            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView count=null;for(View v:views(root))if(v instanceof TextView&&String.valueOf(((TextView)v).getText()).contains("channels · tap"))count=(TextView)v;
-            int offered=0;for(Channel ch:Catalog.parse(Catalog.read(c.getAssets().open("channels.json"))))if(Region.offered(ch,"CA"))offered++;
-            assertTrue(count.getText().toString(),count.getText().toString().startsWith((offered+1)+" channels"));
-            tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            tap(text(root,"Test Channels"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            assertNotNull(text(root,"Test All Channels"));assertNotNull(text(root,"Region: Canada"));
-            capture(root,"landscape-test-channels.png");
-            assertTrue(a.back());assertNotNull(text(a.getWindow().getDecorView(),"Appearance"));
-        }
-    }
     /** Square screens (Clicks Communicator and the like) use the portrait layout: tabs along the bottom. */
     @Test @Config(qualifiers="w360dp-h360dp-xhdpi") public void squareScreenUsesThePortraitLayout() throws Exception { square(720,720,"square-1x1"); }
     @Test @Config(qualifiers="w360dp-h400dp-xhdpi") public void nearlySquareScreenUsesThePortraitLayout() throws Exception { square(720,800,"square-9x10"); }
@@ -264,6 +233,36 @@ public class InterfaceTest {
             scroll.scrollTo(0,100000);measure(root,w,h);settle();measure(root,w,h);capture(root,name+"-settings-bottom.png");
             tap(text(root,"About Grapefruit FAST"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-about.png");
         }
+    }
+    /** A channel its provider refuses where the viewer is: listed anyway, and the player box says so. */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void locationNoticeOnTheBlankPicture() throws Exception {
+        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"CityNews 24/7 · Toronto"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNull(visible(root,"Not available where you are"));
+            a.onUnavailable(true);measure(root,1233,2742);
+            assertNotNull(visible(root,"Not available where you are"));capture(root,"portrait-location-notice.png");
+            a.onUnavailable(false);assertNotNull(visible(root,"This channel isn't playing right now"));
+        }
+        // Every channel is listed, wherever the phone is.
+        int all=Catalog.parse(Catalog.read(c.getAssets().open("channels.json"))).size();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            View root=controller.get().getWindow().getDecorView();measure(root,1233,2742);
+            TextView count=null;for(View v:views(root))if(v instanceof TextView&&String.valueOf(((TextView)v).getText()).contains("channels · tap"))count=(TextView)v;
+            assertTrue(count.getText().toString().startsWith(all+" channels"));
+        }
+    }
+    @Test public void onlyForbiddenAndLegalBlocksCountAsLocation() {
+        com.google.android.exoplayer2.upstream.DataSpec spec=new com.google.android.exoplayer2.upstream.DataSpec(android.net.Uri.parse("https://example.com/a.m3u8"));
+        for(int code:new int[]{403,451}) {
+            Exception e=new com.google.android.exoplayer2.upstream.HttpDataSource.InvalidResponseCodeException(code,"",null,java.util.Collections.<String,java.util.List<String>>emptyMap(),spec,new byte[0]);
+            assertTrue(LivePlayer.locationRefusal(new RuntimeException(e)));
+        }
+        Exception e404=new com.google.android.exoplayer2.upstream.HttpDataSource.InvalidResponseCodeException(404,"",null,java.util.Collections.<String,java.util.List<String>>emptyMap(),spec,new byte[0]);
+        assertFalse(LivePlayer.locationRefusal(e404));
+        assertFalse(LivePlayer.locationRefusal(new java.net.SocketTimeoutException()));
+        assertFalse(LivePlayer.locationRefusal(null));
     }
     private static void tap(View v){while(v!=null&&!v.isClickable()&&!(v.getParent() instanceof AdapterView))v=(View)v.getParent();
         if(v.getParent() instanceof AdapterView){AdapterView<?> list=(AdapterView<?>)v.getParent();int pos=list.getPositionForView(v);list.performItemClick(v,pos,list.getItemIdAtPosition(pos));}else v.performClick();}

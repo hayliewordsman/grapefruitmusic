@@ -17,12 +17,14 @@ public final class LivePlayer {
         void captionsAvailable(boolean available);
         /** The captions to show now ("" for none). */
         void captions(CharSequence text);
+        /** No source played: location true when every source's provider refused it for where the viewer is. */
+        void unavailable(boolean location);
     }
     private final Context context; private final Listener listener; private final Handler handler=new Handler();
     private final DefaultTrackSelector selector;
     private final DefaultBandwidthMeter bandwidth;
     private ExoPlayer player;
-    private Channel channel; private int sourceIndex, retries, generation; private boolean released;
+    private Channel channel; private int sourceIndex, retries, generation, refused; private boolean released;
     private SurfaceView surface; private int quality; private boolean captionsOn; private String captionLanguage="en";
     public LivePlayer(Context c,Listener l,int quality) {
         context=c;listener=l;this.quality=quality;
@@ -53,7 +55,7 @@ public final class LivePlayer {
     }
     public void attach(SurfaceView view) {surface=view;if(player!=null) {player.setVideoSurfaceView(view);listener.status(player.getPlaybackState()==Player.STATE_READY?"LIVE":"Connecting…");report();}}
     public void tune(Channel c) {
-        channel=c;sourceIndex=0;retries=0;generation++;handler.removeCallbacksAndMessages(null);
+        channel=c;sourceIndex=0;retries=0;refused=0;generation++;handler.removeCallbacksAndMessages(null);
         if(player!=null) player.release();
         player=new ExoPlayer.Builder(context).setTrackSelector(selector).setBandwidthMeter(bandwidth)
             .setLoadControl(new DefaultLoadControl.Builder().setBufferDurationsMs(8000,25000,1500,3000)
@@ -67,9 +69,9 @@ public final class LivePlayer {
             @Override public void onPlaybackStateChanged(int state) {
                 if(state==Player.STATE_READY) { retries=0;listener.status("LIVE");report(); }
                 else if(state==Player.STATE_BUFFERING) listener.status("Connecting…");
-                else if(state==Player.STATE_ENDED) failed();
+                else if(state==Player.STATE_ENDED) failed(null);
             }
-            @Override public void onPlayerError(PlaybackException error) {failed();}
+            @Override public void onPlayerError(PlaybackException error) {failed(error);}
             @Override public void onTracksChanged(Tracks tracks) { listener.captionsAvailable(tracks.containsType(C.TRACK_TYPE_TEXT)); }
             @Override public void onCues(com.google.android.exoplayer2.text.CueGroup cues) { listener.captions(captionsOn?joined(cues.cues):""); }
             @Override public void onVideoSizeChanged(com.google.android.exoplayer2.video.VideoSize size) { if(size.height>0)listener.aspect(size.width*size.pixelWidthHeightRatio/size.height);report(); }
@@ -99,20 +101,41 @@ public final class LivePlayer {
         if(released||player==null) return;
         listener.status("Connecting…");
         DefaultHttpDataSource.Factory http=new DefaultHttpDataSource.Factory()
-            .setUserAgent("GrapefruitFAST/1.0-beta-11 (Android)")
+            .setUserAgent("GrapefruitFAST/1.0 (Android)")
             .setConnectTimeoutMs(15000).setReadTimeoutMs(20000).setAllowCrossProtocolRedirects(false);
         player.setMediaSource(new HlsMediaSource.Factory(new DefaultDataSource.Factory(context,http))
             .createMediaSource(MediaItem.fromUri(channel.streams[sourceIndex])));
         player.prepare();player.setPlayWhenReady(true);
     }
-    private void failed() {
+    /**
+     * The provider said no for where the viewer is: HTTP 403 (forbidden) or 451 (unavailable for legal
+     * reasons), the answers providers give for location blocks, anywhere in the error's causes.
+     */
+    static boolean locationRefusal(Throwable error) {
+        for(Throwable t=error;t!=null;t=t.getCause()) {
+            if(t instanceof HttpDataSource.InvalidResponseCodeException) {
+                int code=((HttpDataSource.InvalidResponseCodeException)t).responseCode;
+                return code==403||code==451;
+            }
+            if(t.getCause()==t) break;
+        }
+        return false;
+    }
+    private void failed(PlaybackException error) {
         if(released) return;
-        // Each source gets two bounded reconnects; stale requests cannot restart another channel.
+        boolean refusal=locationRefusal(error);
+        // A location refusal won't change on a retry: straight on to the next source. Other failures get
+        // two bounded reconnects per source; stale requests cannot restart another channel.
+        if(refusal) {
+            refused++;retries=2;
+        }
         if(retries<2) {
             retries++;listener.status("Reconnecting… ("+retries+"/2)");
         } else if(sourceIndex+1<channel.streams.length) { sourceIndex++;retries=0; }
         else {
-            listener.status("This stream is unavailable here. Try Retry or Official site.");return;
+            boolean location=refused==channel.streams.length;
+            listener.status(location?"Not available where you are":"This stream isn't playing right now.");
+            listener.unavailable(location);return;
         }
         handler.removeCallbacksAndMessages(null);
         int token=generation;
