@@ -24,7 +24,7 @@ here; submitting means proposing that file to fdroiddata.
 - **Reproducible builds.** The same commit builds byte-for-byte the same APK on GitHub Actions as in
   an F-Droid-style build. `fdroid build` of the recipe downloaded the APK of GitHub release v5.1,
   compared its own build with it and accepted it ("compared built binary to supplied reference
-  binary successfully", checked on 2026-11-03, with Grapefruit FAST's `fast/` in the repository, not
+  binary successfully", checked on 2026-11-03, with Grapefruit FAST's `fast/` (now Grapefruit TV's `tv/`) in the repository, not
   built by this recipe, and the shared `grapefruit-ui` library built from source; 5.0, 4.1, 4.1.1 and
   4.1.2 passed the same check on 2026-11-02, and 3.2.2 on 2026-10-29). So f-droid.org will ship the
   APK signed with Grapefruit's own key: copies from f-droid.org, GitHub releases and Grapefruit's own

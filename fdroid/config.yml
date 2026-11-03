@@ -9,8 +9,8 @@ repo_icon: icon.png
 repo_description: >-
   Releases of Grapefruit Music & Podcasts, a music and podcast player for your own files,
   Navidrome, Subsonic and Jellyfin servers and internet radio, made for Android 4.2.2 and later. Built from
-  https://github.com/hayliewordsman/grapefruitmusic and signed by its developer. Also Grapefruit FAST,
-  free live TV from the same developer.
+  https://github.com/hayliewordsman/grapefruitmusic and signed by its developer. Also Grapefruit TV,
+  all your live TV in one place, from the same developer.
 
 # Keep the three newest versions in the main repo; older ones move to the archive repo.
 archive_older: 3
