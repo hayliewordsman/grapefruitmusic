@@ -16,7 +16,7 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="1.0 beta 4 · build 4";
+    static final String VERSION="1.0 beta 5 · build 5";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
@@ -82,9 +82,10 @@ public final class MainActivity extends Activity {
         shell.addView(body,new LinearLayout.LayoutParams(wide()?0:-1,-1,1));
         // The bars float over the bottom of the page: the tabs (portrait) and Continue watching.
         bars=b.column();bars.setGravity(Gravity.CENTER_HORIZONTAL);bars.setClickable(false);
+        // Every layout of the bars re-pads the page, even at the same height: a page built since the last
+        // change (Settings, say) must get room to scroll its last row out from under them.
         bars.addOnLayoutChangeListener((v,l,t,r,btm,ol,ot,or,ob)->{
-            int h=v.getVisibility()==View.VISIBLE?btm-t:0;
-            if(h!=barsInset){barsInset=h;v.post(this::inset);}
+            barsInset=v.getVisibility()==View.VISIBLE?btm-t:0;v.post(this::inset);
         });
         if(!wide()) nav=b.row();
         navigation();setContentView(root);
@@ -178,8 +179,11 @@ public final class MainActivity extends Activity {
     private void inset() {
         if(scroller==null)return;
         scroller.setClipToPadding(false);
-        int want=scrollerPadding+barsInset;
-        if(scroller.getPaddingBottom()!=want)scroller.setPadding(scroller.getPaddingLeft(),scroller.getPaddingTop(),scroller.getPaddingRight(),want);
+        int want=scrollerPadding+(bars!=null&&bars.getVisibility()==View.VISIBLE?barsInset:0);
+        if(scroller.getPaddingBottom()!=want){
+            scroller.setPadding(scroller.getPaddingLeft(),scroller.getPaddingTop(),scroller.getPaddingRight(),want);
+            scroller.requestLayout();
+        }
     }
     private void setScroller(ViewGroup v,int ownPadding) {scroller=v;scrollerPadding=ownPadding;inset();}
     private void newPage() {
@@ -312,6 +316,7 @@ public final class MainActivity extends Activity {
     }
     private void watchPage() {
         body.removeAllViews();scroller=null;
+        root.setBackgroundColor(fullScreen?Color.BLACK:b.bg); // full screen is the picture on black, edge to edge
         page=b.column();page.setPadding(dp(fullScreen?0:14),dp(fullScreen?0:10),dp(fullScreen?0:14),0);body.addView(page,new FrameLayout.LayoutParams(-1,-1));
         if(!fullScreen) {
             LinearLayout header=b.row();
@@ -342,7 +347,7 @@ public final class MainActivity extends Activity {
         LinearLayout actions=b.row();actionsScroll.addView(actions);
         action(actions,"Retry",()->tune(watching));
         action(actions,"Quality",this::qualityDialog);
-        action(actions,fullScreen?"Exit full screen":"Full screen",()->{fullScreen=!fullScreen;watchPage();});
+        action(actions,fullScreen?"Exit full screen":"Full screen",()->setFullScreen(!fullScreen));
         action(actions,"Official site",()->website(watching));
         if(fullScreen) {
             // Over the picture, along the bottom: a way back out without a remote's Back key.
@@ -439,21 +444,25 @@ public final class MainActivity extends Activity {
         footer(g,"Streams include provider ads. Grapefruit adds no tracking SDK or extra advertisements. Playback stops when you leave the app.");
 
         section(g,"About");
-        value(g,"About Grapefruit FAST","Version "+VERSION.substring(0,VERSION.indexOf(" ·")),()->{settingsPage="about";about();});
+        value(g,"About Grapefruit FAST","Version "+versionName(),()->{settingsPage="about";about();});
         floatBars(true);backCallback();
     }
     /** Settings › About Grapefruit FAST: the logo and wordmark, then the licence, developer and credits. */
     private void about() {
         LinearLayout g=groupedPage();
-        LinearLayout top=b.row();top.setPadding(dp(16),dp(10),dp(16),0);
-        TextView back=b.round("‹",v->back());back.setContentDescription("Back to Settings");
-        top.addView(back,new LinearLayout.LayoutParams(dp(40),dp(40)));g.addView(top);
-        LinearLayout hero=b.column();hero.setGravity(Gravity.CENTER_HORIZONTAL);hero.setPadding(0,dp(4),0,dp(8));
-        ImageView icon=new ImageView(this);icon.setImageResource(R.drawable.splash_logo);
-        hero.addView(icon,new LinearLayout.LayoutParams(dp(96),dp(96)));
-        TextView name=b.wordmark(30,false);name.setPadding(dp(16),dp(14),dp(16),dp(8));
+        // Music's About page (AboutFragment), for FAST: Music's header, with its round back button...
+        LinearLayout top=b.column();top.setPadding(dp(16),dp(8),dp(16),dp(8));
+        TabIcon back=new TabIcon(this,TabIcon.CHEVRON_LEFT,b.text);back.setPadding(dp(9),dp(9),dp(9),dp(9));
+        back.setBackground(b.interactive(false,Brand.PILL,b.control,false));back.setFocusable(true);back.setClickable(true);
+        back.setContentDescription("Back to Settings");back.setOnClickListener(v->back());
+        LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(dp(40),dp(40));bp.bottomMargin=dp(6);top.addView(back,bp);g.addView(top);
+        // ...the icon at exactly 88dp, the wordmark in Geist Pixel Triangle on one line, the version and copyright.
+        LinearLayout hero=b.column();hero.setGravity(Gravity.CENTER_HORIZONTAL);hero.setPadding(0,dp(8),0,dp(8));
+        ImageView icon=new ImageView(this);icon.setImageResource(R.drawable.ic_about);
+        hero.addView(icon,new LinearLayout.LayoutParams(dp(88),dp(88)));
+        TextView name=b.wordmark(24,false);name.setPadding(dp(16),dp(14),dp(16),dp(6));
         hero.addView(name,new LinearLayout.LayoutParams(-1,-2));
-        TextView version=b.label("Version "+VERSION,15,b.secondary);version.setGravity(Gravity.CENTER);hero.addView(version,new LinearLayout.LayoutParams(-1,-2));
+        TextView version=b.label("Version "+versionName(),15,b.secondary);version.setGravity(Gravity.CENTER);hero.addView(version,new LinearLayout.LayoutParams(-1,-2));
         TextView copyright=b.label(COPYRIGHT,13,b.secondary);copyright.setGravity(Gravity.CENTER);copyright.setPadding(0,dp(6),0,0);hero.addView(copyright,new LinearLayout.LayoutParams(-1,-2));
         g.addView(hero);
 
@@ -475,6 +484,10 @@ public final class MainActivity extends Activity {
         value(g,"Open Source Licences",null,this::licences);
         footer(g,"The typeface is Geist, and the wordmark's lettering Geist Pixel, by Vercel (vercel.com/font). ExoPlayer plays the live streams and Conscrypt provides secure connections on older Android versions. Not affiliated with the listed broadcasters or platforms.");
         floatBars(true);backCallback();
+    }
+    /** The installed version, as Music shows it ("1.0-beta-5"). */
+    String versionName(){
+        try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return VERSION;}
     }
     /** A fresh scrolling page for Settings; rows keep to a readable width, centred, on a wide screen. */
     private LinearLayout groupedPage() {
@@ -535,8 +548,8 @@ public final class MainActivity extends Activity {
     private void link(LinearLayout g,String label,String shown,String url){
         LinearLayout row=groupedRow(()->open(url,shown));
         row.setOnLongClickListener(v->{copy(shown);return true;});
-        row.addView(b.label(label,16,b.text),new LinearLayout.LayoutParams(0,-2,1));
-        TextView v=b.label(shown,15,b.accent);v.setPadding(dp(8),0,0,0);v.setSingleLine();v.setEllipsize(TextUtils.TruncateAt.MIDDLE);
+        row.addView(b.label(label,17,b.text),new LinearLayout.LayoutParams(0,-2,1));
+        TextView v=b.label(shown,16,b.accent);v.setPadding(dp(8),0,0,0);v.setSingleLine();v.setEllipsize(TextUtils.TruncateAt.MIDDLE);
         row.addView(v,new LinearLayout.LayoutParams(-2,-2));
         addRow(g,row);
     }
@@ -565,10 +578,11 @@ public final class MainActivity extends Activity {
         final FrameLayout owner=root;
         final LinearLayout cover=b.column();cover.setGravity(Gravity.CENTER);cover.setBackgroundColor(b.bg);
         cover.setClickable(true); // nothing underneath answers a tap meanwhile
-        ImageView icon=new ImageView(this);icon.setImageResource(R.drawable.splash_logo);
-        cover.addView(icon,new LinearLayout.LayoutParams(dp(120),dp(120)));
-        TextView name=b.wordmark(32,false);name.setPadding(dp(24),dp(20),dp(24),0);
-        cover.addView(name,new LinearLayout.LayoutParams(-1,-2));
+        // As Music's: the stacked logo, the television over the Geist Pixel Triangle wordmark, as one picture
+        // (tools/fast/splash.py), the same one the window shows while the app starts.
+        ImageView logo=new ImageView(this);logo.setImageResource(b.light?R.drawable.splash_logo_light:R.drawable.splash_logo_dark);
+        logo.setAdjustViewBounds(true);logo.setContentDescription("Grapefruit FAST");
+        cover.addView(logo,new LinearLayout.LayoutParams(-2,-2));
         owner.addView(cover,new FrameLayout.LayoutParams(-1,-1));
         owner.postDelayed(()->cover.animate().alpha(0f).setDuration(300).withEndAction(()->owner.removeView(cover)).start(),
             Build.VERSION.SDK_INT>=31?500:800); // shorter after Android 12's own splash screen
@@ -633,11 +647,34 @@ public final class MainActivity extends Activity {
     @Override protected void onStart(){super.onStart();started=true;if(watching!=null&&playback==null&&pendingSurface!=null)startPlayer(pendingSurface);}
     @Override protected void onStop(){started=false;if(playback!=null){playback.release();playback=null;}super.onStop();}
     @Override protected void onResume(){super.onResume();if(started&&watching!=null&&playback==null)watchPage();}
-    @Override public void onConfigurationChanged(Configuration c){super.onConfigurationChanged(c);build();}
+    /** Whether the phone is being held sideways for full screen (turning it back ends it). */
+    private boolean sideways;
+    private boolean phone(){return getResources().getConfiguration().smallestScreenWidthDp<600;}
+    /**
+     * Full screen, as video apps do it on a phone: the picture turns sideways (and stays free to turn either
+     * way); leaving full screen lets the phone turn back. Tablets and TVs stay as they are.
+     */
+    private void setFullScreen(boolean on){
+        fullScreen=on;
+        if(phone())setRequestedOrientation(on?android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        sideways=on&&getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE;
+        watchPage();
+    }
+    @Override public void onConfigurationChanged(Configuration c){
+        super.onConfigurationChanged(c);
+        if(watching!=null&&phone()){
+            boolean landscape=c.orientation==Configuration.ORIENTATION_LANDSCAPE;
+            // Turning a phone sideways while watching goes full screen; turning it back upright comes out.
+            if(landscape&&!fullScreen){fullScreen=true;sideways=true;}
+            else if(landscape&&fullScreen)sideways=true;
+            else if(!landscape&&fullScreen&&sideways&&getRequestedOrientation()!=android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE){fullScreen=false;sideways=false;}
+        }
+        build();
+    }
     @Override public void onBackPressed(){if(!back())super.onBackPressed();}
     /** One step back inside the app: out of full screen, off the watch page, back to Live TV. False at the start. */
     boolean back(){
-        if(fullScreen){fullScreen=false;watchPage();}
+        if(fullScreen){setFullScreen(false);}
         else if(watching!=null){stop();build();}
         else if(settingsPage!=null){settingsPage=null;settings();}
         else if(!tab.equals("Live TV")){tab="Live TV";query="";build();}

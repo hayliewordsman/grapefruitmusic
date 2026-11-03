@@ -97,10 +97,10 @@ public class InterfaceTest {
         MainActivity.splashShown=false;
         try(org.robolectric.android.controller.ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup()) {
             View root=controller.get().getWindow().getDecorView();measure(root,1080,1920);
-            TextView mark=wordmark(root);assertNotNull(mark);assertTrue(mark.getLayout().getLineLeft(0)<mark.getWidth());
+            View logo=described(root,"Grapefruit FAST");assertTrue(logo instanceof ImageView);assertTrue(logo.getWidth()>0);
             capture(root,"portrait-splash.png");
             settle();root=controller.get().getWindow().getDecorView();measure(root,1080,1920);
-            assertNull(wordmark(root));
+            assertNull(described(root,"Grapefruit FAST"));
         }
     }
     @Test public void settingsLikeMusicWithAboutAndToggles() throws Exception {
@@ -113,7 +113,7 @@ public class InterfaceTest {
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
             tap(text(root,"About Grapefruit FAST"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0 beta 4 · build 4"));assertNotNull(text(root,"Source Code"));
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0-beta-5"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
@@ -127,6 +127,45 @@ public class InterfaceTest {
         }
     }
     private static TextView wordmark(View root){for(View v:views(root))if(v instanceof TextView&&"Grapefruit FAST".equals(String.valueOf(((TextView)v).getText())))return(TextView)v;return null;}
+    /** On a phone, Settings scrolls far enough for About to clear the floating tabs and Continue watching. */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void aboutRowClearsTheFloatingBarsOnAPhone() throws Exception {
+        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
+        c.getSharedPreferences("fast",0).edit().putString("lastChannel","global-winnipeg").commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1233,2742);settle();measure(root,1233,2742);
+            ScrollView scroll=null;for(View v:views(root))if(v instanceof ScrollView)scroll=(ScrollView)v;
+            scroll.scrollTo(0,100000);measure(root,1233,2742);settle();measure(root,1233,2742);
+            View about=(View)text(root,"About Grapefruit FAST").getParent();
+            int[] at=new int[2];about.getLocationInWindow(at);
+            View cont=(View)text(root,"Continue watching").getParent().getParent();int[] bar=new int[2];cont.getLocationInWindow(bar);
+            assertTrue("Settings scrolled",scroll.getScrollY()>0);
+            capture(root,"portrait-settings-bottom.png");
+            assertTrue("About row is hidden behind the floating bars",at[1]+about.getHeight()<=bar[1]);
+        }
+    }
+    /** On a phone: Full screen turns the picture sideways; turning the phone sideways while watching goes full screen. */
+    @Test @Config(qualifiers="w411dp-h914dp-port-xxhdpi") public void fullScreenInLandscapeOnAPhone() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"CityNews 24/7 · Toronto"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"Full screen"));
+            assertEquals(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE,a.getRequestedOrientation());
+            assertNotNull(text(a.getWindow().getDecorView(),"Exit full screen"));
+            assertTrue(a.back());
+            assertEquals(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED,a.getRequestedOrientation());
+            assertNotNull(text(a.getWindow().getDecorView(),"Full screen"));
+            // Turned sideways by hand: full screen. Upright again: back to the channel page.
+            org.robolectric.RuntimeEnvironment.setQualifiers("w914dp-h411dp-land-xxhdpi");
+            controller.configurationChange(a.getResources().getConfiguration());
+            root=a.getWindow().getDecorView();measure(root,2742,1233);
+            assertNotNull(text(root,"Exit full screen"));capture(root,"landscape-phone-fullscreen.png");
+            org.robolectric.RuntimeEnvironment.setQualifiers("w411dp-h914dp-port-xxhdpi");
+            controller.configurationChange(a.getResources().getConfiguration());
+            assertNotNull(text(a.getWindow().getDecorView(),"Full screen"));
+        }
+    }
+    private static View described(View root,String d){for(View v:views(root))if(d.contentEquals(String.valueOf(v.getContentDescription())))return v;return null;}
     private static void tap(View v){while(v!=null&&!v.isClickable()&&!(v.getParent() instanceof AdapterView))v=(View)v.getParent();
         if(v.getParent() instanceof AdapterView){AdapterView<?> list=(AdapterView<?>)v.getParent();int pos=list.getPositionForView(v);list.performItemClick(v,pos,list.getItemIdAtPosition(pos));}else v.performClick();}
     private static java.util.List<View> views(View v){java.util.List<View> all=new java.util.ArrayList<>();all.add(v);if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)all.addAll(views(g.getChildAt(i)));}return all;}

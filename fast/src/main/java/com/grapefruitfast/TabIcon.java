@@ -8,7 +8,7 @@ import android.view.View;
  * Music's own), so they're crisp at any density, take any theme colour and need no image resources.
  */
 public final class TabIcon extends View {
-    public static final int LIVE_TV=1, FAVOURITES=2, SEARCH=3, SETTINGS=4, CHEVRON=5;
+    public static final int LIVE_TV=1, FAVOURITES=2, SEARCH=3, SETTINGS=4, CHEVRON=5, CHEVRON_LEFT=6;
     private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path=new Path();
     private final RectF oval=new RectF();
@@ -63,6 +63,11 @@ public final class TabIcon extends View {
                 // Music's CHEVRON_RIGHT: rows that open something.
                 stroke(2.4f);
                 path.moveTo(9,5);path.lineTo(16,12);path.lineTo(9,19);c.drawPath(path,p);
+                break;
+            case CHEVRON_LEFT:
+                // Music's CHEVRON_LEFT: the round back button.
+                stroke(2.6f);
+                path.moveTo(15.5f,4);path.lineTo(7.5f,12);path.lineTo(15.5f,20);c.drawPath(path,p);
                 break;
         }
         c.restore();
