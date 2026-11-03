@@ -1,6 +1,7 @@
 package com.grapefruitfast;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.*;
 import android.os.Build;
 import android.view.*;
@@ -12,7 +13,7 @@ public final class Brand {
     /** Past any control's height: GradientDrawable keeps a radius to half the shorter side, so ends are semicircles. */
     public static final int PILL=100000;
     public final Context context;
-    public final int bg, surface, control, pressed, text, secondary, accent, end, outline, onAccent;
+    public final int bg, surface, control, pressed, text, secondary, accent, end, outline, onAccent, toggleOff, toggleOffSegments;
     public final boolean light;
     public Brand(Context c, int theme) {
         context=c;
@@ -27,6 +28,42 @@ public final class Brand {
         end=Color.parseColor(light?"#D92B4B":"#F2546B");
         outline=Color.parseColor(light?"#F3CDBF":"#46202A");
         onAccent=Color.parseColor(light?"#FFFFFF":"#2A0A10");
+        // Music's switch colours for each theme.
+        toggleOff=Color.parseColor(light?"#F7D6C9":black?"#3A1D23":"#4A2229");
+        toggleOffSegments=Color.parseColor(light?"#F1C8B9":"#F2D0C6");
+    }
+    private static Typeface pixel;
+    /** Geist Pixel Triangle, cut down to the letters of "Grapefruit FAST" (tools/fast/brand.py). */
+    public synchronized Typeface pixel() {
+        if(pixel==null) {
+            try {pixel=Typeface.createFromAsset(context.getAssets(),"fonts/GeistPixel-Triangle-FAST.ttf");}
+            catch(RuntimeException e){pixel=Fonts.bold();}
+        }
+        return pixel;
+    }
+    /**
+     * The wordmark, as Music's: Geist Pixel Triangle, "Grapefruit" in the accent and "FAST" in the text
+     * colour. On one line it shrinks to fit (up to sp); stacked, the words go one over the other.
+     */
+    public TextView wordmark(float sp, boolean stacked) {
+        final TextView t=new TextView(context);t.setTypeface(pixel());t.setTextSize(sp);t.setTextColor(text);
+        t.setIncludeFontPadding(false);t.setGravity(Gravity.CENTER);t.setContentDescription("Grapefruit FAST");
+        android.text.SpannableString mark=new android.text.SpannableString(stacked?"Grapefruit\nFAST":"Grapefruit FAST");
+        mark.setSpan(new android.text.style.ForegroundColorSpan(accent),0,"Grapefruit".length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        t.setText(mark);
+        if(stacked){t.setLineSpacing(dp(4),1);return t;}
+        final float max=sp*context.getResources().getDisplayMetrics().scaledDensity;
+        // One line by fitting, not setSingleLine(): that lays text out a million pixels wide and centres it there.
+        t.setMaxLines(1);
+        t.addOnLayoutChangeListener((v,l,top,r,btm,ol,ot,or,ob)->{
+            int room=(r-l)-t.getPaddingLeft()-t.getPaddingRight();
+            if(room<=0||(r-l)==(or-ol))return;
+            android.graphics.Paint p=new android.graphics.Paint(t.getPaint());p.setTextSize(max);
+            float width=p.measureText(t.getText().toString());
+            final float size=width>room?max*room/width*0.98f:max;
+            if(Math.abs(size-t.getTextSize())>0.5f)t.post(()->t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,size));
+        });
+        return t;
     }
     public int dp(float n) { return Math.round(n*context.getResources().getDisplayMetrics().density); }
     /** Radii are in dp; PILL stays as it is. */

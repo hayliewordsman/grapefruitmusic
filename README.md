@@ -9,7 +9,7 @@ with downloads for offline listening and time-synced lyrics.
 
 ## Grapefruit FAST (second app)
 
-The repository also contains **Grapefruit FAST 1.0 beta 3**, a separate Android live-TV app with its own application ID, APKs and workflow. See [fast/README.md](fast/README.md) for building, channel availability and signing. Both apps share fonts and HTTPS support through `grapefruit-ui/`.
+The repository also contains **Grapefruit FAST 1.0 beta 4**, a separate Android live-TV app with its own application ID, APKs and workflow. See [fast/README.md](fast/README.md) for building, channel availability and signing. Both apps share fonts and HTTPS support through `grapefruit-ui/`.
 
 ## Features
 

@@ -72,7 +72,7 @@ public final class LivePlayer {
         if(released||player==null) return;
         listener.status("Connecting…");
         DefaultHttpDataSource.Factory http=new DefaultHttpDataSource.Factory()
-            .setUserAgent("GrapefruitFAST/1.0-beta-3 (Android)")
+            .setUserAgent("GrapefruitFAST/1.0-beta-4 (Android)")
             .setConnectTimeoutMs(15000).setReadTimeoutMs(20000).setAllowCrossProtocolRedirects(false);
         player.setMediaSource(new HlsMediaSource.Factory(new DefaultDataSource.Factory(context,http))
             .createMediaSource(MediaItem.fromUri(channel.streams[sourceIndex])));

@@ -4,11 +4,11 @@ import android.graphics.*;
 import android.view.View;
 
 /**
- * The tab icons, drawn in code on Music's 24x24 grid with its stroke weights (Search and Settings are
+ * The tab icons (and Settings' chevron), drawn in code on Music's 24x24 grid with its stroke weights (Search and Settings are
  * Music's own), so they're crisp at any density, take any theme colour and need no image resources.
  */
 public final class TabIcon extends View {
-    public static final int LIVE_TV=1, FAVOURITES=2, SEARCH=3, SETTINGS=4;
+    public static final int LIVE_TV=1, FAVOURITES=2, SEARCH=3, SETTINGS=4, CHEVRON=5;
     private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path=new Path();
     private final RectF oval=new RectF();
@@ -58,6 +58,11 @@ public final class TabIcon extends View {
                     oval.set(10.4f,1.8f,13.6f,6.4f);c.drawRoundRect(oval,0.8f,0.8f,p);
                     c.restore();
                 }
+                break;
+            case CHEVRON:
+                // Music's CHEVRON_RIGHT: rows that open something.
+                stroke(2.4f);
+                path.moveTo(9,5);path.lineTo(16,12);path.lineTo(9,19);c.drawPath(path,p);
                 break;
         }
         c.restore();

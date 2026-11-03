@@ -16,12 +16,16 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="1.0 beta 3 · build 3";
+    static final String VERSION="1.0 beta 4 · build 4";
+    static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
+    static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
     private static final int[] TAB_ICONS={TabIcon.LIVE_TV,TabIcon.FAVOURITES,TabIcon.SEARCH,TabIcon.SETTINGS};
     private static final String[] GENRES={"All","News","Series","Reality","Lifestyle"};
     private static final String[] THEMES={"Grapefruit Dark","Grapefruit Light","Pitch Black"};
-    private static final String[] QUALITIES={"Auto","Data saver","Compatibility"};
+    private static final String[] QUALITIES={"Auto","Data Saver","Compatibility"};
+    /** null for Settings itself, or "about" for Settings › About Grapefruit FAST. */
+    private String settingsPage;
     private android.content.SharedPreferences prefs;
     private Brand b;
     private List<Channel> channels=Collections.emptyList();
@@ -51,9 +55,10 @@ public final class MainActivity extends Activity {
             tab=saved.getString("tab","Live TV"); category=saved.getString("category","All");
             country=saved.getString("country","All");query=saved.getString("query","");
             fullScreen=saved.getBoolean("fullscreen",false);
-            watching=find(saved.getString("watching"));
+            watching=find(saved.getString("watching"));settingsPage=saved.getString("settingsPage");
         }
         build();
+        splash();
     }
     private Channel find(String id) {for(Channel c:channels) if(c.id.equals(id)) return c; return null;}
     private boolean wide() {Configuration c=getResources().getConfiguration();return c.screenWidthDp>=c.screenHeightDp*0.85f;}
@@ -108,8 +113,7 @@ public final class MainActivity extends Activity {
         if(wide()) {
             ImageView icon=new ImageView(this);icon.setImageResource(com.grapefruitfast.R.mipmap.ic_launcher);
             nav.addView(icon,new LinearLayout.LayoutParams(-1,dp(72)));
-            TextView name=b.text("Grapefruit\nFAST",18,true);name.setTypeface(Typeface.createFromAsset(getAssets(),"fonts/GeistPixel-Triangle-FAST.ttf"));name.setTextColor(b.accent);
-            name.setGravity(Gravity.CENTER);name.setLineSpacing(dp(2),1);name.setPadding(0,dp(8),0,dp(18));nav.addView(name,new LinearLayout.LayoutParams(-1,-2));
+            TextView name=b.wordmark(22,true);name.setPadding(0,dp(8),0,dp(18));nav.addView(name,new LinearLayout.LayoutParams(-1,-2));
             pill=b.column();nav.addView(pill,new LinearLayout.LayoutParams(-1,-2));
         } else {
             // A pill only as wide as its tabs, floating in the middle, as in Music.
@@ -125,7 +129,7 @@ public final class MainActivity extends Activity {
             LinearLayout item=b.row();item.setGravity(wide()?Gravity.CENTER_VERTICAL|Gravity.START:Gravity.CENTER);
             item.setPadding(dp(14),0,dp(wide()?10:14),0);item.setFocusable(true);item.setClickable(true);item.setContentDescription(label);
             item.setBackground(b.interactive(chosen,Brand.PILL,0,false));
-            item.setOnClickListener(v->{stop();tab=label;query="";listPosition=0;fullScreen=false;build();});
+            item.setOnClickListener(v->{stop();tab=label;query="";listPosition=0;fullScreen=false;settingsPage=null;build();});
             TabIcon icon=new TabIcon(this,TAB_ICONS[i],chosen?b.onAccent:b.secondary);item.addView(icon,new LinearLayout.LayoutParams(dp(22),dp(22)));
             TextView name=b.text(label,13,true);name.setTextColor(chosen?b.onAccent:b.secondary);name.setPadding(dp(wide()?10:8),0,0,0);
             name.setSingleLine();name.setVisibility(chosen||wide()?View.VISIBLE:View.GONE);
@@ -140,7 +144,7 @@ public final class MainActivity extends Activity {
         bars.removeAllViews();
         if(bars.getParent()!=null)((ViewGroup)bars.getParent()).removeView(bars);
         if(nav.getParent()!=null&&!wide())((ViewGroup)nav.getParent()).removeView(nav);
-        Channel last=resume?find(prefs.getString("lastChannel","")):null;
+        Channel last=resume&&prefs.getBoolean("continue",true)?find(prefs.getString("lastChannel","")):null;
         if(last!=null) bars.addView(continuePill(last));
         if(!wide()) bars.addView(nav,new LinearLayout.LayoutParams(-1,-2));
         bars.setBackground(bars.getChildCount()>0?b.fade():null);
@@ -406,38 +410,176 @@ public final class MainActivity extends Activity {
     }
     private void quality(int value) {
         prefs.edit().putInt("quality",value).apply();if(playback!=null)playback.setQuality(value);
-        if(watching==null&&tab.equals("Settings"))settings();
+        if(watching==null&&tab.equals("Settings")&&settingsPage==null)settings();
     }
+    /**
+     * Settings, as Music's: a big title, then grouped sections (accent titles over rounded rows, a note
+     * under each), on a readable width in the middle of a wide screen.
+     */
     private void settings() {
-        newPage();title("Settings","Make yourself comfortable.");
-        ScrollView scroll=new ScrollView(this);scroll.setVerticalScrollBarEnabled(false);LinearLayout settings=b.column();settings.setPadding(0,dp(6),0,0);scroll.addView(settings);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+        if("about".equals(settingsPage)){about();return;}
+        LinearLayout g=groupedPage();
+        TextView heading=b.text("Settings",30,true);heading.setPadding(dp(18),dp(16),dp(18),dp(4));g.addView(heading);
         int theme=prefs.getInt("theme",0);
-        setting(settings,"Theme",THEMES[theme],()->dialog("Choose your theme",null,THEMES,theme,new Runnable[]{()->theme(0),()->theme(1),()->theme(2)}));
-        setting(settings,"Playback quality",QUALITIES[prefs.getInt("quality",0)],this::qualityDialog);
-        setting(settings,"About Grapefruit FAST",VERSION.substring(0,VERSION.indexOf(" ·")),()->ok("Grapefruit FAST",VERSION+"\n\nFree live TV in the Grapefruit family. Native Android 4.2.2 and later. Fonts: Geist and Geist Pixel Triangle by Vercel (SIL OFL 1.1). GPL-3.0-or-later. ExoPlayer and Conscrypt: Apache-2.0.\n\nCopyright © 2026 MagicFlute LLC. Not affiliated with the listed broadcasters or platforms."));
-        setting(settings,"Channels & availability",null,()->ok("Channels & availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, DRM bypass, location spoofing or ad removal. Availability depends on your region and each provider.\n\nThe channel guide lists channels; programme schedules are not supplied in this beta.\n\nCP24 is excluded because a public video stream could not be obtained from cp24.com. JP5S hardware playback still needs device testing."));
-        setting(settings,"Open source licences",null,this::licences);
-        TextView n=b.label("Streams include provider ads. Grapefruit adds no tracking SDK or extra advertisements. Playback stops when you leave the app.",12,b.secondary);
-        n.setLineSpacing(dp(2),1);n.setPadding(dp(18),dp(8),dp(18),dp(14));settings.addView(n);
-        setScroller(scroll,dp(10));
-        floatBars(true);
+        section(g,"Appearance");
+        value(g,"Theme",THEMES[theme],()->dialog("Theme",null,THEMES,theme,new Runnable[]{()->theme(0),()->theme(1),()->theme(2)}));
+
+        section(g,"Watching");
+        value(g,"Playback Quality",QUALITIES[prefs.getInt("quality",0)],this::qualityDialog);
+        toggle(g,"Continue Watching",prefs.getBoolean("continue",true),on->{prefs.edit().putBoolean("continue",on).apply();floatBars(true);});
+        toggle(g,"Keep Screen On",prefs.getBoolean("keepScreenOn",true),on->prefs.edit().putBoolean("keepScreenOn",on).apply());
+        footer(g,"Auto changes resolution as your connection changes. Continue Watching keeps your last channel a tap away above the tabs. Keep Screen On stops the screen sleeping while a channel plays.");
+
+        section(g,"Channels");
+        value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, DRM bypass, location spoofing or ad removal. Availability depends on your region and each provider.\n\nThe channel guide lists channels; programme schedules are not supplied in this beta.\n\nCP24 is excluded because a public video stream could not be obtained from cp24.com. JP5S hardware playback still needs device testing."));
+        int saved=favourites.size();
+        value(g,"Favourites",saved==0?"None":saved==1?"1 channel":saved+" channels",null);
+        if(saved>0)action(g,"Clear Favourites",true,()->dialog("Clear Favourites?","Your "+(saved==1?"favourite channel":saved+" favourite channels")+" will be removed from Favourites.",
+            new String[]{"Clear Favourites","Cancel"},-1,new Runnable[]{()->{favourites.clear();prefs.edit().putStringSet("favourites",new HashSet<String>()).apply();settings();},()->{}}));
+        footer(g,"Streams include provider ads. Grapefruit adds no tracking SDK or extra advertisements. Playback stops when you leave the app.");
+
+        section(g,"About");
+        value(g,"About Grapefruit FAST","Version "+VERSION.substring(0,VERSION.indexOf(" ·")),()->{settingsPage="about";about();});
+        floatBars(true);backCallback();
+    }
+    /** Settings › About Grapefruit FAST: the logo and wordmark, then the licence, developer and credits. */
+    private void about() {
+        LinearLayout g=groupedPage();
+        LinearLayout top=b.row();top.setPadding(dp(16),dp(10),dp(16),0);
+        TextView back=b.round("‹",v->back());back.setContentDescription("Back to Settings");
+        top.addView(back,new LinearLayout.LayoutParams(dp(40),dp(40)));g.addView(top);
+        LinearLayout hero=b.column();hero.setGravity(Gravity.CENTER_HORIZONTAL);hero.setPadding(0,dp(4),0,dp(8));
+        ImageView icon=new ImageView(this);icon.setImageResource(R.drawable.splash_logo);
+        hero.addView(icon,new LinearLayout.LayoutParams(dp(96),dp(96)));
+        TextView name=b.wordmark(30,false);name.setPadding(dp(16),dp(14),dp(16),dp(8));
+        hero.addView(name,new LinearLayout.LayoutParams(-1,-2));
+        TextView version=b.label("Version "+VERSION,15,b.secondary);version.setGravity(Gravity.CENTER);hero.addView(version,new LinearLayout.LayoutParams(-1,-2));
+        TextView copyright=b.label(COPYRIGHT,13,b.secondary);copyright.setGravity(Gravity.CENTER);copyright.setPadding(0,dp(6),0,0);hero.addView(copyright,new LinearLayout.LayoutParams(-1,-2));
+        g.addView(hero);
+
+        section(g,"License");
+        link(g,"GNU GPL","Version 3 or later","https://www.gnu.org/licenses/gpl-3.0.html");
+        link(g,"Source Code",SOURCE,"https://"+SOURCE);
+        footer(g,"Grapefruit FAST is free software: you can share and change it under the GNU General Public License, version 3 or any later version. It comes with no warranty.");
+
+        section(g,"Developer");
+        value(g,"Developer",DEVELOPER,null);
+        link(g,"Telegram","@"+TELEGRAM,"https://t.me/"+TELEGRAM);
+        link(g,"Donate (PayPal)",PAYPAL,"https://"+PAYPAL);
+        footer(g,"Tap to open, or touch and hold to copy.");
+
+        section(g,"Acknowledgements");
+        value(g,"ExoPlayer","Apache License 2.0",null);
+        value(g,"Conscrypt","Apache License 2.0",null);
+        value(g,"Geist & Geist Pixel","SIL Open Font License 1.1",null);
+        value(g,"Open Source Licences",null,this::licences);
+        footer(g,"The typeface is Geist, and the wordmark's lettering Geist Pixel, by Vercel (vercel.com/font). ExoPlayer plays the live streams and Conscrypt provides secure connections on older Android versions. Not affiliated with the listed broadcasters or platforms.");
+        floatBars(true);backCallback();
+    }
+    /** A fresh scrolling page for Settings; rows keep to a readable width, centred, on a wide screen. */
+    private LinearLayout groupedPage() {
+        body.removeAllViews();scroller=null;
+        ScrollView scroll=new ScrollView(this);scroll.setVerticalScrollBarEnabled(false);scroll.setFillViewport(true);
+        final int widest=dp(640);
+        LinearLayout content=new LinearLayout(this){
+            @Override protected void onMeasure(int w,int h){
+                int side=Math.max(0,(View.MeasureSpec.getSize(w)-widest)/2);
+                if(getPaddingLeft()!=side)setPadding(side,getPaddingTop(),side,getPaddingBottom());
+                super.onMeasure(w,h);
+            }
+        };
+        content.setOrientation(LinearLayout.VERTICAL);scroll.addView(content);
+        body.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
+        page=content;setScroller(scroll,dp(32));
+        return content;
+    }
+    private void section(LinearLayout g,String title){
+        TextView t=b.text(title,15,true);t.setTextColor(b.accent);t.setPadding(dp(18),dp(24),dp(16),dp(6));g.addView(t);
+    }
+    private void footer(LinearLayout g,String text){
+        TextView t=b.label(text,13,b.secondary);t.setLineSpacing(dp(2),1);t.setPadding(dp(18),dp(6),dp(18),0);g.addView(t);
+    }
+    /** A rounded row, as in Music: pressed darkens it, a remote's focus rings it. */
+    private LinearLayout groupedRow(Runnable click){
+        LinearLayout row=b.row();row.setMinimumHeight(dp(56));row.setPadding(dp(22),dp(8),dp(16),dp(8));
+        row.setBackground(b.interactive(false,Brand.PILL,b.control,false));
+        if(click!=null){row.setFocusable(true);row.setOnClickListener(v->click.run());}
+        return row;
+    }
+    private void addRow(LinearLayout g,LinearLayout row){
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(12),dp(4),dp(12),dp(4));g.addView(row,lp);
+    }
+    /** A label and its value in grey; with a › when it opens something. */
+    private TextView value(LinearLayout g,String label,String value,Runnable click){
+        LinearLayout row=groupedRow(click);
+        row.addView(b.label(label,16,b.text),new LinearLayout.LayoutParams(0,-2,1));
+        TextView v=b.label(value==null?"":value,15,b.secondary);v.setPadding(dp(8),0,0,0);row.addView(v);
+        if(click!=null){TabIcon more=new TabIcon(this,TabIcon.CHEVRON,b.secondary);LinearLayout.LayoutParams mp=new LinearLayout.LayoutParams(dp(16),dp(16));mp.leftMargin=dp(6);row.addView(more,mp);}
+        addRow(g,row);return v;
+    }
+    private void action(LinearLayout g,String label,boolean destructive,Runnable click){
+        LinearLayout row=groupedRow(click);TextView l=b.text(label,16,true);l.setTextColor(destructive?0xffe5484d:b.accent);row.addView(l);addRow(g,row);
+    }
+    /** A label and Music's grapefruit switch; tapping anywhere on the row switches it. */
+    private Toggle toggle(LinearLayout g,String label,boolean on,ToggleChange change){
+        final Toggle t=new Toggle(this);
+        LinearLayout row=groupedRow(t::performClick);
+        row.addView(b.label(label,16,b.text),new LinearLayout.LayoutParams(0,-2,1));
+        t.setOffColors(b.toggleOff,b.toggleOffSegments);t.setChecked(on);t.setContentDescription(label);
+        t.setListener((toggle,checked)->change.changed(checked));
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-2,-2);lp.rightMargin=-dp(4);row.addView(t,lp);
+        addRow(g,row);return t;
+    }
+    private interface ToggleChange{void changed(boolean on);}
+    /** A row whose value is a link, in the accent: tap opens it, touch and hold copies it. */
+    private void link(LinearLayout g,String label,String shown,String url){
+        LinearLayout row=groupedRow(()->open(url,shown));
+        row.setOnLongClickListener(v->{copy(shown);return true;});
+        row.addView(b.label(label,16,b.text),new LinearLayout.LayoutParams(0,-2,1));
+        TextView v=b.label(shown,15,b.accent);v.setPadding(dp(8),0,0,0);v.setSingleLine();v.setEllipsize(TextUtils.TruncateAt.MIDDLE);
+        row.addView(v,new LinearLayout.LayoutParams(-2,-2));
+        addRow(g,row);
+    }
+    private void open(String url,String fallbackCopy){
+        try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));}catch(ActivityNotFoundException e){copy(fallbackCopy);}
+    }
+    private void copy(String text){
+        android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+        clipboard.setPrimaryClip(ClipData.newPlainText(text,text));
+        Toast.makeText(this,"Copied "+text,Toast.LENGTH_SHORT).show();
+    }
+    /** Whether this run of the app has shown its splash screen. */
+    static boolean splashShown;
+    /**
+     * The splash screen, as Music's: the TV grapefruit and the wordmark on the theme's colour for a moment as
+     * the app starts, then fading away. Android 12+ draws its own splash first (the icon alone); 13+ is told
+     * the theme's colour for next time.
+     */
+    private void splash() {
+        if(Build.VERSION.SDK_INT>=33){
+            int t=prefs.getInt("theme",0);
+            getSplashScreen().setSplashScreenTheme(t==1?R.style.FastSplash_Light:t==2?R.style.FastSplash_Black:R.style.FastSplash_Dark);
+        }
+        if(splashShown)return;
+        splashShown=true;
+        final FrameLayout owner=root;
+        final LinearLayout cover=b.column();cover.setGravity(Gravity.CENTER);cover.setBackgroundColor(b.bg);
+        cover.setClickable(true); // nothing underneath answers a tap meanwhile
+        ImageView icon=new ImageView(this);icon.setImageResource(R.drawable.splash_logo);
+        cover.addView(icon,new LinearLayout.LayoutParams(dp(120),dp(120)));
+        TextView name=b.wordmark(32,false);name.setPadding(dp(24),dp(20),dp(24),0);
+        cover.addView(name,new LinearLayout.LayoutParams(-1,-2));
+        owner.addView(cover,new FrameLayout.LayoutParams(-1,-1));
+        owner.postDelayed(()->cover.animate().alpha(0f).setDuration(300).withEndAction(()->owner.removeView(cover)).start(),
+            Build.VERSION.SDK_INT>=31?500:800); // shorter after Android 12's own splash screen
     }
     private void licences() {
         try {
             String text=Catalog.read(getAssets().open("fast-licences.txt"))+"\n\n"+Catalog.read(getAssets().open("fonts/Geist-OFL.txt"))+"\n\n"+Catalog.read(getAssets().open("GPL-3.0.txt"));
-            ok("Open source licences",text);
+            ok("Open Source Licences",text);
         } catch(Exception e){ok("Licences","See LICENSE and fast/README.md in the source repository.");}
     }
     private void theme(int t){prefs.edit().putInt("theme",t).apply();build();}
-    /** A pill row: the setting on the left, what it's set to and › on the right. */
-    private void setting(LinearLayout parent,String label,String value,Runnable click) {
-        LinearLayout row=b.row();row.setPadding(dp(22),0,dp(18),0);row.setFocusable(true);row.setClickable(true);
-        row.setBackground(b.interactive(false,Brand.PILL));row.setOnClickListener(v->click.run());
-        row.addView(b.text(label,15,true),new LinearLayout.LayoutParams(0,-2,1));
-        if(value!=null){TextView v=b.label(value,13,b.secondary);v.setPadding(dp(8),0,dp(10),0);row.addView(v);}
-        TextView more=b.text("›",22,true);more.setTextColor(b.accent);row.addView(more);
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(58));p.bottomMargin=dp(8);parent.addView(row,p);
-    }
     private void note(String message) {TextView t=b.label(message,12,b.secondary);t.setPadding(dp(8),dp(12),dp(8),dp(14));page.addView(t);}
     private void ok(String title,String message){dialog(title,message,new String[]{"OK"},-1,new Runnable[]{()->{}});}
     /**
@@ -485,7 +627,7 @@ public final class MainActivity extends Activity {
         } else if(full)getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         backCallback();
-        if(watching!=null)getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if(watching!=null&&prefs.getBoolean("keepScreenOn",true))getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
     @Override protected void onStart(){super.onStart();started=true;if(watching!=null&&playback==null&&pendingSurface!=null)startPlayer(pendingSurface);}
@@ -497,6 +639,7 @@ public final class MainActivity extends Activity {
     boolean back(){
         if(fullScreen){fullScreen=false;watchPage();}
         else if(watching!=null){stop();build();}
+        else if(settingsPage!=null){settingsPage=null;settings();}
         else if(!tab.equals("Live TV")){tab="Live TV";query="";build();}
         else return false;
         return true;
@@ -509,7 +652,7 @@ public final class MainActivity extends Activity {
      */
     private void backCallback() {
         if(Build.VERSION.SDK_INT<33)return;
-        boolean inside=fullScreen||watching!=null||!tab.equals("Live TV");
+        boolean inside=fullScreen||watching!=null||settingsPage!=null||!tab.equals("Live TV");
         android.window.OnBackInvokedDispatcher dispatcher=getOnBackInvokedDispatcher();
         if(inside&&backCallback==null){
             android.window.OnBackInvokedCallback callback=()->back();
@@ -527,7 +670,7 @@ public final class MainActivity extends Activity {
         }
         return super.onKeyDown(key,event);
     }
-    @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);out.putString("tab",tab);out.putString("category",category);out.putString("country",country);out.putString("query",query);out.putString("watching",watching==null?null:watching.id);out.putBoolean("fullscreen",fullScreen);}
+    @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);out.putString("tab",tab);out.putString("category",category);out.putString("country",country);out.putString("query",query);out.putString("watching",watching==null?null:watching.id);out.putBoolean("fullscreen",fullScreen);out.putString("settingsPage",settingsPage);}
     /** Keeps the picture at its aspect ratio inside a 16:9 frame; other children (the corner mask) fill the frame. */
     private static class AspectFrame extends FrameLayout {
         float ratio=16f/9;
