@@ -113,7 +113,7 @@ public class InterfaceTest {
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
             tap(text(root,"About Grapefruit FAST"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0-beta-8"));assertNotNull(text(root,"Source Code"));
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0-beta-9"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
@@ -195,6 +195,37 @@ public class InterfaceTest {
         assertEquals("EU",Region.group("FR"));assertEquals("XX",Region.group("JP"));
     }
     private static View visibleText(ListView list,String s){for(int i=0;i<list.getChildCount();i++){for(View v:views(list.getChildAt(i)))if(v instanceof TextView&&s.equals(String.valueOf(((TextView)v).getText()))&&((TextView)v).getTextSize()>=29)return v;}return null;}
+    /** Captions: the pill appears once the stream says it has captions; on, the text shows over the picture. */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void captionsWhereTheStreamProvidesThem() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"CityNews 24/7 · Toronto"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            TextView button=text(root,"Captions");assertNotNull(button);assertEquals(View.GONE,button.getVisibility());
+            a.onCaptionsAvailable(true);assertEquals(View.VISIBLE,button.getVisibility());
+            assertFalse(a.captionsOn());
+            a.onCaptions("Not shown while captions are off.");
+            assertNull(visible(root,"Not shown while captions are off."));
+            button.performClick();assertTrue(a.captionsOn());
+            a.onCaptions("The House is now in session.");measure(root,1233,2742);
+            assertNotNull(visible(root,"The House is now in session."));capture(root,"portrait-captions.png");
+            button.performClick();assertFalse(a.captionsOn());
+            assertNull(visible(root,"The House is now in session."));
+            a.onCaptionsAvailable(false);assertEquals(View.GONE,button.getVisibility());
+        }
+    }
+    @Test public void captionsSettingAndCueText() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1024,600);
+            tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1024,600);
+            assertNotNull(text(root,"Captions"));tap(text(root,"Captions"));assertTrue(a.captionsOn());
+        }
+        java.util.List<com.google.android.exoplayer2.text.Cue> cues=java.util.Arrays.asList(
+            new com.google.android.exoplayer2.text.Cue.Builder().setText("First line").build(),
+            new com.google.android.exoplayer2.text.Cue.Builder().setText(" ").build(),
+            new com.google.android.exoplayer2.text.Cue.Builder().setText("Second line").build());
+        assertEquals("First line\nSecond line",LivePlayer.joined(cues).toString());
+    }
+    private static View visible(View root,String s){for(View v:views(root))if(v instanceof TextView&&s.equals(String.valueOf(((TextView)v).getText()))&&v.getVisibility()==View.VISIBLE)return v;return null;}
     private static void tap(View v){while(v!=null&&!v.isClickable()&&!(v.getParent() instanceof AdapterView))v=(View)v.getParent();
         if(v.getParent() instanceof AdapterView){AdapterView<?> list=(AdapterView<?>)v.getParent();int pos=list.getPositionForView(v);list.performItemClick(v,pos,list.getItemIdAtPosition(pos));}else v.performClick();}
     private static java.util.List<View> views(View v){java.util.List<View> all=new java.util.ArrayList<>();all.add(v);if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)all.addAll(views(g.getChildAt(i)));}return all;}

@@ -1,6 +1,6 @@
 # Grapefruit FAST
 
-**1.0 beta 8 (build 8)** — `io.github.hayliewordsman.grapefruitfast`
+**1.0 beta 9 (build 9)** — `io.github.hayliewordsman.grapefruitfast`
 
 A second native Android app in the Grapefruit Music & Podcasts repository. Both can be installed at once. Music's application ID and version remain unchanged. Shared Geist fonts and Conscrypt TLS support live in `grapefruit-ui/`; Music's existing UI remains in `app/`.
 
@@ -12,6 +12,7 @@ FAST uses Grapefruit's Dark, Light and Pitch Black palettes and Geist UI type. T
 - Touch a channel to watch. Hold it (or press Menu on a remote) for favourites and its official website. D-pad/Enter navigates; channel up/down changes channels; Back returns to browsing.
 - Auto playback uses ExoPlayer's measured-bandwidth adaptive HLS selection. The displayed resolution updates when the video format changes. Adaptation requires multiple renditions in the provider's master playlist: a single-rendition channel cannot change resolution.
 - Android 4.x Auto caps selection at 720p/30 fps to reduce old-decoder pressure, while still adapting below that. Data saver caps at 480p/1.4 Mbps; Compatibility caps at 360p/800 Kbps. Constraints are not exceeded when a provider offers no suitable track; try Auto instead.
+- Captions (beta 9): where a stream provides them (closed captions in the video, or WebVTT subtitle tracks; 58 of the 59 channels declare them), a Captions pill on the watch page and in full screen turns them on, in the viewer's language where there's a choice. FAST draws them itself over the picture, so they work on Android 4.2. Settings › Watching › Captions remembers the choice; until it's set, captions follow Android's caption setting and size (4.4+).
 - Full screen expands the viewing area. Playback stops when the app is left and reconnects on return; this is live TV, so no pause-behind-live or downloads.
 - No account, Play Services, WebView, tracking SDK, extra ads or paid subscription is required by Grapefruit. Provider advertisements and region restrictions remain.
 
@@ -73,13 +74,13 @@ JDK 21, Android SDK 36, build tools 35:
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
-Debug APK: `fast/build/outputs/apk/debug/fast-debug.apk`. Debug signatures are for testing, separate from the permanent release key. PR Actions also supplies a `grapefruit-fast-1.0-beta-8-test-apk` artifact with an installable test APK, checksum and verification evidence.
+Debug APK: `fast/build/outputs/apk/debug/fast-debug.apk`. Debug signatures are for testing, separate from the permanent release key. PR Actions also supplies a `grapefruit-fast-1.0-beta-9-test-apk` artifact with an installable test APK, checksum and verification evidence.
 
 `.github/workflows/fast.yml` builds/tests/lints FAST and uploads its own APK/report artifacts. To publish, run it manually on the repository's default branch with `publish` enabled.
 
-**Signing.** From beta 3, FAST is signed with the permanent Grapefruit key, the same key and repository secrets as Music: `GRAPEFRUIT_KEYSTORE_BASE64` (the PKCS12 file, alias `grapefruit`) and `GRAPEFRUIT_KEYSTORE_PASSWORD`. Every build that has the key (the CI test APK, releases, debug and release, beta and stable) is signed with it, so each installs over the one before. The CI test APK is the release build on that key, checked against the certificate SHA-256 `85cac0ef72777211d99e2bbe4ad09a3815c6cf313e5fa18f401ec8da0ae0e795` (also in `fdroid-repo.yml`). Without the key (a fork's pull request, a local build) the test APK is debug-signed and won't install over signed builds. Keep `versionCode` rising with every build (beta 8 is 8), since Android won't install a lower one over a higher one. Beta 1 and beta 2 test APKs were debug-signed: uninstall them once before installing beta 3.
+**Signing.** From beta 3, FAST is signed with the permanent Grapefruit key, the same key and repository secrets as Music: `GRAPEFRUIT_KEYSTORE_BASE64` (the PKCS12 file, alias `grapefruit`) and `GRAPEFRUIT_KEYSTORE_PASSWORD`. Every build that has the key (the CI test APK, releases, debug and release, beta and stable) is signed with it, so each installs over the one before. The CI test APK is the release build on that key, checked against the certificate SHA-256 `85cac0ef72777211d99e2bbe4ad09a3815c6cf313e5fa18f401ec8da0ae0e795` (also in `fdroid-repo.yml`). Without the key (a fork's pull request, a local build) the test APK is debug-signed and won't install over signed builds. Keep `versionCode` rising with every build (beta 9 is 9), since Android won't install a lower one over a higher one. Beta 1 and beta 2 test APKs were debug-signed: uninstall them once before installing beta 3.
 
-Local signed builds use `GRAPEFRUIT_KEYSTORE` (path to the .p12) and `GRAPEFRUIT_KEYSTORE_PASSWORD`. Keep signing files outside Git. The release workflow verifies package identity and the certificate before publishing a `fast-v1.0-beta-8` prerelease. Music keeps its `v...` tags and F-Droid publisher; the publisher filters Music tags so FAST APKs cannot be mistaken for Music. Beta 8 is not submitted to f-droid.org or added to the stable F-Droid feed.
+Local signed builds use `GRAPEFRUIT_KEYSTORE` (path to the .p12) and `GRAPEFRUIT_KEYSTORE_PASSWORD`. Keep signing files outside Git. The release workflow verifies package identity and the certificate before publishing a `fast-v1.0-beta-9` prerelease. Music keeps its `v...` tags and F-Droid publisher; the publisher filters Music tags so FAST APKs cannot be mistaken for Music. Beta 9 is not submitted to f-droid.org or added to the stable F-Droid feed.
 
 **Modern Android.** Minimum stays Android 4.2.2 (API 17); target is API 36 (Android 16). Behaviour is version-gated: on Android 11+ the page is padded for the system bars, the camera cutout and the keyboard (Android 15+ draws edge to edge and no longer resizes for the keyboard), full screen hides the bars through the insets controller, and the bars' icon colours follow the theme. On Android 13+ Back uses predictive back callbacks (Android 16 never calls `onBackPressed` for apps targeting it), so Back steps out of full screen, the watch page and tabs before leaving the app. Conscrypt's native libraries are 16 KB page aligned.
 

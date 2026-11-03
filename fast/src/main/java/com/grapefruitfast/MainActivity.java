@@ -17,7 +17,7 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="1.0 beta 8 · build 8";
+    static final String VERSION="1.0 beta 9 · build 9";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
@@ -364,7 +364,7 @@ public final class MainActivity extends Activity {
         }
     }
     private void tune(Channel channel) {
-        stop();watching=channel;prefs.edit().putString("lastChannel",channel.id).apply();
+        stop();watching=channel;captionsAvailable=false;prefs.edit().putString("lastChannel",channel.id).apply();
         watchPage();
     }
     private void watchPage() {
@@ -389,6 +389,14 @@ public final class MainActivity extends Activity {
         AspectFrame video=new AspectFrame(this);currentVideo=video;video.setBackgroundColor(Color.BLACK);
         SurfaceView surface=new SurfaceView(this);video.addView(surface,new FrameLayout.LayoutParams(-1,-1,Gravity.CENTER));
         if(!fullScreen)video.addView(new Corners(this,b.bg,dp(22)),new FrameLayout.LayoutParams(-1,-1));
+        // Captions, drawn over the picture: white on a dark pill, near the bottom, as Android draws them.
+        FrameLayout captionLayer=new FrameLayout(this);
+        caption=b.text("",captionSize(),false);caption.setTextColor(Color.WHITE);caption.setGravity(Gravity.CENTER);
+        caption.setTypeface(Fonts.medium());caption.setLineSpacing(dp(2),1);caption.setPadding(dp(10),dp(5),dp(10),dp(5));
+        caption.setBackground(b.shape(0xC0000000,12,false));caption.setVisibility(View.GONE);
+        FrameLayout.LayoutParams cp=new FrameLayout.LayoutParams(-2,-2,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
+        cp.bottomMargin=dp(fullScreen?28:12);cp.leftMargin=cp.rightMargin=dp(16);captionLayer.addView(caption,cp);
+        video.addView(captionLayer,new FrameLayout.LayoutParams(-1,-1));
         stage.addView(video,new LinearLayout.LayoutParams(-1,wide()||fullScreen?0:-2,wide()||fullScreen?1:0));
         LinearLayout info=b.row();info.setPadding(dp(4),dp(12),dp(4),dp(10));
         state=b.text("",12,true);info.addView(state,new LinearLayout.LayoutParams(-2,-2));
@@ -400,6 +408,10 @@ public final class MainActivity extends Activity {
         LinearLayout actions=b.row();actionsScroll.addView(actions);
         action(actions,"Retry",()->tune(watching));
         action(actions,"Quality",this::qualityDialog);
+        // Only when the stream offers captions (the player says once it has read the stream's tracks).
+        captionsButton=b.button("Captions",captionsOn(),v->{boolean on=!captionsOn();prefs.edit().putBoolean("captions",on).apply();applyCaptions();});
+        captionsButton.setVisibility(captionsAvailable?View.VISIBLE:View.GONE);
+        LinearLayout.LayoutParams cbp=new LinearLayout.LayoutParams(-2,dp(44));cbp.rightMargin=dp(6);actions.addView(captionsButton,cbp);
         action(actions,fullScreen?"Exit full screen":"Full screen",()->setFullScreen(!fullScreen));
         action(actions,"Official site",()->website(watching));
         if(fullScreen) {
@@ -433,14 +445,54 @@ public final class MainActivity extends Activity {
         state.setPadding(live?dp(10):0,live?dp(5):0,live?dp(10):0,live?dp(5):0);
         if(qualityLabel!=null)qualityLabel.setVisibility(message.length()>28?View.GONE:View.VISIBLE);
     }
+    private TextView caption, captionsButton;
+    /** Whether the playing stream offers captions (set by the player). */
+    private boolean captionsAvailable;
+    /** Captions on? The viewer's choice; until they choose, Android's own captions setting (4.4+). */
+    boolean captionsOn() {
+        if(prefs.contains("captions"))return prefs.getBoolean("captions",false);
+        if(Build.VERSION.SDK_INT>=19){
+            android.view.accessibility.CaptioningManager m=(android.view.accessibility.CaptioningManager)getSystemService(CAPTIONING_SERVICE);
+            return m!=null&&m.isEnabled();
+        }
+        return false;
+    }
+    /** Caption text size (sp), scaled by Android's caption size setting (4.4+). */
+    private int captionSize() {
+        float scale=1;
+        if(Build.VERSION.SDK_INT>=19){
+            android.view.accessibility.CaptioningManager m=(android.view.accessibility.CaptioningManager)getSystemService(CAPTIONING_SERVICE);
+            if(m!=null)scale=m.getFontScale();
+        }
+        return Math.round((fullScreen?22:15)*scale);
+    }
+    /** Tells the player, and the Captions pill, what the viewer chose. */
+    private void applyCaptions() {
+        boolean on=captionsOn();
+        if(playback!=null)playback.setCaptions(on,Locale.getDefault().getLanguage());
+        if(captionsButton!=null){captionsButton.setBackground(b.interactive(on,Brand.PILL));captionsButton.setTextColor(on?b.onAccent:b.text);
+            captionsButton.setContentDescription(on?"Captions on":"Captions off");}
+        if(!on&&caption!=null)caption.setVisibility(View.GONE);
+    }
+    void onCaptionsAvailable(boolean available) {
+        captionsAvailable=available;
+        if(captionsButton!=null)captionsButton.setVisibility(available?View.VISIBLE:View.GONE);
+    }
+    void onCaptions(CharSequence text) {
+        if(caption==null)return;
+        boolean show=captionsOn()&&text!=null&&text.length()>0;
+        caption.setText(show?text:"");caption.setVisibility(show?View.VISIBLE:View.GONE);
+    }
     private SurfaceView pendingSurface;
     private AspectFrame currentVideo;
     private void startPlayer(SurfaceView surface) {
         playback=new LivePlayer(this,new LivePlayer.Listener(){
             public void status(String message){MainActivity.this.status(message);}
             public void format(String message){if(qualityLabel!=null)qualityLabel.setText(message);}
+            public void captionsAvailable(boolean available){onCaptionsAvailable(available);}
+            public void captions(CharSequence text){onCaptions(text);}
             public void aspect(float ratio){if(currentVideo!=null&&Math.abs(currentVideo.ratio-ratio)>0.001f){currentVideo.ratio=ratio;currentVideo.requestLayout();}}
-        },prefs.getInt("quality",0));pendingSurface=surface;playback.attach(surface);playback.tune(watching);
+        },prefs.getInt("quality",0));pendingSurface=surface;applyCaptions();playback.attach(surface);playback.tune(watching);
     }
     private void action(LinearLayout row,String label,Runnable action) {
         TextView button=b.button(label,false,v->action.run());
@@ -493,8 +545,9 @@ public final class MainActivity extends Activity {
         value(g,"Region",shown,()->dialog("Region","Automatic uses this phone's mobile network or SIM country, then its region setting. Nothing is sent anywhere. Channels only offered in the United States are hidden elsewhere.",Region.NAMES,at,picks));
         value(g,"Playback Quality",QUALITIES[prefs.getInt("quality",0)],this::qualityDialog);
         toggle(g,"Continue Watching",prefs.getBoolean("continue",true),on->{prefs.edit().putBoolean("continue",on).apply();floatBars(true);});
+        toggle(g,"Captions",captionsOn(),on->{prefs.edit().putBoolean("captions",on).apply();applyCaptions();});
         toggle(g,"Keep Screen On",prefs.getBoolean("keepScreenOn",true),on->prefs.edit().putBoolean("keepScreenOn",on).apply());
-        footer(g,"Region decides which channels are listed. Auto changes resolution as your connection changes. Continue Watching keeps your last channel a tap away above the tabs. Keep Screen On stops the screen sleeping while a channel plays.");
+        footer(g,"Region decides which channels are listed. Auto changes resolution as your connection changes. Continue Watching keeps your last channel a tap away above the tabs. Captions show when a channel provides them; until you choose, they follow Android's caption setting. Keep Screen On stops the screen sleeping while a channel plays.");
 
         section(g,"Channels");
         value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, sign-in workarounds, DRM bypass, location spoofing or ad removal. Availability depends on where you are and each provider: DW News and ABC News Australia stream worldwide; Xumo's channels (most UK, US and many Canadian ones) are offered in the United States; CityNews and Global News are Canadian.\n\nThe channel guide lists channels; programme schedules are not supplied in this beta. CBC's local news channels need a CBC Gem sign-in, so they aren't included. CP24 is excluded because a public video stream could not be obtained from cp24.com. JP5S hardware playback still needs device testing."));

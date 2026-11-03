@@ -11,13 +11,19 @@ import com.google.android.exoplayer2.util.MimeTypes;
 
 /** ExoPlayer 2.18.7 supports Jelly Bean. Its Java HTTPS data source uses our Conscrypt TLS. */
 public final class LivePlayer {
-    public interface Listener { void status(String message); void format(String message); void aspect(float ratio); }
+    public interface Listener {
+        void status(String message); void format(String message); void aspect(float ratio);
+        /** Whether the stream offers captions (closed captions in the video, or subtitle tracks). */
+        void captionsAvailable(boolean available);
+        /** The captions to show now ("" for none). */
+        void captions(CharSequence text);
+    }
     private final Context context; private final Listener listener; private final Handler handler=new Handler();
     private final DefaultTrackSelector selector;
     private final DefaultBandwidthMeter bandwidth;
     private ExoPlayer player;
     private Channel channel; private int sourceIndex, retries, generation; private boolean released;
-    private SurfaceView surface; private int quality;
+    private SurfaceView surface; private int quality; private boolean captionsOn; private String captionLanguage="en";
     public LivePlayer(Context c,Listener l,int quality) {
         context=c;listener=l;this.quality=quality;
         bandwidth=new DefaultBandwidthMeter.Builder(c).setInitialBitrateEstimate(800_000).build();
@@ -33,9 +39,18 @@ public final class LivePlayer {
         else p.setMaxVideoSize(Build.VERSION.SDK_INT<21?1280:3840,Build.VERSION.SDK_INT<21?720:2160)
             .setMaxVideoBitrate(Integer.MAX_VALUE);
         if(Build.VERSION.SDK_INT<21) p.setMaxVideoFrameRate(30);
+        // Captions: the viewer's language first, then any (live captions are often undetermined); off: no text track.
+        p.setTrackTypeDisabled(C.TRACK_TYPE_TEXT,!captionsOn)
+            .setPreferredTextLanguage(captionLanguage).setSelectUndeterminedTextLanguage(true)
+            .setIgnoredTextSelectionFlags(0);
         selector.setParameters(p);
     }
     public void setQuality(int quality) { this.quality=quality;configure(); }
+    /** Captions on or off, in the viewer's language where the stream has a choice. */
+    public void setCaptions(boolean on,String language) {
+        captionsOn=on;if(language!=null&&!language.isEmpty())captionLanguage=language;configure();
+        if(!on)listener.captions("");
+    }
     public void attach(SurfaceView view) {surface=view;if(player!=null) {player.setVideoSurfaceView(view);listener.status(player.getPlaybackState()==Player.STATE_READY?"LIVE":"Connecting…");report();}}
     public void tune(Channel c) {
         channel=c;sourceIndex=0;retries=0;generation++;handler.removeCallbacksAndMessages(null);
@@ -55,9 +70,21 @@ public final class LivePlayer {
                 else if(state==Player.STATE_ENDED) failed();
             }
             @Override public void onPlayerError(PlaybackException error) {failed();}
+            @Override public void onTracksChanged(Tracks tracks) { listener.captionsAvailable(tracks.containsType(C.TRACK_TYPE_TEXT)); }
+            @Override public void onCues(com.google.android.exoplayer2.text.CueGroup cues) { listener.captions(captionsOn?joined(cues.cues):""); }
             @Override public void onVideoSizeChanged(com.google.android.exoplayer2.video.VideoSize size) { if(size.height>0)listener.aspect(size.width*size.pixelWidthHeightRatio/size.height);report(); }
         });
         prepare();
+    }
+    /** The cues on screen now as lines of text (live captions are text; positions are left to the overlay). */
+    static CharSequence joined(java.util.List<com.google.android.exoplayer2.text.Cue> cues) {
+        android.text.SpannableStringBuilder out=new android.text.SpannableStringBuilder();
+        for(com.google.android.exoplayer2.text.Cue cue:cues) {
+            if(cue.text==null||cue.text.toString().trim().isEmpty())continue;
+            if(out.length()>0)out.append('\n');
+            out.append(cue.text);
+        }
+        return out;
     }
     private void report() {
         if(player==null) return;
@@ -72,7 +99,7 @@ public final class LivePlayer {
         if(released||player==null) return;
         listener.status("Connecting…");
         DefaultHttpDataSource.Factory http=new DefaultHttpDataSource.Factory()
-            .setUserAgent("GrapefruitFAST/1.0-beta-8 (Android)")
+            .setUserAgent("GrapefruitFAST/1.0-beta-9 (Android)")
             .setConnectTimeoutMs(15000).setReadTimeoutMs(20000).setAllowCrossProtocolRedirects(false);
         player.setMediaSource(new HlsMediaSource.Factory(new DefaultDataSource.Factory(context,http))
             .createMediaSource(MediaItem.fromUri(channel.streams[sourceIndex])));
