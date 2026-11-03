@@ -15,12 +15,9 @@ _Nothing planned yet._
 
 Feasible on every supported Android version, with picture-in-picture where Android has it.
 
-- **In-app mini player** (all versions, Android 4.2+): leaving the watch page keeps the channel
-  playing in a floating pill above the tabs, as Music's mini player, with the picture in a small
-  rounded window; tap to go back to full size, swipe or ✕ to stop. Needs the player to belong to
-  the activity rather than the watch page, and the picture drawn on a TextureView (a SurfaceView
-  can't move or round its corners smoothly on older Android). ExoPlayer 2.18.7 switches surfaces
-  without restarting the stream.
+- **In-app floating player** (all versions, Android 4.2+): **in 2.5 beta 1.** A draggable picture-in-picture
+  window inside the app (not Music's mini player pill); one stream at a time, handed between the watch page
+  and the window.
 - **Picture-in-picture** (Android 8.0+, and Android TVs that support it): Home or the PiP button
   shrinks the channel into Android's floating window over other apps, with play/pause and a
   "next channel" action; auto-enter on Home from Android 12. Manifest:

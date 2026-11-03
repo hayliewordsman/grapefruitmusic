@@ -17,7 +17,7 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="2.0 · build 16";
+    static final String VERSION="2.5-beta-1 · build 17";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
@@ -39,7 +39,13 @@ public final class MainActivity extends Activity {
     private final Set<String> favourites=new HashSet<>();
     private final List<Channel> visible=new ArrayList<>();
     private String tab="Live TV", category="All", country="All", query="", error;
+    /** The channel whose watch page is open, or null. */
     private Channel watching;
+    /**
+     * The channel whose stream is open, on its watch page or in the floating player, or null. One at a time:
+     * there's one LivePlayer, and the views showing it take turns (attach) rather than opening another.
+     */
+    private Channel playing;
     private LivePlayer playback;
     private TextView state, qualityLabel, count;
     private FrameLayout root, body;
@@ -66,6 +72,7 @@ public final class MainActivity extends Activity {
             country=saved.getString("country","All");query=saved.getString("query","");
             fullScreen=saved.getBoolean("fullscreen",false);
             watching=find(saved.getString("watching"));settingsPage=saved.getString("settingsPage");
+            playing=watching!=null?watching:find(saved.getString("playing"));
         }
         build();
         splash();
@@ -123,7 +130,8 @@ public final class MainActivity extends Activity {
         } else root.setFitsSystemWindows(true);
         shell=wide()?b.row():b.column();root.addView(shell,new FrameLayout.LayoutParams(-1,-1));
         if(wide()) {nav=b.column();nav.setGravity(Gravity.CENTER_HORIZONTAL);nav.setPadding(dp(14),dp(18),dp(6),dp(16));shell.addView(nav,new LinearLayout.LayoutParams(dp(164),-1));}
-        body=new FrameLayout(this);
+        body=new FrameLayout(this);mini=null;
+        body.addOnLayoutChangeListener((v,l,t,r,btm,ol,ot,or,ob)->{if(r-l!=or-ol||btm-t!=ob-ot)v.post(()->placeMini(false));});
         shell.addView(body,new LinearLayout.LayoutParams(wide()?0:-1,-1,1));
         // The bars float over the bottom of the page: the tabs (portrait) and Continue watching.
         bars=b.column();bars.setGravity(Gravity.CENTER_HORIZONTAL);bars.setClickable(false);
@@ -175,7 +183,7 @@ public final class MainActivity extends Activity {
             LinearLayout item=b.row();item.setGravity(wide()?Gravity.CENTER_VERTICAL|Gravity.START:Gravity.CENTER);
             item.setPadding(dp(14),0,dp(wide()?10:14),0);item.setFocusable(true);item.setClickable(true);item.setContentDescription(label);
             item.setBackground(b.interactive(chosen,Brand.PILL,0,false));
-            item.setOnClickListener(v->{stop();tab=label;query="";listPosition=0;fullScreen=false;settingsPage=null;build();});
+            item.setOnClickListener(v->{leaveWatchPage();tab=label;query="";listPosition=0;fullScreen=false;settingsPage=null;build();});
             TabIcon icon=new TabIcon(this,TAB_ICONS[i],chosen?b.onAccent:b.secondary);item.addView(icon,new LinearLayout.LayoutParams(dp(22),dp(22)));
             TextView name=b.text(label,13,true);name.setTextColor(chosen?b.onAccent:b.secondary);name.setPadding(dp(wide()?10:8),0,0,0);
             name.setSingleLine();name.setVisibility(chosen||wide()?View.VISIBLE:View.GONE);
@@ -190,7 +198,8 @@ public final class MainActivity extends Activity {
         bars.removeAllViews();
         if(bars.getParent()!=null)((ViewGroup)bars.getParent()).removeView(bars);
         if(nav.getParent()!=null&&!wide())((ViewGroup)nav.getParent()).removeView(nav);
-        Channel last=resume&&prefs.getBoolean("continue",true)?find(prefs.getString("lastChannel","")):null;
+        // While a channel plays in the floating player, that is the way back to it.
+        Channel last=resume&&playing==null&&prefs.getBoolean("continue",true)?find(prefs.getString("lastChannel","")):null;
         // On a short screen Continue watching sits at the top of the list instead (browse), scrolling away.
         if(last!=null&&!compact()) bars.addView(continuePill(last));
         if(!wide()) bars.addView(nav,new LinearLayout.LayoutParams(-1,-2));
@@ -199,6 +208,7 @@ public final class MainActivity extends Activity {
         bars.setVisibility(bars.getChildCount()>0?View.VISIBLE:View.GONE);
         if(bars.getChildCount()==0)barsInset=0;
         body.addView(bars,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
+        showMini();
     }
     /** Like Music's mini player: the last channel on a floating pill. */
     private View continuePill(Channel last) {
@@ -223,6 +233,7 @@ public final class MainActivity extends Activity {
     }
     /** Pads the page's scrolling view so its last rows can scroll up out from under the floating bars. */
     private void inset() {
+        placeMini(false);
         if(scroller==null)return;
         scroller.setClipToPadding(false);
         int want=scrollerPadding+(bars!=null&&bars.getVisibility()==View.VISIBLE?barsInset:0);
@@ -232,8 +243,16 @@ public final class MainActivity extends Activity {
         }
     }
     private void setScroller(ViewGroup v,int ownPadding) {scroller=v;scrollerPadding=ownPadding;inset();}
+    /**
+     * Empties the page for the next one, keeping the floating player (and its picture) where it is, and
+     * forgetting the last watch page's views.
+     */
+    private void clearBody() {
+        for(int i=body.getChildCount()-1;i>=0;i--)if(body.getChildAt(i)!=mini)body.removeViewAt(i);
+        scroller=null;state=null;qualityLabel=null;caption=null;captionsButton=null;notice=null;noticeTitle=null;noticeDetail=null;
+    }
     private void newPage() {
-        body.removeAllViews();scroller=null;page=b.column();page.setPadding(dp(18),dp(16),dp(18),0);body.addView(page,new FrameLayout.LayoutParams(-1,-1));
+        clearBody();page=b.column();page.setPadding(dp(18),dp(16),dp(18),0);body.addView(page,new FrameLayout.LayoutParams(-1,-1));
     }
     private void title(String title,String subtitle) {
         TextView heading=b.text(title,30,true);page.addView(heading);
@@ -245,7 +264,7 @@ public final class MainActivity extends Activity {
      * on a fade from the page's colour as the channels pass under them.
      */
     private void browse() {
-        body.removeAllViews();scroller=null;
+        clearBody();
         LinearLayout header=b.column();header.setPadding(0,dp(16),0,0);page=header;
         title(tab,tab.equals("Favourites")?"Your channels, in one place.":tab.equals("Search")?"Channels, cities and genres.":null);
         LinearLayout bar=b.column();bar.setPadding(0,0,0,dp(FADE_DP));
@@ -265,7 +284,7 @@ public final class MainActivity extends Activity {
         chips(bar);
         LinearLayout notes=b.column();
         if(tab.equals("Live TV")) tvAppsRow(notes);
-        Channel last=compact()&&prefs.getBoolean("continue",true)?find(prefs.getString("lastChannel","")):null;
+        Channel last=compact()&&playing==null&&prefs.getBoolean("continue",true)?find(prefs.getString("lastChannel","")):null;
         if(last!=null){View pill=continuePill(last);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(10);notes.addView(pill,lp);}
         count=b.label("",12,b.secondary);count.setPadding(dp(4),dp(2),0,dp(10));notes.addView(count);
         if(error!=null){TextView t=b.label(error,12,b.secondary);t.setPadding(dp(4),0,dp(4),dp(10));notes.addView(t);}
@@ -412,7 +431,7 @@ public final class MainActivity extends Activity {
             h.logo.setText(initials);h.logo.setTextSize(initials.length()>2?13:20);
             h.name.setText(c.name);
             h.meta.setText((favourites.contains(c.id)?"★  ":"")+(c.added()?c.source+(c.description.isEmpty()?"":"  ·  "+c.description):c.region()+"  ·  "+c.category));
-            boolean live=watching!=null&&watching.id.equals(c.id);
+            boolean live=playing!=null&&playing.id.equals(c.id);
             h.live.setVisibility(live?View.VISIBLE:View.GONE);h.more.setVisibility(live?View.GONE:View.VISIBLE);
             return h.wrapper;
         }
@@ -438,17 +457,31 @@ public final class MainActivity extends Activity {
             wrapper.addView(row,new FrameLayout.LayoutParams(-1,-2));
         }
     }
+    /**
+     * Watch a channel. The one already playing (in the floating player, say) opens on its own stream; any
+     * other stops it first and starts in its place: one stream at a time.
+     */
     private void tune(Channel channel) {
-        stop();watching=channel;captionsAvailable=false;prefs.edit().putString("lastChannel",channel.id).apply();
+        if(playback!=null&&playing!=null&&playing.id.equals(channel.id)){watching=playing;watchPage();return;}
+        stop();watching=playing=channel;captionsAvailable=false;prefs.edit().putString("lastChannel",channel.id).apply();
         watchPage();
     }
+    /** Retry: the same channel on a fresh connection (the old one closed first). */
+    private void retry() {
+        if(playback!=null){playback.release();playback=null;}
+        captionsAvailable=false;watchPage();
+    }
+    /** Off the watch page: the channel carries on in the floating player (Settings › Floating Player), or stops. */
+    private void leaveWatchPage() {
+        if(playing!=null&&prefs.getBoolean("floating",true))watching=null;else stop();
+    }
     private void watchPage() {
-        body.removeAllViews();scroller=null;
+        removeMini();clearBody();
         root.setBackgroundColor(fullScreen?Color.BLACK:b.bg); // full screen is the picture on black, edge to edge
         page=b.column();page.setPadding(dp(fullScreen?0:14),dp(fullScreen?0:10),dp(fullScreen?0:14),0);body.addView(page,new FrameLayout.LayoutParams(-1,-1));
         if(!fullScreen) {
             LinearLayout header=b.row();
-            header.addView(b.round("‹",v->{stop();fullScreen=false;build();}),new LinearLayout.LayoutParams(dp(44),dp(44)));
+            header.addView(b.round("‹",v->{leaveWatchPage();fullScreen=false;build();}),new LinearLayout.LayoutParams(dp(44),dp(44)));
             TextView name=b.text(watching.name,18,true);name.setPadding(dp(12),0,dp(12),0);name.setMaxLines(2);name.setEllipsize(TextUtils.TruncateAt.END);
             header.addView(name,new LinearLayout.LayoutParams(0,-2,1));
             TextView star=b.round(favourites.contains(watching.id)?"★":"☆",v->{favourite(watching);watchPage();});
@@ -493,7 +526,7 @@ public final class MainActivity extends Activity {
         if(!fullScreen)stage.addView(info);
         HorizontalScrollView actionsScroll=new HorizontalScrollView(this);actionsScroll.setHorizontalScrollBarEnabled(false);
         LinearLayout actions=b.row();actionsScroll.addView(actions);
-        action(actions,"Retry",()->tune(watching));
+        action(actions,"Retry",this::retry);
         action(actions,"Quality",this::qualityDialog);
         // Only when the stream offers captions (the player says once it has read the stream's tracks).
         captionsButton=b.button("Captions",captionsOn(),v->{boolean on=!captionsOn();prefs.edit().putBoolean("captions",on).apply();applyCaptions();});
@@ -520,12 +553,145 @@ public final class MainActivity extends Activity {
         floatBars(false);
         // A short screen keeps the watch page for the picture, its controls and the lineup (Back has its button).
         if(compact()){bars.setVisibility(View.GONE);barsInset=0;}
-        if(playback==null && started)startPlayer(surface);else if(playback!=null){playback.attach(surface);pendingSurface=surface;}
-        else pendingSurface=surface;
+        show(surface);
         fullscreen(fullScreen);
     }
+    /** The floating player, while a channel plays away from its watch page (null otherwise). */
+    private FrameLayout mini;
+    private AspectFrame miniVideo;
+    private TextView miniStatus, miniLive;
+    private boolean miniDragging;
+    /**
+     * The floating player: the playing channel in a small window over the app, on the same stream the watch
+     * page had (handed over, never reopened). It's drawn on a TextureView, which moves and rounds its corners
+     * smoothly on every Android version. Drag it anywhere: it settles against the nearer side, clear of the
+     * tabs. Tap it to go back to the channel; ✕, or flinging it off the side, stops it.
+     */
+    private void showMini() {
+        if(playing==null||watching!=null||!prefs.getBoolean("floating",true)){removeMini();return;}
+        if(mini==null||mini.getParent()!=body){
+            removeMini();
+            final int radius=dp(14);
+            mini=new FrameLayout(this);mini.setBackgroundColor(Color.BLACK);
+            mini.setForeground(b.shape(Color.TRANSPARENT,14,true));
+            mini.setFocusable(true);mini.setClickable(true);
+            mini.setContentDescription("Floating player: "+playing.name+". Tap to open.");
+            if(Build.VERSION.SDK_INT>=21){
+                mini.setOutlineProvider(new ViewOutlineProvider(){
+                    @Override public void getOutline(View v,Outline o){o.setRoundRect(0,0,v.getWidth(),v.getHeight(),radius);}
+                });
+                mini.setClipToOutline(true);b.lift(mini,10);
+            }
+            miniVideo=new AspectFrame(this);
+            miniVideo.addView(new TextureView(this),new FrameLayout.LayoutParams(-1,-1,Gravity.CENTER));
+            // Android 4.x can't clip to a rounded outline: paint the page's colour over the corners.
+            if(Build.VERSION.SDK_INT<21)miniVideo.addView(new Corners(this,b.bg,radius),new FrameLayout.LayoutParams(-1,-1));
+            mini.addView(miniVideo,new FrameLayout.LayoutParams(-1,-1));
+            miniStatus=b.label("Connecting…",11,Color.WHITE);miniStatus.setGravity(Gravity.CENTER);miniStatus.setMaxLines(3);
+            miniStatus.setEllipsize(TextUtils.TruncateAt.END);miniStatus.setPadding(dp(12),0,dp(12),0);
+            mini.addView(miniStatus,new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER));
+            miniLive=b.text("●  LIVE",9,true);miniLive.setTextColor(b.onAccent);miniLive.setBackground(b.gradient(Brand.PILL));
+            miniLive.setPadding(dp(7),dp(2),dp(7),dp(2));miniLive.setVisibility(View.GONE);
+            FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.START);lp.topMargin=lp.leftMargin=dp(8);
+            mini.addView(miniLive,lp);
+            TextView close=b.text("✕",13,true);close.setTextColor(Color.WHITE);close.setGravity(Gravity.CENTER);
+            close.setBackground(b.circle(0x99000000));close.setFocusable(true);close.setClickable(true);
+            close.setContentDescription("Stop "+playing.name);close.setOnClickListener(v->closeMini());
+            FrameLayout.LayoutParams cp=new FrameLayout.LayoutParams(dp(30),dp(30),Gravity.TOP|Gravity.END);cp.topMargin=cp.rightMargin=dp(6);
+            mini.addView(close,cp);
+            mini.setOnClickListener(v->{if(playing!=null)tune(playing);});
+            mini.setOnTouchListener(new MiniDrag());
+            int w=miniWidth();
+            body.addView(mini,new FrameLayout.LayoutParams(w,w*9/16,Gravity.TOP|Gravity.LEFT));
+            placeMini(false);
+        }
+        mini.bringToFront();
+        currentVideo=miniVideo;
+        show(miniVideo.getChildAt(0));
+    }
+    /** Small enough to keep out of the way, big enough to watch: about half a phone's width, less sideways. */
+    private int miniWidth() {
+        int screen=getResources().getDisplayMetrics().widthPixels;
+        if(wide())return Math.min(dp(320),(int)(screen*0.3f));
+        if(compact())return (int)(screen*0.42f);
+        return Math.min(dp(280),(int)(screen*0.5f));
+    }
+    private void removeMini() {
+        if(mini!=null&&mini.getParent()!=null)((ViewGroup)mini.getParent()).removeView(mini);
+        if(currentVideo==miniVideo)currentVideo=null;
+        mini=null;miniVideo=null;miniStatus=null;miniLive=null;miniDragging=false;
+    }
+    /** ✕: stops the channel; Continue watching comes back. */
+    private void closeMini() {
+        stop();keepAwake();
+        if(adapter!=null)adapter.notifyDataSetChanged();
+        floatBars(true);backCallback();
+    }
+    /** The space the floating player keeps to: the page, less a margin and the floating tabs. */
+    private int[] miniBounds() {
+        int m=dp(12),w=mini.getLayoutParams().width,h=mini.getLayoutParams().height;
+        int bottom=body.getHeight()-m-h-(bars!=null&&bars.getVisibility()==View.VISIBLE&&bars.getParent()==body?barsInset:0);
+        return new int[]{m,m,Math.max(m,body.getWidth()-m-w),Math.max(m,bottom)};
+    }
+    /** Puts the floating player at its side and height (where it was left: at first, bottom right above the tabs). */
+    private void placeMini(boolean animate) {
+        if(mini==null||miniDragging||body.getWidth()==0)return;
+        int[] r=miniBounds();
+        float x=prefs.getBoolean("miniLeft",false)?r[0]:r[2];
+        float y=r[1]+(r[3]-r[1])*Math.max(0,Math.min(1,prefs.getFloat("miniY",1)));
+        if(animate)mini.animate().translationX(x).translationY(y).setDuration(180).start();
+        else{mini.animate().cancel();mini.setTranslationX(x);mini.setTranslationY(y);}
+    }
+    /** Dragging the floating player: a tap opens it; a drag moves it, then it settles at the nearer side. */
+    private final class MiniDrag implements View.OnTouchListener {
+        private float downX,downY,fromX,fromY;private VelocityTracker velocity;
+        private final int slop=ViewConfiguration.get(MainActivity.this).getScaledTouchSlop();
+        @Override public boolean onTouch(View v,MotionEvent e) {
+            if(velocity==null)velocity=VelocityTracker.obtain();
+            velocity.addMovement(e);
+            switch(e.getActionMasked()){
+                case MotionEvent.ACTION_DOWN:
+                    downX=e.getRawX();downY=e.getRawY();v.animate().cancel();fromX=v.getTranslationX();fromY=v.getTranslationY();
+                    miniDragging=false;v.setPressed(true);return true;
+                case MotionEvent.ACTION_MOVE:{
+                    float dx=e.getRawX()-downX,dy=e.getRawY()-downY;
+                    if(!miniDragging&&Math.hypot(dx,dy)>slop){miniDragging=true;v.setPressed(false);}
+                    if(miniDragging){v.setTranslationX(fromX+dx);v.setTranslationY(fromY+dy);}
+                    return true;
+                }
+                case MotionEvent.ACTION_UP: case MotionEvent.ACTION_CANCEL:{
+                    v.setPressed(false);
+                    velocity.computeCurrentVelocity(1000);float vx=velocity.getXVelocity(),vy=velocity.getYVelocity();
+                    velocity.recycle();velocity=null;
+                    if(!miniDragging){if(e.getActionMasked()==MotionEvent.ACTION_UP)v.performClick();return true;}
+                    miniDragging=false;settle(v,vx,vy);return true;
+                }
+            }
+            return false;
+        }
+    }
+    /** Where a drag (and its fling) would carry the floating player: off the side stops it, else the nearer side. */
+    private void settle(View v,float vx,float vy) {
+        int[] r=miniBounds();int w=v.getWidth();
+        float x=v.getTranslationX()+vx*0.15f,y=v.getTranslationY()+vy*0.15f;
+        if(x<r[0]-w/2f||x>r[2]+w/2f){
+            miniDragging=true; // nothing moves it back meanwhile
+            v.animate().translationX(x<r[0]?-w-dp(24):body.getWidth()+dp(24)).alpha(0).setDuration(160).withEndAction(this::closeMini).start();
+            return;
+        }
+        float fraction=r[3]>r[1]?(y-r[1])/(r[3]-r[1]):1;
+        prefs.edit().putBoolean("miniLeft",x+w/2f<body.getWidth()/2f).putFloat("miniY",Math.max(0,Math.min(1,fraction))).apply();
+        placeMini(true);
+    }
+    /** The floating player, for tests (null when it isn't showing). */
+    View floating(){return mini;}
     /** LIVE on an accent pill; connecting and errors as plain accent text. */
     private void status(String message) {
+        if(miniStatus!=null){
+            boolean live=message.equals("LIVE");
+            miniLive.setVisibility(live?View.VISIBLE:View.GONE);
+            miniStatus.setText(live?"":message);miniStatus.setVisibility(live?View.GONE:View.VISIBLE);
+        }
         if(state==null)return;
         boolean live=message.equals("LIVE");
         state.setText(live?"●  LIVE":message);
@@ -593,9 +759,18 @@ public final class MainActivity extends Activity {
         boolean show=captionsOn()&&text!=null&&text.length()>0;
         caption.setText(show?text:"");caption.setVisibility(show?View.VISIBLE:View.GONE);
     }
-    private SurfaceView pendingSurface;
+    /** The view the stream shows on: the watch page's picture or the floating player's (kept while the app is stopped). */
+    private View videoView;
     private AspectFrame currentVideo;
-    private void startPlayer(SurfaceView surface) {
+    /** Puts the stream on this view: handed over if it's open, started if not (once the app is in front). */
+    private void show(View view) {
+        videoView=view;
+        if(playback!=null){if(playback.view()!=view)playback.attach(view);}
+        else if(started&&playing!=null)startPlayer(view);
+    }
+    private void startPlayer(View surface) {
+        // One stream: whatever was open closes before another opens.
+        if(playback!=null){playback.release();playback=null;}
         playback=new LivePlayer(this,new LivePlayer.Listener(){
             public void status(String message){MainActivity.this.status(message);}
             public void format(String message){if(qualityLabel!=null)qualityLabel.setText(message);}
@@ -603,7 +778,7 @@ public final class MainActivity extends Activity {
             public void captions(CharSequence text){onCaptions(text);}
             public void unavailable(boolean location){onUnavailable(location);}
             public void aspect(float ratio){if(currentVideo!=null&&Math.abs(currentVideo.ratio-ratio)>0.001f){currentVideo.ratio=ratio;currentVideo.requestLayout();}}
-        },prefs.getInt("quality",0));pendingSurface=surface;applyCaptions();playback.attach(surface);playback.tune(watching);
+        },prefs.getInt("quality",0));videoView=surface;applyCaptions();playback.attach(surface);playback.tune(playing);
     }
     private void action(LinearLayout row,String label,Runnable action) {
         TextView button=b.button(label,false,v->action.run());
@@ -614,7 +789,10 @@ public final class MainActivity extends Activity {
         prefs.edit().putStringSet("favourites",new HashSet<>(favourites)).apply();
         if(adapter!=null)adapter.notifyDataSetChanged();
     }
-    private void stop() {if(playback!=null){playback.release();playback=null;}watching=null;pendingSurface=null;}
+    /** Stops the stream, wherever it shows. */
+    private void stop() {if(playback!=null){playback.release();playback=null;}watching=null;playing=null;videoView=null;removeMini();}
+    /** The open stream, for tests. */
+    LivePlayer player(){return playback;}
     private void details(Channel c) {
         if(c.added()){
             dialog(c.name,(c.description.isEmpty()?"":c.description+"\n\n")+"From "+c.source+", one of your sources.",
@@ -655,10 +833,14 @@ public final class MainActivity extends Activity {
 
         section(g,"Watching");
         value(g,"Playback Quality",QUALITIES[prefs.getInt("quality",0)],this::qualityDialog);
+        toggle(g,"Floating Player",prefs.getBoolean("floating",true),on->{
+            prefs.edit().putBoolean("floating",on).apply();
+            if(!on&&watching==null&&playing!=null){stop();keepAwake();if(adapter!=null)adapter.notifyDataSetChanged();floatBars(true);}
+        });
         toggle(g,"Continue Watching",prefs.getBoolean("continue",true),on->{prefs.edit().putBoolean("continue",on).apply();floatBars(true);});
         toggle(g,"Captions",captionsOn(),on->{prefs.edit().putBoolean("captions",on).apply();applyCaptions();});
         toggle(g,"Keep Screen On",prefs.getBoolean("keepScreenOn",true),on->prefs.edit().putBoolean("keepScreenOn",on).apply());
-        footer(g,"Auto changes resolution as your connection changes. Continue Watching keeps your last channel a tap away above the tabs. Captions show when a channel provides them; until you choose, they follow Android's caption setting. Keep Screen On stops the screen sleeping while a channel plays.");
+        footer(g,"Auto changes resolution as your connection changes. Floating Player keeps a channel playing in a small window when you leave its page: drag it aside, tap it to go back, or ✕ to stop. One channel plays at a time. Continue Watching keeps your last channel a tap away above the tabs. Captions show when a channel provides them; until you choose, they follow Android's caption setting. Keep Screen On stops the screen sleeping while a channel plays.");
 
         section(g,"Channels");
         value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability",
@@ -679,7 +861,7 @@ public final class MainActivity extends Activity {
             value(g,src.name,(UserSources.LOGIN.equals(src.kind)?"Login · ":"Playlist · ")+(n==1?"1 channel":n+" channels"),()->dialog(src.name,
                 (UserSources.LOGIN.equals(src.kind)?"Server: "+src.address+"\nUsername: "+src.username:"Playlist: "+src.address),
                 new String[]{"Refresh","Remove"},-1,new Runnable[]{()->refreshSources(src),()->dialog("Remove "+src.name+"?","Its channels will be removed from Grapefruit TV, and any of them in Favourites.",
-                    new String[]{"Remove","Cancel"},-1,new Runnable[]{()->{sources.remove(src.id);added.remove(src.id);mergeChannels();settings();},()->{}})}));
+                    new String[]{"Remove","Cancel"},-1,new Runnable[]{()->{sources.remove(src.id);added.remove(src.id);mergeChannels();if(playing!=null&&find(playing.id)==null)stop();keepAwake();settings();},()->{}})}));
         }
         action(g,"Add a Playlist (M3U)…",false,()->form("Add a Playlist","Your IPTV service's M3U or M3U8 playlist address.",
             new String[]{"Name","Playlist address (http:// or https://)"},new boolean[]{false,false},new String[]{"My TV",""},v->addSource(UserSources.M3U,v[0],v[1],"","")));
@@ -742,7 +924,7 @@ public final class MainActivity extends Activity {
     }
     /** A fresh scrolling page for Settings; rows keep to a readable width, centred, on a wide screen. */
     private LinearLayout groupedPage() {
-        body.removeAllViews();scroller=null;
+        clearBody();
         ScrollView scroll=new ScrollView(this);scroll.setVerticalScrollBarEnabled(false);scroll.setFillViewport(true);
         final int widest=dp(640);
         LinearLayout content=new LinearLayout(this){
@@ -974,13 +1156,16 @@ public final class MainActivity extends Activity {
             }
         } else if(full)getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        backCallback();
-        if(watching!=null&&prefs.getBoolean("keepScreenOn",true))getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        backCallback();keepAwake();
+    }
+    /** Keep Screen On: while a channel plays, on its page or floating. */
+    private void keepAwake() {
+        if(playing!=null&&prefs.getBoolean("keepScreenOn",true))getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
-    @Override protected void onStart(){super.onStart();started=true;if(watching!=null&&playback==null&&pendingSurface!=null)startPlayer(pendingSurface);}
+    @Override protected void onStart(){super.onStart();started=true;if(playing!=null&&playback==null&&videoView!=null)startPlayer(videoView);}
     @Override protected void onStop(){started=false;if(playback!=null){playback.release();playback=null;}super.onStop();}
-    @Override protected void onResume(){super.onResume();if(started&&watching!=null&&playback==null)watchPage();}
+    @Override protected void onResume(){super.onResume();if(started&&playing!=null&&playback==null){if(watching!=null)watchPage();else showMini();}}
     /** Whether the phone is being held sideways for full screen (turning it back ends it). */
     private boolean sideways;
     private boolean phone(){return getResources().getConfiguration().smallestScreenWidthDp<600;}
@@ -1009,7 +1194,7 @@ public final class MainActivity extends Activity {
     /** One step back inside the app: out of full screen, off the watch page, back to Live TV. False at the start. */
     boolean back(){
         if(fullScreen){setFullScreen(false);}
-        else if(watching!=null){stop();build();}
+        else if(watching!=null){leaveWatchPage();build();}
         else if(settingsPage!=null){settingsPage=null;settings();}
         else if(!tab.equals("Live TV")){tab="Live TV";query="";build();}
         else return false;
@@ -1041,7 +1226,7 @@ public final class MainActivity extends Activity {
         }
         return super.onKeyDown(key,event);
     }
-    @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);out.putString("tab",tab);out.putString("category",category);out.putString("country",country);out.putString("query",query);out.putString("watching",watching==null?null:watching.id);out.putBoolean("fullscreen",fullScreen);out.putString("settingsPage",settingsPage);}
+    @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);out.putString("tab",tab);out.putString("category",category);out.putString("country",country);out.putString("query",query);out.putString("watching",watching==null?null:watching.id);out.putString("playing",playing==null?null:playing.id);out.putBoolean("fullscreen",fullScreen);out.putString("settingsPage",settingsPage);}
     /** Keeps the picture at its aspect ratio inside a 16:9 frame; other children (the corner mask) fill the frame. */
     private static class AspectFrame extends FrameLayout {
         float ratio=16f/9;

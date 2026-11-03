@@ -3,14 +3,22 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.view.SurfaceView;
+import android.view.TextureView;
+import android.view.View;
 import com.google.android.exoplayer2.*;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.upstream.*;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.util.MimeTypes;
 
-/** ExoPlayer 2.18.7 supports Jelly Bean. Its Java HTTPS data source uses our Conscrypt TLS. */
+/**
+ * ExoPlayer 2.18.7 supports Jelly Bean. Its Java HTTPS data source uses our Conscrypt TLS.
+ * One LivePlayer plays one stream; the views that show it (the watch page's SurfaceView, the floating
+ * player's TextureView) take turns with attach(), so moving between them never opens a second connection.
+ */
 public final class LivePlayer {
+    /** How many streams are open in this app right now: never more than one (IPTV services limit connections). */
+    static int open;
     public interface Listener {
         void status(String message); void format(String message); void aspect(float ratio);
         /** Whether the stream offers captions (closed captions in the video, or subtitle tracks). */
@@ -25,7 +33,9 @@ public final class LivePlayer {
     private final DefaultBandwidthMeter bandwidth;
     private ExoPlayer player;
     private Channel channel; private int sourceIndex, retries, generation, refused; private boolean released;
-    private SurfaceView surface; private int quality; private boolean captionsOn; private String captionLanguage="en";
+    private View surface; private int quality;
+    /** The last "nothing played" outcome, kept for the next view that attaches: null while playing or trying. */
+    private Boolean unavailable; private boolean captionsOn; private String captionLanguage="en";
     public LivePlayer(Context c,Listener l,int quality) {
         context=c;listener=l;this.quality=quality;
         bandwidth=new DefaultBandwidthMeter.Builder(c).setInitialBitrateEstimate(800_000).build();
@@ -53,18 +63,39 @@ public final class LivePlayer {
         captionsOn=on;if(language!=null&&!language.isEmpty())captionLanguage=language;configure();
         if(!on)listener.captions("");
     }
-    public void attach(SurfaceView view) {surface=view;if(player!=null) {player.setVideoSurfaceView(view);listener.status(player.getPlaybackState()==Player.STATE_READY?"LIVE":"Connecting…");report();}}
+    /**
+     * Shows the stream on this view (a SurfaceView or a TextureView; null shows it nowhere) without
+     * reconnecting: the stream and its buffer stay, only the picture moves. The new view is told the
+     * stream's state, including a refusal.
+     */
+    public void attach(View view) {
+        surface=view;if(player==null)return;
+        show();
+        if(unavailable!=null){
+            listener.status(unavailable?"Not available where you are":"This stream isn't playing right now.");listener.unavailable(unavailable);return;
+        }
+        listener.status(player.getPlaybackState()==Player.STATE_READY?"LIVE":"Connecting…");report();
+    }
+    /** The view the picture is on now, or null. */
+    View view(){return surface;}
+    private void show() {
+        if(surface instanceof TextureView)player.setVideoTextureView((TextureView)surface);
+        else if(surface instanceof SurfaceView)player.setVideoSurfaceView((SurfaceView)surface);
+        else player.clearVideoSurface();
+    }
     public void tune(Channel c) {
         channel=c;sourceIndex=0;retries=0;refused=0;generation++;handler.removeCallbacksAndMessages(null);
-        if(player!=null) player.release();
+        unavailable=null;
+        if(player!=null) {player.release();player=null;open--;}
         player=new ExoPlayer.Builder(context).setTrackSelector(selector).setBandwidthMeter(bandwidth)
             .setLoadControl(new DefaultLoadControl.Builder().setBufferDurationsMs(8000,25000,1500,3000)
                 .setTargetBufferBytes(12*1024*1024).setPrioritizeTimeOverSizeThresholds(false).build()).build();
+        open++;
         player.setAudioAttributes(new com.google.android.exoplayer2.audio.AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).build(),true);
         player.setHandleAudioBecomingNoisy(true);
         player.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT);
-        player.setVideoSurfaceView(surface);
+        show();
         player.addListener(new Player.Listener() {
             @Override public void onPlaybackStateChanged(int state) {
                 if(state==Player.STATE_READY) { retries=0;listener.status("LIVE");report(); }
@@ -97,7 +128,7 @@ public final class LivePlayer {
         String mode=quality==0?"Auto":quality==1?"Data saver":"Compatibility";
         listener.format(f==null?mode:mode+" · "+f.height+"p"+(f.bitrate>0?" · "+String.format(java.util.Locale.US,"%.1f Mbps",f.bitrate/1000000f):""));
     }
-    static final String USER_AGENT="GrapefruitTV/2.0 (Android)";
+    static final String USER_AGENT="GrapefruitTV/2.5 (Android)";
     /** An HLS playlist (.m3u8), by its address; anything else is played as a direct stream. */
     static boolean hls(String url) {
         String path=url.toLowerCase(java.util.Locale.US);int q=path.indexOf('?');if(q>=0)path=path.substring(0,q);
@@ -146,7 +177,7 @@ public final class LivePlayer {
             retries++;listener.status("Reconnecting… ("+retries+"/2)");
         } else if(sourceIndex+1<channel.streams.length) { sourceIndex++;retries=0; }
         else {
-            boolean location=refused==channel.streams.length;
+            boolean location=refused==channel.streams.length;unavailable=location;
             listener.status(location?"Not available where you are":"This stream isn't playing right now.");
             listener.unavailable(location);return;
         }
@@ -156,6 +187,6 @@ public final class LivePlayer {
     }
     public void release() {
         released=true;generation++;handler.removeCallbacksAndMessages(null);
-        if(player!=null) {player.release();player=null;}
+        if(player!=null) {player.release();player=null;open--;}
     }
 }

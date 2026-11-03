@@ -86,6 +86,76 @@ public class InterfaceTest {
             assertTrue(a.back());assertFalse(a.back());
         }
     }
+    /**
+     * 2.5: leaving a channel keeps it playing in the floating player on the same stream (handed between the
+     * views, never reopened); tapping it goes back; another channel replaces it; ✕ stops it. Never two streams.
+     */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void floatingPlayerPassesTheOneStreamBetweenViews() throws Exception {
+        LivePlayer.open=0;
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"CityNews 24/7 · Toronto"));
+            LivePlayer stream=a.player();assertNotNull(stream);assertEquals(1,LivePlayer.open);
+            assertTrue(stream.view() instanceof android.view.SurfaceView);assertNull(a.floating());
+            // Back: the channel floats over Live TV, on the same stream, now on the window's picture.
+            assertTrue(a.back());root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNull(text(root,"Full screen"));assertNotNull(a.floating());
+            assertSame(stream,a.player());assertTrue(stream.view() instanceof android.view.TextureView);assertEquals(1,LivePlayer.open);
+            assertNull("the floating player is the way back",text(root,"Continue watching"));
+            assertNotNull(described(root,"Floating player: CityNews 24/7 · Toronto. Tap to open."));
+            settle();measure(root,1233,2742);capturePlayer(a,root,"portrait-floating.png");
+            // Other tabs keep it floating, on the same stream.
+            tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Floating Player"));assertNotNull(a.floating());assertSame(stream,a.player());assertEquals(1,LivePlayer.open);
+            settle();measure(root,1233,2742);capturePlayer(a,root,"portrait-floating-settings.png");
+            // Tapping it opens the channel again, still on that stream.
+            a.floating().performClick();root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Full screen"));assertNull(a.floating());
+            assertSame(stream,a.player());assertTrue(stream.view() instanceof android.view.SurfaceView);assertEquals(1,LivePlayer.open);
+            // Another channel: the first stops and the new one starts in its place.
+            a.back();root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"Live TV"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"Global News · National"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotSame(stream,a.player());assertNotNull(a.player());assertEquals(1,LivePlayer.open);
+            assertNotNull(text(root,"Global News · National"));assertNull(a.floating());
+            // The app in the background closes the stream; back in front, it opens again in the window.
+            a.back();assertNotNull(a.floating());
+            controller.pause().stop();assertEquals(0,LivePlayer.open);
+            controller.start().resume();assertEquals(1,LivePlayer.open);assertTrue(a.player().view() instanceof android.view.TextureView);
+            // ✕ stops it; Continue watching comes back.
+            root=a.getWindow().getDecorView();tap(described(root,"Stop Global News · National"));
+            root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNull(a.player());assertNull(a.floating());assertEquals(0,LivePlayer.open);
+            assertNotNull(text(root,"Continue watching"));
+        }
+        assertEquals(0,LivePlayer.open);
+    }
+    /** Settings › Floating Player off: leaving a channel stops it, as before 2.5. */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void floatingPlayerCanBeTurnedOff() throws Exception {
+        LivePlayer.open=0;
+        org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).edit().putBoolean("floating",false).commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"CityNews 24/7 · Toronto"));assertEquals(1,LivePlayer.open);
+            assertTrue(a.back());assertNull(a.floating());assertNull(a.player());assertEquals(0,LivePlayer.open);
+        }
+    }
+    /** Square screens and sideways: the floating player fits, clear of the tabs. */
+    @Test @Config(qualifiers="w914dp-h411dp-land-xxhdpi") public void floatingPlayerSideways() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,2742,1233);
+            tap(text(root,"CityNews 24/7 · Toronto"));a.back();root=a.getWindow().getDecorView();measure(root,2742,1233);
+            settle();measure(root,2742,1233);View f=a.floating();assertNotNull(f);
+            ViewGroup page=(ViewGroup)f.getParent();
+            assertTrue(f.getTranslationX()+f.getWidth()<=page.getWidth());assertTrue(f.getTranslationY()+f.getHeight()<=page.getHeight());
+            capturePlayer(a,root,"landscape-floating.png");
+        }
+    }
+    /** Robolectric can't draw a TextureView: render the floating player as a phone shows it before the first frame. */
+    private static void capturePlayer(MainActivity a,View root,String name)throws Exception{
+        View picture=((ViewGroup)((ViewGroup)a.floating()).getChildAt(0)).getChildAt(0);
+        picture.setVisibility(View.INVISIBLE);capture(root,name);picture.setVisibility(View.VISIBLE);
+    }
     private static org.robolectric.android.controller.ActivityController<MainActivity> launch(){
         MainActivity.splashShown=false;
         org.robolectric.android.controller.ActivityController<MainActivity> c=Robolectric.buildActivity(MainActivity.class).setup();
@@ -113,7 +183,7 @@ public class InterfaceTest {
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
             tap(text(root,"About Grapefruit TV"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 2.0"));assertNotNull(text(root,"Source Code"));
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 2.5-beta-1"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
