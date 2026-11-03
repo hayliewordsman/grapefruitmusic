@@ -8,24 +8,30 @@ import java.util.*;
 
 /**
  * The viewer's own TV sources, added in Settings › Your Sources: an M3U playlist address, or a server
- * login (server, username, password: the Xtream Codes API many IPTV services offer). Grapefruit TV ships
- * no providers and no directory of them; it plays what the viewer adds, as any media player does. Channel
- * names only: no programme guide. Kept in the app's private storage on this device.
+ * login (server, username, password: the Xtream Codes API many IPTV services offer). Grapefruit TV & Movies
+ * ships no providers and no directory of them; it plays what the viewer adds, as any media player does.
+ * Its guide comes from the service (Guide), its films and series too (OnDemand). Kept in the app's
+ * private storage on this device.
  */
 public final class UserSources {
     public static final String M3U="m3u", LOGIN="login";
     /** One source the viewer added. */
     public static final class Source {
         public final String id, kind, name, address, username, password;
+        /** The playlist's XMLTV guide address (its url-tvg), or "". */
+        public String guide="";
+        /** How many streams the service allows at once (a login says; a playlist, 1 unless the viewer changes it). */
+        public int streams=1;
         public Source(String id,String kind,String name,String address,String username,String password){
             this.id=id;this.kind=kind;this.name=name;this.address=address;this.username=username;this.password=password;
         }
         JSONObject json() throws JSONException {
             return new JSONObject().put("id",id).put("kind",kind).put("name",name).put("address",address)
-                .put("username",username).put("password",password);
+                .put("username",username).put("password",password).put("guide",guide).put("streams",streams);
         }
         static Source from(JSONObject o){
-            return new Source(o.optString("id"),o.optString("kind"),o.optString("name"),o.optString("address"),o.optString("username"),o.optString("password"));
+            Source s=new Source(o.optString("id"),o.optString("kind"),o.optString("name"),o.optString("address"),o.optString("username"),o.optString("password"));
+            s.guide=o.optString("guide","");s.streams=Math.max(1,o.optInt("streams",1));return s;
         }
     }
     /** Large playlists are common; these caps keep an old phone's memory safe. */
@@ -50,6 +56,13 @@ public final class UserSources {
         Source s=new Source(UUID.randomUUID().toString().substring(0,8),kind,name,address.trim(),username.trim(),password);
         all.add(s);save(all);return s;
     }
+    /** Saves what a refresh learned about a source (its guide address, its stream limit), or the viewer changed. */
+    public void update(Source changed) {
+        List<Source> all=list();
+        for(int i=0;i<all.size();i++)if(all.get(i).id.equals(changed.id))all.set(i,changed);
+        save(all);
+    }
+    public Source find(String id){for(Source s:list())if(s.id.equals(id))return s;return null;}
     public void remove(String id) {
         List<Source> all=list();
         for(Iterator<Source> it=all.iterator();it.hasNext();) if(it.next().id.equals(id)) it.remove();
@@ -69,14 +82,17 @@ public final class UserSources {
         try{
             cache.mkdirs();
             JSONArray a=new JSONArray();
-            for(Channel c:channels)a.put(new JSONObject().put("name",c.name).put("group",c.description).put("url",c.streams[0]).put("ua",c.userAgent));
+            for(Channel c:channels)a.put(new JSONObject().put("name",c.name).put("group",c.description).put("url",c.streams[0]).put("ua",c.userAgent)
+                .put("tvg",c.guideId).put("kind",c.kind).put("poster",c.poster));
             FileOutputStream out=new FileOutputStream(new File(cache,s.id+".json"));out.write(a.toString().getBytes("UTF-8"));out.close();
         }catch(JSONException e){throw new IOException(e.getMessage());}
+        update(s);
         return channels;
     }
     private static List<Channel> fromJson(Source s,String json) throws JSONException {
         JSONArray a=new JSONArray(json);List<Channel> out=new ArrayList<>();
-        for(int i=0;i<a.length();i++){JSONObject o=a.getJSONObject(i);out.add(channel(s,i,o.getString("name"),o.optString("group"),o.getString("url"),o.optString("ua")));}
+        for(int i=0;i<a.length();i++){JSONObject o=a.getJSONObject(i);Channel c=channel(s,i,o.getString("name"),o.optString("group"),o.getString("url"),o.optString("ua"));
+            c.guideId=o.optString("tvg");c.kind=o.optString("kind",Channel.LIVE);c.poster=o.optString("poster");out.add(c);}
         return out;
     }
     static Channel channel(Source s,int n,String name,String group,String url,String userAgent) {
@@ -90,10 +106,16 @@ public final class UserSources {
     static List<Channel> parseM3u(Source s,String text) throws IOException {
         if(!text.trim().startsWith("#EXTM3U")&&!text.contains("#EXTINF")) throw new IOException("That address isn't an M3U playlist.");
         List<Channel> out=new ArrayList<>();
-        String name=null,group="",ua="";
+        String name=null,group="",ua="",tvg="",logo="";
         for(String raw:text.split("\r?\n")) {
             String line=raw.trim();
-            if(line.startsWith("#EXTINF")) {
+            if(line.startsWith("#EXTM3U")) {
+                // The playlist's guide: url-tvg (or x-tvg-url), the first address if it lists several.
+                String guide=attribute(line,"url-tvg");if(guide.isEmpty())guide=attribute(line,"x-tvg-url");
+                if(guide.contains(","))guide=guide.substring(0,guide.indexOf(',')).trim();
+                if(guide.startsWith("http://")||guide.startsWith("https://"))s.guide=guide;
+            } else if(line.startsWith("#EXTINF")) {
+                tvg=attribute(line,"tvg-id");logo=attribute(line,"tvg-logo");
                 int comma=line.lastIndexOf(',');
                 name=comma>=0?line.substring(comma+1).trim():"";
                 group=attribute(line,"group-title");
@@ -104,13 +126,30 @@ public final class UserSources {
                 ua=line.substring("#EXTVLCOPT:http-user-agent=".length()).trim();
             } else if(!line.isEmpty()&&!line.startsWith("#")) {
                 if(!line.startsWith("http://")&&!line.startsWith("https://")) {name=null;continue;}
-                out.add(channel(s,out.size(),name==null||name.isEmpty()?"Channel "+(out.size()+1):name,group,line,ua));
-                name=null;group="";ua="";
+                Channel c=channel(s,out.size(),name==null||name.isEmpty()?"Channel "+(out.size()+1):name,group,line,ua);
+                c.guideId=tvg;
+                // Films and episodes in a playlist (files, or a server's /movie/ and /series/ paths) go to On Demand.
+                if(onDemandAddress(line)){c.kind=Channel.FILM;c.poster=logo;}
+                out.add(c);
+                name=null;group="";ua="";tvg="";logo="";
                 if(out.size()>=MAX_CHANNELS) break;
             }
         }
         if(out.isEmpty()) throw new IOException("The playlist has no channels.");
         return out;
+    }
+    /** A file or a server's film or episode, not a live channel. */
+    static boolean onDemandAddress(String url) {
+        String path=url.toLowerCase(Locale.US);int q=path.indexOf('?');if(q>=0)path=path.substring(0,q);
+        return path.endsWith(".mp4")||path.endsWith(".mkv")||path.endsWith(".avi")||path.endsWith(".mov")||path.endsWith(".m4v")
+            ||path.contains("/movie/")||path.contains("/series/");
+    }
+    static String base(Source s){
+        String base=s.address.replaceAll("/+$","");
+        return base.startsWith("http://")||base.startsWith("https://")?base:"http://"+base;
+    }
+    static String auth(Source s) throws IOException {
+        return "username="+URLEncoder.encode(s.username,"UTF-8")+"&password="+URLEncoder.encode(s.password,"UTF-8");
     }
     static String attribute(String line,String key) {
         int at=line.indexOf(key+"=\"");if(at<0)return "";
@@ -127,6 +166,7 @@ public final class UserSources {
             JSONObject info=new JSONObject(new String(fetch(base+"/player_api.php?"+auth,userAgent),"UTF-8"));
             JSONObject user=info.optJSONObject("user_info");
             if(user==null||user.optInt("auth",0)!=1) throw new IOException("The server didn't accept that username and password.");
+            s.streams=Math.max(1,user.optInt("max_connections",1));
             String format="ts";
             JSONArray formats=user.optJSONArray("allowed_output_formats");
             if(formats!=null) for(int i=0;i<formats.length();i++) if("m3u8".equals(formats.optString(i))) format="m3u8";

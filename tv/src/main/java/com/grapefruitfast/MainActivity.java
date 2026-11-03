@@ -5,6 +5,7 @@ import android.content.*;
 import android.content.res.Configuration;
 import android.graphics.*;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.*;
 import android.text.*;
@@ -17,15 +18,22 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="2.5-beta-1 · build 17";
+    static final String NAME="Grapefruit TV & Movies";
+    static final String VERSION="3.0-beta-1 · build 18";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
-    private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
-    private static final int[] TAB_ICONS={TabIcon.LIVE_TV,TabIcon.FAVOURITES,TabIcon.SEARCH,TabIcon.SETTINGS};
+    /** The tabs, in order; On Demand only while one of the viewer's services offers films or series. */
+    private static final String[] TABS={"Live TV","Movies","On Demand","Recordings","Favourites","Search","Settings"};
+    private static final int[] TAB_ICONS={TabIcon.LIVE_TV,TabIcon.MOVIES,TabIcon.ON_DEMAND,TabIcon.RECORDINGS,TabIcon.FAVOURITES,TabIcon.SEARCH,TabIcon.SETTINGS};
+    private List<String> tabs(){
+        List<String> out=new ArrayList<>();
+        for(String t:TABS)if(!t.equals("On Demand")||!onDemandItems.isEmpty())out.add(t);
+        return out;
+    }
     private static final String[] GENRES={"All","News","Series","Reality","Lifestyle"};
     private static final String[] THEMES={"Grapefruit Dark","Grapefruit Light","Pitch Black"};
     private static final String[] QUALITIES={"Auto","Data Saver","Compatibility"};
-    /** null for Settings itself, or "about" for Settings › About Grapefruit TV. */
+    /** null for Settings itself, or "about" for Settings › About Grapefruit TV & Movies. */
     private String settingsPage;
     private android.content.SharedPreferences prefs;
     private Brand b;
@@ -57,6 +65,17 @@ public final class MainActivity extends Activity {
     private ChannelAdapter adapter;
     private boolean fullScreen, started;
     private int listPosition;
+    /** Movies (the reviewed public-domain and Creative Commons films), and the viewer's services' films and series. */
+    private List<Channel> movies=Collections.emptyList(), onDemandItems=Collections.emptyList();
+    private final Map<String,List<Channel>> sourceFilms=new LinkedHashMap<>();
+    private OnDemand onDemand;
+    private Guide guide;
+    /** Chips: Movies' genre, On Demand's kind and group, Recordings' filter. */
+    private String movieChip="All", onDemandChip="Films", onDemandGroup="All", recordingsChip="All";
+    /** On Demand's open series, its seasons, and the season shown. */
+    private Channel series;private Map<Integer,List<Channel>> seasons;private int season;
+    /** Live TV as a guide: the time at its left edge. */
+    private long guideStart;
 
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
@@ -64,9 +83,16 @@ public final class MainActivity extends Activity {
         favourites.addAll(prefs.getStringSet("favourites",Collections.<String>emptySet()));
         try { builtIn=Catalog.parse(Catalog.read(getAssets().open("channels.json"))); }
         catch(Exception e) {error="The channel list could not be opened.";}
-        sources=new UserSources(this,prefs);
-        for(UserSources.Source s:sources.list()) added.put(s.id,sources.cached(s));
+        try { movies=Movies.parse(Catalog.read(getAssets().open("movies.json"))); }
+        catch(Exception e) {movies=Collections.emptyList();}
+        sources=new UserSources(this,prefs);onDemand=new OnDemand(this);
+        for(UserSources.Source s:sources.list()){added.put(s.id,sources.cached(s));sourceFilms.put(s.id,onDemand.cached(s));}
         mergeChannels();
+        guide=new Guide(id->sources.find(id));
+        guide.changed=()->{if(guideMode()&&watching==null&&adapter!=null){adapter.notifyDataSetChanged();if(ruler!=null)ruler.invalidate();}};
+        Recordings.listener=this::recordingsChanged;
+        Connections.stopWatching=this::stoppedForRecording;
+        Intent start=getIntent();if(saved==null&&start!=null&&start.getStringExtra("tab")!=null)tab=start.getStringExtra("tab");
         if(saved!=null) {
             tab=saved.getString("tab","Live TV"); category=saved.getString("category","All");
             country=saved.getString("country","All");query=saved.getString("query","");
@@ -78,12 +104,23 @@ public final class MainActivity extends Activity {
         splash();
         if(!sourcesRefreshed){sourcesRefreshed=true;refreshSources(null);}
         offerCrashReport();
+        // Recordings: the alarm for the next one, set again each time the app opens (and anything missed noted).
+        new Thread(()->Recordings.wake(getApplicationContext()),"recordings").start();
+    }
+    /** The recorder's notification opens Recordings. */
+    @Override protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);setIntent(intent);
+        String t=intent.getStringExtra("tab");
+        if(t!=null&&tabs().contains(t)){leaveWatchPage();tab=t;settingsPage=null;series=null;fullScreen=false;build();}
     }
     /** The list everything browses: built-in channels, then each of the viewer's sources' channels. */
     private void mergeChannels() {
-        List<Channel> all=new ArrayList<>(builtIn);
-        for(List<Channel> l:added.values()) all.addAll(l);
-        channels=all;
+        List<Channel> all=new ArrayList<>(builtIn),films=new ArrayList<>();
+        // A playlist's films and episodes go to On Demand; its live channels to Live TV.
+        for(List<Channel> l:added.values())for(Channel c:l)(c.live()?all:films).add(c);
+        for(List<Channel> l:sourceFilms.values())films.addAll(l);
+        channels=all;onDemandItems=films;
+        if(onDemandItems.isEmpty()&&tab.equals("On Demand")&&watching==null){tab="Live TV";series=null;}
     }
     /**
      * Fetches the viewer's sources again in the background (all, or one), then updates the lists. A source
@@ -97,9 +134,15 @@ public final class MainActivity extends Activity {
             for(final UserSources.Source s:list){
                 String failure=null;List<Channel> got=null;
                 try{got=sources.refresh(s,LivePlayer.USER_AGENT);}catch(Exception e){failure=e.getMessage()==null?"Couldn't connect.":e.getMessage();}
-                final List<Channel> result=got;final String why=failure;
+                List<Channel> filmsGot=null;
+                // A login's films and series, for On Demand (a server without them has none, and that's fine).
+                if(got!=null&&UserSources.LOGIN.equals(s.kind))try{filmsGot=onDemand.refresh(s);}catch(Exception e){/* keep the last */}
+                final List<Channel> result=got,films=filmsGot;final String why=failure;
                 main.post(()->{
-                    if(result!=null&&sourceExists(s.id)){added.put(s.id,result);mergeChannels();}
+                    boolean hadOnDemand=!onDemandItems.isEmpty();
+                    if(result!=null&&sourceExists(s.id)){added.put(s.id,result);if(films!=null)sourceFilms.put(s.id,films);mergeChannels();}
+                    // The On Demand tab appears (or goes) with the films and series.
+                    if(hadOnDemand!=!onDemandItems.isEmpty()&&nav!=null)navigation();
                     if(only!=null){
                         if(why!=null)ok("Couldn't refresh "+s.name,why);
                         else Toast.makeText(this,s.name+": "+result.size()+" channels",Toast.LENGTH_SHORT).show();
@@ -144,7 +187,8 @@ public final class MainActivity extends Activity {
         navigation();setContentView(root);
         // After setContentView: on Android 11+ the window's insets controller needs its decor view.
         windowColours();
-        if(watching!=null) watchPage();else if(tab.equals("Settings")) settings();else browse();
+        if(watching!=null) watchPage();else if(tab.equals("Settings")) settings();
+        else if(tab.equals("On Demand")&&series!=null) seriesPage();else browse();
         fullscreen(fullScreen);
     }
     private void windowColours() {
@@ -164,10 +208,14 @@ public final class MainActivity extends Activity {
     private void navigation() {
         nav.removeAllViews();
         LinearLayout pill;
+        // Down the side: the logo and wordmark over the tabs, where the screen is tall enough for all seven.
+        boolean tall=getResources().getConfiguration().screenHeightDp>=560;
         if(wide()) {
-            ImageView icon=new ImageView(this);icon.setImageResource(com.grapefruitfast.R.mipmap.ic_launcher);
-            nav.addView(icon,new LinearLayout.LayoutParams(-1,dp(72)));
-            TextView name=b.wordmark(22,true);name.setPadding(0,dp(8),0,dp(18));nav.addView(name,new LinearLayout.LayoutParams(-1,-2));
+            if(tall){
+                ImageView icon=new ImageView(this);icon.setImageResource(com.grapefruitfast.R.mipmap.ic_launcher);
+                nav.addView(icon,new LinearLayout.LayoutParams(-1,dp(72)));
+                TextView name=b.wordmark(22,true);name.setPadding(0,dp(8),0,dp(18));nav.addView(name,new LinearLayout.LayoutParams(-1,-2));
+            }
             pill=b.column();nav.addView(pill,new LinearLayout.LayoutParams(-1,-2));
         } else {
             // A pill only as wide as its tabs, floating in the middle, as in Music.
@@ -176,19 +224,29 @@ public final class MainActivity extends Activity {
             nav.addView(pill,p);
         }
         pill.setPadding(dp(5),dp(5),dp(5),dp(5));pill.setBackground(b.shape(b.surface,wide()?30:Brand.PILL,true));b.lift(pill,6);
-        for(int i=0;i<TABS.length;i++) {
-            String label=TABS[i];boolean chosen=tab.equals(label);
+        List<String> shown=tabs();
+        // Up to seven tabs on a phone's pill: the chosen one keeps its name only if there's room for it.
+        int across=getResources().getConfiguration().screenWidthDp;
+        android.graphics.Paint words=b.text(tab,13,true).getPaint();
+        float labelDp=words.measureText(tab)/getResources().getDisplayMetrics().density+8;
+        // The roomiest padding that still leaves the chosen tab its name; if none does, the narrowest, icons only.
+        int pad=14;while(pad>8&&shown.size()*(26+2*pad)+labelDp+12>across-24)pad-=3;
+        boolean roomy=wide()||shown.size()*(26+2*pad)+labelDp+12<=across-24, tight=!wide()&&pad<14;
+        final int itemPad=wide()?14:pad;
+        for(int i=0;i<shown.size();i++) {
+            String label=shown.get(i);boolean chosen=tab.equals(label);
+            int iconId=TAB_ICONS[Arrays.asList(TABS).indexOf(label)];
             // Like Music: an icon for each tab; the chosen one on the accent pill with its name beside it.
             // Down the side there's room for every name.
             LinearLayout item=b.row();item.setGravity(wide()?Gravity.CENTER_VERTICAL|Gravity.START:Gravity.CENTER);
-            item.setPadding(dp(14),0,dp(wide()?10:14),0);item.setFocusable(true);item.setClickable(true);item.setContentDescription(label);
+            item.setPadding(dp(itemPad),0,dp(wide()?10:itemPad),0);item.setFocusable(true);item.setClickable(true);item.setContentDescription(label);
             item.setBackground(b.interactive(chosen,Brand.PILL,0,false));
-            item.setOnClickListener(v->{leaveWatchPage();tab=label;query="";listPosition=0;fullScreen=false;settingsPage=null;build();});
-            TabIcon icon=new TabIcon(this,TAB_ICONS[i],chosen?b.onAccent:b.secondary);item.addView(icon,new LinearLayout.LayoutParams(dp(22),dp(22)));
+            item.setOnClickListener(v->{leaveWatchPage();tab=label;query="";listPosition=0;fullScreen=false;settingsPage=null;series=null;build();});
+            TabIcon icon=new TabIcon(this,iconId,chosen?b.onAccent:b.secondary);item.addView(icon,new LinearLayout.LayoutParams(dp(22),dp(22)));
             TextView name=b.text(label,13,true);name.setTextColor(chosen?b.onAccent:b.secondary);name.setPadding(dp(wide()?10:8),0,0,0);
-            name.setSingleLine();name.setVisibility(chosen||wide()?View.VISIBLE:View.GONE);
+            name.setSingleLine();name.setVisibility(chosen&&roomy||wide()?View.VISIBLE:View.GONE);
             item.addView(name,new LinearLayout.LayoutParams(-2,-2));
-            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(wide()?-1:-2,dp(46));
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(wide()?-1:-2,dp(wide()&&getResources().getConfiguration().screenHeightDp<400?40:46));
             if(i>0){if(wide())p.topMargin=dp(4);else p.leftMargin=dp(2);}
             pill.addView(item,p);
         }
@@ -214,7 +272,7 @@ public final class MainActivity extends Activity {
     private View continuePill(Channel last) {
         LinearLayout pill=b.row();pill.setPadding(dp(8),dp(8),dp(8),dp(8));pill.setFocusable(true);
         pill.setBackground(b.interactive(false,Brand.PILL,b.surface,true));b.lift(pill,6);
-        pill.setOnClickListener(v->tune(last));
+        pill.setOnClickListener(v->watch(last));
         pill.addView(logo(last,44),new LinearLayout.LayoutParams(dp(44),dp(44)));
         LinearLayout words=b.column();words.setPadding(dp(12),0,dp(8),0);
         words.addView(b.label("Continue watching",11,b.secondary));
@@ -266,11 +324,13 @@ public final class MainActivity extends Activity {
     private void browse() {
         clearBody();
         LinearLayout header=b.column();header.setPadding(0,dp(16),0,0);page=header;
-        title(tab,tab.equals("Favourites")?"Your channels, in one place.":tab.equals("Search")?"Channels, cities and genres.":null);
+        title(tab,tab.equals("Favourites")?"Your channels and films, in one place.":tab.equals("Search")?"Channels, films, cities and genres."
+            :tab.equals("Movies")?"Free films: public domain and Creative Commons.":tab.equals("On Demand")?"Films and series from your services."
+            :tab.equals("Recordings")?"Recorded on this device.":null);
         LinearLayout bar=b.column();bar.setPadding(0,0,0,dp(FADE_DP));
         if(tab.equals("Search")) {
             EditText search=new EditText(this);search.setSingleLine();search.setTextColor(b.text);search.setHintTextColor(b.secondary);
-            search.setTypeface(Fonts.regular());search.setTextSize(16);search.setHint("Search channels, cities or genres");
+            search.setTypeface(Fonts.regular());search.setTextSize(16);search.setHint("Search channels, films, cities or genres");
             search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
             search.setPadding(dp(20),0,dp(20),0);search.setBackground(b.interactive(false,Brand.PILL));
             search.setText(query);search.setSelection(query.length());
@@ -282,8 +342,18 @@ public final class MainActivity extends Activity {
             });
         }
         chips(bar);
+        ruler=null;
+        if(guideMode()){
+            // The guide's times float with the chips, over the channels.
+            ruler=new GuideViews.Ruler(this,guideHost);
+            LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.leftMargin=rp.rightMargin=dp(18);bar.addView(ruler,rp);
+        }
         LinearLayout notes=b.column();
         if(tab.equals("Live TV")) tvAppsRow(notes);
+        if(tab.equals("Recordings")){
+            TextView schedule=b.button("+  Schedule a Recording",false,v->scheduleManually());schedule.setTextSize(13);
+            LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-2,dp(44));sp.bottomMargin=dp(10);notes.addView(schedule,sp);
+        }
         Channel last=compact()&&playing==null&&prefs.getBoolean("continue",true)?find(prefs.getString("lastChannel","")):null;
         if(last!=null){View pill=continuePill(last);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(10);notes.addView(pill,lp);}
         count=b.label("",12,b.secondary);count.setPadding(dp(4),dp(2),0,dp(10));notes.addView(count);
@@ -324,7 +394,7 @@ public final class MainActivity extends Activity {
         if(all.isEmpty()){ok("Add App","No other apps are installed.");return;}
         String[] names=new String[all.size()];Runnable[] picks=new Runnable[all.size()];
         for(int i=0;i<all.size();i++){final TvApps.App a=all.get(i);names[i]=a.label;picks[i]=()->{TvApps.pin(prefs,a.pkg);browse();};}
-        dialog("Add to Your TV Apps","Pick an app to keep on the Live TV page. Grapefruit TV opens it; you watch and sign in there.",names,-1,picks);
+        dialog("Add to Your TV Apps","Pick an app to keep on the Live TV page. Grapefruit TV & Movies opens it; you watch and sign in there.",names,-1,picks);
     }
     /** How far the list fades out under the floating chips, as Music's (dp). */
     private static final int FADE_DP=20;
@@ -354,31 +424,87 @@ public final class MainActivity extends Activity {
         }
     }
     /**
-     * Genres and regions share one row that scrolls edge to edge. Genre chips pick one; a region chip
-     * narrows to that region and, tapped again, goes back to all of them.
+     * The chips under each page's title, in one row that scrolls edge to edge. Live TV, Favourites and
+     * Search: Guide (Live TV), the genres, then the regions (a region chip narrows to it and, tapped again,
+     * goes back to all). Movies: the genres and Downloaded. On Demand: Films, Series and Downloads, then the
+     * service's groups. Recordings: All, Finished and Scheduled.
      */
     private void chips(LinearLayout parent) {
         HorizontalScrollView scroll=new HorizontalScrollView(this);scroll.setHorizontalScrollBarEnabled(false);
         scroll.setClipToPadding(false);
         LinearLayout row=b.row();row.setPadding(dp(18),dp(6),dp(10),dp(6));scroll.addView(row);
-        for(String label:GENRES) row.addView(chip(label,label.equals(category),()->category=label));
-        // The viewer's own sources' channels, under one chip.
-        if(!added.isEmpty()) row.addView(chip("Added",category.equals("Added"),()->category="Added"));
-        View divider=new View(this);divider.setBackgroundColor(b.outline);
-        LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(Math.max(1,dp(1)),dp(24));d.rightMargin=dp(8);row.addView(divider,d);
-        for(String label:Channel.REGIONS)
-            row.addView(chip(label,label.equals(country),()->country=label.equals(country)?"All":label));
+        if(tab.equals("Movies")){
+            row.addView(chip("All",movieChip.equals("All"),()->movieChip="All"));
+            for(String g:Movies.GENRES){boolean any=false;for(Channel m:movies)if(m.category.equals(g))any=true;
+                if(any)row.addView(chip(g,movieChip.equals(g),()->movieChip=g));}
+            divider(row);row.addView(chip("Downloaded",movieChip.equals("Downloaded"),()->movieChip="Downloaded"));
+        } else if(tab.equals("On Demand")){
+            for(String k:new String[]{"Films","Series","Downloads"})row.addView(chip(k,onDemandChip.equals(k),()->{onDemandChip=k;onDemandGroup="All";}));
+            // The service's own groups (its categories), the busiest first.
+            final Map<String,Integer> counts=new HashMap<>();
+            for(Channel c:onDemandItems)if(kindFor(onDemandChip).equals(c.kind)&&!c.description.isEmpty()){Integer n=counts.get(c.description);counts.put(c.description,n==null?1:n+1);}
+            List<String> groups=new ArrayList<>(counts.keySet());Collections.sort(groups,(x,y)->counts.get(y)-counts.get(x));
+            if(!groups.isEmpty()&&!onDemandChip.equals("Downloads")){
+                divider(row);row.addView(chip("All",onDemandGroup.equals("All"),()->onDemandGroup="All"));
+                for(String g:groups.subList(0,Math.min(40,groups.size())))row.addView(chip(g,onDemandGroup.equals(g),()->onDemandGroup=onDemandGroup.equals(g)?"All":g));
+            }
+        } else if(tab.equals("Recordings")){
+            for(String k:new String[]{"All","Finished","Scheduled"})row.addView(chip(k,recordingsChip.equals(k),()->recordingsChip=k));
+        } else {
+            if(tab.equals("Live TV"))row.addView(chip("Guide",guideMode(),()->{prefs.edit().putBoolean("guide",!guideMode()).apply();guideStart=0;}));
+            for(String label:GENRES) row.addView(chip(label,label.equals(category),()->category=label));
+            // The viewer's own sources' channels, under one chip.
+            if(!added.isEmpty()) row.addView(chip("Added",category.equals("Added"),()->category="Added"));
+            divider(row);
+            for(String label:Channel.REGIONS)
+                row.addView(chip(label,label.equals(country),()->country=label.equals(country)?"All":label));
+        }
         parent.addView(scroll,new LinearLayout.LayoutParams(-1,-2));
     }
+    private void divider(LinearLayout row){
+        View divider=new View(this);divider.setBackgroundColor(b.outline);
+        LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(Math.max(1,dp(1)),dp(24));d.rightMargin=dp(8);row.addView(divider,d);
+    }
+    private static String kindFor(String chip){return chip.equals("Series")?Channel.SERIES:Channel.FILM;}
     private View chip(String label,boolean chosen,Runnable pick) {
         TextView chip=b.button(label,chosen,v->{pick.run();listPosition=0;if(watching!=null)watchPage();else browse();});
         chip.setTextSize(13);chip.setMinHeight(dp(40));chip.setPadding(dp(16),0,dp(16),0);
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(40));p.rightMargin=dp(8);chip.setLayoutParams(p);
         return chip;
     }
-    /** The channel list; headers (title, chip slot, notes) scroll with it. */
+    /** Live TV as a guide (the Guide chip): programmes beside each channel. */
+    private boolean guideMode(){return tab.equals("Live TV")&&prefs.getBoolean("guide",false);}
+    private GuideViews.Ruler ruler;
+    private final GuideViews.Host guideHost=new GuideViews.Host(){
+        public Brand brand(){return b;}
+        public Guide guide(){return guide;}
+        private List<Recordings.Item> items;private long itemsAt;
+        public List<Recordings.Item> recordings(){
+            if(items==null||System.currentTimeMillis()-itemsAt>2000){items=Recordings.all(MainActivity.this);itemsAt=System.currentTimeMillis();}
+            return items;
+        }
+        public long start(){
+            long earliest=Guide.floor(System.currentTimeMillis(),30*Guide.MINUTE);
+            if(guideStart==0)guideStart=earliest;
+            return guideStart;
+        }
+        public float minute(){return dp(wide()?5:4);}
+        public int column(){return dp(wide()?190:136);}
+        public Channel playing(){return playing;}
+        public void scrollBy(float px){
+            long earliest=Guide.floor(System.currentTimeMillis(),30*Guide.MINUTE)-Guide.HOUR,latest=earliest+24*Guide.HOUR;
+            guideStart=Math.max(earliest,Math.min(latest,start()+(long)(px/minute()*Guide.MINUTE)));
+            if(list!=null)for(int i=0;i<list.getChildCount();i++)list.getChildAt(i).invalidate();
+            if(ruler!=null)ruler.invalidate();
+        }
+        public void tune(Channel c){MainActivity.this.watch(c);}
+        public void program(Channel c,Guide.Program p){programDialog(c,p);}
+        public void details(Channel c){MainActivity.this.details(c);}
+    };
+    /** The list (channels, films, series, episodes or recordings); headers (title, chip slot, notes) scroll with it. */
     private void addList(ViewGroup parent,View... headers) {
-        list=new ListView(this);list.setDivider(null);list.setSelector(android.R.color.transparent);
+        list=guideMode()&&headers.length>0?new GuideViews.List(this,guideHost):new ListView(this);
+        list.setDivider(null);list.setSelector(android.R.color.transparent);
         list.setCacheColorHint(Color.TRANSPARENT);list.setVerticalScrollBarEnabled(false);
         list.setItemsCanFocus(false);list.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
         // Headers go in before the adapter (Android 4.2 takes them only then).
@@ -388,57 +514,148 @@ public final class MainActivity extends Activity {
         list.setOnItemClickListener((p,v,pos,id)->{
             Channel c=at(pos);if(c==null)return;
             ((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(v.getWindowToken(),0);
-            listPosition=pos-list.getHeaderViewsCount();tune(c);
+            listPosition=pos-list.getHeaderViewsCount();open(c);
         });
         list.setOnItemLongClickListener((p,v,pos,id)->{Channel c=at(pos);if(c!=null)details(c);return c!=null;});
         list.setOnKeyListener((v,key,event)->{
             if(key==KeyEvent.KEYCODE_MENU && event.getAction()==KeyEvent.ACTION_UP && at(list.getSelectedItemPosition())!=null) {
                 details(at(list.getSelectedItemPosition()));return true;
-            } return false;
+            }
+            // In the guide, a remote's left and right move through time.
+            if(guideMode()&&event.getAction()==KeyEvent.ACTION_DOWN&&(key==KeyEvent.KEYCODE_DPAD_LEFT||key==KeyEvent.KEYCODE_DPAD_RIGHT)){
+                guideHost.scrollBy((key==KeyEvent.KEYCODE_DPAD_RIGHT?30:-30)*guideHost.minute());return true;
+            }
+            return false;
         });
         if(parent instanceof LinearLayout)parent.addView(list,new LinearLayout.LayoutParams(-1,0,1));
         else parent.addView(list,new FrameLayout.LayoutParams(-1,-1));
         filter();if(listPosition>0)list.setSelection(listPosition+list.getHeaderViewsCount());
         setScroller(list,dp(10));
     }
-    /** The channel at a list position (headers count in positions), or null for a header. */
+    /** The item at a list position (headers count in positions), or null for a header. */
     private Channel at(int pos){int i=pos-(list==null?0:list.getHeaderViewsCount());return i>=0&&i<visible.size()?visible.get(i):null;}
+    /** A row tapped: a series opens its episodes, a recording its options; anything else plays. */
+    private void open(Channel c) {
+        if(Channel.SERIES.equals(c.kind)){openSeries(c);return;}
+        Recordings.Item item=recordingRows.get(c.id);
+        if(item!=null&&!item.ready()){recordingDialog(item);return;}
+        watch(c);
+    }
+    /** The recordings shown on the Recordings tab, by their rows' IDs. */
+    private final Map<String,Recordings.Item> recordingRows=new HashMap<>();
     private void filter() {
-        visible.clear();
-        for(Channel c:channels) {
-            if(tab.equals("Favourites")&&!favourites.contains(c.id))continue;
-            if(!category.equals("All")&&!category.equals(c.category))continue;
-            if(!country.equals("All")&&!country.equals(c.region()))continue;
-            if(!c.matches(query))continue;
-            visible.add(c);
+        visible.clear();recordingRows.clear();
+        if(tab.equals("Movies")){
+            for(Channel m:movies){
+                if(movieChip.equals("Downloaded")){Recordings.Item d=Recordings.downloadOf(this,m.id);if(d==null||!d.ready())continue;}
+                else if(!movieChip.equals("All")&&!movieChip.equals(m.category))continue;
+                visible.add(m);
+            }
+        } else if(tab.equals("On Demand")){
+            if(onDemandChip.equals("Downloads")){
+                for(Recordings.Item i:Recordings.all(this))if(i.download()&&i.added)visible.add(recordingRow(i));
+            } else {
+                String kind=kindFor(onDemandChip);
+                for(Channel c:onDemandItems)if(c.kind.equals(kind)&&(onDemandGroup.equals("All")||onDemandGroup.equals(c.description)))visible.add(c);
+            }
+        } else if(tab.equals("Recordings")){
+            List<Recordings.Item> items=new ArrayList<>();
+            for(Recordings.Item i:Recordings.all(this)){
+                if(i.download())continue;
+                boolean finished=Recordings.FINISHED.equals(i.state)||Recordings.FAILED.equals(i.state);
+                if(recordingsChip.equals("Finished")&&!finished||recordingsChip.equals("Scheduled")&&finished)continue;
+                items.add(i);
+            }
+            // Recording now first, then what's coming (soonest first), then what's done (newest first).
+            Collections.sort(items,(x,y)->{
+                int rx=x.active()?0:x.waiting()?1:2,ry=y.active()?0:y.waiting()?1:2;
+                if(rx!=ry)return rx-ry;
+                return rx==1?Long.compare(x.start,y.start):Long.compare(y.start,x.start);
+            });
+            for(Recordings.Item i:items)visible.add(recordingRow(i));
+        } else {
+            boolean everything=!tab.equals("Live TV");
+            for(Channel c:channels) {
+                if(tab.equals("Favourites")&&!favourites.contains(c.id))continue;
+                if(!category.equals("All")&&!category.equals(c.category))continue;
+                if(!country.equals("All")&&!country.equals(c.region()))continue;
+                if(!c.matches(query))continue;
+                visible.add(c);
+            }
+            // Favourites and Search take in films and series too (the genre and region chips are for channels).
+            if(everything&&category.equals("All")&&country.equals("All"))
+                for(List<Channel> l:Arrays.asList(movies,onDemandItems))for(Channel c:l){
+                    if(tab.equals("Favourites")&&!favourites.contains(c.id))continue;
+                    if(tab.equals("Search")&&(query.trim().length()<2||!c.matches(query)))continue;
+                    visible.add(c);
+                    if(visible.size()>2000)break;
+                }
         }
         if(adapter!=null)adapter.notifyDataSetChanged();
         if(count==null)return;
-        if(!visible.isEmpty())count.setText(visible.size()+(visible.size()==1?" channel":" channels")+" · tap to watch · hold for options");
-        else if(tab.equals("Favourites")&&favourites.isEmpty())count.setText("No favourites yet. Hold a channel, or press Menu, to add one.");
+        String noun=tab.equals("Movies")||tab.equals("On Demand")?(onDemandChip.equals("Series")&&tab.equals("On Demand")?"series":"films"):tab.equals("Recordings")?"recordings":"channels";
+        if(tab.equals("Recordings")){
+            count.setText(visible.isEmpty()?(recordingsChip.equals("Finished")?"No finished recordings yet.":"Nothing scheduled. Tap a programme in Live TV's Guide, or Record on a channel.")
+                :visible.size()+(visible.size()==1?" recording":" recordings")+" · "+Recordings.size(Recordings.free(this))+" free on this device");
+        }
+        else if(!visible.isEmpty())count.setText(visible.size()+" "+(visible.size()==1?noun.replaceAll("s$","").replace("serie","series"):noun)+(guideMode()?" · tap a programme for options":" · tap to watch · hold for options"));
+        else if(tab.equals("Movies")&&movieChip.equals("Downloaded"))count.setText("No downloaded films yet. Hold a film for Download.");
+        else if(tab.equals("On Demand")&&onDemandChip.equals("Downloads"))count.setText("No downloads yet. Hold a film or an episode for Download.");
+        else if(tab.equals("Favourites")&&favourites.isEmpty())count.setText("No favourites yet. Hold a channel or a film, or press Menu, to add one.");
         else if(tab.equals("Search")&&query.trim().length()>0)count.setText("Nothing found for “"+query.trim()+"”.");
-        else count.setText("No channels match. Try another filter.");
+        else count.setText("Nothing matches. Try another filter.");
+    }
+    /** A recording or a download as a list row (and something to play once it's done). */
+    private Channel recordingRow(Recordings.Item i) {
+        Channel c=i.channel();
+        String state;
+        if(i.active())state=i.download()?"Downloading"+(i.total>0?" "+(i.bytes*100/i.total)+"%":" · "+Recordings.size(i.bytes)):"● Recording now · "+Recordings.size(i.bytes);
+        else if(Recordings.SCHEDULED.equals(i.state))state="Scheduled";
+        else if(Recordings.QUEUED.equals(i.state))state=i.error.isEmpty()?"Waiting to download":i.error;
+        else if(Recordings.FAILED.equals(i.state))state="Didn't record: "+i.error;
+        else state=(i.download()?"Downloaded":"Recorded")+" · "+Recordings.size(i.bytes)+(i.error.isEmpty()?"":" · "+i.error);
+        c.meta=i.download()?state+"  ·  "+i.channelName:i.channelName+"  ·  "+Recordings.when(this,i.start,i.end)+"\n"+state;
+        recordingRows.put(c.id,i);
+        return c;
     }
     private class ChannelAdapter extends BaseAdapter {
         public int getCount(){return visible.size();}
         public Object getItem(int pos){return visible.get(pos);}
         public long getItemId(int pos){return pos;}
+        @Override public int getViewTypeCount(){return 2;}
+        @Override public int getItemViewType(int pos){return guideMode()&&list instanceof GuideViews.List?1:0;}
         public View getView(int pos,View reuse,ViewGroup parent) {
             Channel c=visible.get(pos);
+            if(getItemViewType(pos)==1){
+                GuideViews.Row row=reuse instanceof GuideViews.Row?(GuideViews.Row)reuse:new GuideViews.Row(MainActivity.this,guideHost);
+                row.bind(c);return row;
+            }
             Holder h=reuse==null?null:(Holder)reuse.getTag();
             if(h==null)h=new Holder();
-            String initials=c.initials();
-            h.logo.setText(initials);h.logo.setTextSize(initials.length()>2?13:20);
+            boolean picture=!c.live()&&!Channel.RECORDING.equals(c.kind)||!c.poster.isEmpty();
+            h.logo.setVisibility(picture?View.GONE:View.VISIBLE);h.art.setVisibility(picture?View.VISIBLE:View.GONE);
+            if(picture){
+                h.posterInitials.setText(c.initials());
+                Posters.show(MainActivity.this,h.poster,c.poster,dp(56));
+            } else {
+                String initials=Channel.RECORDING.equals(c.kind)?"●":c.initials();
+                h.logo.setText(initials);h.logo.setTextSize(initials.length()>2?13:20);
+            }
             h.name.setText(c.name);
-            h.meta.setText((favourites.contains(c.id)?"★  ":"")+(c.added()?c.source+(c.description.isEmpty()?"":"  ·  "+c.description):c.region()+"  ·  "+c.category));
+            String meta=c.meta!=null?c.meta:c.live()?(c.added()?c.source+(c.description.isEmpty()?"":"  ·  "+c.description):c.region()+"  ·  "+c.category)
+                :Channel.SERIES.equals(c.kind)?"Series"+(c.year>0?"  ·  "+c.year:"")+(c.added()?"  ·  "+c.source:""):Movies.meta(c)+(c.added()&&!c.local()?(Movies.meta(c).isEmpty()?"":"  ·  ")+c.source:"");
+            if(c.live()){Guide.Program now=guide.now(c,System.currentTimeMillis());if(!now.placeholder)meta=meta+"\nNow: "+now.title;}
+            h.meta.setText((favourites.contains(c.id)?"★  ":"")+meta);h.meta.setMaxLines(c.live()||c.meta!=null?3:2);
             boolean live=playing!=null&&playing.id.equals(c.id);
             h.live.setVisibility(live?View.VISIBLE:View.GONE);h.more.setVisibility(live?View.GONE:View.VISIBLE);
+            h.live.setText(c.live()?"LIVE":"PLAYING");
             return h.wrapper;
         }
     }
     private final class Holder {
         final FrameLayout wrapper=new FrameLayout(MainActivity.this);
-        final TextView logo, name, meta, live, more;
+        final TextView logo, name, meta, live, more, posterInitials;
+        final ImageView poster;
         Holder() {
             // The gap between rows is the wrapper's padding; the row itself takes the list's pressed and
             // selected states, so the focus ring is drawn on the pill and never on the gap below it.
@@ -447,15 +664,25 @@ public final class MainActivity extends Activity {
             row.setBackground(b.interactive(false,Brand.PILL));
             logo=b.text("",20,true);logo.setTextColor(b.onAccent);logo.setGravity(Gravity.CENTER);logo.setBackground(b.gradientCircle());
             row.addView(logo,new LinearLayout.LayoutParams(dp(52),dp(52)));
+            // Films and series: the poster (2:3), on the gradient with the initials until it arrives.
+            FrameLayout art=new FrameLayout(MainActivity.this);art.setBackground(b.gradient(12));
+            posterInitials=b.text("",13,true);posterInitials.setTextColor(b.onAccent);posterInitials.setGravity(Gravity.CENTER);
+            art.addView(posterInitials,new FrameLayout.LayoutParams(-1,-1));
+            poster=new ImageView(MainActivity.this);poster.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            art.addView(poster,new FrameLayout.LayoutParams(-1,-1));
+            if(Build.VERSION.SDK_INT>=21){art.setClipToOutline(true);}
+            row.addView(art,new LinearLayout.LayoutParams(dp(52),dp(78)));
+            this.art=art;
             LinearLayout words=b.column();words.setPadding(dp(14),0,dp(8),0);
             name=b.text("",16,true);name.setMaxLines(2);name.setEllipsize(TextUtils.TruncateAt.END);words.addView(name);
-            meta=b.label("",12,b.secondary);meta.setPadding(0,dp(4),0,0);words.addView(meta);
+            meta=b.label("",12,b.secondary);meta.setPadding(0,dp(4),0,0);meta.setEllipsize(TextUtils.TruncateAt.END);words.addView(meta);
             row.addView(words,new LinearLayout.LayoutParams(0,-2,1));
             live=b.text("LIVE",11,true);live.setTextColor(b.onAccent);live.setGravity(Gravity.CENTER);live.setPadding(dp(10),0,dp(10),0);
             live.setBackground(b.gradient(Brand.PILL));row.addView(live,new LinearLayout.LayoutParams(-2,dp(24)));
             more=b.text("›",22,true);more.setTextColor(b.accent);row.addView(more);
             wrapper.addView(row,new FrameLayout.LayoutParams(-1,-2));
         }
+        private final FrameLayout art;
     }
     /**
      * Watch a channel. The one already playing (in the floating player, say) opens on its own stream; any
@@ -463,8 +690,46 @@ public final class MainActivity extends Activity {
      */
     private void tune(Channel channel) {
         if(playback!=null&&playing!=null&&playing.id.equals(channel.id)){watching=playing;watchPage();return;}
-        stop();watching=playing=channel;captionsAvailable=false;prefs.edit().putString("lastChannel",channel.id).apply();
+        stop();watching=playing=channel;captionsAvailable=false;
+        if(channel.live())prefs.edit().putString("lastChannel",channel.id).apply();
         watchPage();
+    }
+    /**
+     * Watch something, minding the viewer's service's limit: if its streams are all taken by recordings or
+     * downloads, say so and offer to stop them (never open one more than the service allows).
+     */
+    private void watch(final Channel c) {
+        if(c.added()&&!c.local()&&!(playing!=null&&playing.id.equals(c.id))){
+            final String src=Guide.sourceId(c);final int limit=Connections.limit(this,src);
+            if(!Connections.canWatch(src,limit)){
+                dialog("Your service's streams are in use",c.source+" allows "+(limit==1?"one stream":limit+" streams")+" at a time, and "
+                    +(Connections.jobs(src)==1?"a recording or download is":"recordings or downloads are")+" using "+(limit==1?"it":"them")+" now.",
+                    new String[]{"Stop and Watch","Cancel"},-1,new Runnable[]{()->{RecorderService.stopSource(src);
+                        new Handler(Looper.getMainLooper()).postDelayed(()->tune(c),800);},()->{}});
+                return;
+            }
+        }
+        tune(c);
+    }
+    /** A recording took the stream the app was playing (the service allows only so many): stop, and say why. */
+    private void stoppedForRecording() {
+        if(playing==null||!playing.added())return;
+        Channel was=playing;boolean page=watching!=null;
+        stop();keepAwake();
+        if(page)build();else floatBars(true);
+        ok("Stopped for a recording",was.source+" allows only so many streams at a time, and a scheduled recording needed this one. "+was.name+" stopped playing.");
+    }
+    /** Where a film, an episode or a recording was left (ms), to pick up from. */
+    private long resumeAt(Channel c){
+        if(c.live())return 0;
+        long at=prefs.getLong("resume:"+c.id,0);
+        return at>30_000&&(c.seconds==0||at<c.seconds*1000L-60_000)?at:0;
+    }
+    private void saveResume(){
+        if(playback==null||playing==null||playing.live())return;
+        long at=playback.position(),length=playback.duration();
+        // Watched to (nearly) the end: next time it starts again.
+        prefs.edit().putLong("resume:"+playing.id,length>0&&at>length-60_000?0:at).apply();
     }
     /** Retry: the same channel on a fresh connection (the old one closed first). */
     private void retry() {
@@ -524,29 +789,71 @@ public final class MainActivity extends Activity {
         info.addView(qualityLabel,new LinearLayout.LayoutParams(0,-2,1));
         status("Connecting…");
         if(!fullScreen)stage.addView(info);
+        nowLabel=null;seek=null;elapsed=null;pauseButton=null;
+        if(watching.live()&&!fullScreen){
+            // The guide: what's on now and next (or that the channel publishes no programme information).
+            nowLabel=b.label("",13,b.text);nowLabel.setPadding(dp(4),0,dp(4),dp(8));nowLabel.setMaxLines(2);nowLabel.setEllipsize(TextUtils.TruncateAt.END);
+            stage.addView(nowLabel);showNow();
+        }
+        if(!watching.live()){
+            // A film, an episode or a recording: where it is, and a bar to move through it.
+            LinearLayout bar=b.row();bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(fullScreen?16:0),0,dp(fullScreen?16:0),dp(fullScreen?0:6));
+            seek=new SeekBar(this);seek.setMax(1000);styleSeek(seek);
+            seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+                public void onProgressChanged(SeekBar s,int v,boolean user){if(user&&playback!=null&&playback.duration()>0)elapsed.setText(clock(playback.duration()*v/1000)+" / "+clock(playback.duration()));}
+                public void onStartTrackingTouch(SeekBar s){seeking=true;}
+                public void onStopTrackingTouch(SeekBar s){seeking=false;if(playback!=null&&playback.duration()>0)playback.seekTo(playback.duration()*s.getProgress()/1000);}
+            });
+            bar.addView(seek,new LinearLayout.LayoutParams(0,dp(40),1));
+            elapsed=b.label("0:00",12,fullScreen?Color.WHITE:b.secondary);elapsed.setPadding(dp(8),0,dp(4),0);bar.addView(elapsed);
+            if(!fullScreen)stage.addView(bar,new LinearLayout.LayoutParams(-1,-2));else seekBar=bar;
+            body.removeCallbacks(ticker);body.post(ticker);
+        }
         HorizontalScrollView actionsScroll=new HorizontalScrollView(this);actionsScroll.setHorizontalScrollBarEnabled(false);
         LinearLayout actions=b.row();actionsScroll.addView(actions);
-        action(actions,"Retry",this::retry);
-        action(actions,"Quality",this::qualityDialog);
+        if(watching.live()){
+            action(actions,"Retry",this::retry);
+            action(actions,"Quality",this::qualityDialog);
+            action(actions,"●  Record",()->recordDialog(watching));
+        } else {
+            pauseButton=b.button(playback!=null&&playback.paused()?"Play":"Pause",false,v->{if(playback!=null)playback.pause(!playback.paused());});
+            LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-2,dp(44));pp.rightMargin=dp(6);actions.addView(pauseButton,pp);
+            action(actions,"−10 s",()->{if(playback!=null)playback.seekBy(-10_000);});
+            action(actions,"+30 s",()->{if(playback!=null)playback.seekBy(30_000);});
+        }
         // Only when the stream offers captions (the player says once it has read the stream's tracks).
         captionsButton=b.button("Captions",captionsOn(),v->{boolean on=!captionsOn();prefs.edit().putBoolean("captions",on).apply();applyCaptions();});
         captionsButton.setVisibility(captionsAvailable?View.VISIBLE:View.GONE);
         LinearLayout.LayoutParams cbp=new LinearLayout.LayoutParams(-2,dp(44));cbp.rightMargin=dp(6);actions.addView(captionsButton,cbp);
         action(actions,fullScreen?"Exit full screen":"Full screen",()->setFullScreen(!fullScreen));
-        if(!watching.website.isEmpty()) action(actions,"Official site",()->website(watching));
+        if(!watching.live()&&!watching.local()&&!Channel.RECORDING.equals(watching.kind))downloadAction(actions,watching);
+        if(watching.local()){final Recordings.Item item=recordingRows.get(watching.id);final Channel gone=watching;
+            action(actions,"Delete",()->dialog("Delete “"+gone.name+"”?","It's removed from this device.",new String[]{"Delete","Cancel"},-1,
+                new Runnable[]{()->{String id=gone.id.substring(4);stop();Recordings.remove(this,id);build();},()->{}}));}
+        if(!watching.website.isEmpty()) action(actions,watching.live()?"Official site":Channel.FILM.equals(watching.kind)&&!watching.added()?"Internet Archive":"Website",()->website(watching));
         if(fullScreen) {
             // Over the picture, along the bottom: a way back out without a remote's Back key.
             FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(-2,-2,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);ap.bottomMargin=dp(16);
             actions.setPadding(dp(6),dp(6),0,dp(6));actions.setBackground(b.shape(b.surface&0xe6ffffff,Brand.PILL,true));
-            body.addView(actionsScroll,ap);actionsScroll.setVisibility(View.GONE);
-            video.setOnClickListener(v->actionsScroll.setVisibility(actionsScroll.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE));
+            if(seekBar!=null){
+                // A film's bar sits above the controls, over the picture.
+                LinearLayout controls=b.column();controls.setGravity(Gravity.CENTER_HORIZONTAL);
+                seekBar.setBackground(b.shape(0xB3000000,Brand.PILL,false));
+                LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,-2);sp.leftMargin=sp.rightMargin=dp(24);sp.bottomMargin=dp(8);controls.addView(seekBar,sp);
+                controls.addView(actionsScroll,new LinearLayout.LayoutParams(-2,-2));
+                body.addView(controls,ap);controls.setVisibility(View.GONE);seekBar=null;
+                video.setOnClickListener(v->controls.setVisibility(controls.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE));
+            } else {
+                body.addView(actionsScroll,ap);actionsScroll.setVisibility(View.GONE);
+                video.setOnClickListener(v->actionsScroll.setVisibility(actionsScroll.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE));
+            }
         } else {
             // Edge to edge, like the chips: the last pill scrolls in from the screen's edge rather than being cut short.
             actionsScroll.setClipToPadding(false);actions.setPadding(wide()?0:dp(14),0,dp(8),0);
             LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);if(!wide())ap.leftMargin=ap.rightMargin=-dp(14);
             stage.addView(actionsScroll,ap);
         }
-        if(!fullScreen&&!compact()){TextView description=b.label(watching.description,13,b.secondary);description.setLineSpacing(dp(2),1);description.setPadding(dp(4),dp(12),dp(4),dp(12));stage.addView(description);}
+        if(!fullScreen&&!compact()){TextView description=b.label(watching.live()?watching.description:filmNotes(watching),13,b.secondary);description.setLineSpacing(dp(2),1);description.setPadding(dp(4),dp(12),dp(4),dp(12));stage.addView(description);}
         LinearLayout lineup=b.column();lineup.setPadding(wide()?dp(16):0,wide()?0:dp(4),0,0);
         if(!fullScreen)content.addView(lineup,new LinearLayout.LayoutParams(wide()?0:-1,wide()?-1:0,1));
         count=null;addList(lineup);
@@ -685,16 +992,238 @@ public final class MainActivity extends Activity {
     }
     /** The floating player, for tests (null when it isn't showing). */
     View floating(){return mini;}
+    // ---- Films, episodes and recordings on the watch page. ----
+    private TextView nowLabel, elapsed, pauseButton;
+    private SeekBar seek;
+    /** Full screen: the film's bar, put over the picture with the controls. */
+    private LinearLayout seekBar;
+    private boolean seeking;
+    /** Twice a second while a film plays on its page: the bar and the time; every 5 s, where to resume. */
+    private final Runnable ticker=new Runnable(){
+        int beats;
+        public void run(){
+            if(seek==null||playback==null||watching==null||watching.live())return;
+            long at=playback.position(),length=playback.duration();
+            if(!seeking&&length>0){seek.setProgress((int)(at*1000/length));elapsed.setText(clock(at)+" / "+clock(length));}
+            if(++beats%10==0)saveResume();
+            body.postDelayed(this,500);
+        }
+    };
+    static String clock(long ms){
+        long s=ms/1000;
+        return s>=3600?String.format(Locale.US,"%d:%02d:%02d",s/3600,s/60%60,s%60):String.format(Locale.US,"%d:%02d",s/60,s%60);
+    }
+    /** The bar in the accent, its thumb the gradient. */
+    private void styleSeek(SeekBar s) {
+        GradientDrawable track=b.shape(b.control,Brand.PILL,false),done=b.gradient(Brand.PILL);
+        android.graphics.drawable.LayerDrawable layers=new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{
+            track,new android.graphics.drawable.ClipDrawable(done,Gravity.START,android.graphics.drawable.ClipDrawable.HORIZONTAL)});
+        layers.setId(0,android.R.id.background);layers.setId(1,android.R.id.progress);
+        s.setProgressDrawable(layers);
+        GradientDrawable thumb=b.gradientCircle();thumb.setSize(dp(18),dp(18));s.setThumb(thumb);
+        s.setPadding(dp(12),dp(14),dp(12),dp(14));
+        if(Build.VERSION.SDK_INT>=21)s.setSplitTrack(false);
+    }
+    /** A film's or episode's details under the picture: year, genre, length, licence, then its description. */
+    private String filmNotes(Channel c) {
+        String meta=c.meta!=null?c.meta:Movies.meta(c);
+        String licence=Channel.FILM.equals(c.kind)&&!c.added()&&!c.provenance.isEmpty()?(meta.isEmpty()?"":"  ·  ")+c.provenance:"";
+        return meta+licence+(c.description.isEmpty()?"":"\n\n"+c.description);
+    }
+    /** What's on the channel now and next, from the guide (or that the channel publishes none). */
+    private void showNow() {
+        if(nowLabel==null||watching==null)return;
+        long t=System.currentTimeMillis();
+        Guide.Program now=guide.now(watching,t),next=guide.now(watching,now.end+1);
+        java.text.DateFormat f=android.text.format.DateFormat.getTimeFormat(this);
+        nowLabel.setText(now.placeholder&&next.placeholder?Guide.UNAVAILABLE:"Now: "+now.title+" · until "+f.format(new Date(now.end))+(next.placeholder?"":"\nNext: "+next.title));
+    }
+    /** Download (or its progress, or Downloaded) on a film's or an episode's page. */
+    private void downloadAction(LinearLayout actions,final Channel c) {
+        Recordings.Item d=Recordings.downloadOf(this,c.id);
+        String label=d==null?"Download":d.ready()?"Downloaded ✓":Recordings.FAILED.equals(d.state)?"Download again":"Downloading…";
+        action(actions,label,()->{
+            Recordings.Item now=Recordings.downloadOf(this,c.id);
+            if(now==null||Recordings.FAILED.equals(now.state)){
+                if(now!=null)Recordings.remove(this,now.id);
+                askNotifications();Recordings.download(this,c);
+                Toast.makeText(this,"Downloading “"+c.name+"”"+(prefs.getBoolean("downloadWifiOnly",true)?" (on Wi-Fi)":""),Toast.LENGTH_SHORT).show();
+                watchPage();
+            } else if(now.ready())ok("Downloaded","“"+c.name+"” is on this device: it plays with no connection. It's under "+(c.added()?"On Demand › Downloads":"Movies › Downloaded")+".");
+            else dialog("Downloading “"+c.name+"”",now.error.isEmpty()?(now.total>0?(now.bytes*100/now.total)+"% so far.":Recordings.size(now.bytes)+" so far."):now.error,
+                new String[]{"Cancel Download","Keep Downloading"},-1,new Runnable[]{()->{Recordings.remove(this,now.id);watchPage();},()->{}});
+        });
+    }
+    /** Record on a live channel's page: until this programme ends, or for a while. */
+    private void recordDialog(final Channel c) {
+        long t=System.currentTimeMillis();
+        final Guide.Program now=guide.now(c,t);
+        java.text.DateFormat f=android.text.format.DateFormat.getTimeFormat(this);
+        String until=now.placeholder?"Until "+f.format(new Date(now.end)):"“"+now.title+"” (until "+f.format(new Date(now.end))+")";
+        dialog("Record "+c.name,"Recordings are saved on this device, and keep going with the app in the background or closed.",
+            new String[]{until,"For 30 minutes","For 1 hour","For 2 hours","Cancel"},-1,new Runnable[]{
+                ()->record(c,now.placeholder?c.name:now.title,t,now.end),()->record(c,c.name,t,t+30*Guide.MINUTE),
+                ()->record(c,c.name,t,t+Guide.HOUR),()->record(c,c.name,t,t+2*Guide.HOUR),()->{}});
+    }
+    /** Schedules a recording, after checking the viewer's service has a stream free for it then. */
+    private void record(Channel c,String title,long start,long end) {
+        if(c.added()){
+            String src=Guide.sourceId(c);int limit=Connections.limit(this,src),overlapping=0;
+            for(Recordings.Item i:Recordings.all(this))if(!i.download()&&src.equals(i.sourceId)&&(i.waiting()||i.active())&&i.start<end&&i.end>start)overlapping++;
+            if(overlapping>=limit){
+                ok("Your service's streams are taken",c.source+" allows "+(limit==1?"one stream":limit+" streams")+" at a time, and "+(overlapping==1?"another recording is":overlapping+" other recordings are")
+                    +" set for then. Cancel one in Recordings, or change Streams at a Time in Settings › Your Sources.");return;
+            }
+        }
+        askNotifications();
+        Recordings.Item i=Recordings.schedule(this,c,title,start,end);
+        java.text.DateFormat f=android.text.format.DateFormat.getTimeFormat(this);
+        Toast.makeText(this,(start<=System.currentTimeMillis()+60_000?"Recording “"+title+"” until ":"Will record “"+title+"” at "+f.format(new Date(start))+", until ")
+            +f.format(new Date(end)),Toast.LENGTH_LONG).show();
+        if(!Recordings.exactAlarms(this))ok("Allow alarms for recordings","So recordings start on time, let "+NAME+" set alarms (Android's Alarms & reminders setting). Without it, they may start a few minutes late.");
+        if(watching!=null&&watching.live())watchPage();else if(adapter!=null)filter();
+        if(i==null)return;
+    }
+    /** A programme tapped in the guide: what it is, and what to do with it. */
+    private void programDialog(final Channel c,final Guide.Program p) {
+        long t=System.currentTimeMillis();
+        Recordings.Item planned=Recordings.scheduledAt(Recordings.all(this),c.id,p.start,p.end);
+        String when=Recordings.when(this,p.start,p.end);
+        String text=c.name+" · "+when+(p.description.isEmpty()?"":"\n\n"+p.description)+(planned!=null?"\n\n"+(planned.active()?"Recording now.":"Will be recorded."):"");
+        List<String> labels=new ArrayList<>();List<Runnable> acts=new ArrayList<>();
+        if(p.start<=t){labels.add("Watch Now");acts.add(()->watch(c));}
+        if(p.end>t){
+            if(planned==null){labels.add(p.start<=t?"Record the Rest":"Record");acts.add(()->record(c,p.placeholder?c.name:p.title,Math.max(t,p.start),p.end));}
+            else {labels.add(planned.active()?"Stop Recording":"Cancel Recording");acts.add(()->{if(planned.active())RecorderService.stop(planned.id);else Recordings.remove(this,planned.id);filter();});}
+        }
+        if(p.start>t){labels.add("Watch "+c.name+" Now");acts.add(()->watch(c));}
+        labels.add("Close");acts.add(()->{});
+        dialog(p.placeholder?c.name:p.title,text,labels.toArray(new String[0]),-1,acts.toArray(new Runnable[0]));
+    }
+    /** A recording tapped that isn't ready to watch: stop it, cancel it, or remove it. */
+    private void recordingDialog(final Recordings.Item i) {
+        if(i.active()&&!i.download()){
+            dialog(i.title,i.channelName+" · "+Recordings.when(this,i.start,i.end)+"\nRecording now · "+Recordings.size(i.bytes),new String[]{"Stop Recording","Watch "+i.channelName+" Live","Close"},-1,
+                new Runnable[]{()->RecorderService.stop(i.id),()->{Channel c=findAny(i.channelId);if(c!=null)watch(c);},()->{}});
+        } else if(i.waiting()||i.active()){
+            dialog(i.title,(i.download()?i.channelName:i.channelName+" · "+Recordings.when(this,i.start,i.end))+(i.error.isEmpty()?"":"\n"+i.error),new String[]{i.download()?"Cancel Download":"Cancel Recording","Close"},-1,
+                new Runnable[]{()->Recordings.remove(this,i.id),()->{}});
+        } else {
+            dialog(i.title,i.channelName+" · "+Recordings.when(this,i.start,i.end)+"\n"+(i.error.isEmpty()?"The file is missing.":i.error),new String[]{"Remove","Close"},-1,
+                new Runnable[]{()->Recordings.remove(this,i.id),()->{}});
+        }
+    }
+    /** Schedule a Recording: a channel, a start time today or tomorrow, then how long. */
+    private void scheduleManually() {
+        final List<Channel> pick=new ArrayList<>();
+        for(Channel c:channels)if(favourites.contains(c.id))pick.add(c);
+        for(Channel c:channels)if(!favourites.contains(c.id))pick.add(c);
+        if(pick.isEmpty())return;
+        String[] names=new String[Math.min(pick.size(),300)];Runnable[] acts=new Runnable[names.length];
+        for(int n=0;n<names.length;n++){final Channel c=pick.get(n);names[n]=(favourites.contains(c.id)?"★ ":"")+c.name;acts[n]=()->scheduleTime(c);}
+        dialog("Schedule a Recording","Pick a channel (favourites first).",names,-1,acts);
+    }
+    private void scheduleTime(final Channel c) {
+        Calendar now=Calendar.getInstance();
+        new android.app.TimePickerDialog(this,(view,hour,minute)->{
+            Calendar at=Calendar.getInstance();at.set(Calendar.HOUR_OF_DAY,hour);at.set(Calendar.MINUTE,minute);at.set(Calendar.SECOND,0);at.set(Calendar.MILLISECOND,0);
+            if(at.getTimeInMillis()<System.currentTimeMillis()-60_000)at.add(Calendar.DAY_OF_MONTH,1); // that time tomorrow
+            final long start=at.getTimeInMillis();
+            final Guide.Program p=guide.now(c,start);
+            String[] lengths={p.placeholder?"Until "+android.text.format.DateFormat.getTimeFormat(this).format(new Date(p.end)):"“"+p.title+"”","30 minutes","1 hour","90 minutes","2 hours","3 hours"};
+            long[] ends={p.end,start+30*Guide.MINUTE,start+Guide.HOUR,start+90*Guide.MINUTE,start+2*Guide.HOUR,start+3*Guide.HOUR};
+            Runnable[] acts=new Runnable[lengths.length];
+            for(int n=0;n<acts.length;n++){final long end=Math.max(ends[n],start+Guide.MINUTE);acts[n]=()->record(c,p.placeholder?c.name:p.title,start,end);}
+            dialog("How long?",c.name+" · from "+android.text.format.DateFormat.getTimeFormat(this).format(new Date(start)),lengths,-1,acts);
+        },now.get(Calendar.HOUR_OF_DAY),(now.get(Calendar.MINUTE)/30+1)*30%60,android.text.format.DateFormat.is24HourFormat(this)).show();
+    }
+    /** Android 13+: recordings and downloads show a notification while they run, so ask once to show it. */
+    private void askNotifications() {
+        if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=android.content.pm.PackageManager.PERMISSION_GRANTED
+            &&!prefs.getBoolean("askedNotifications",false)){
+            prefs.edit().putBoolean("askedNotifications",true).apply();
+            requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},1);
+        }
+    }
+    /** The recordings changed (the service started, finished or saved some): show it where it's shown. */
+    private void recordingsChanged() {
+        if(watching!=null||adapter==null)return;
+        if(tab.equals("Recordings")||tab.equals("Movies")&&movieChip.equals("Downloaded")||tab.equals("On Demand")&&onDemandChip.equals("Downloads"))filter();
+        else if(guideMode())adapter.notifyDataSetChanged();
+    }
+    /** Any channel, film or episode by ID. */
+    private Channel findAny(String id){
+        Channel c=find(id);if(c!=null)return c;
+        for(List<Channel> l:Arrays.asList(movies,onDemandItems))for(Channel m:l)if(m.id.equals(id))return m;
+        return null;
+    }
+
+    // ---- On Demand's series. ----
+
+    private void openSeries(final Channel s) {
+        final UserSources.Source src=sources.find(Guide.sourceId(s));
+        if(src==null)return;
+        series=s;seasons=null;season=0;seriesPage();
+        new Thread(()->{
+            Map<Integer,List<Channel>> got=null;String why=null;
+            try{got=OnDemand.episodes(src,s);}catch(Exception e){why=e.getMessage();}
+            final Map<Integer,List<Channel>> result=got;final String failure=why;
+            runOnUiThread(()->{
+                if(series!=s)return;
+                if(result==null||result.isEmpty()){series=null;browse();ok(s.name,failure==null?"This series has no episodes yet.":failure);return;}
+                seasons=result;season=result.keySet().iterator().next();
+                if(watching==null&&tab.equals("On Demand"))seriesPage();
+            });
+        },"series").start();
+    }
+    /** A series: its title, its seasons as chips, and the episodes of the one chosen. */
+    private void seriesPage() {
+        clearBody();
+        LinearLayout header=b.column();header.setPadding(0,dp(8),0,0);page=header;
+        LinearLayout top=b.row();top.setGravity(Gravity.CENTER_VERTICAL);
+        top.addView(b.round("‹",v->back()),new LinearLayout.LayoutParams(dp(44),dp(44)));
+        TextView name=b.text(series.name,24,true);name.setPadding(dp(12),0,0,0);name.setMaxLines(2);name.setEllipsize(TextUtils.TruncateAt.END);
+        top.addView(name,new LinearLayout.LayoutParams(0,-2,1));header.addView(top);
+        TextView meta=b.label((series.year>0?series.year+"  ·  ":"")+series.source,13,b.secondary);meta.setPadding(dp(4),dp(6),0,dp(10));header.addView(meta);
+        LinearLayout bar=b.column();bar.setPadding(0,0,0,dp(FADE_DP));
+        HorizontalScrollView scroll=new HorizontalScrollView(this);scroll.setHorizontalScrollBarEnabled(false);scroll.setClipToPadding(false);
+        LinearLayout row=b.row();row.setPadding(dp(18),dp(6),dp(10),dp(6));scroll.addView(row);
+        if(seasons!=null)for(final int n:seasons.keySet()){
+            TextView chip=b.button(n==0?"Extras":"Season "+n,n==season,v->{season=n;listPosition=0;seriesPage();});
+            chip.setTextSize(13);chip.setPadding(dp(16),0,dp(16),0);LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-2,dp(40));cp.rightMargin=dp(8);row.addView(chip,cp);
+        }
+        bar.addView(scroll,new LinearLayout.LayoutParams(-1,-2));
+        LinearLayout notes=b.column();
+        count=b.label(seasons==null?"Loading episodes…":"",12,b.secondary);count.setPadding(dp(4),dp(2),0,dp(10));notes.addView(count);
+        bar.measure(View.MeasureSpec.makeMeasureSpec(getResources().getDisplayMetrics().widthPixels,View.MeasureSpec.AT_MOST),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
+        View slot=new View(this);slot.setLayoutParams(new AbsListView.LayoutParams(-1,Math.max(0,bar.getMeasuredHeight()-dp(FADE_DP))));
+        FloatingBar frame=new FloatingBar(bar,header,slot);
+        body.addView(frame,new FrameLayout.LayoutParams(-1,-1));
+        list=new ListView(this);list.setDivider(null);list.setSelector(android.R.color.transparent);list.setCacheColorHint(Color.TRANSPARENT);list.setVerticalScrollBarEnabled(false);
+        list.addHeaderView(header,null,false);list.addHeaderView(slot,null,false);list.addHeaderView(notes,null,false);list.setPadding(dp(18),0,dp(18),0);
+        visible.clear();if(seasons!=null&&seasons.get(season)!=null)visible.addAll(seasons.get(season));
+        adapter=new ChannelAdapter();list.setAdapter(adapter);
+        list.setOnItemClickListener((p,v,pos,id)->{Channel c=at(pos);if(c!=null){listPosition=pos-list.getHeaderViewsCount();watch(c);}});
+        list.setOnItemLongClickListener((p,v,pos,id)->{Channel c=at(pos);if(c!=null)details(c);return c!=null;});
+        frame.addView(list,new FrameLayout.LayoutParams(-1,-1));
+        frame.addView(bar,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
+        if(seasons!=null)count.setText(visible.size()+(visible.size()==1?" episode":" episodes")+" · tap to watch · hold to download");
+        if(listPosition>0)list.setSelection(listPosition+list.getHeaderViewsCount());
+        setScroller(list,dp(10));
+        floatBars(true);backCallback();
+    }
     /** LIVE on an accent pill; connecting and errors as plain accent text. */
     private void status(String message) {
+        boolean playingFilm=message.equals("PLAYING"),paused=message.equals("PAUSED");
+        if(pauseButton!=null&&(playingFilm||paused))pauseButton.setText(paused?"Play":"Pause");
         if(miniStatus!=null){
             boolean live=message.equals("LIVE");
             miniLive.setVisibility(live?View.VISIBLE:View.GONE);
-            miniStatus.setText(live?"":message);miniStatus.setVisibility(live?View.GONE:View.VISIBLE);
+            miniStatus.setText(live||playingFilm?"":paused?"Paused":message);miniStatus.setVisibility(live||playingFilm?View.GONE:View.VISIBLE);
         }
         if(state==null)return;
         boolean live=message.equals("LIVE");
-        state.setText(live?"●  LIVE":message);
+        state.setText(live?"●  LIVE":playingFilm?"▶  Playing":paused?"❚❚  Paused":message);
         state.setTextColor(live?b.onAccent:b.accent);
         state.setBackground(live?b.gradient(Brand.PILL):null);
         state.setPadding(live?dp(10):0,live?dp(5):0,live?dp(10):0,live?dp(5):0);
@@ -778,7 +1307,7 @@ public final class MainActivity extends Activity {
             public void captions(CharSequence text){onCaptions(text);}
             public void unavailable(boolean location){onUnavailable(location);}
             public void aspect(float ratio){if(currentVideo!=null&&Math.abs(currentVideo.ratio-ratio)>0.001f){currentVideo.ratio=ratio;currentVideo.requestLayout();}}
-        },prefs.getInt("quality",0));videoView=surface;applyCaptions();playback.attach(surface);playback.tune(playing);
+        },prefs.getInt("quality",0));videoView=surface;applyCaptions();playback.attach(surface);playback.tune(playing,resumeAt(playing));
     }
     private void action(LinearLayout row,String label,Runnable action) {
         TextView button=b.button(label,false,v->action.run());
@@ -790,21 +1319,46 @@ public final class MainActivity extends Activity {
         if(adapter!=null)adapter.notifyDataSetChanged();
     }
     /** Stops the stream, wherever it shows. */
-    private void stop() {if(playback!=null){playback.release();playback=null;}watching=null;playing=null;videoView=null;removeMini();}
+    private void stop() {saveResume();if(playback!=null){playback.release();playback=null;}watching=null;playing=null;videoView=null;removeMini();}
     /** The open stream, for tests. */
     LivePlayer player(){return playback;}
-    private void details(Channel c) {
+    /** Hold (or Menu) on a row: what can be done with it. */
+    private void details(final Channel c) {
+        final Runnable fav=()->{favourite(c);filter();if(watching!=null&&watching.id.equals(c.id))watchPage();};
+        final String favLabel=favourites.contains(c.id)?"Remove favourite":"Add favourite";
+        final Recordings.Item rec=recordingRows.get(c.id);
+        if(rec!=null){
+            if(!rec.ready()){recordingDialog(rec);return;}
+            dialog(c.name,(rec.download()?rec.channelName:rec.channelName+" · "+Recordings.when(this,rec.start,rec.end))+"\n"+Recordings.size(rec.bytes)+" on this device",
+                new String[]{"Watch","Delete","Close"},-1,new Runnable[]{()->watch(c),()->{if(playing!=null&&playing.id.equals(c.id))stop();Recordings.remove(this,rec.id);filter();},()->{}});
+            return;
+        }
+        if(Channel.SERIES.equals(c.kind)){
+            dialog(c.name,(c.year>0?c.year+" · ":"")+"From "+c.source+", one of your sources.",new String[]{"Episodes",favLabel},0,new Runnable[]{()->openSeries(c),fav});
+            return;
+        }
+        if(!c.live()){
+            final Recordings.Item d=Recordings.downloadOf(this,c.id);
+            String text=filmNotes(c)+(c.added()?"\n\nFrom "+c.source+", one of your sources.":"\n\nFrom the Internet Archive.");
+            List<String> labels=new ArrayList<>(Arrays.asList("Watch",d==null?"Download":d.ready()?"Delete Download":"Cancel Download",favLabel));
+            List<Runnable> acts=new ArrayList<>(Arrays.asList(()->watch(c),()->{
+                if(d==null){askNotifications();Recordings.download(this,c);Toast.makeText(this,"Downloading “"+c.name+"”",Toast.LENGTH_SHORT).show();}
+                else Recordings.remove(this,d.id);
+                filter();},fav));
+            if(!c.website.isEmpty()){labels.add("Internet Archive Page");acts.add(()->website(c));}
+            dialog(c.name,text,labels.toArray(new String[0]),0,acts.toArray(new Runnable[0]));
+            return;
+        }
         if(c.added()){
             dialog(c.name,(c.description.isEmpty()?"":c.description+"\n\n")+"From "+c.source+", one of your sources.",
-                new String[]{"Watch live",favourites.contains(c.id)?"Remove favourite":"Add favourite"},0,
-                new Runnable[]{()->tune(c),()->{favourite(c);filter();if(watching!=null&&watching.id.equals(c.id))watchPage();}});
+                new String[]{"Watch live","Record…",favLabel},0,new Runnable[]{()->watch(c),()->recordDialog(c),fav});
             return;
         }
         dialog(c.name,c.description+"\n\n"+c.countryName()+" · "+c.category
             +(c.availability.isEmpty()?"":"\nWatch from: "+c.availability)
             +"\nChannels may be region restricted. Provider advertisements remain part of the stream.",
-            new String[]{"Watch live",favourites.contains(c.id)?"Remove favourite":"Add favourite","Official site"},0,
-            new Runnable[]{()->tune(c),()->{favourite(c);filter();if(watching!=null&&watching.id.equals(c.id))watchPage();},()->website(c)});
+            new String[]{"Watch live","Record…",favLabel,"Official site"},0,
+            new Runnable[]{()->watch(c),()->recordDialog(c),fav,()->website(c)});
     }
     private void website(Channel c) {
         try {startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(c.website)));}
@@ -814,6 +1368,13 @@ public final class MainActivity extends Activity {
         dialog("Playback quality","Auto changes resolution as bandwidth changes. On Android 4.x it stays at 720p or below and 30 fps. Your device still needs a supported video decoder.",
             new String[]{"Auto · adaptive","Data saver · up to 480p","Compatibility · up to 360p"},prefs.getInt("quality",0),
             new Runnable[]{()->quality(0),()->quality(1),()->quality(2)});
+    }
+    private void pad(String key,int minutes){prefs.edit().putInt(key,minutes).apply();settings();}
+    /** How many streams a source allows at once (a login says; a playlist doesn't, so the viewer can). */
+    private void streamsDialog(final UserSources.Source src) {
+        String[] n={"1","2","3","4","5"};Runnable[] acts=new Runnable[5];
+        for(int i=0;i<5;i++){final int v=i+1;acts[i]=()->{src.streams=v;sources.update(src);settings();};}
+        dialog("Streams at a time",src.name+" allows this many streams at once, counting what you watch, record and download. Check your plan if you're not sure.",n,Math.min(4,src.streams-1),acts);
     }
     private void quality(int value) {
         prefs.edit().putInt("quality",value).apply();if(playback!=null)playback.setQuality(value);
@@ -840,7 +1401,8 @@ public final class MainActivity extends Activity {
         toggle(g,"Continue Watching",prefs.getBoolean("continue",true),on->{prefs.edit().putBoolean("continue",on).apply();floatBars(true);});
         toggle(g,"Captions",captionsOn(),on->{prefs.edit().putBoolean("captions",on).apply();applyCaptions();});
         toggle(g,"Keep Screen On",prefs.getBoolean("keepScreenOn",true),on->prefs.edit().putBoolean("keepScreenOn",on).apply());
-        footer(g,"Auto changes resolution as your connection changes. Floating Player keeps a channel playing in a small window when you leave its page: drag it aside, tap it to go back, or ✕ to stop. One channel plays at a time. Continue Watching keeps your last channel a tap away above the tabs. Captions show when a channel provides them; until you choose, they follow Android's caption setting. Keep Screen On stops the screen sleeping while a channel plays.");
+        toggle(g,"Guide in Live TV",prefs.getBoolean("guide",false),on->prefs.edit().putBoolean("guide",on).apply());
+        footer(g,"Auto changes resolution as your connection changes. Guide in Live TV shows each channel's programmes beside it (the Guide chip does too); where a channel publishes none, it shows hour blocks on news channels and half hours elsewhere. Floating Player keeps a channel playing in a small window when you leave its page: drag it aside, tap it to go back, or ✕ to stop. One channel plays at a time. Continue Watching keeps your last channel a tap away above the tabs. Captions show when a channel provides them; until you choose, they follow Android's caption setting. Keep Screen On stops the screen sleeping while a channel plays.");
 
         section(g,"Channels");
         value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability",
@@ -848,33 +1410,49 @@ public final class MainActivity extends Activity {
             +"Built-in channels: free live channels from broadcasters and their official distributors, listed wherever you are. Some are offered only in certain countries; if a channel's provider doesn't offer it where you are, the player says so. Their own advertisements play as usual.\n\n"
             +"Your sources: add an IPTV service you subscribe to, with its M3U playlist address or its server, username and password (Settings › Your Sources). Its channels appear under Added. Grapefruit TV doesn't provide, sell or recommend any service. Only add services you're entitled to use.\n\n"
             +"Your TV Apps: streaming and TV-provider apps installed on this device (Crave, Sling, Fibe TV and others) sit on the Live TV page and open with a tap. You sign in and watch in those apps: their live TV is protected, so it can't play in Grapefruit TV.\n\n"
-            +"Channel names only; no programme guide."));
+            +"Movies: free films in the public domain or under Creative Commons licences, from the Internet Archive.\n\n"
+            +"On Demand: films and series from your sources, when they offer them.\n\n"
+            +"Guide: programmes where a channel or your source publishes them; elsewhere, hour blocks on news channels and half hours on others, marked \""+Guide.UNAVAILABLE+"\"."));
         int saved=favourites.size();
         value(g,"Favourites",saved==0?"None":saved==1?"1 channel":saved+" channels",null);
         if(saved>0)action(g,"Clear Favourites",true,()->dialog("Clear Favourites?","Your "+(saved==1?"favourite channel":saved+" favourite channels")+" will be removed from Favourites.",
             new String[]{"Clear Favourites","Cancel"},-1,new Runnable[]{()->{favourites.clear();prefs.edit().putStringSet("favourites",new HashSet<String>()).apply();settings();},()->{}}));
-        footer(g,"Streams include provider ads. Grapefruit adds no tracking SDK or extra advertisements. Playback stops when you leave the app.");
+        value(g,"Movies",movies.size()+" films",()->ok("Movies","Free films, legal to watch: in the public domain in the United States, or released under Creative Commons licences by their makers (the Blender Foundation's open movies, Sita Sings the Blues). They stream from the Internet Archive (archive.org), and can be downloaded to watch offline.\n\nEvery film was picked by hand: nothing discriminatory. Public domain status can differ outside the United States."));
+        footer(g,"Streams include provider ads. Grapefruit adds no tracking SDK or extra advertisements. Playback stops when you leave the app; recordings and downloads carry on.");
+
+        section(g,"Recordings & Downloads");
+        int early=prefs.getInt("recordEarly",1),late=prefs.getInt("recordLate",2);
+        value(g,"Start Early",early==0?"On time":early+" min",()->dialog("Start recordings early",null,new String[]{"On time","1 minute","2 minutes","5 minutes"},Arrays.asList(0,1,2,5).indexOf(early),
+            new Runnable[]{()->pad("recordEarly",0),()->pad("recordEarly",1),()->pad("recordEarly",2),()->pad("recordEarly",5)}));
+        value(g,"End Late",late==0?"On time":late+" min",()->dialog("End recordings late",null,new String[]{"On time","2 minutes","5 minutes","10 minutes"},Arrays.asList(0,2,5,10).indexOf(late),
+            new Runnable[]{()->pad("recordLate",0),()->pad("recordLate",2),()->pad("recordLate",5),()->pad("recordLate",10)}));
+        toggle(g,"Download on Wi-Fi Only",prefs.getBoolean("downloadWifiOnly",true),on->{prefs.edit().putBoolean("downloadWifiOnly",on).apply();Recordings.wake(this);});
+        long used=0;int kept=0;for(Recordings.Item i:Recordings.all(this))if(i.ready()){used+=new java.io.File(i.file).length();kept++;}
+        value(g,"On This Device",kept==0?"Nothing yet":Recordings.size(used)+" · "+Recordings.size(Recordings.free(this))+" free",null);
+        if(!Recordings.exactAlarms(this)&&Build.VERSION.SDK_INT>=31)action(g,"Allow Alarms for Recordings…",false,()->{
+            try{startActivity(new Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,Uri.parse("package:"+getPackageName())));}catch(ActivityNotFoundException e){/* no such screen */}});
+        footer(g,"Recordings and downloads are saved on this device and carry on with the app in the background or closed: "+NAME+" shows a notification while they run, and sets an alarm to start each recording on time (again after a restart). A force stop in Android's settings cancels them until you next open the app. Encrypted streams, and streams that keep their sound separately, can't be recorded. Record only for your own viewing, as your service's terms allow.");
 
         section(g,"Your Sources");
         for(final UserSources.Source src:sources.list()) {
             List<Channel> got=added.get(src.id);int n=got==null?0:got.size();
             value(g,src.name,(UserSources.LOGIN.equals(src.kind)?"Login · ":"Playlist · ")+(n==1?"1 channel":n+" channels"),()->dialog(src.name,
                 (UserSources.LOGIN.equals(src.kind)?"Server: "+src.address+"\nUsername: "+src.username:"Playlist: "+src.address),
-                new String[]{"Refresh","Remove"},-1,new Runnable[]{()->refreshSources(src),()->dialog("Remove "+src.name+"?","Its channels will be removed from Grapefruit TV, and any of them in Favourites.",
-                    new String[]{"Remove","Cancel"},-1,new Runnable[]{()->{sources.remove(src.id);added.remove(src.id);mergeChannels();if(playing!=null&&find(playing.id)==null)stop();keepAwake();settings();},()->{}})}));
+                new String[]{"Refresh","Streams at a Time: "+src.streams,"Remove"},-1,new Runnable[]{()->refreshSources(src),()->streamsDialog(src),()->dialog("Remove "+src.name+"?","Its channels will be removed from "+NAME+", and any of them in Favourites.",
+                    new String[]{"Remove","Cancel"},-1,new Runnable[]{()->{sources.remove(src.id);added.remove(src.id);sourceFilms.remove(src.id);onDemand.remove(src.id);mergeChannels();navigation();if(playing!=null&&find(playing.id)==null)stop();keepAwake();settings();},()->{}})}));
         }
         action(g,"Add a Playlist (M3U)…",false,()->form("Add a Playlist","Your IPTV service's M3U or M3U8 playlist address.",
             new String[]{"Name","Playlist address (http:// or https://)"},new boolean[]{false,false},new String[]{"My TV",""},v->addSource(UserSources.M3U,v[0],v[1],"","")));
         action(g,"Add a TV Login…",false,()->form("Add a TV Login","Your IPTV service's server address, username and password.",
             new String[]{"Name","Server (e.g. http://example.com:8080)","Username","Password"},new boolean[]{false,false,false,true},new String[]{"My TV","","",""},
             v->addSource(UserSources.LOGIN,v[0],v[1],v[2],v[3])));
-        footer(g,"Add an IPTV service you subscribe to. Grapefruit TV doesn't provide, sell or recommend any service: only add ones you're entitled to use. Channel names only; no programme guide. Logins are kept in this app's private storage on this device.");
+        footer(g,"Add an IPTV service you subscribe to. "+NAME+" doesn't provide, sell or recommend any service: only add ones you're entitled to use. Its guide, films and series come from the service. Streams at a Time keeps watching, recording and downloading within your plan's limit. Logins are kept in this app's private storage on this device.");
 
         section(g,"About");
-        value(g,"About Grapefruit TV","Version "+versionName(),()->{settingsPage="about";about();});
+        value(g,"About "+NAME,"Version "+versionName(),()->{settingsPage="about";about();});
         floatBars(true);backCallback();
     }
-    /** Settings › About Grapefruit TV: the logo and wordmark, then the licence, developer and credits. */
+    /** Settings › About Grapefruit TV & Movies: the logo and wordmark, then the licence, developer and credits. */
     private void about() {
         LinearLayout g=groupedPage();
         // Music's About page (AboutFragment), for Grapefruit TV: Music's header, with its round back button...
@@ -892,7 +1470,7 @@ public final class MainActivity extends Activity {
         section(g,"License");
         link(g,"GNU GPL","Version 3 or later","https://www.gnu.org/licenses/gpl-3.0.html");
         link(g,"Source Code",SOURCE,"https://"+SOURCE);
-        footer(g,"Grapefruit TV is free software: you can share and change it under the GNU General Public License, version 3 or any later version. It comes with no warranty.");
+        footer(g,NAME+" is free software: you can share and change it under the GNU General Public License, version 3 or any later version. It comes with no warranty.");
 
         section(g,"Developer");
         value(g,"Developer",DEVELOPER,null);
@@ -1014,7 +1592,7 @@ public final class MainActivity extends Activity {
         // As Music's: the stacked logo, the television over the Geist Pixel Triangle wordmark, as one picture
         // (tools/tv/splash.py), the same one the window shows while the app starts.
         ImageView logo=new ImageView(this);logo.setImageResource(b.light?R.drawable.splash_logo_light:R.drawable.splash_logo_dark);
-        logo.setAdjustViewBounds(true);logo.setContentDescription("Grapefruit TV");
+        logo.setAdjustViewBounds(true);logo.setContentDescription(NAME);
         cover.addView(logo,new LinearLayout.LayoutParams(-2,-2));
         owner.addView(cover,new FrameLayout.LayoutParams(-1,-1));
         owner.postDelayed(()->cover.animate().alpha(0f).setDuration(300).withEndAction(()->owner.removeView(cover)).start(),
@@ -1123,10 +1701,10 @@ public final class MainActivity extends Activity {
         if(report==null)return;
         new Handler(Looper.getMainLooper()).postDelayed(()->{
             if(isFinishing())return;
-            dialog("Grapefruit TV closed unexpectedly","Last time, a fault in Grapefruit TV closed it. It kept a short report: the app and Android versions, this device's model, and where in Grapefruit TV's code it stopped. Logins and addresses are left out. Nothing has been sent. Sharing it with the developer helps get it fixed.",
+            dialog(NAME+" closed unexpectedly","Last time, a fault in "+NAME+" closed it. It kept a short report: the app and Android versions, this device's model, and where in the app's code it stopped. Logins and addresses are left out. Nothing has been sent. Sharing it with the developer helps get it fixed.",
                 new String[]{"Share Report","Dismiss"},-1,new Runnable[]{()->{
                     CrashReport.clear(this);
-                    Intent send=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT,"Grapefruit TV crash report").putExtra(Intent.EXTRA_TEXT,report);
+                    Intent send=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT,NAME+" crash report").putExtra(Intent.EXTRA_TEXT,report);
                     try{startActivity(Intent.createChooser(send,"Share Report"));}catch(ActivityNotFoundException e){copy(report);}
                 },()->CrashReport.clear(this)});
         },1300);
@@ -1195,6 +1773,7 @@ public final class MainActivity extends Activity {
     boolean back(){
         if(fullScreen){setFullScreen(false);}
         else if(watching!=null){leaveWatchPage();build();}
+        else if(series!=null){series=null;seasons=null;listPosition=0;browse();backCallback();}
         else if(settingsPage!=null){settingsPage=null;settings();}
         else if(!tab.equals("Live TV")){tab="Live TV";query="";build();}
         else return false;
@@ -1208,7 +1787,7 @@ public final class MainActivity extends Activity {
      */
     private void backCallback() {
         if(Build.VERSION.SDK_INT<33)return;
-        boolean inside=fullScreen||watching!=null||settingsPage!=null||!tab.equals("Live TV");
+        boolean inside=fullScreen||watching!=null||series!=null||settingsPage!=null||!tab.equals("Live TV");
         android.window.OnBackInvokedDispatcher dispatcher=getOnBackInvokedDispatcher();
         if(inside&&backCallback==null){
             android.window.OnBackInvokedCallback callback=()->back();
@@ -1220,7 +1799,7 @@ public final class MainActivity extends Activity {
         }
     }
     @Override public boolean onKeyDown(int key,KeyEvent event) {
-        if(watching!=null&&(key==KeyEvent.KEYCODE_CHANNEL_UP||key==KeyEvent.KEYCODE_CHANNEL_DOWN)){
+        if(watching!=null&&watching.live()&&(key==KeyEvent.KEYCODE_CHANNEL_UP||key==KeyEvent.KEYCODE_CHANNEL_DOWN)){
             List<Channel> lineup=visible.isEmpty()?channels:visible;int pos=lineup.indexOf(watching);
             if(!lineup.isEmpty())tune(lineup.get((pos+(key==KeyEvent.KEYCODE_CHANNEL_UP?1:lineup.size()-1))%lineup.size()));return true;
         }

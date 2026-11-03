@@ -1,6 +1,32 @@
 package com.grapefruitfast;
 import java.util.Locale;
 public final class Channel {
+    /**
+     * What a Channel plays: a live channel, a film (Movies, or an IPTV service's films), a series (opens its
+     * episodes), an episode, or a recording or download kept on this device. Everything that plays is a
+     * Channel, so the watch page, the floating player and the one-stream rule treat them all alike.
+     */
+    public static final String LIVE="live", FILM="film", SERIES="series", EPISODE="episode", RECORDING="recording";
+    public String kind=LIVE;
+    /** A poster or cover picture (films, series), or "". */
+    public String poster="";
+    public int year, seconds;
+    /** The list row's second line, when it isn't the region and genre (recordings, episodes), or null. */
+    public String meta;
+    /** The programme guide's ID for this channel (an M3U's tvg-id), or "". */
+    public String guideId="";
+    /** Plays live (no seeking, no end). */
+    public boolean live(){return LIVE.equals(kind);}
+    /** A film, an episode or a recording: it has a beginning, an end, and a place to resume from. */
+    public boolean onDemand(){return FILM.equals(kind)||EPISODE.equals(kind)||RECORDING.equals(kind);}
+    /** Kept on this device (a recording, or a finished download): plays with no connection. */
+    public boolean local(){return streams.length>0&&streams[0].startsWith("file:");}
+    /** News channels get hour-long blocks in the guide when it has no programme information. */
+    public boolean news(){
+        if("News".equals(category))return true;
+        String words=(name+" "+description).toLowerCase(Locale.US);
+        return words.contains("news")||words.contains("headlines");
+    }
     /** Catalog country codes and the regions the filters show. */
     public static final String[] COUNTRIES={"CA","US","GB","DE","AU"};
     public static final String[] REGIONS={"Canada","United States","UK","Europe","Australia"};
@@ -48,6 +74,6 @@ public final class Channel {
         if (name.startsWith("DW")) return "DW";
         if (name.equals("CPAC")) return "CPAC";
         String[] words=name.replace("The ", "").split(" ");
-        return words[0].substring(0,1)+(words.length>1?words[1].substring(0,1):"");
+        return (words[0].substring(0,1)+(words.length>1&&!words[1].isEmpty()?words[1].substring(0,1):"")).toUpperCase(Locale.US);
     }
 }

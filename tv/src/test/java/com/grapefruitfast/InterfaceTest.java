@@ -19,7 +19,7 @@ public class InterfaceTest {
             assertNotNull(text(root,"Live TV"));assertNotNull(text(root,"CityNews 24/7 · Toronto"));
             capture(root,"landscape-dark.png");
             tap(text(root,"Favourites"));measure(a.getWindow().getDecorView(),1024,600);
-            assertNotNull(text(a.getWindow().getDecorView(),"No favourites yet. Hold a channel, or press Menu, to add one."));
+            assertNotNull(text(a.getWindow().getDecorView(),"No favourites yet. Hold a channel or a film, or press Menu, to add one."));
             tap(text(a.getWindow().getDecorView(),"Search"));root=a.getWindow().getDecorView();
             EditText search=edit(root);assertNotNull(search);search.setText("Winnipeg");measure(root,1024,600);
             assertNotNull(text(root,"Global News · Winnipeg"));capture(root,"landscape-search.png");
@@ -156,6 +156,78 @@ public class InterfaceTest {
         View picture=((ViewGroup)((ViewGroup)a.floating()).getChildAt(0)).getChildAt(0);
         picture.setVisibility(View.INVISIBLE);capture(root,name);picture.setVisibility(View.VISIBLE);
     }
+    /** 3.0: Movies, a film's page (pause, seek, download), the guide, Recordings and its chips. */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void moviesTabAndAFilmsPage() throws Exception {
+        LivePlayer.open=0;
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(described(root,"Movies"));assertNotNull(described(root,"Recordings"));assertNull("no On Demand without a source",described(root,"On Demand"));
+            tap(described(root,"Movies"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Free films: public domain and Creative Commons."));
+            assertNotNull(text(root,"His Girl Friday"));assertNotNull(text(root,"Horror"));assertNotNull(text(root,"Downloaded"));
+            settle();measure(root,1233,2742);capture(root,"portrait-movies.png");
+            tap(text(root,"His Girl Friday"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Pause"));assertNotNull(text(root,"+30 s"));assertNotNull(text(root,"Download"));assertNotNull(text(root,"Internet Archive"));
+            assertNull("films aren't recorded",text(root,"●  Record"));
+            boolean bar=false;for(View v:views(root))if(v instanceof SeekBar)bar=true;assertTrue("a bar to move through the film",bar);
+            assertEquals(1,LivePlayer.open);capture(root,"portrait-film.png");
+            // One stream: a live channel after the film replaces it.
+            a.back();root=a.getWindow().getDecorView();assertNotNull(a.floating());
+            tap(described(root,"Live TV"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"CityNews 24/7 · Toronto"));assertEquals(1,LivePlayer.open);
+            root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"●  Record"));assertNotNull(text(root,Guide.UNAVAILABLE));
+        }
+        assertEquals(0,LivePlayer.open);
+    }
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void guideInLiveTv() throws Exception {
+        org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).edit().putBoolean("guide",true).commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            int rows=0;for(View v:views(root))if(v instanceof GuideViews.Row)rows++;
+            assertTrue("guide rows",rows>3);
+            boolean ruler=false;for(View v:views(root))if(v instanceof GuideViews.Ruler)ruler=true;assertTrue(ruler);
+            settle();measure(root,1233,2742);capture(root,"portrait-guide.png");
+            // The Guide chip turns it off again.
+            tap(text(root,"Guide"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            rows=0;for(View v:views(root))if(v instanceof GuideViews.Row)rows++;assertEquals(0,rows);
+        }
+    }
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void recordingsTabWithItsChips() throws Exception {
+        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();
+            Channel cpac=null;for(Channel ch:Catalog.parse(Catalog.read(c.getAssets().open("channels.json"))))if(ch.name.startsWith("CityNews 24/7 · Toronto"))cpac=ch;
+            long start=System.currentTimeMillis()+3*Guide.HOUR;
+            Recordings.schedule(c,cpac,"Evening News",start,start+Guide.HOUR);
+            View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(described(root,"Recordings"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"All"));assertNotNull(text(root,"Finished"));assertNotNull(text(root,"Scheduled"));
+            assertNotNull(text(root,"Evening News"));assertNotNull(text(root,"+  Schedule a Recording"));
+            settle();measure(root,1233,2742);capture(root,"portrait-recordings.png");
+            tap(text(root,"Finished"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNull(text(root,"Evening News"));assertNotNull(text(root,"No finished recordings yet."));
+            tap(text(root,"Scheduled"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Evening News"));
+        }
+    }
+    /** A source with films and series: the On Demand tab appears. */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void onDemandAppearsWithASourcesFilms() throws Exception {
+        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
+        java.io.File dir=new java.io.File(c.getFilesDir(),"sources");dir.mkdirs();
+        try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(dir,"s1.json"))){
+            out.write(("[{\"name\":\"Local News\",\"group\":\"News\",\"url\":\"http://tv.example.com/live/1.ts\",\"ua\":\"\",\"kind\":\"live\"},"
+                +"{\"name\":\"A Film\",\"group\":\"Films\",\"url\":\"http://tv.example.com/movie/u/p/7.mp4\",\"ua\":\"\",\"kind\":\"film\"}]").getBytes("UTF-8"));
+        }
+        c.getSharedPreferences("fast",0).edit().putString("userSources","[{\"id\":\"s1\",\"kind\":\"m3u\",\"name\":\"My TV\",\"address\":\"http://tv.example.com/list.m3u\",\"username\":\"\",\"password\":\"\"}]").commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(described(root,"On Demand"));
+            tap(described(root,"On Demand"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"A Film"));assertNotNull(text(root,"Series"));assertNotNull(text(root,"Downloads"));
+            capture(root,"portrait-ondemand.png");
+        }
+    }
     private static org.robolectric.android.controller.ActivityController<MainActivity> launch(){
         MainActivity.splashShown=false;
         org.robolectric.android.controller.ActivityController<MainActivity> c=Robolectric.buildActivity(MainActivity.class).setup();
@@ -167,10 +239,10 @@ public class InterfaceTest {
         MainActivity.splashShown=false;
         try(org.robolectric.android.controller.ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup()) {
             View root=controller.get().getWindow().getDecorView();measure(root,1080,1920);
-            View logo=described(root,"Grapefruit TV");assertTrue(logo instanceof ImageView);assertTrue(logo.getWidth()>0);
+            View logo=described(root,MainActivity.NAME);assertTrue(logo instanceof ImageView);assertTrue(logo.getWidth()>0);
             capture(root,"portrait-splash.png");
             settle();root=controller.get().getWindow().getDecorView();measure(root,1080,1920);
-            assertNull(described(root,"Grapefruit TV"));
+            assertNull(described(root,MainActivity.NAME));
         }
     }
     @Test public void settingsLikeMusicWithAboutAndToggles() throws Exception {
@@ -182,8 +254,8 @@ public class InterfaceTest {
             Toggle keep=null;for(View v:views(root))if(v instanceof Toggle&&"Keep Screen On".contentEquals(v.getContentDescription()))keep=(Toggle)v;
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
-            tap(text(root,"About Grapefruit TV"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 2.5-beta-1"));assertNotNull(text(root,"Source Code"));
+            tap(text(root,"About Grapefruit TV & Movies"));root=a.getWindow().getDecorView();measure(root,1024,600);
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 3.0-beta-1"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
@@ -196,7 +268,7 @@ public class InterfaceTest {
             assertNull(text(root,"Continue watching"));
         }
     }
-    private static TextView wordmark(View root){for(View v:views(root))if(v instanceof TextView&&"Grapefruit TV".equals(String.valueOf(((TextView)v).getText())))return(TextView)v;return null;}
+    private static TextView wordmark(View root){for(View v:views(root))if(v instanceof TextView&&MainActivity.NAME.equals(String.valueOf(((TextView)v).getText())))return(TextView)v;return null;}
     /** On a phone, Settings scrolls far enough for About to clear the floating tabs and Continue watching. */
     @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void aboutRowClearsTheFloatingBarsOnAPhone() throws Exception {
         android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
@@ -206,7 +278,7 @@ public class InterfaceTest {
             tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1233,2742);settle();measure(root,1233,2742);
             ScrollView scroll=null;for(View v:views(root))if(v instanceof ScrollView)scroll=(ScrollView)v;
             scroll.scrollTo(0,100000);measure(root,1233,2742);settle();measure(root,1233,2742);
-            View about=(View)text(root,"About Grapefruit TV").getParent();
+            View about=(View)text(root,"About Grapefruit TV & Movies").getParent();
             int[] at=new int[2];about.getLocationInWindow(at);
             View cont=(View)text(root,"Continue watching").getParent().getParent();int[] bar=new int[2];cont.getLocationInWindow(bar);
             assertTrue("Settings scrolled",scroll.getScrollY()>0);
@@ -301,7 +373,7 @@ public class InterfaceTest {
             tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-settings.png");
             ScrollView scroll=null;for(View v:views(root))if(v instanceof ScrollView)scroll=(ScrollView)v;
             scroll.scrollTo(0,100000);measure(root,w,h);settle();measure(root,w,h);capture(root,name+"-settings-bottom.png");
-            tap(text(root,"About Grapefruit TV"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-about.png");
+            tap(text(root,"About Grapefruit TV & Movies"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-about.png");
         }
     }
     /** A channel its provider refuses where the viewer is: listed anyway, and the player box says so. */

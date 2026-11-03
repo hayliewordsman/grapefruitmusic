@@ -28,7 +28,7 @@ public final class CrashReport {
         StringWriter trace=new StringWriter();e.printStackTrace(new PrintWriter(trace));
         String version="?";
         try{version=c.getPackageManager().getPackageInfo(c.getPackageName(),0).versionName;}catch(Exception ignored){}
-        String text="Grapefruit TV "+version+"\nAndroid "+Build.VERSION.RELEASE+" (API "+Build.VERSION.SDK_INT+")\n"
+        String text=MainActivity.NAME+" "+version+"\nAndroid "+Build.VERSION.RELEASE+" (API "+Build.VERSION.SDK_INT+")\n"
             +Build.MANUFACTURER+" "+Build.MODEL+"\nThread: "+thread.getName()+"\n\n"+redact(trace.toString());
         return text.length()>MAX_CHARS?text.substring(0,MAX_CHARS):text;
     }

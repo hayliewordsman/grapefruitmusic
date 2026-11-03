@@ -8,7 +8,7 @@ import android.view.View;
  * Music's own), so they're crisp at any density, take any theme colour and need no image resources.
  */
 public final class TabIcon extends View {
-    public static final int LIVE_TV=1, FAVOURITES=2, SEARCH=3, SETTINGS=4, CHEVRON=5, CHEVRON_LEFT=6;
+    public static final int LIVE_TV=1, FAVOURITES=2, SEARCH=3, SETTINGS=4, CHEVRON=5, CHEVRON_LEFT=6, MOVIES=7, ON_DEMAND=8, RECORDINGS=9, DOWNLOAD=10;
     private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path=new Path();
     private final RectF oval=new RectF();
@@ -58,6 +58,34 @@ public final class TabIcon extends View {
                     oval.set(10.4f,1.8f,13.6f,6.4f);c.drawRoundRect(oval,0.8f,0.8f,p);
                     c.restore();
                 }
+                break;
+            case MOVIES:
+                // A clapperboard: the slate, its striped clapper raised.
+                stroke(2.1f);
+                oval.set(3,9,21,20.5f);c.drawRoundRect(oval,2.2f,2.2f,p);
+                path.moveTo(3.4f,8.6f);path.lineTo(19.6f,4.2f);c.drawPath(path,p);
+                c.drawLine(8.4f,7.3f,10.2f,9,p);c.drawLine(13.4f,5.9f,15.2f,7.6f,p);
+                break;
+            case ON_DEMAND:
+                // A stack of titles: a screen with play, a second one behind it.
+                stroke(2.1f);
+                oval.set(2.5f,7,18.5f,20);c.drawRoundRect(oval,2.6f,2.6f,p);
+                path.moveTo(6,4);path.lineTo(19,4);path.quadTo(21.5f,4,21.5f,6.5f);path.lineTo(21.5f,16);c.drawPath(path,p);
+                p.setStyle(Paint.Style.FILL);path.reset();
+                path.moveTo(8.6f,10.4f);path.lineTo(13.2f,13.5f);path.lineTo(8.6f,16.6f);path.close();c.drawPath(path,p);
+                break;
+            case RECORDINGS:
+                // A record button: a dot in a ring.
+                stroke(2.1f);
+                c.drawCircle(12,12,9,p);
+                p.setStyle(Paint.Style.FILL);c.drawCircle(12,12,4.4f,p);
+                break;
+            case DOWNLOAD:
+                // An arrow into a tray.
+                stroke(2.3f);
+                c.drawLine(12,3.5f,12,14.5f,p);
+                path.moveTo(7.2f,10);path.lineTo(12,14.8f);path.lineTo(16.8f,10);c.drawPath(path,p);
+                path.reset();path.moveTo(4,15.5f);path.lineTo(4,19.5f);path.lineTo(20,19.5f);path.lineTo(20,15.5f);c.drawPath(path,p);
                 break;
             case CHEVRON:
                 // Music's CHEVRON_RIGHT: rows that open something.
