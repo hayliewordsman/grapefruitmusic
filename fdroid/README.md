@@ -13,6 +13,7 @@ repository in F-Droid or Droid-ify in one tap, and it links the APK for devices 
 | `config/categories.yml` | The categories apps here can use |
 | `metadata/io.github.hayliewordsman.grapefruitmusic.yml` | Grapefruit Music's licence, categories and links |
 | `site/index.html`, `site/render.py` | The front page, filled in with the repository fingerprint and the newest APK when the workflow runs |
+| `metadata/io.github.hayliewordsman.grapefruitfast.yml`, `../fast/fastlane/metadata/android/en-US/` | Grapefruit FAST's listing, beside Music's (FAST makes its own `fast-v*` releases; see `fast/README.md`) |
 | `../fastlane/metadata/android/en-US/` | Its name, summary, description, icon (`images/icon.png`) and each version's "What's new" (`changelogs/<versionCode>.txt`, 500 characters at most): the same files f-droid.org reads |
 
 ## How a version gets to F-Droid
