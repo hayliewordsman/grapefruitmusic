@@ -17,7 +17,7 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="1.0 beta 10 · build 10";
+    static final String VERSION="1.0 beta 11 · build 11";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
