@@ -17,7 +17,7 @@ import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="2.0 beta 1 · build 13";
+    static final String VERSION="2.0 beta 2 · build 14";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
@@ -851,7 +851,7 @@ public final class MainActivity extends Activity {
      * the buttons stay in sight below it. chosen marks the current option, or -1.
      */
     private void dialog(String title,String message,String[] labels,int chosen,Runnable[] actions) {
-        final android.app.Dialog d=new android.app.Dialog(this);d.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        final android.app.Dialog d=new android.app.Dialog(this,R.style.FastDialogWindow);
         final int maxHeight=getResources().getDisplayMetrics().heightPixels-dp(48);
         LinearLayout card=new LinearLayout(this){
             @Override protected void onMeasure(int w,int h){
@@ -884,7 +884,7 @@ public final class MainActivity extends Activity {
     private interface FormDone{void done(String[] values);}
     /** A dialog with text fields (secret ones hidden), Save and Cancel. */
     private void form(String title,String note,String[] hints,boolean[] secret,String[] values,FormDone done) {
-        final android.app.Dialog d=new android.app.Dialog(this);d.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        final android.app.Dialog d=new android.app.Dialog(this,R.style.FastDialogWindow);
         LinearLayout card=b.column();card.setPadding(dp(22),dp(22),dp(22),dp(18));card.setBackground(b.shape(b.surface,30,true));
         card.addView(b.text(title,22,true));
         TextView n=b.label(note,14,b.secondary);n.setPadding(0,dp(8),0,dp(4));n.setLineSpacing(dp(2),1);card.addView(n);
@@ -894,6 +894,9 @@ public final class MainActivity extends Activity {
             f.setHint(hints[i]);f.setText(values[i]);f.setPadding(dp(18),0,dp(18),0);f.setBackground(b.interactive(false,Brand.PILL));
             f.setInputType(secret[i]?InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD:i>0?InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_URI:InputType.TYPE_CLASS_TEXT);
             if(i>1&&!secret[i])f.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+            // A prefilled field ("My TV") selects its text on a tap, so typing replaces it.
+            if(!values[i].isEmpty())f.setSelectAllOnFocus(true);
+            noSelectionBar(f);
             LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.topMargin=dp(10);card.addView(f,p);fields[i]=f;
         }
         LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,dp(48));bp.topMargin=dp(14);
@@ -903,6 +906,20 @@ public final class MainActivity extends Activity {
         ScrollView scroll=new ScrollView(this);scroll.addView(card);d.setContentView(scroll);
         Window w=d.getWindow();if(w!=null)w.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         d.show();if(w!=null)w.setLayout(Math.min(dp(480),getResources().getDisplayMetrics().widthPixels-dp(32)),WindowManager.LayoutParams.WRAP_CONTENT);
+    }
+    /**
+     * Android 4.x shows text selection (a double-tap, a long press) as an action bar, which in a dialog's
+     * window can take the app down. There, a dialog's fields don't open it: typing, the cursor and the
+     * keyboard's own paste still work. Android 6 and later keep their floating Cut/Copy/Paste toolbar.
+     */
+    static void noSelectionBar(EditText f) {
+        if(Build.VERSION.SDK_INT>=23) return;
+        f.setCustomSelectionActionModeCallback(new android.view.ActionMode.Callback(){
+            public boolean onCreateActionMode(android.view.ActionMode m,Menu menu){return false;}
+            public boolean onPrepareActionMode(android.view.ActionMode m,Menu menu){return false;}
+            public boolean onActionItemClicked(android.view.ActionMode m,MenuItem item){return false;}
+            public void onDestroyActionMode(android.view.ActionMode m){}
+        });
     }
     private void addSource(String kind,String name,String address,String user,String pass) {
         if(address.trim().isEmpty()||(UserSources.LOGIN.equals(kind)&&user.trim().isEmpty())){ok("Add a Source","Fill in the address"+(UserSources.LOGIN.equals(kind)?" and username":"")+".");return;}

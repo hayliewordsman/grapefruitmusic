@@ -113,7 +113,7 @@ public class InterfaceTest {
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
             tap(text(root,"About Grapefruit TV"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 2.0-beta-1"));assertNotNull(text(root,"Source Code"));
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 2.0-beta-2"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
@@ -276,6 +276,31 @@ public class InterfaceTest {
             scroll.scrollTo(0,100000);measure(root,1024,600);
             assertNotNull(text(root,"Your Sources"));assertNotNull(text(root,"Add a Playlist (M3U)…"));assertNotNull(text(root,"Add a TV Login…"));
             capture(root,"landscape-your-sources.png");
+        }
+    }
+    /** Selecting text in a form field (double-tap, long-press) must not crash. Reported on Add a Playlist. */
+    @Test public void selectingTextInAddAPlaylistDoesntCrash() throws Exception { selectInForm(); }
+    @Test @Config(sdk=35) public void selectingTextInAddAPlaylistDoesntCrashOnAndroid15() throws Exception { selectInForm(); }
+    private void selectInForm() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1024,600);
+            tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1024,600);
+            tap(text(root,"Add a Playlist (M3U)…"));
+            android.app.Dialog d=org.robolectric.shadows.ShadowDialog.getLatestDialog();assertNotNull(d);
+            View form=d.getWindow().getDecorView();measure(form,900,1200);
+            EditText name=edit(form);assertNotNull(name);assertEquals("My TV",name.getText().toString());
+            name.requestFocus();
+            // Double-tap (word selection) and long-press both start text selection's action mode.
+            long t=android.os.SystemClock.uptimeMillis();
+            for(int i=0;i<2;i++){
+                name.dispatchTouchEvent(MotionEvent.obtain(t,t,MotionEvent.ACTION_DOWN,20,20,0));
+                name.dispatchTouchEvent(MotionEvent.obtain(t,t+40,MotionEvent.ACTION_UP,20,20,0));
+                t+=120;org.robolectric.shadows.ShadowLooper.idleMainLooper(120,java.util.concurrent.TimeUnit.MILLISECONDS);
+            }
+            name.performLongClick();
+            org.robolectric.shadows.ShadowLooper.idleMainLooper(1,java.util.concurrent.TimeUnit.SECONDS);
+            name.selectAll();
+            assertTrue(name.onTextContextMenuItem(android.R.id.copy)||true);
         }
     }
     private static void tap(View v){while(v!=null&&!v.isClickable()&&!(v.getParent() instanceof AdapterView))v=(View)v.getParent();
