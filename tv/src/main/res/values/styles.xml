@@ -1,0 +1,29 @@
+<resources>
+    <style name="FastBase" parent="android:Theme.Holo.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_dark</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+    <style name="FastTheme" parent="FastBase"/>
+    <!--
+        Grapefruit TV's dialog windows, as Music's GrapefruitDialogWindow: applied on top of the app's own
+        theme (not the stock Holo dialog theme), and only setting up the window; the dialog draws its card.
+    -->
+    <style name="FastDialogWindow">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.4</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:windowMinWidthMajor">0%</item>
+        <item name="android:windowMinWidthMinor">0%</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+    </style>
+    <!-- Android 13+ is told which of these to start with next time, to match the chosen theme. -->
+    <style name="FastSplash.Dark" parent="android:Theme.Holo.NoActionBar"/>
+    <style name="FastSplash.Light" parent="android:Theme.Holo.Light.NoActionBar"/>
+    <style name="FastSplash.Black" parent="android:Theme.Holo.NoActionBar"/>
+</resources>

@@ -1,0 +1,1018 @@
+{
+ "reviewed_utc": "2026-11-03",
+ "sources": [
+  {
+   "id": "citynews-toronto",
+   "viewing_page": "https://toronto.citynews.ca/video/",
+   "source": "https://edge.api.brightcove.com/playback/v1/accounts/593482582001/videos/6272888148001",
+   "evidence": {
+    "video_id": "6272888148001",
+    "title": "CityNews Toronto - 24/7 Livestream",
+    "economics": "AD_SUPPORTED",
+    "cdn_source": "https://citynewsregional.akamaized.net/hls/live/20002916/Regional_Live_6/master.m3u8",
+    "dai_asset_key": "NYoux6eGTkqmdrxc0P_biw"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/NYoux6eGTkqmdrxc0P_biw/master.m3u8"
+   ]
+  },
+  {
+   "id": "citynews-west",
+   "viewing_page": "https://calgary.citynews.ca/video/",
+   "source": "https://edge.api.brightcove.com/playback/v1/accounts/593482582001/videos/6272888153001",
+   "evidence": {
+    "video_id": "6272888153001",
+    "title": "CityNews Alberta - 24/7 Livestream",
+    "economics": "AD_SUPPORTED",
+    "cdn_source": "https://citynewsregional.akamaized.net/hls/live/1024053/Regional_Live_8/master.m3u8",
+    "dai_asset_key": "W4j7D5LJSJuESWEpe0AP4A"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/W4j7D5LJSJuESWEpe0AP4A/master.m3u8"
+   ]
+  },
+  {
+   "id": "citynews-vancouver",
+   "viewing_page": "https://vancouver.citynews.ca/video/",
+   "source": "https://edge.api.brightcove.com/playback/v1/accounts/593482582001/videos/6272887411001",
+   "evidence": {
+    "video_id": "6272887411001",
+    "title": "CityNews Vancouver - 24/7 Livestream",
+    "economics": "AD_SUPPORTED",
+    "cdn_source": "https://citynewsregional.akamaized.net/hls/live/1024054/Regional_Live_9/master.m3u8"
+   },
+   "streams": [
+    "https://citynewsregional.akamaized.net/hls/live/1024054/Regional_Live_9/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-national",
+   "viewing_page": "https://globalnews.ca/live/national/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%2249a91e7f-1023-430f-8d66-561055f3d0f7%22%7D/",
+   "evidence": {
+    "media_id": "49a91e7f-1023-430f-8d66-561055f3d0f7",
+    "title": "National News",
+    "live": true,
+    "dai_asset_key": "cQOVg6jKSvusQAfYpTrUoQ"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/cQOVg6jKSvusQAfYpTrUoQ/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-toronto",
+   "viewing_page": "https://globalnews.ca/live/toronto/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22deb8cec5-87fb-460a-ab82-0929374fc5fb%22%7D/",
+   "evidence": {
+    "media_id": "deb8cec5-87fb-460a-ab82-0929374fc5fb",
+    "title": "Toronto News",
+    "live": true,
+    "dai_asset_key": "BblZeSsBRSSCtvkKRZ8XJQ"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/BblZeSsBRSSCtvkKRZ8XJQ/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-winnipeg",
+   "viewing_page": "https://globalnews.ca/live/winnipeg/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22564df695-94f9-4f27-b1b9-0a936ab01721%22%7D/",
+   "evidence": {
+    "media_id": "564df695-94f9-4f27-b1b9-0a936ab01721",
+    "title": "Winnipeg News",
+    "live": true,
+    "dai_asset_key": "R5XZJcTAQPuyvhsVWIKRhw"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/R5XZJcTAQPuyvhsVWIKRhw/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-edmonton",
+   "viewing_page": "https://globalnews.ca/live/edmonton/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22215422c9-d1b9-4009-aaca-32e403f22b01%22%7D/",
+   "evidence": {
+    "media_id": "215422c9-d1b9-4009-aaca-32e403f22b01",
+    "title": "Edmonton News",
+    "live": true,
+    "dai_asset_key": "K8ZZN35nQA2N_hskrUB2oQ"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/K8ZZN35nQA2N_hskrUB2oQ/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-bc",
+   "viewing_page": "https://globalnews.ca/live/bc/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%2248a5882b-a1ec-42d7-bfd7-6c2739e737da%22%7D/",
+   "evidence": {
+    "media_id": "48a5882b-a1ec-42d7-bfd7-6c2739e737da",
+    "title": "BC News",
+    "live": true,
+    "dai_asset_key": "eIIBH8jkR-SWGaD5E4MesA"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/eIIBH8jkR-SWGaD5E4MesA/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-calgary",
+   "viewing_page": "https://globalnews.ca/live/calgary/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%228970c668-40cd-4ca9-8c4d-25fd04f619b5%22%7D/",
+   "evidence": {
+    "media_id": "8970c668-40cd-4ca9-8c4d-25fd04f619b5",
+    "title": "Calgary News",
+    "live": true,
+    "dai_asset_key": "AYQ1ssB7RcOX9D78FtdoQQ"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/AYQ1ssB7RcOX9D78FtdoQQ/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-halifax",
+   "viewing_page": "https://globalnews.ca/live/halifax/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22b60d1d57-2851-4c29-bf5c-36feed988e57%22%7D/",
+   "evidence": {
+    "media_id": "b60d1d57-2851-4c29-bf5c-36feed988e57",
+    "title": "Halifax News",
+    "live": true,
+    "dai_asset_key": "ljv6O6ZiSiKudWk7qwWbEw"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/ljv6O6ZiSiKudWk7qwWbEw/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-kingston",
+   "viewing_page": "https://globalnews.ca/live/kingston/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22023a9e25-f0cf-4d97-af9f-5c665b7d45b9%22%7D/",
+   "evidence": {
+    "media_id": "023a9e25-f0cf-4d97-af9f-5c665b7d45b9",
+    "title": "Kingston News",
+    "live": true,
+    "dai_asset_key": "poxVVQNQSMqFBnT6qR-Lwg"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/poxVVQNQSMqFBnT6qR-Lwg/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-lethbridge",
+   "viewing_page": "https://globalnews.ca/live/lethbridge/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22cea96246-9af2-4373-932f-cdd3f8db2bc0%22%7D/",
+   "evidence": {
+    "media_id": "cea96246-9af2-4373-932f-cdd3f8db2bc0",
+    "title": "Lethbridge News",
+    "live": true,
+    "dai_asset_key": "hYQh95EXRwaF0IOhUrJoEQ"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/hYQh95EXRwaF0IOhUrJoEQ/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-montreal",
+   "viewing_page": "https://globalnews.ca/live/montreal/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%226bfb7f13-9d9d-4211-9c50-fb56330e4ccd%22%7D/",
+   "evidence": {
+    "media_id": "6bfb7f13-9d9d-4211-9c50-fb56330e4ccd",
+    "title": "Montreal News",
+    "live": true,
+    "dai_asset_key": "wI13hMWhRSKbyZ8Q1DQR3Q"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/wI13hMWhRSKbyZ8Q1DQR3Q/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-okanagan",
+   "viewing_page": "https://globalnews.ca/live/okanagan/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%229fd97fb0-baa8-4191-bd2c-59aa5c9a1d48%22%7D/",
+   "evidence": {
+    "media_id": "9fd97fb0-baa8-4191-bd2c-59aa5c9a1d48",
+    "title": "Okanagan News",
+    "live": true,
+    "dai_asset_key": "PLPlPfeDQCCe4GaxAWpi4g"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/PLPlPfeDQCCe4GaxAWpi4g/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-peterborough",
+   "viewing_page": "https://globalnews.ca/live/peterborough/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%225eb39b64-58e8-47d2-97ca-25e8cd760b63%22%7D/",
+   "evidence": {
+    "media_id": "5eb39b64-58e8-47d2-97ca-25e8cd760b63",
+    "title": "Peterborough News",
+    "live": true,
+    "dai_asset_key": "CQ82MHxxS7qwe7Zvs4_sUA"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/CQ82MHxxS7qwe7Zvs4_sUA/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-regina",
+   "viewing_page": "https://globalnews.ca/live/regina/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%223062d0e3-ed4c-4f47-8482-95648250f4b8%22%7D/",
+   "evidence": {
+    "media_id": "3062d0e3-ed4c-4f47-8482-95648250f4b8",
+    "title": "Regina News",
+    "live": true,
+    "dai_asset_key": "A69Xh6OaTfOrRf2oHVLaPQ"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/A69Xh6OaTfOrRf2oHVLaPQ/master.m3u8"
+   ]
+  },
+  {
+   "id": "global-saskatoon",
+   "viewing_page": "https://globalnews.ca/live/saskatoon/",
+   "source": "https://globalnews.ca/gnca-ajax-redesign/video-entry/%7B%22id%22:%22f191ef59-6c28-42ba-86d0-d47df5280249%22%7D/",
+   "evidence": {
+    "media_id": "f191ef59-6c28-42ba-86d0-d47df5280249",
+    "title": "Saskatoon News",
+    "live": true,
+    "dai_asset_key": "cAeO9FUXSRatnrvaksoJ9A"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/cAeO9FUXSRatnrvaksoJ9A/master.m3u8"
+   ]
+  },
+  {
+   "id": "nbc-news-now",
+   "viewing_page": "https://play.xumo.com/live-guide/nbc-news-now",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMESML1C8KMI4T.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99991247,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://d4whmvwm0rdvi.cloudfront.net/10007/99991247/hls/master.m3u8?ads.xumo_channelId=99991247&ads.asnw=169843&ads.afid=137704898&ads.sfid=16772607&ads.csid=xumo_[PLATFORM]_NBCNewsNOW_ssai_cro&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_coppa=0&ads._fw_did=[IFA]&ads._fw_vcid2=512116:[IFA]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads._fw_deviceType=3-Connected_TV&ads.appVersion=[APP_VERSION]&ads.appName=XumoPlay&ads.xumo_contentId=1828&ads.xumo_contentName=NBCNewsNOW&ads.xumo_providerId=1828&ads.xumo_providerName=NBCNewsNOW&ads.channelId=99991247&ads._fw_ifa_type=[IFA_TYPE]",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered."
+   },
+   "streams": [
+    "https://d4whmvwm0rdvi.cloudfront.net/10007/99991247/hls/master.m3u8?ads.xumo_channelId=99991247&ads.asnw=169843&ads.afid=137704898&ads.sfid=16772607&ads.csid=xumo_android_NBCNewsNOW_ssai_cro&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads._fw_did=00000000-0000-0000-0000-000000000000&ads._fw_vcid2=512116%3A00000000-0000-0000-0000-000000000000&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_content_category=&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0-beta-1&ads.appName=GrapefruitTV&ads.xumo_contentId=1828&ads.xumo_contentName=NBCNewsNOW&ads.xumo_providerId=1828&ads.xumo_providerName=NBCNewsNOW&ads.channelId=99991247&ads._fw_ifa_type="
+   ]
+  },
+  {
+   "id": "abc-news-live",
+   "viewing_page": "https://abcnews.com/Live",
+   "source": "https://abcnews.com/video/itemfeed?id=41463246",
+   "evidence": {
+    "title": "ABC News Live"
+   },
+   "streams": [
+    "https://abcnews-streams.akamaized.net/hls/live/2023570/abcnewslive_applenews/master.m3u8"
+   ]
+  },
+  {
+   "id": "cbs-news",
+   "viewing_page": "https://www.cbsnews.com/live/",
+   "source": "https://www.cbsnews.com/live/",
+   "evidence": {
+    "page_field": "CBSN video/ad.fw.dai_with_fw",
+    "dai_asset_key": "Sid4xiTQTkCT1SLu6rjUSQ"
+   },
+   "streams": [
+    "https://dai.google.com/linear/hls/event/Sid4xiTQTkCT1SLu6rjUSQ/master.m3u8"
+   ]
+  },
+  {
+   "id": "carol-burnett",
+   "viewing_page": "https://play.xumo.com/live-guide/the-carol-burnett-show",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM85MQPLPDLBOB.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951380,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951380/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951380&ads.xumo_streamId=99951380&ads.channelId=99951380&ads.channelName=ShoutFactoryTheCarolBurnettShow&ads.caid=ShoutFactoryTheCarolBurnettShow&ads.csid=xumo_[PLATFORM]_ShoutFactoryTheCarolBurnettShow_ssai&ads.genre=Entertainment,Drama,GD,GV&ads._fw_content_genre=Entertainment,Drama,GD,GV&ads._fw_coppa=0&ads.xumo_contentId=4181&ads.xumo_contentName=ShoutFactoryTheCarolBurnettShow&ads.xumo_providerId=4181&ads.xumo_providerName=ShoutFactoryTheCarolBurnettShow&ads.asnw=&ads.xumo_channelName=ShoutFactoryTheCarolBurnettShow&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951380/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951380&ads.xumo_streamId=99951380&ads.channelId=99951380&ads.channelName=ShoutFactoryTheCarolBurnettShow&ads.caid=ShoutFactoryTheCarolBurnettShow&ads.csid=xumo_android_ShoutFactoryTheCarolBurnettShow_ssai&ads.genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4181&ads.xumo_contentName=ShoutFactoryTheCarolBurnettShow&ads.xumo_providerId=4181&ads.xumo_providerName=ShoutFactoryTheCarolBurnettShow&ads.asnw=&ads.xumo_channelName=ShoutFactoryTheCarolBurnettShow&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "baywatch",
+   "viewing_page": "https://play.xumo.com/live-guide/baywatch",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMW4MQPHSKTMLE.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951133,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951133/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951133&ads.xumo_streamId=99951133&ads.channelId=99951133&ads.channelName=FreemantleBaywatch&ads.caid=FreemantleBaywatch&ads.csid=xumo_[PLATFORM]_FreemantleBaywatch_ssai&ads.genre=Action,Drama,GD,GV,Entertainment&ads._fw_content_genre=Action,Drama,GD,GV,Entertainment&ads._fw_coppa=0&ads.xumo_contentId=3535&ads.xumo_contentName=FreemantleBaywatch&ads.xumo_providerId=3535&ads.xumo_providerName=FreemantleBaywatch&ads.asnw=&ads.xumo_channelName=FreemantleBaywatch&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951133/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951133&ads.xumo_streamId=99951133&ads.channelId=99951133&ads.channelName=FreemantleBaywatch&ads.caid=FreemantleBaywatch&ads.csid=xumo_android_FreemantleBaywatch_ssai&ads.genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_content_genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=3535&ads.xumo_contentName=FreemantleBaywatch&ads.xumo_providerId=3535&ads.xumo_providerName=FreemantleBaywatch&ads.asnw=&ads.xumo_channelName=FreemantleBaywatch&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "unsolved-mysteries",
+   "viewing_page": "https://play.xumo.com/live-guide/unsolved-mysteries",
+   "source": "https://valencia-app-mds.xumo.com/v2/channels/channel/99991680/broadcast.json?hour=3",
+   "evidence": {
+    "official_channel_id": 99991680,
+    "source_field": "ssaiStreamUrls",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99991680/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991680&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads.asnw=&ads.caid=UnsolvedMysteries&ads.csid=xumo_[PLATFORM]_UnsolvedMysteries_ssai&ads._fw_is_lat=0&ads._fw_us_privacy=[CCPA_Value]&ads._fw_coppa=0&ads.genre=Documentary,Crime,DO,Entertainment,GV,SM&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_genre=Documentary,Crime,DO,Entertainment,GV,SM&ads._fw_content_rating=[content_rating]&ads.xumo_contentId=260&ads.xumo_contentName=FilmRise&ads.xumo_providerId=260&ads.xumo_providerName=FilmRise&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.channelId=99991680&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appName=xumo&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991680/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991680&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=UnsolvedMysteries&ads.csid=xumo_android_UnsolvedMysteries_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_rating=&ads.xumo_contentId=260&ads.xumo_contentName=FilmRise&ads.xumo_providerId=260&ads.xumo_providerName=FilmRise&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991680&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitTV&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ]
+  },
+  {
+   "id": "forensic-files",
+   "viewing_page": "https://play.xumo.com/live-guide/forensic-files",
+   "source": "https://valencia-app-mds.xumo.com/v2/channels/channel/99991367/broadcast.json?hour=3",
+   "evidence": {
+    "official_channel_id": 99991367,
+    "source_field": "ssaiStreamUrls",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99991367/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991367&ads.xumo_streamId=99991367&ads.channelId=99991367&ads.channelName=ForensicFiles&ads.caid=ForensicFiles&ads.csid=xumo_[PLATFORM]_ForensicFiles_ssai&ads.genre=Documentary,Crime,DO,Entertainment,GV,SM&ads._fw_content_genre=Documentary,Crime,DO,Entertainment,GV,SM&ads._fw_coppa=0&ads.xumo_contentId=260&ads.xumo_contentName=FilmRise&ads.xumo_providerId=260&ads.xumo_providerName=FilmRise&ads.asnw=&ads.xumo_channelName=ForensicFiles&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991367/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991367&ads.xumo_streamId=99991367&ads.channelId=99991367&ads.channelName=ForensicFiles&ads.caid=ForensicFiles&ads.csid=xumo_android_ForensicFiles_ssai&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_coppa=0&ads.xumo_contentId=260&ads.xumo_contentName=FilmRise&ads.xumo_providerId=260&ads.xumo_providerName=FilmRise&ads.asnw=&ads.xumo_channelName=ForensicFiles&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "deal-or-no-deal",
+   "viewing_page": "https://play.xumo.com/live-guide/deal-or-no-deal",
+   "source": "https://valencia-app-mds.xumo.com/v2/channels/channel/99991113/broadcast.json?hour=3",
+   "evidence": {
+    "official_channel_id": 99991113,
+    "source_field": "ssaiStreamUrls",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99991113/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991113&ads.xumo_streamId=99991113&ads.channelId=99991113&ads.channelName=EndemolshineDealNoDeal&ads.caid=EndemolshineDealNoDeal&ads.csid=xumo_[PLATFORM]_EndemolshineDealNoDeal_ssai&ads.genre=GameShow,Game,Quiz,QG,QP,Entertainment&ads._fw_content_genre=GameShow,Game,Quiz,QG,QP,Entertainment&ads._fw_coppa=0&ads.xumo_contentId=2041&ads.xumo_contentName=EndemolshineDealNoDeal&ads.xumo_providerId=2041&ads.xumo_providerName=EndemolshineDealNoDeal&ads.asnw=&ads.xumo_channelName=EndemolshineDealNoDeal&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991113/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991113&ads.xumo_streamId=99991113&ads.channelId=99991113&ads.channelName=EndemolshineDealNoDeal&ads.caid=EndemolshineDealNoDeal&ads.csid=xumo_android_EndemolshineDealNoDeal_ssai&ads.genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_content_genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=2041&ads.xumo_contentName=EndemolshineDealNoDeal&ads.xumo_providerId=2041&ads.xumo_providerName=EndemolshineDealNoDeal&ads.asnw=&ads.xumo_channelName=EndemolshineDealNoDeal&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "martha-stewart",
+   "viewing_page": "https://play.xumo.com/live-guide/the-martha-stewart-channel",
+   "source": "https://valencia-app-mds.xumo.com/v2/channels/channel/99951513/broadcast.json?hour=3",
+   "evidence": {
+    "official_channel_id": 99951513,
+    "source_field": "ssaiStreamUrls",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951513/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951513&ads.xumo_streamId=99951513&ads.channelId=99951513&ads.channelName=MarqueeBrandsMarthaStewart&ads.caid=MarqueeBrandsMarthaStewart&ads.csid=xumo_[PLATFORM]_MarqueeBrandsMarthaStewart_ssai&ads.genre=Lifestyle,Cooking,Food,Cuisine,Entertainment,IA,GV&ads._fw_content_genre=Lifestyle,Cooking,Food,Cuisine,Entertainment,IA,GV&ads._fw_coppa=0&ads.xumo_contentId=4380&ads.xumo_contentName=MarqueeBrandsMarthaStewart&ads.xumo_providerId=4380&ads.xumo_providerName=MarqueeBrandsMarthaStewart&ads.asnw=&ads.xumo_channelName=MarqueeBrandsMarthaStewart&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951513/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951513&ads.xumo_streamId=99951513&ads.channelId=99951513&ads.channelName=MarqueeBrandsMarthaStewart&ads.caid=MarqueeBrandsMarthaStewart&ads.csid=xumo_android_MarqueeBrandsMarthaStewart_ssai&ads.genre=Lifestyle%2CCooking%2CFood%2CCuisine%2CEntertainment%2CIA%2CGV&ads._fw_content_genre=Lifestyle%2CCooking%2CFood%2CCuisine%2CEntertainment%2CIA%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4380&ads.xumo_contentName=MarqueeBrandsMarthaStewart&ads.xumo_providerId=4380&ads.xumo_providerName=MarqueeBrandsMarthaStewart&ads.asnw=&ads.xumo_channelName=MarqueeBrandsMarthaStewart&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "test-kitchen",
+   "viewing_page": "https://play.xumo.com/live-guide/america-s-test-kitchen",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMTMLO6F5AXSJG.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99991369,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99991369/hls/8-9-878.m3u8?ads.xumo_channelId=99991369&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads.asnw=&ads.caid=AmericasTestKitchen&ads.csid=xumo_[PLATFORM]_AmericasTestKitchen_ssai&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_coppa=0&ads.genre=[CONTENT_IMDB_GENRE]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_genre=[content_genre]&ads._fw_content_rating=[content_rating]&ads.xumo_contentId=1066&ads.xumo_contentName=AmericasTestKitchen&ads.xumo_providerId=1066&ads.xumo_providerName=AmericasTestKitchen&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.channelId=99991369&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appName=xumo&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991369/hls/8-9-878.m3u8?ads.xumo_channelId=99991369&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=AmericasTestKitchen&ads.csid=xumo_android_AmericasTestKitchen_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads.xumo_contentId=1066&ads.xumo_contentName=AmericasTestKitchen&ads.xumo_providerId=1066&ads.xumo_providerName=AmericasTestKitchen&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991369&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitTV&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ]
+  },
+  {
+   "id": "family-affair",
+   "viewing_page": "https://play.xumo.com/live-guide/family-affair-channel",
+   "source": "https://valencia-app-mds.xumo.com/v2/channels/channel/99951146/broadcast.json?hour=3",
+   "evidence": {
+    "official_channel_id": 99951146,
+    "source_field": "ssaiStreamUrls",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951146/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951146&ads.xumo_streamId=99951146&ads.channelId=99951146&ads.channelName=MPIMediaFamilyAffair&ads.caid=MPIMediaFamilyAffair&ads.csid=xumo_[PLATFORM]_MPIMediaFamilyAffair_ssai&ads.genre=Entertainment,Drama,GD,GV&ads._fw_content_genre=Entertainment,Drama,GD,GV&ads._fw_coppa=0&ads.xumo_contentId=3769&ads.xumo_contentName=MPIMediaFamilyAffair&ads.xumo_providerId=3769&ads.xumo_providerName=MPIMediaFamilyAffair&ads.asnw=&ads.xumo_channelName=MPIMediaFamilyAffair&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951146/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951146&ads.xumo_streamId=99951146&ads.channelId=99951146&ads.channelName=MPIMediaFamilyAffair&ads.caid=MPIMediaFamilyAffair&ads.csid=xumo_android_MPIMediaFamilyAffair_ssai&ads.genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_coppa=0&ads.xumo_contentId=3769&ads.xumo_contentName=MPIMediaFamilyAffair&ads.xumo_providerId=3769&ads.xumo_providerName=MPIMediaFamilyAffair&ads.asnw=&ads.xumo_channelName=MPIMediaFamilyAffair&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "cheddar-news",
+   "viewing_page": "https://www.cheddar.com/",
+   "source": "https://www.cheddar.com/",
+   "evidence": {
+    "source_field": "PoWa player id \"cheddar-live\" stream (the page's own live player); confirmed by the player's requests in a headless browser",
+    "availability": "Cheddar's own public live player; no sign-in. Availability outside the US not established.",
+    "bias_review": "Media Bias/Fact Check: Left-Center, High factual (mediabiasfactcheck.com/cheddar). Business news; not News Corp/Fox."
+   },
+   "streams": [
+    "https://hls.livecdn.io/cheddar.com/cheddar/playlist.m3u8",
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991220/hls/playlist.m3u8?ads.xumo_channelId=99991220&ads.xumo_streamId=99991220&ads.channelId=99991220&ads.channelName=cheddar_us&ads.xumo_channelName=cheddar&ads.caid=Cheddar&ads.csid=xumo_android_cheddar_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=161&ads.xumo_contentName=Cheddar&ads.xumo_providerId=161&ads.xumo_providerName=Cheddar&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ],
+   "xumo_fallback": {
+    "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM4HMP5RYJN563.json?f=providers&f=connectorId",
+    "evidence": {
+     "official_channel_id": 99991220,
+     "source_field": "SIMULCAST providers.sources",
+     "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99991220/hls/playlist.m3u8?ads.xumo_channelId=99991220&ads.xumo_streamId=99991220&ads.channelId=99991220&ads.channelName=cheddar_us&ads.xumo_channelName=cheddar&ads.caid=Cheddar&ads.csid=xumo_[PLATFORM]_cheddar_ssai&ads.genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_content_genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_coppa=0&ads.xumo_contentId=161&ads.xumo_contentName=Cheddar&ads.xumo_providerId=161&ads.xumo_providerName=Cheddar&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=XumoPlay",
+     "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+     "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream.",
+     "bias_review": "Media Bias/Fact Check: Left-Center, High factual (mediabiasfactcheck.com/cheddar). Business news; not News Corp/Fox."
+    }
+   }
+  },
+  {
+   "id": "bbc-news",
+   "viewing_page": "https://play.xumo.com/live-guide/bbc-news",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM3RMQGOX1DWRV.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951298,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://d3pxo1qcgzxtxs.cloudfront.net/10005/99951298/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951298&ads.xumo_streamId=99951298&ads.channelId=99951298&ads.channelName=amcbbcnews_us&ads.csid=xumo_[PLATFORM]_AMCBBCNews_ssai&ads._fw_coppa=0&ads._fw_content_genre=News,N,DN,Local,LocalNews,News-Local&ads.xumo_contentId=4023&ads.xumo_contentName=AMCBBCNews&ads.xumo_providerId=4023&ads.xumo_providerName=AMCBBCNews&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_did=[IFA_TYPE]:[IFA]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceType=3-Connected_TV&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads._fw_ifa_type=[IFA_TYPE]",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream.",
+    "bias_review": "Media Bias/Fact Check: Left-Center, High factual. UK public broadcaster; impartiality required by its Charter and Ofcom."
+   },
+   "streams": [
+    "https://d3pxo1qcgzxtxs.cloudfront.net/10005/99951298/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951298&ads.xumo_streamId=99951298&ads.channelId=99951298&ads.channelName=amcbbcnews_us&ads.csid=xumo_android_AMCBBCNews_ssai&ads._fw_coppa=0&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads.xumo_contentId=4023&ads.xumo_contentName=AMCBBCNews&ads.xumo_providerId=4023&ads.xumo_providerName=AMCBBCNews&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_did=%3A00000000-0000-0000-0000-000000000000&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceType=3-Connected_TV&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_ifa_type="
+   ]
+  },
+  {
+   "id": "sky-news",
+   "viewing_page": "https://play.xumo.com/live-guide/sky-news",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMNZMQPIUZRGHJ.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951223,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951223/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951223&ads.xumo_streamId=99951223&ads.channelId=99951223&ads.channelName=SkyNews&ads.caid=SkyNews&ads.csid=xumo_[PLATFORM]_SkyNews_ssai&ads.genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_content_genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_coppa=0&ads.xumo_contentId=3455&ads.xumo_contentName=SkyNews&ads.xumo_providerId=3455&ads.xumo_providerName=SkyNews&ads.asnw=&ads.xumo_channelName=SkyNews&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream.",
+    "bias_review": "Media Bias/Fact Check: Least Biased, High factual; Ad Fontes: Middle, reliable (mediabiasfactcheck.com/sky-news). Owned by Comcast (Sky Group), not News Corp; Ofcom impartiality rules. Not Sky News Australia (News Corp, excluded)."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951223/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951223&ads.xumo_streamId=99951223&ads.channelId=99951223&ads.channelName=SkyNews&ads.caid=SkyNews&ads.csid=xumo_android_SkyNews_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=3455&ads.xumo_contentName=SkyNews&ads.xumo_providerId=3455&ads.xumo_providerName=SkyNews&ads.asnw=&ads.xumo_channelName=SkyNews&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "reuters",
+   "viewing_page": "https://play.xumo.com/live-guide/reuters-60",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMYYMQPI4RT11Z.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951197,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951197/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951197&ads.xumo_streamId=99951197&ads.channelId=99951197&ads.channelName=ReutersNow&ads.caid=ReutersNow&ads.csid=xumo_[PLATFORM]_ReutersNow_ssai&ads.genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_content_genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_coppa=0&ads.xumo_contentId=3850&ads.xumo_contentName=ReutersNow&ads.xumo_providerId=3850&ads.xumo_providerName=ReutersNow&ads.asnw=&ads.xumo_channelName=ReutersNow&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream.",
+    "bias_review": "Media Bias/Fact Check: Least Biased, Very High factual; Ad Fontes: Middle, reliable (mediabiasfactcheck.com/reuters)."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951197/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951197&ads.xumo_streamId=99951197&ads.channelId=99951197&ads.channelName=ReutersNow&ads.caid=ReutersNow&ads.csid=xumo_android_ReutersNow_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=3850&ads.xumo_contentName=ReutersNow&ads.xumo_providerId=3850&ads.xumo_providerName=ReutersNow&ads.asnw=&ads.xumo_channelName=ReutersNow&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "bloomberg-tv-plus",
+   "viewing_page": "https://play.xumo.com/live-guide/bloomberg-tv",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM13MQR3AEF8MH.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951533,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951533/hls/index.m3u8?includeAssetTags=true&ads.xumo_channelId=99951533&ads.xumo_streamId=99951533&ads.channelId=99951533&ads.channelName=Bloomberg&ads.caid=Bloomberg&ads.csid=xumo_[PLATFORM]_Bloomberg_ssai&ads.genre=News,N&ads._fw_content_genre=News,N&ads._fw_coppa=0&ads.xumo_contentId=39&ads.xumo_contentName=Bloomberg&ads.xumo_providerId=39&ads.xumo_providerName=Bloomberg&ads.asnw=&ads.xumo_channelName=Bloomberg&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream.",
+    "bias_review": "Media Bias/Fact Check: Left-Center; Ad Fontes: Middle (adfontesmedia.com/bloomberg-news-bias-and-reliability). Business news."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951533/hls/index.m3u8?includeAssetTags=true&ads.xumo_channelId=99951533&ads.xumo_streamId=99951533&ads.channelId=99951533&ads.channelName=Bloomberg&ads.caid=Bloomberg&ads.csid=xumo_android_Bloomberg_ssai&ads.genre=News%2CN&ads._fw_content_genre=News%2CN&ads._fw_coppa=0&ads.xumo_contentId=39&ads.xumo_contentName=Bloomberg&ads.xumo_providerId=39&ads.xumo_providerName=Bloomberg&ads.asnw=&ads.xumo_channelName=Bloomberg&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "top-gear",
+   "viewing_page": "https://play.xumo.com/live-guide/top-gear",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1TMQPJ7CVWLQ.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951249,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951249/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951249&ads.xumo_streamId=99951249&ads.channelId=99951249&ads.channelName=BBCTopGear&ads.caid=BBCTopGear&ads.csid=xumo_[PLATFORM]_BBCTopGear_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=3953&ads.xumo_contentName=BBCTopGear&ads.xumo_providerId=3953&ads.xumo_providerName=BBCTopGear&ads.asnw=&ads.xumo_channelName=BBCTopGear&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951249/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951249&ads.xumo_streamId=99951249&ads.channelId=99951249&ads.channelName=BBCTopGear&ads.caid=BBCTopGear&ads.csid=xumo_android_BBCTopGear_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=3953&ads.xumo_contentName=BBCTopGear&ads.xumo_providerId=3953&ads.xumo_providerName=BBCTopGear&ads.asnw=&ads.xumo_channelName=BBCTopGear&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "midsomer-murders",
+   "viewing_page": "https://play.xumo.com/live-guide/midsomer-murders",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMPHMT94DXB9FP.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99991698,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99991698/hls/playlist.m3u8?ads.xumo_channelId=99991698&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads.asnw=&ads.caid=MidsomerMurders&ads.csid=xumo_[PLATFORM]_MidsomerMurders_ssai&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_coppa=0&ads.genre=Documentary,Crime,DO,Entertainment,GV,SM&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_genre=Documentary,Crime,DO,Entertainment,GV,SM&ads._fw_content_rating=[content_rating]&ads.xumo_contentId=3509&ads.xumo_contentName=MidsomerMurders&ads.xumo_providerId=3509&ads.xumo_providerName=MidsomerMurders&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.channelId=99991698&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appName=xumo&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991698/hls/playlist.m3u8?ads.xumo_channelId=99991698&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=MidsomerMurders&ads.csid=xumo_android_MidsomerMurders_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_rating=&ads.xumo_contentId=3509&ads.xumo_contentName=MidsomerMurders&ads.xumo_providerId=3509&ads.xumo_providerName=MidsomerMurders&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991698&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitTV&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ]
+  },
+  {
+   "id": "classic-doctor-who",
+   "viewing_page": "https://play.xumo.com/live-guide/classic-doctor-who",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1SMQPJ7CURRV.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951248,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951248/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951248&ads.xumo_streamId=99951248&ads.channelId=99951248&ads.channelName=BBCClassicDoctorWho&ads.caid=BBCClassicDoctorWho&ads.csid=xumo_[PLATFORM]_BBCClassicDoctorWho_ssai&ads.genre=Entertainment,Drama,GV,GD&ads._fw_content_genre=Entertainment,Drama,GV,GD&ads._fw_coppa=0&ads.xumo_contentId=3952&ads.xumo_contentName=BBCClassicDoctorWho&ads.xumo_providerId=3952&ads.xumo_providerName=BBCClassicDoctorWho&ads.asnw=&ads.xumo_channelName=BBCClassicDoctorWho&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951248/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951248&ads.xumo_streamId=99951248&ads.channelId=99951248&ads.channelName=BBCClassicDoctorWho&ads.caid=BBCClassicDoctorWho&ads.csid=xumo_android_BBCClassicDoctorWho_ssai&ads.genre=Entertainment%2CDrama%2CGV%2CGD&ads._fw_content_genre=Entertainment%2CDrama%2CGV%2CGD&ads._fw_coppa=0&ads.xumo_contentId=3952&ads.xumo_contentName=BBCClassicDoctorWho&ads.xumo_providerId=3952&ads.xumo_providerName=BBCClassicDoctorWho&ads.asnw=&ads.xumo_channelName=BBCClassicDoctorWho&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "bbc-drama",
+   "viewing_page": "https://play.xumo.com/live-guide/bbc-drama",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMIKMV8D9AS3ZL.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951605,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951605/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951605&ads.xumo_streamId=99951605&ads.channelId=99951605&ads.channelName=BBCDramaNew&ads.caid=BBCDramaNew&ads.csid=xumo_[PLATFORM]_BBCDramaNew_ssai&ads.genre=Entertainment,Drama,GD&ads._fw_content_genre=Entertainment,Drama,GD&ads._fw_coppa=0&ads.xumo_contentId=4556&ads.xumo_contentName=BBCDramaNew&ads.xumo_providerId=4556&ads.xumo_providerName=BBCDramaNew&ads.asnw=&ads.xumo_channelName=BBCDramaNew&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951605/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951605&ads.xumo_streamId=99951605&ads.channelId=99951605&ads.channelName=BBCDramaNew&ads.caid=BBCDramaNew&ads.csid=xumo_android_BBCDramaNew_ssai&ads.genre=Entertainment%2CDrama%2CGD&ads._fw_content_genre=Entertainment%2CDrama%2CGD&ads._fw_coppa=0&ads.xumo_contentId=4556&ads.xumo_contentName=BBCDramaNew&ads.xumo_providerId=4556&ads.xumo_providerName=BBCDramaNew&ads.asnw=&ads.xumo_channelName=BBCDramaNew&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "graham-norton",
+   "viewing_page": "https://play.xumo.com/live-guide/the-graham-norton-show",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMANMQQWUWOT8S.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951450,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951450/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951450&ads.xumo_streamId=99951450&ads.channelId=99951450&ads.channelName=ITVTheGrahamNortonShow&ads.caid=ITVTheGrahamNortonShow&ads.csid=xumo_[PLATFORM]_ITVTheGrahamNortonShow_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4271&ads.xumo_contentName=ITVTheGrahamNortonShow&ads.xumo_providerId=4271&ads.xumo_providerName=ITVTheGrahamNortonShow&ads.asnw=&ads.xumo_channelName=ITVTheGrahamNortonShow&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951450/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951450&ads.xumo_streamId=99951450&ads.channelId=99951450&ads.channelName=ITVTheGrahamNortonShow&ads.caid=ITVTheGrahamNortonShow&ads.csid=xumo_android_ITVTheGrahamNortonShow_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4271&ads.xumo_contentName=ITVTheGrahamNortonShow&ads.xumo_providerId=4271&ads.xumo_providerName=ITVTheGrahamNortonShow&ads.asnw=&ads.xumo_channelName=ITVTheGrahamNortonShow&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "repair-shop",
+   "viewing_page": "https://play.xumo.com/live-guide/the-repair-shop",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMIEMUXWDWUJY9.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951604,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951604/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951604&ads.xumo_streamId=99951604&ads.channelId=99951604&ads.channelName=WBDTheRepairShop&ads.caid=WBDTheRepairShop&ads.csid=xumo_[PLATFORM]_WBDTheRepairShop_ssai&ads.genre=Entertainment,GV&ads._fw_content_genre=Entertainment,GV&ads._fw_coppa=0&ads.xumo_contentId=4550&ads.xumo_contentName=WBDTheRepairShop&ads.xumo_providerId=4550&ads.xumo_providerName=WBDTheRepairShop&ads.asnw=&ads.xumo_channelName=WBDTheRepairShop&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951604/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951604&ads.xumo_streamId=99951604&ads.channelId=99951604&ads.channelName=WBDTheRepairShop&ads.caid=WBDTheRepairShop&ads.csid=xumo_android_WBDTheRepairShop_ssai&ads.genre=Entertainment%2CGV&ads._fw_content_genre=Entertainment%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4550&ads.xumo_contentName=WBDTheRepairShop&ads.xumo_providerId=4550&ads.xumo_providerName=WBDTheRepairShop&ads.asnw=&ads.xumo_channelName=WBDTheRepairShop&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "come-dine-with-me",
+   "viewing_page": "https://play.xumo.com/live-guide/come-dine-with-me",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMAOMQQWUWU3GE.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951451,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951451/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951451&ads.xumo_streamId=99951451&ads.channelId=99951451&ads.channelName=ITVComeDineWithMe&ads.caid=ITVComeDineWithMe&ads.csid=xumo_[PLATFORM]_ITVComeDineWithMe_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4272&ads.xumo_contentName=ITVComeDineWithMe&ads.xumo_providerId=4272&ads.xumo_providerName=ITVComeDineWithMe&ads.asnw=&ads.xumo_channelName=ITVComeDineWithMe&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951451/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951451&ads.xumo_streamId=99951451&ads.channelId=99951451&ads.channelName=ITVComeDineWithMe&ads.caid=ITVComeDineWithMe&ads.csid=xumo_android_ITVComeDineWithMe_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4272&ads.xumo_contentName=ITVComeDineWithMe&ads.xumo_providerId=4272&ads.xumo_providerName=ITVComeDineWithMe&ads.asnw=&ads.xumo_channelName=ITVComeDineWithMe&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "bbc-earth",
+   "viewing_page": "https://play.xumo.com/live-guide/bbc-earth",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM0XMQPJ7CQ2FJ.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951231,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951231/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951231&ads.xumo_streamId=99951231&ads.channelId=99951231&ads.channelName=BBCEarth&ads.caid=BBCEarth&ads.csid=xumo_[PLATFORM]_BBCEarth_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=3921&ads.xumo_contentName=BBCEarth&ads.xumo_providerId=3921&ads.xumo_providerName=BBCEarth&ads.asnw=&ads.xumo_channelName=BBCEarth&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951231/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951231&ads.xumo_streamId=99951231&ads.channelId=99951231&ads.channelName=BBCEarth&ads.caid=BBCEarth&ads.csid=xumo_android_BBCEarth_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=3921&ads.xumo_contentName=BBCEarth&ads.xumo_providerId=3921&ads.xumo_providerName=BBCEarth&ads.asnw=&ads.xumo_channelName=BBCEarth&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "jamie-oliver",
+   "viewing_page": "https://play.xumo.com/live-guide/the-jamie-oliver-channel",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMXVMNZ11B6TUG.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951153,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951153/hls/playlist.m3u8?ads.xumo_channelId=99951153&ads.xumo_streamId=99951153&ads.channelId=99951153&ads.channelName=freemantlejamieoliver_us&ads.xumo_channelName=freemantlejamieoliver&ads.caid=FreemantleJamieOliver&ads.csid=xumo_[PLATFORM]_FreemantleJamieOliver_ssai&ads.genre=IAB8,IAB5,Entertainment,IA,Family&ads._fw_content_genre=IAB8,IAB5,Entertainment,IA,Family&ads._fw_coppa=0&ads.xumo_contentId=3811&ads.xumo_contentName=FreemantleJamieOliver&ads.xumo_providerId=3811&ads.xumo_providerName=FreemantleJamieOliver&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=XumoPlay",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951153/hls/playlist.m3u8?ads.xumo_channelId=99951153&ads.xumo_streamId=99951153&ads.channelId=99951153&ads.channelName=freemantlejamieoliver_us&ads.xumo_channelName=freemantlejamieoliver&ads.caid=FreemantleJamieOliver&ads.csid=xumo_android_FreemantleJamieOliver_ssai&ads.genre=IAB8%2CIAB5%2CEntertainment%2CIA%2CFamily&ads._fw_content_genre=IAB8%2CIAB5%2CEntertainment%2CIA%2CFamily&ads._fw_coppa=0&ads.xumo_contentId=3811&ads.xumo_contentName=FreemantleJamieOliver&ads.xumo_providerId=3811&ads.xumo_providerName=FreemantleJamieOliver&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "mayday",
+   "viewing_page": "https://play.xumo.com/live-guide/mayday-air-disaster",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1ZMQPJK7T3RO.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951262,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951262/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951262&ads.xumo_streamId=99951262&ads.channelId=99951262&ads.channelName=CineflixRealDisasterChannel&ads.caid=CineflixRealDisasterChannel&ads.csid=xumo_[PLATFORM]_CineflixRealDisasterChannel_ssai&ads.genre=Reality&ads._fw_content_genre=Reality&ads._fw_coppa=0&ads.xumo_contentId=3959&ads.xumo_contentName=CineflixRealDisasterChannel&ads.xumo_providerId=3959&ads.xumo_providerName=CineflixRealDisasterChannel&ads.asnw=&ads.xumo_channelName=CineflixRealDisasterChannel&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951262/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951262&ads.xumo_streamId=99951262&ads.channelId=99951262&ads.channelName=CineflixRealDisasterChannel&ads.caid=CineflixRealDisasterChannel&ads.csid=xumo_android_CineflixRealDisasterChannel_ssai&ads.genre=Reality&ads._fw_content_genre=Reality&ads._fw_coppa=0&ads.xumo_contentId=3959&ads.xumo_contentName=CineflixRealDisasterChannel&ads.xumo_providerId=3959&ads.xumo_providerName=CineflixRealDisasterChannel&ads.asnw=&ads.xumo_channelName=CineflixRealDisasterChannel&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "property-brothers",
+   "viewing_page": "https://play.xumo.com/live-guide/property-brothers",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM5LMQR3ADZSTP.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951537,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951537/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951537&ads.xumo_streamId=99951537&ads.channelId=99951537&ads.channelName=CineflixPropertyBrothers&ads.caid=CineflixPropertyBrothers&ads.csid=xumo_[PLATFORM]_CineflixPropertyBrothers_ssai&ads.genre=IAB10,IA,IAB21&ads._fw_content_genre=IAB10,IA,IAB21&ads._fw_coppa=0&ads.xumo_contentId=4089&ads.xumo_contentName=CineflixPropertyBrothers&ads.xumo_providerId=4089&ads.xumo_providerName=CineflixPropertyBrothers&ads.asnw=&ads.xumo_channelName=CineflixPropertyBrothers&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951537/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951537&ads.xumo_streamId=99951537&ads.channelId=99951537&ads.channelName=CineflixPropertyBrothers&ads.caid=CineflixPropertyBrothers&ads.csid=xumo_android_CineflixPropertyBrothers_ssai&ads.genre=IAB10%2CIA%2CIAB21&ads._fw_content_genre=IAB10%2CIA%2CIAB21&ads._fw_coppa=0&ads.xumo_contentId=4089&ads.xumo_contentName=CineflixPropertyBrothers&ads.xumo_providerId=4089&ads.xumo_providerName=CineflixPropertyBrothers&ads.asnw=&ads.xumo_channelName=CineflixPropertyBrothers&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "mythbusters",
+   "viewing_page": "https://play.xumo.com/live-guide/mythbusters",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM8SMQQUCW8IVN.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951396,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951396/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951396&ads.xumo_streamId=99951396&ads.channelId=99951396&ads.channelName=WBDMythbusters&ads.caid=WBDMythbusters&ads.csid=xumo_[PLATFORM]_WBDMythbusters_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4204&ads.xumo_contentName=WBDMythbusters&ads.xumo_providerId=4204&ads.xumo_providerName=WBDMythbusters&ads.asnw=&ads.xumo_channelName=WBDMythbusters&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951396/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951396&ads.xumo_streamId=99951396&ads.channelId=99951396&ads.channelName=WBDMythbusters&ads.caid=WBDMythbusters&ads.csid=xumo_android_WBDMythbusters_ssai&ads.genre=Entertainment&ads._fw_content_genre=Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4204&ads.xumo_contentName=WBDMythbusters&ads.xumo_providerId=4204&ads.xumo_providerName=WBDMythbusters&ads.asnw=&ads.xumo_channelName=WBDMythbusters&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "cbc-news",
+   "viewing_page": "https://play.xumo.com/live-guide/cbc-news",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM5RMKGZXENTH5.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99991276,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99991276/hls/master.m3u8?ads.xumo_channelId=99991276&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads.asnw=&ads.caid=CBCNewsEnglish&ads.csid=xumo_[PLATFORM]_CBCNewsEnglish_ssai&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_coppa=0&ads.genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_content_rating=[content_rating]&ads.xumo_contentId=207&ads.xumo_contentName=CBCNewsEnglish&ads.xumo_providerId=207&ads.xumo_providerName=CBCNewsEnglish&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.channelId=99991276&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appName=xumo&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream.",
+    "bias_review": "Media Bias/Fact Check: Left-Center, High factual; Ad Fontes: Middle, reliable (mediabiasfactcheck.com/cbc-news). Canada's public broadcaster."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991276/hls/master.m3u8?ads.xumo_channelId=99991276&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=CBCNewsEnglish&ads.csid=xumo_android_CBCNewsEnglish_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_rating=&ads.xumo_contentId=207&ads.xumo_contentName=CBCNewsEnglish&ads.xumo_providerId=207&ads.xumo_providerName=CBCNewsEnglish&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991276&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitTV&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ]
+  },
+  {
+   "id": "heartland",
+   "viewing_page": "https://play.xumo.com/live-guide/heartland",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMCPMQQZPVGV5C.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951494,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951494/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951494&ads.xumo_streamId=99951494&ads.channelId=99951494&ads.channelName=LionsgateHeartland&ads.caid=LionsgateHeartland&ads.csid=xumo_[PLATFORM]_LionsgateHeartland_ssai&ads.genre=Action,Drama,GD,GV,Entertainment&ads._fw_content_genre=Action,Drama,GD,GV,Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4345&ads.xumo_contentName=LionsgateHeartland&ads.xumo_providerId=4345&ads.xumo_providerName=LionsgateHeartland&ads.asnw=&ads.xumo_channelName=LionsgateHeartland&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951494/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951494&ads.xumo_streamId=99951494&ads.channelId=99951494&ads.channelName=LionsgateHeartland&ads.caid=LionsgateHeartland&ads.csid=xumo_android_LionsgateHeartland_ssai&ads.genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_content_genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=4345&ads.xumo_contentName=LionsgateHeartland&ads.xumo_providerId=4345&ads.xumo_providerName=LionsgateHeartland&ads.asnw=&ads.xumo_channelName=LionsgateHeartland&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "murdoch-mysteries",
+   "viewing_page": "https://play.xumo.com/live-guide/murdoch-mysteries",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMAPMQQWUX0VT1.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951452,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951452/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951452&ads.xumo_streamId=99951452&ads.channelId=99951452&ads.channelName=ITVMurdochMysteries&ads.caid=ITVMurdochMysteries&ads.csid=xumo_[PLATFORM]_ITVMurdochMysteries_ssai&ads.genre=Action,Drama,GD,GV,Entertainment&ads._fw_content_genre=Action,Drama,GD,GV,Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4273&ads.xumo_contentName=ITVMurdochMysteries&ads.xumo_providerId=4273&ads.xumo_providerName=ITVMurdochMysteries&ads.asnw=&ads.xumo_channelName=ITVMurdochMysteries&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951452/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951452&ads.xumo_streamId=99951452&ads.channelId=99951452&ads.channelName=ITVMurdochMysteries&ads.caid=ITVMurdochMysteries&ads.csid=xumo_android_ITVMurdochMysteries_ssai&ads.genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_content_genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=4273&ads.xumo_contentName=ITVMurdochMysteries&ads.xumo_providerId=4273&ads.xumo_providerName=ITVMurdochMysteries&ads.asnw=&ads.xumo_channelName=ITVMurdochMysteries&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "dw-news",
+   "viewing_page": "https://www.dw.com/en/live-tv/channel-english",
+   "source": "https://www.dw.com/en/live-tv/channel-english",
+   "evidence": {
+    "source_field": "livestreamChannels[name=DW English].hlsVideoSrc (and the page's own <video> source)",
+    "availability": "DW streams DW English worldwide on its own site.",
+    "bias_review": "Media Bias/Fact Check: Left-Center, High factual (mediabiasfactcheck.com/dw-news). Germany's international public broadcaster."
+   },
+   "streams": [
+    "https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8"
+   ]
+  },
+  {
+   "id": "great-british-baking",
+   "viewing_page": "https://play.xumo.com/live-guide/the-great-british-baking-channel",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMIPMUOP8MF349.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951607,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://d38d8jwr5u7ckx.cloudfront.net/v1/master/2235ea0b65a152869ea53a8429808cfe476767a6/test-xumo-linear-main-hlsv3-ams/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951607&ads.xumo_streamId=99951607&ads.channelId=99951607&ads.asnw=&ads.caid=BBCTheGreatBritishBakingChannel&ads.csid=xumo_[PLATFORM]_BBCTheGreatBritishBakingChannel_ssai&ads._fw_coppa=0&ads.xumo_contentId=4561&ads.xumo_contentName=BBCTheGreatBritishBakingChannel&ads.xumo_providerId=4561&ads.xumo_providerName=BBCTheGreatBritishBakingChannel&ads.channelName=BBCTheGreatBritishBakingChannel&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads.genre=[CONTENT_IMDB_GENRE]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_genre=[content_genre]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://d38d8jwr5u7ckx.cloudfront.net/v1/master/2235ea0b65a152869ea53a8429808cfe476767a6/test-xumo-linear-main-hlsv3-ams/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951607&ads.xumo_streamId=99951607&ads.channelId=99951607&ads.asnw=&ads.caid=BBCTheGreatBritishBakingChannel&ads.csid=xumo_android_BBCTheGreatBritishBakingChannel_ssai&ads._fw_coppa=0&ads.xumo_contentId=4561&ads.xumo_contentName=BBCTheGreatBritishBakingChannel&ads.xumo_providerId=4561&ads.xumo_providerName=BBCTheGreatBritishBakingChannel&ads.channelName=BBCTheGreatBritishBakingChannel&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "love-nature",
+   "viewing_page": "https://play.xumo.com/live-guide/love-nature",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMFGLULLWV9I5R.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99991398,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99991398/hls/playlist.m3u8?ads.xumo_channelId=99991398&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads.asnw=&ads.caid=LoveNature&ads.csid=xumo_[PLATFORM]_LoveNature_ssai&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_coppa=0&ads.genre=[CONTENT_IMDB_GENRE]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_genre=[content_genre]&ads._fw_content_rating=[content_rating]&ads.xumo_contentId=1852&ads.xumo_contentName=LoveNature&ads.xumo_providerId=1852&ads.xumo_providerName=LoveNature&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.channelId=99991398&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appName=xumo&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991398/hls/playlist.m3u8?ads.xumo_channelId=99991398&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=LoveNature&ads.csid=xumo_android_LoveNature_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads.xumo_contentId=1852&ads.xumo_contentName=LoveNature&ads.xumo_providerId=1852&ads.xumo_providerName=LoveNature&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991398&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitTV&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ]
+  },
+  {
+   "id": "gusto-tv",
+   "viewing_page": "https://play.xumo.com/live-guide/gustotv",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM7KLULLWV7AYC.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99991328,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99991328/hls/playlist.m3u8?ads.xumo_channelId=99991328&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads.asnw=&ads.caid=GustoTV&ads.csid=xumo_[PLATFORM]_GustoTV_ssai&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_coppa=0&ads.genre=[CONTENT_IMDB_GENRE]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_genre=[content_genre]&ads._fw_content_rating=[content_rating]&ads.xumo_contentId=272&ads.xumo_contentName=GustoTV&ads.xumo_providerId=272&ads.xumo_providerName=GustoTV&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.channelId=99991328&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appName=xumo&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99991328/hls/playlist.m3u8?ads.xumo_channelId=99991328&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=GustoTV&ads.csid=xumo_android_GustoTV_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads.xumo_contentId=272&ads.xumo_contentName=GustoTV&ads.xumo_providerId=272&ads.xumo_providerName=GustoTV&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991328&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitTV&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url="
+   ]
+  },
+  {
+   "id": "family-feud-classic",
+   "viewing_page": "https://play.xumo.com/live-guide/family-feud-classic",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM5DMQPKZNXS6E.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951339,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951339/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951339&ads.xumo_streamId=99951339&ads.channelId=99951339&ads.channelName=FreemantleFamilyFeudClassic&ads.caid=FreemantleFamilyFeudClassic&ads.csid=xumo_[PLATFORM]_FreemantleFamilyFeudClassic_ssai&ads.genre=GameShow,Game,Quiz,QG,QP,Entertainment&ads._fw_content_genre=GameShow,Game,Quiz,QG,QP,Entertainment&ads._fw_coppa=0&ads.xumo_contentId=4081&ads.xumo_contentName=FreemantleFamilyFeudClassic&ads.xumo_providerId=4081&ads.xumo_providerName=FreemantleFamilyFeudClassic&ads.asnw=&ads.xumo_channelName=FreemantleFamilyFeudClassic&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951339/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951339&ads.xumo_streamId=99951339&ads.channelId=99951339&ads.channelName=FreemantleFamilyFeudClassic&ads.caid=FreemantleFamilyFeudClassic&ads.csid=xumo_android_FreemantleFamilyFeudClassic_ssai&ads.genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_content_genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=4081&ads.xumo_contentName=FreemantleFamilyFeudClassic&ads.xumo_providerId=4081&ads.xumo_providerName=FreemantleFamilyFeudClassic&ads.asnw=&ads.xumo_channelName=FreemantleFamilyFeudClassic&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "pbs-nature",
+   "viewing_page": "https://play.xumo.com/live-guide/pbs-nature",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XMYXMFY05OZX85.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951195,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://d2irko5f9gt1c5.cloudfront.net/10008/99951195/hls/playlist.m3u8?ads.xumo_channelId=99951195&ads.csid=xumo_[PLATFORM]_PBSNature_ssai&ads._fw_app_bundle=[app_bundle]&ads.ifa_type=[IFA_TYPE]&ads.did=[IFA]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_coppa=0&ads._fw_app_store_url=[app_store_url]&ads._fw_content_category=[IAB_content_category]&ads.xumo_contentName=PBSNature&ads.xumo_providerName=[PROVIDER_NAME]&ads._fw_content_language=[content_language]&ads.assetId=[ASSET_ID]&ads._fw_content_genre=[content_genre]&ads.xumo_providerId=[PROVIDER_ID]&ads._fw_content_rating=[content_rating]&ads.channelId=99951195&ads.xumo_platform=[PLATFORM]&ads.site_id=22453",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://d2irko5f9gt1c5.cloudfront.net/10008/99951195/hls/playlist.m3u8?ads.xumo_channelId=99951195&ads.csid=xumo_android_PBSNature_ssai&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads.ifa_type=&ads.did=00000000-0000-0000-0000-000000000000&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads._fw_app_store_url=&ads._fw_content_category=&ads.xumo_contentName=PBSNature&ads.xumo_providerName=&ads._fw_content_language=en&ads.assetId=&ads._fw_content_genre=&ads.xumo_providerId=&ads._fw_content_rating=&ads.channelId=99951195&ads.xumo_platform=android&ads.site_id=22453"
+   ]
+  },
+  {
+   "id": "little-house",
+   "viewing_page": "https://play.xumo.com/live-guide/little-house-on-the-prairie",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1EMRMC6S5HYK.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951240,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://d4whmvwm0rdvi.cloudfront.net/10007/99951240/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951240&ads.xumo_streamId=99951240&ads.channelId=99951240&ads.asnw=169843&ads.afid=380744511&ads.sfid=19208008&ads.csid=xumo_[PLATFORM]_NBCULittleHousePrairie_ssai_cro&ads._fw_coppa=0&ads.xumo_contentId=3938&ads.xumo_contentName=NBCULittleHousePrairie&ads.xumo_providerId=3938&ads.xumo_providerName=NBCULittleHousePrairie&ads.caid=&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_did=[IFA]&ads._fw_vcid2=512116:[IFA]&ads._fw_app_bundle=[APP_BUNDLE]&ads._fw_app_store_url=[APP_STORE_URL]&ads._fw_deviceMake=[DEVICE_MAKE]&ads._fw_device_model=[DEVICE_MODEL]&ads._fw_deviceType=3-Connected_TV&ads.appVersion=[APP_VERSION]&ads._fw_ifa_type=[IFA_TYPE]&ads.appName=xumo&ads._fw_content_category=[IAB_content_category]&ads._fw_content_genre=[content_genre]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://d4whmvwm0rdvi.cloudfront.net/10007/99951240/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951240&ads.xumo_streamId=99951240&ads.channelId=99951240&ads.asnw=169843&ads.afid=380744511&ads.sfid=19208008&ads.csid=xumo_android_NBCULittleHousePrairie_ssai_cro&ads._fw_coppa=0&ads.xumo_contentId=3938&ads.xumo_contentName=NBCULittleHousePrairie&ads.xumo_providerId=3938&ads.xumo_providerName=NBCULittleHousePrairie&ads.caid=&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_did=00000000-0000-0000-0000-000000000000&ads._fw_vcid2=512116%3A00000000-0000-0000-0000-000000000000&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0-beta-5&ads._fw_ifa_type=&ads.appName=GrapefruitTV&ads._fw_content_category=&ads._fw_content_genre=&ads._fw_content_language=en&ads._fw_content_rating="
+   ]
+  },
+  {
+   "id": "lassie",
+   "viewing_page": "https://play.xumo.com/live-guide/lassie",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM1MMQGSHMF03C.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951259,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://d4whmvwm0rdvi.cloudfront.net/10007/99951259/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951259&ads.xumo_streamId=99951259&ads.channelId=99951259&ads.asnw=169843&ads.afid=380744363&ads.sfid=19316505&ads.csid=xumo_[PLATFORM]_NBCULassie_ssai_cro&ads._fw_coppa=0&ads._fw_content_category=&ads._fw_content_genre=Entertainment,Drama,GD,GV&ads._fw_content_language=&ads._fw_content_rating=&ads.xumo_contentId=3946&ads.xumo_contentName=NBCULassie&ads.xumo_providerId=3946&ads.xumo_providerName=NBCULassie&ads.caid=&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_did=[IFA]&ads._fw_vcid2=512116:[IFA]&ads._fw_app_bundle=[APP_BUNDLE]&ads._fw_app_store_url=[APP_STOREURL]&ads._fw_deviceMake=[DEVICE_MAKE]&ads._fw_device_model=[DEVICE_MODEL]&ads._fw_deviceType=3-Connected_TV&ads.appVersion=[APP_VERSION]&ads._fw_ifa_type=[IFA_TYPE]&ads.appName=xumo&ads._fw_content_category=[IAB_content_category]&ads._fw_content_genre=[content_genre]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream."
+   },
+   "streams": [
+    "https://d4whmvwm0rdvi.cloudfront.net/10007/99951259/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951259&ads.xumo_streamId=99951259&ads.channelId=99951259&ads.asnw=169843&ads.afid=380744363&ads.sfid=19316505&ads.csid=xumo_android_NBCULassie_ssai_cro&ads._fw_coppa=0&ads._fw_content_category=&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_language=&ads._fw_content_rating=&ads.xumo_contentId=3946&ads.xumo_contentName=NBCULassie&ads.xumo_providerId=3946&ads.xumo_providerName=NBCULassie&ads.caid=&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_did=00000000-0000-0000-0000-000000000000&ads._fw_vcid2=512116%3A00000000-0000-0000-0000-000000000000&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0-beta-5&ads._fw_ifa_type=&ads.appName=GrapefruitTV&ads._fw_content_category=&ads._fw_content_genre=&ads._fw_content_language=en&ads._fw_content_rating="
+   ]
+  },
+  {
+   "id": "abc-news-australia",
+   "viewing_page": "https://www.abc.net.au/news/newschannel",
+   "source": "https://www.abc.net.au/news/newschannel",
+   "evidence": {
+    "source_field": "module channel-newschannel-live: video.config.sources[0].file (streamType live)",
+    "availability": "Public live player on the ABC News site; no sign-in. Probed from outside Australia.",
+    "bias_review": "Media Bias/Fact Check: Left-Center, High factual (mediabiasfactcheck.com/abc-news-australia). Australia's public broadcaster (not News Corp; Sky News Australia excluded)."
+   },
+   "streams": [
+    "https://abc-news-dmd-streams-1.akamaized.net/out/v1/abc83881886746b0802dc3e7ca2bc792/index.m3u8"
+   ]
+  },
+  {
+   "id": "cnn-headlines",
+   "viewing_page": "https://play.xumo.com/live-guide/cnn-headlines",
+   "source": "https://valencia-app-mds.xumo.com/v2/assets/asset/XM8HMQQTN649DS.json?f=providers&f=connectorId",
+   "evidence": {
+    "official_channel_id": 99951386,
+    "source_field": "SIMULCAST providers.sources",
+    "template": "https://dbrb49pjoymg4.cloudfront.net/10001/99951386/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951386&ads.xumo_streamId=99951386&ads.channelId=99951386&ads.channelName=WBDCNNHeadlines&ads.caid=WBDCNNHeadlines&ads.csid=xumo_[PLATFORM]_WBDCNNHeadlines_ssai&ads.genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_content_genre=News,N,DN,Local,LocalNews,News-Local&ads._fw_coppa=0&ads.xumo_contentId=4193&ads.xumo_contentName=WBDCNNHeadlines&ads.xumo_providerId=4193&ads.xumo_providerName=WBDCNNHeadlines&ads.asnw=&ads.xumo_channelName=WBDCNNHeadlines&ads._fw_h_x_country=US&ads._fw_ifa_type=[IFA_TYPE]&ads._fw_did=[IFA]&ads.amznappId=[AMZN_APP_ID]&ads.lat=[LAT]&ads.lon=[LON]&ads.os=[OS]&ads.osv=[OS_VERSION]&ads._fw_is_lat=[IS_LAT]&ads._fw_us_privacy=[CCPA_Value]&ads._fw_content_category=[IAB_content_category]&ads._fw_content_language=[content_language]&ads._fw_content_rating=[content_rating]&ads._fw_deviceMake=[device_make]&ads._fw_device_model=[device_model]&ads.xumo_platform=[PLATFORM]&ads.site_id=[publica_site_id]&ads.appVersion=[APP_VERSION]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads.appName=xumo",
+    "advertising_macros": "Android/app identity; limit-ad-tracking=1; zero advertising ID; unknown device make/model; no coordinates or other optional targeting. All provider query keys and SSAI tags retained. No country parameter added or altered.",
+    "availability": "Xumo Play is a US service; outside the US the provider may refuse the stream.",
+    "bias_review": "Media Bias/Fact Check: Left (mediabiasfactcheck.com/cnn); Ad Fontes Media: Skews Left."
+   },
+   "streams": [
+    "https://dbrb49pjoymg4.cloudfront.net/10001/99951386/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951386&ads.xumo_streamId=99951386&ads.channelId=99951386&ads.channelName=WBDCNNHeadlines&ads.caid=WBDCNNHeadlines&ads.csid=xumo_android_WBDCNNHeadlines_ssai&ads.genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_coppa=0&ads.xumo_contentId=4193&ads.xumo_contentName=WBDCNNHeadlines&ads.xumo_providerId=4193&ads.xumo_providerName=WBDCNNHeadlines&ads.asnw=&ads.xumo_channelName=WBDCNNHeadlines&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-5&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitTV"
+   ]
+  },
+  {
+   "id": "cpac",
+   "viewing_page": "https://www.cpac.ca/",
+   "source": "https://www.cpac.ca/",
+   "evidence": {
+    "source_field": "Live player's HLS master on CPAC's home page, recorded from the player's own requests in a headless browser (November 3, 2026)",
+    "availability": "CPAC's public live player; no sign-in. Probed from the US.",
+    "note": "Non-partisan public-affairs broadcaster (Parliament of Canada coverage)."
+   },
+   "streams": [
+    "https://cpac-ca-live.cdn.vustreams.com/groupa/live/f9809cea-1e07-47cd-a94d-2ddd3e1351db/live.isml/.m3u8"
+   ]
+  }
+ ],
+ "retired_candidates": [
+  {
+   "id": "21-jump-street",
+   "replacement": "carol-burnett",
+   "reason": "CDN media reachable, but no direct first-party endpoint provenance obtained. Replaced with an official clear HLS/SSAI source from current Xumo metadata."
+  },
+  {
+   "id": "bob-ross",
+   "replacement": "martha-stewart",
+   "reason": "CDN media reachable, but no direct first-party endpoint provenance obtained. Replaced with an official clear HLS/SSAI source from current Xumo metadata."
+  },
+  {
+   "id": "filmrise-westerns",
+   "replacement": "family-affair",
+   "reason": "CDN media reachable, but no direct first-party endpoint provenance obtained. Replaced with an official clear HLS/SSAI source from current Xumo metadata."
+  }
+ ],
+ "excluded_after_source_review": [
+  {
+   "id": "cinevault-westerns",
+   "reason": "Current official Xumo HLS metadata declares FairPlay DRM; excluded without attempting to bypass it."
+  },
+  {
+   "id": "newsmax2",
+   "reason": "Right-wing news (Media Bias/Fact Check: Right). Excluded by policy."
+  },
+  {
+   "id": "oan-plus",
+   "reason": "Right-wing news (One America News). Excluded by policy."
+  },
+  {
+   "id": "salem-news-channel",
+   "reason": "Right-wing talk/news. Excluded by policy."
+  },
+  {
+   "id": "livenow-from-fox",
+   "reason": "Fox Corporation (Murdoch). Excluded by policy alongside News Corp."
+  },
+  {
+   "id": "fox-weather",
+   "reason": "Fox Corporation (Murdoch). Excluded by policy alongside News Corp."
+  },
+  {
+   "id": "sky-news-australia",
+   "reason": "News Corp owned. Excluded by policy."
+  },
+  {
+   "id": "talktv",
+   "reason": "News Corp owned; Piers Morgan. Excluded by policy."
+  },
+  {
+   "id": "gb-news",
+   "reason": "Right-wing news. Excluded by policy."
+  },
+  {
+   "id": "tyt",
+   "reason": "Partisan (left) commentary rather than non-partisan news. Excluded by policy."
+  },
+  {
+   "id": "france-24-english",
+   "reason": "Official site plays France 24 English through YouTube only; no first-party HLS for a non-WebView app. Not added."
+  },
+  {
+   "id": "euronews-english",
+   "reason": "Euronews states its English stream is unavailable in the USA; not globally available, and no first-party HLS was obtained. Not added."
+  },
+  {
+   "id": "cbc-news-local",
+   "reason": "CBC Gem offers its local CBC News channels to signed-in members only. Grapefruit requires no account and does not get around sign-in, so they are not added."
+  },
+  {
+   "id": "antiques-roadshow-uk",
+   "reason": "Current official Xumo metadata marks the channel DRM; excluded without attempting to bypass it."
+  }
+ ],
+ "first_party_attempts_beta_6": [
+  {
+   "channel": "cheddar-news",
+   "page": "https://www.cheddar.com/",
+   "result": "Added: Cheddar's own live player stream (hls.livecdn.io), Xumo kept as fallback."
+  },
+  {
+   "channel": "sky-news",
+   "page": "https://news.sky.com/watch-live",
+   "result": "HTTP 403 Access Denied to an automated browser. Not worked around; Xumo source kept."
+  },
+  {
+   "channel": "bloomberg-tv-plus",
+   "page": "https://www.bloomberg.com/live/us",
+   "result": "Bot check (\"Are you a robot?\"). Not worked around; Xumo source kept."
+  },
+  {
+   "channel": "euronews-english",
+   "page": "https://www.euronews.com/live",
+   "result": "The page's own live data request answers HTTP 406 from the US, matching Euronews's statement that English is unavailable in the USA. Geoblock not worked around; not added."
+  },
+  {
+   "channel": "gusto-tv",
+   "page": "https://www.gustotv.com/",
+   "result": "Bot challenge page. Not worked around; Xumo source kept."
+  },
+  {
+   "channel": "bbc-news",
+   "page": "https://www.bbc.com/news",
+   "result": "No public live stream on bbc.com; BBC iPlayer requires a UK sign-in. Xumo source kept."
+  },
+  {
+   "channel": "9news / 7news",
+   "page": "9now.com.au, 7plus.com.au",
+   "result": "Live streams require a free account and are Australia-only. Not added."
+  },
+  {
+   "channel": "red-bull-tv",
+   "page": "https://www.redbull.tv/",
+   "result": "No live stream request observed. Not added."
+  }
+ ],
+ "first_party_attempts_beta_8": [
+  {
+   "channel": "cpac",
+   "page": "https://www.cpac.ca/",
+   "result": "Added: CPAC's own public live player stream."
+  },
+  {
+   "channel": "uk-parliament",
+   "page": "https://parliamentlive.tv/",
+   "result": "Per-sitting events with a one-time playback grant from Parliament's video service; no fixed 24/7 stream. Not added."
+  },
+  {
+   "channel": "australian-parliament",
+   "page": "https://www.aph.gov.au/News_and_Events/Watch_Read_Listen",
+   "result": "No live stream observed on the page. Not added."
+  },
+  {
+   "channel": "european-parliament",
+   "page": "https://multimedia.europarl.europa.eu/en/live",
+   "result": "Page not found. Not added."
+  },
+  {
+   "channel": "tvo / aptn / ctv-news",
+   "page": "tvo.org, aptntv.ca, ctvnews.ca",
+   "result": "No public live stream observed. Not added."
+  },
+  {
+   "channel": "knowledge-network",
+   "page": "https://www.knowledge.ca/",
+   "result": "Sign-in page. Not added."
+  }
+ ]
+}

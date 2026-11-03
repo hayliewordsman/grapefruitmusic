@@ -7,9 +7,9 @@ Music app. ("Grapefruit" under its icon.)
 It plays music you own: files on the phone, and your own **Navidrome / Subsonic** or **Jellyfin** server,
 with downloads for offline listening and time-synced lyrics.
 
-## Grapefruit FAST (second app)
+## Grapefruit TV (second app)
 
-The repository also contains **Grapefruit FAST 1.0**, a separate Android live-TV app with its own application ID, APKs and workflow. See [fast/README.md](fast/README.md) for building, channel availability and signing. Both apps share fonts and HTTPS support through `grapefruit-ui/`.
+The repository also contains **Grapefruit TV 2.0** (formerly Grapefruit FAST), a separate Android live-TV app with its own application ID, APKs and workflow. See [tv/README.md](tv/README.md) for building, channel availability and signing. Both apps share fonts and HTTPS support through `grapefruit-ui/`.
 
 ## Features
 

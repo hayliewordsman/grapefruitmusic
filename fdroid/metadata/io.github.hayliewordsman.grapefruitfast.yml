@@ -1,6 +1,6 @@
-# Grapefruit FAST's listing in Grapefruit's F-Droid repository, beside Grapefruit Music & Podcasts.
+# Grapefruit TV's listing (formerly Grapefruit FAST; the application ID keeps that name) in Grapefruit's F-Droid repository, beside Grapefruit Music & Podcasts.
 # The name, summary, description, icon and each version's "What's new" come from
-# fast/fastlane/metadata/android/en-US, which the workflow copies beside this file as
+# tv/fastlane/metadata/android/en-US, which the workflow copies beside this file as
 # io.github.hayliewordsman.grapefruitfast/en-US before running fdroid update. It also adds
 # CurrentVersionCode (FAST's newest APK in the repo). Categories are defined in config/categories.yml.
 
@@ -11,12 +11,12 @@ Categories:
 # Live streams come from broadcasters' and distributors' services, which carry their own ads.
 AntiFeatures:
   Ads:
-    en-US: Channels' own advertisements play in their streams. Grapefruit FAST adds none of its own.
+    en-US: Built-in channels' own advertisements play in their streams. Grapefruit TV adds none of its own.
   NonFreeNet:
     en-US: Plays live channels from broadcasters' and distributors' streaming services.
 
 AuthorName: MagicFlute LLC
-SourceCode: https://github.com/hayliewordsman/grapefruitmusic/tree/HEAD/fast
+SourceCode: https://github.com/hayliewordsman/grapefruitmusic/tree/HEAD/tv
 IssueTracker: https://github.com/hayliewordsman/grapefruitmusic/issues
 Changelog: https://github.com/hayliewordsman/grapefruitmusic/releases
 Donate: https://paypal.me/fishglub

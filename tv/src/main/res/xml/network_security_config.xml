@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Built-in channels are HTTPS only (Catalog refuses anything else). The viewer's own IPTV sources
+     (Settings › Your Sources) are often plain HTTP, so it's allowed for those. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>
