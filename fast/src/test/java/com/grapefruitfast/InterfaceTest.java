@@ -113,7 +113,7 @@ public class InterfaceTest {
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
             tap(text(root,"About Grapefruit FAST"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0-beta-6"));assertNotNull(text(root,"Source Code"));
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 1.0-beta-7"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
@@ -166,6 +166,35 @@ public class InterfaceTest {
         }
     }
     private static View described(View root,String d){for(View v:views(root))if(d.contentEquals(String.valueOf(v.getContentDescription())))return v;return null;}
+    /** As Music: the title scrolls away; the chips float at the top once they get there. */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void chipsFloatOnceTheTitleScrollsAway() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            View news=text(root,"News");View bar=(View)news.getParent().getParent().getParent();
+            ListView list=null;for(View v:views(root))if(v instanceof ListView)list=(ListView)v;
+            float before=bar.getTranslationY();assertTrue("chips start under the title",before>0);
+            list.setSelectionFromTop(6,0);measure(root,1233,2742);root.getViewTreeObserver().dispatchOnPreDraw();
+            assertEquals(0f,bar.getTranslationY(),0.5f);
+            assertNull("title scrolled away",visibleText(list,"Live TV"));
+            capture(root,"portrait-scrolled.png");
+        }
+    }
+    /** Outside the US, channels only Xumo carries (a US service) aren't listed; Settings › Region can change it. */
+    @Test public void regionHidesUsOnlyChannelsElsewhere() throws Exception {
+        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
+        c.getSharedPreferences("fast",0).edit().putString("region","CA").commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            View root=controller.get().getWindow().getDecorView();measure(root,1024,600);
+            assertNull(text(root,"Baywatch"));assertNotNull(text(root,"CityNews 24/7 · Toronto"));
+            TextView count=null;for(View v:views(root))if(v instanceof TextView&&String.valueOf(((TextView)v).getText()).contains("channels · tap"))count=(TextView)v;
+            int offered=0;for(Channel ch:Catalog.parse(Catalog.read(c.getAssets().open("channels.json"))))if(Region.offered(ch,"CA"))offered++;
+            assertTrue(count.getText().toString(),count.getText().toString().startsWith(offered+" channels"));
+            assertTrue(offered<58);
+        }
+        assertTrue(Region.offered(new Channel("x","DW","DE","News","","https://x","https://x",new String[]{"https://x"},"Worldwide"),"GB"));
+        assertEquals("EU",Region.group("FR"));assertEquals("XX",Region.group("JP"));
+    }
+    private static View visibleText(ListView list,String s){for(int i=0;i<list.getChildCount();i++){for(View v:views(list.getChildAt(i)))if(v instanceof TextView&&s.equals(String.valueOf(((TextView)v).getText()))&&((TextView)v).getTextSize()>=29)return v;}return null;}
     private static void tap(View v){while(v!=null&&!v.isClickable()&&!(v.getParent() instanceof AdapterView))v=(View)v.getParent();
         if(v.getParent() instanceof AdapterView){AdapterView<?> list=(AdapterView<?>)v.getParent();int pos=list.getPositionForView(v);list.performItemClick(v,pos,list.getItemIdAtPosition(pos));}else v.performClick();}
     private static java.util.List<View> views(View v){java.util.List<View> all=new java.util.ArrayList<>();all.add(v);if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)all.addAll(views(g.getChildAt(i)));}return all;}

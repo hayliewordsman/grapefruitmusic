@@ -128,6 +128,24 @@ public final class Brand {
         int page=bg&0x00ffffff;
         return new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,new int[]{page|0xf2000000,page|0xb3000000,page});
     }
+    /**
+     * Music's fadingFill: the page colour, fading to clear over its last fadePx at the bottom, which
+     * floating chips sit on so the page shows through as it scrolls under them. setAlpha() fades it all.
+     */
+    public Drawable topFade(final int fadePx) {
+        final int color=bg;
+        return new Drawable() {
+            private final android.graphics.Paint paint=new android.graphics.Paint();
+            private int alpha=255;
+            @Override protected void onBoundsChange(android.graphics.Rect r) {
+                paint.setShader(new android.graphics.LinearGradient(0,r.bottom-fadePx,0,r.bottom,color,color&0x00ffffff,android.graphics.Shader.TileMode.CLAMP));
+            }
+            @Override public void draw(android.graphics.Canvas canvas) {if(alpha==0)return;paint.setAlpha(alpha);canvas.drawRect(getBounds(),paint);}
+            @Override public void setAlpha(int a) {if(a!=alpha){alpha=a;invalidateSelf();}}
+            @Override public void setColorFilter(android.graphics.ColorFilter f) {}
+            @Override public int getOpacity() {return android.graphics.PixelFormat.TRANSLUCENT;}
+        };
+    }
     public LinearLayout column() { LinearLayout l=new LinearLayout(context);l.setOrientation(LinearLayout.VERTICAL);return l; }
     public LinearLayout row() { LinearLayout l=new LinearLayout(context);l.setOrientation(LinearLayout.HORIZONTAL);l.setGravity(Gravity.CENTER_VERTICAL);return l; }
 }

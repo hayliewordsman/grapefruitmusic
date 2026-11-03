@@ -11,12 +11,13 @@ import android.text.*;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
+import android.view.ViewTreeObserver;
 import com.grapefruitmusic.ui.Fonts;
 import java.util.*;
 
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
-    static final String VERSION="1.0 beta 6 · build 6";
+    static final String VERSION="1.0 beta 7 · build 7";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
@@ -64,8 +65,11 @@ public final class MainActivity extends Activity {
     private boolean wide() {Configuration c=getResources().getConfiguration();return c.screenWidthDp>=c.screenHeightDp*0.85f;}
     private int dp(float n) {return b.dp(n);}
 
+    /** Where the viewer is (Region): which providers' channels can play here. */
+    private String region="";
     private void build() {
         b=new Brand(this,prefs.getInt("theme",0));
+        region=Region.current(this,prefs);
         root=new FrameLayout(this);root.setBackgroundColor(b.bg);
         if(Build.VERSION.SDK_INT>=30) {
             // Android 15+ draws apps edge to edge: keep the page clear of the bars, the camera cutout and the
@@ -193,27 +197,68 @@ public final class MainActivity extends Activity {
         TextView heading=b.text(title,30,true);page.addView(heading);
         if(subtitle!=null) {TextView sub=b.label(subtitle,13,b.secondary);sub.setPadding(0,dp(6),0,dp(10));page.addView(sub);}
     }
+    /**
+     * A browsing page, as Music's (SectionMenu): the title scrolls with the list; the chips (and Search's
+     * field) sit under it and, once the list scrolls them up to the top, stay there, floating over the list
+     * on a fade from the page's colour as the channels pass under them.
+     */
     private void browse() {
-        newPage();
+        body.removeAllViews();scroller=null;
+        LinearLayout header=b.column();header.setPadding(0,dp(16),0,0);page=header;
         title(tab,tab.equals("Favourites")?"Your channels, in one place.":tab.equals("Search")?"Channels, cities and genres.":"Free to watch. A little more live.");
+        LinearLayout bar=b.column();bar.setPadding(0,0,0,dp(FADE_DP));
         if(tab.equals("Search")) {
             EditText search=new EditText(this);search.setSingleLine();search.setTextColor(b.text);search.setHintTextColor(b.secondary);
             search.setTypeface(Fonts.regular());search.setTextSize(16);search.setHint("Search channels, cities or genres");
             search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
             search.setPadding(dp(20),0,dp(20),0);search.setBackground(b.interactive(false,Brand.PILL));
             search.setText(query);search.setSelection(query.length());
-            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.bottomMargin=dp(4);page.addView(search,p);
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.leftMargin=p.rightMargin=dp(18);p.bottomMargin=dp(4);bar.addView(search,p);
             search.addTextChangedListener(new TextWatcher(){
                 public void beforeTextChanged(CharSequence s,int start,int count,int after){}
                 public void onTextChanged(CharSequence s,int start,int before,int count){query=s.toString();filter();}
                 public void afterTextChanged(Editable e){}
             });
         }
-        chips(page);
-        count=b.label("",12,b.secondary);count.setPadding(dp(4),dp(8),0,dp(10));page.addView(count);
-        addList(page);
-        if(error!=null) note(error);
+        chips(bar);
+        LinearLayout notes=b.column();
+        count=b.label("",12,b.secondary);count.setPadding(dp(4),dp(2),0,dp(10));notes.addView(count);
+        if(error!=null){TextView t=b.label(error,12,b.secondary);t.setPadding(dp(4),0,dp(4),dp(10));notes.addView(t);}
+        // The slot in the list where the chips sit until they float: as tall as the bar without its fade.
+        bar.measure(View.MeasureSpec.makeMeasureSpec(getResources().getDisplayMetrics().widthPixels,View.MeasureSpec.AT_MOST),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
+        View slot=new View(this);slot.setLayoutParams(new AbsListView.LayoutParams(-1,Math.max(0,bar.getMeasuredHeight()-dp(FADE_DP))));
+        FloatingBar frame=new FloatingBar(bar,header,slot);
+        body.addView(frame,new FrameLayout.LayoutParams(-1,-1));
+        addList(frame,header,slot,notes);
+        frame.addView(bar,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
         floatBars(true);
+    }
+    /** How far the list fades out under the floating chips, as Music's (dp). */
+    private static final int FADE_DP=20;
+    /**
+     * The list with the chip bar over it, kept where its slot is in the list, or at the top once the slot has
+     * scrolled past; the fade behind the chips comes in as the page starts to pass under them.
+     */
+    private final class FloatingBar extends FrameLayout implements ViewTreeObserver.OnPreDrawListener {
+        private final View bar, header, slot;private final android.graphics.drawable.Drawable fade;private final int fadeIn;private int alpha=-1;
+        FloatingBar(View bar,View header,View slot){
+            super(MainActivity.this);this.bar=bar;this.header=header;this.slot=slot;
+            fade=b.topFade(dp(FADE_DP));fade.setAlpha(0);alpha=0;bar.setBackground(fade);fadeIn=dp(12);
+        }
+        @Override protected void onAttachedToWindow(){super.onAttachedToWindow();getViewTreeObserver().addOnPreDrawListener(this);}
+        @Override protected void onDetachedFromWindow(){getViewTreeObserver().removeOnPreDrawListener(this);super.onDetachedFromWindow();}
+        @Override public boolean onPreDraw(){
+            if(list==null||list.getParent()!=this)return true;
+            int y;
+            if(list.indexOfChild(slot)>=0)y=list.getTop()+slot.getTop();
+            else if(list.getFirstVisiblePosition()>1)y=-fadeIn;
+            else y=list.getTop()+header.getHeight();
+            float top=Math.max(0,y);
+            if(bar.getTranslationY()!=top)bar.setTranslationY(top);
+            int a=y>=0?0:Math.min(255,-y*255/fadeIn);
+            if(a!=alpha){alpha=a;fade.setAlpha(a);}
+            return true;
+        }
     }
     /**
      * Genres and regions share one row that scrolls edge to edge. Genre chips pick one; a region chip
@@ -228,8 +273,7 @@ public final class MainActivity extends Activity {
         LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(Math.max(1,dp(1)),dp(24));d.rightMargin=dp(8);row.addView(divider,d);
         for(String label:Channel.REGIONS)
             row.addView(chip(label,label.equals(country),()->country=label.equals(country)?"All":label));
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.leftMargin=p.rightMargin=-dp(18);
-        parent.addView(scroll,p);
+        parent.addView(scroll,new LinearLayout.LayoutParams(-1,-2));
     }
     private View chip(String label,boolean chosen,Runnable pick) {
         TextView chip=b.button(label,chosen,v->{pick.run();listPosition=0;if(watching!=null)watchPage();else browse();});
@@ -237,30 +281,40 @@ public final class MainActivity extends Activity {
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(40));p.rightMargin=dp(8);chip.setLayoutParams(p);
         return chip;
     }
-    private void addList(LinearLayout parent) {
+    /** The channel list; headers (title, chip slot, notes) scroll with it. */
+    private void addList(ViewGroup parent,View... headers) {
         list=new ListView(this);list.setDivider(null);list.setSelector(android.R.color.transparent);
         list.setCacheColorHint(Color.TRANSPARENT);list.setVerticalScrollBarEnabled(false);
         list.setItemsCanFocus(false);list.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
+        // Headers go in before the adapter (Android 4.2 takes them only then).
+        for(View h:headers)list.addHeaderView(h,null,false);
+        if(headers.length>0)list.setPadding(dp(18),0,dp(18),0);
         adapter=new ChannelAdapter();list.setAdapter(adapter);
         list.setOnItemClickListener((p,v,pos,id)->{
+            Channel c=at(pos);if(c==null)return;
             ((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(v.getWindowToken(),0);
-            listPosition=pos;tune(visible.get(pos));
+            listPosition=pos-list.getHeaderViewsCount();tune(c);
         });
-        list.setOnItemLongClickListener((p,v,pos,id)->{details(visible.get(pos));return true;});
+        list.setOnItemLongClickListener((p,v,pos,id)->{Channel c=at(pos);if(c!=null)details(c);return c!=null;});
         list.setOnKeyListener((v,key,event)->{
-            if(key==KeyEvent.KEYCODE_MENU && event.getAction()==KeyEvent.ACTION_UP && list.getSelectedItemPosition()>=0) {
-                details(visible.get(list.getSelectedItemPosition()));return true;
+            if(key==KeyEvent.KEYCODE_MENU && event.getAction()==KeyEvent.ACTION_UP && at(list.getSelectedItemPosition())!=null) {
+                details(at(list.getSelectedItemPosition()));return true;
             } return false;
         });
-        parent.addView(list,new LinearLayout.LayoutParams(-1,0,1));filter();list.setSelection(listPosition);
+        if(parent instanceof LinearLayout)parent.addView(list,new LinearLayout.LayoutParams(-1,0,1));
+        else parent.addView(list,new FrameLayout.LayoutParams(-1,-1));
+        filter();if(listPosition>0)list.setSelection(listPosition+list.getHeaderViewsCount());
         setScroller(list,dp(10));
     }
+    /** The channel at a list position (headers count in positions), or null for a header. */
+    private Channel at(int pos){int i=pos-(list==null?0:list.getHeaderViewsCount());return i>=0&&i<visible.size()?visible.get(i):null;}
     private void filter() {
         visible.clear();
         for(Channel c:channels) {
             if(tab.equals("Favourites")&&!favourites.contains(c.id))continue;
             if(!category.equals("All")&&!category.equals(c.category))continue;
             if(!country.equals("All")&&!country.equals(c.region()))continue;
+            if(!Region.offered(c,region))continue;
             if(!c.matches(query))continue;
             visible.add(c);
         }
@@ -431,10 +485,16 @@ public final class MainActivity extends Activity {
         value(g,"Theme",THEMES[theme],()->dialog("Theme",null,THEMES,theme,new Runnable[]{()->theme(0),()->theme(1),()->theme(2)}));
 
         section(g,"Watching");
+        String chosen=prefs.getString("region","auto");
+        String shown="auto".equals(chosen)?(region.isEmpty()?"Automatic":"Automatic ("+Region.name(region)+")"):Region.name(chosen);
+        int at=java.util.Arrays.asList(Region.CODES).indexOf(chosen);
+        Runnable[] picks=new Runnable[Region.CODES.length];
+        for(int i=0;i<picks.length;i++){final String code=Region.CODES[i];picks[i]=()->{prefs.edit().putString("region",code).apply();build();};}
+        value(g,"Region",shown,()->dialog("Region","Automatic uses this phone's mobile network or SIM country, then its region setting. Nothing is sent anywhere. Channels only offered in the United States are hidden elsewhere.",Region.NAMES,at,picks));
         value(g,"Playback Quality",QUALITIES[prefs.getInt("quality",0)],this::qualityDialog);
         toggle(g,"Continue Watching",prefs.getBoolean("continue",true),on->{prefs.edit().putBoolean("continue",on).apply();floatBars(true);});
         toggle(g,"Keep Screen On",prefs.getBoolean("keepScreenOn",true),on->prefs.edit().putBoolean("keepScreenOn",on).apply());
-        footer(g,"Auto changes resolution as your connection changes. Continue Watching keeps your last channel a tap away above the tabs. Keep Screen On stops the screen sleeping while a channel plays.");
+        footer(g,"Region decides which channels are listed. Auto changes resolution as your connection changes. Continue Watching keeps your last channel a tap away above the tabs. Keep Screen On stops the screen sleeping while a channel plays.");
 
         section(g,"Channels");
         value(g,"Channels & Availability",channels.size()+" channels",()->ok("Channels & Availability","Channels connect directly to broadcaster or distributor CDNs. No subscriptions, sign-in workarounds, DRM bypass, location spoofing or ad removal. Availability depends on where you are and each provider: DW News and ABC News Australia stream worldwide; Xumo's channels (most UK, US and many Canadian ones) are offered in the United States; CityNews and Global News are Canadian.\n\nThe channel guide lists channels; programme schedules are not supplied in this beta. CBC's local news channels need a CBC Gem sign-in, so they aren't included. CP24 is excluded because a public video stream could not be obtained from cp24.com. JP5S hardware playback still needs device testing."));

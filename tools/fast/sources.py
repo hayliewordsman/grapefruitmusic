@@ -283,6 +283,11 @@ def main():
     except Exception as e:
         failed.append(('cheddar-news first-party', str(e)))
 
+    # Beta 1's Xumo channels carry the same US availability as the rest (Region hides them elsewhere).
+    for c in catalog['channels']:
+        if 'xumo.com' in c['provenance'] and not c.get('availability'):
+            c['availability'] = 'United States (Xumo)'
+
     known = {e['id'] for e in sources.get('excluded_after_source_review', [])}
     for e in EXCLUDED_NEWS:
         if e['id'] not in known:
