@@ -1,0 +1,2649 @@
+{
+  "checked_utc": "2026-11-03T02:45:12.633202+00:00",
+  "scope": "All configured masters, all video/audio renditions, initialization/key resources and bounded media samples. No decoder or hardware playback test.",
+  "channels": [
+    {
+      "id": "citynews-toronto",
+      "name": "CityNews 24/7 \u00b7 Toronto",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/NYoux6eGTkqmdrxc0P_biw/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3385675,
+              "codecs": "avc1.4d4020,mp4a.40.2",
+              "frame_rate": 59.94,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "citynewsregional.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2312236,
+              "codecs": "avc1.4d401f,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "citynewsregional.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 1290476,
+              "codecs": "avc1.4d401e,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "citynewsregional.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [
+            {
+              "group": "Audio",
+              "name": "AAC-128kbps",
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "citynewsregional.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 2
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "citynews-west",
+      "name": "CityNews 24/7 \u00b7 Alberta / Calgary & Edmonton",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/W4j7D5LJSJuESWEpe0AP4A/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3382411,
+              "codecs": "avc1.4d4020,mp4a.40.2",
+              "frame_rate": 59.94,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "citynewsregional.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2308972,
+              "codecs": "avc1.4d401f,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "citynewsregional.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 1287212,
+              "codecs": "avc1.4d401e,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "citynewsregional.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 2
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "citynews-vancouver",
+      "name": "CityNews 24/7 \u00b7 Vancouver",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://citynewsregional.akamaized.net/hls/live/1024054/Regional_Live_9/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "citynewsregional.akamaized.net",
+          "renditions": [
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3382411,
+              "codecs": "avc1.4d4020,mp4a.40.2",
+              "frame_rate": 59.94,
+              "playlist_host": "citynewsregional.akamaized.net",
+              "segment_count": 359,
+              "media": {
+                "host": "citynewsregional.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2308972,
+              "codecs": "avc1.4d401f,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "citynewsregional.akamaized.net",
+              "segment_count": 359,
+              "media": {
+                "host": "citynewsregional.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 1287212,
+              "codecs": "avc1.4d401e,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "citynewsregional.akamaized.net",
+              "segment_count": 359,
+              "media": {
+                "host": "citynewsregional.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 2
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-national",
+      "name": "Global News \u00b7 National",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/cQOVg6jKSvusQAfYpTrUoQ/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 17,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 17,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 17,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:45:12.633202+00:00",
+      "previous_checks": [
+        {
+          "id": "global-national",
+          "name": "Global News \u00b7 National",
+          "result": "not-verified",
+          "adaptive": false,
+          "sources": [
+            {
+              "source": "https://dai.google.com/linear/hls/event/cQOVg6jKSvusQAfYpTrUoQ/master.m3u8",
+              "result": "not-verified",
+              "stage": "rendition/media",
+              "master_host": "dai.google.com",
+              "renditions": [
+                {
+                  "width": 848,
+                  "height": 480,
+                  "bandwidth": 1570000,
+                  "codecs": "mp4a.40.2,avc1.4D401F",
+                  "frame_rate": 29.97,
+                  "error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+                  "result": "not-verified"
+                },
+                {
+                  "width": 960,
+                  "height": 540,
+                  "bandwidth": 2270000,
+                  "codecs": "mp4a.40.2,avc1.4D401F",
+                  "frame_rate": 29.97,
+                  "error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+                  "result": "not-verified"
+                },
+                {
+                  "width": 1280,
+                  "height": 720,
+                  "bandwidth": 3027000,
+                  "codecs": "mp4a.40.2,avc1.4D401F",
+                  "frame_rate": 29.97,
+                  "error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+                  "result": "not-verified"
+                }
+              ],
+              "audio": [],
+              "video_variants": 3,
+              "adaptive": true,
+              "api17_renditions": 3,
+              "error": "one or more rendition/media checks failed"
+            }
+          ],
+          "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+        }
+      ]
+    },
+    {
+      "id": "global-toronto",
+      "name": "Global News \u00b7 Toronto",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/BblZeSsBRSSCtvkKRZ8XJQ/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 22,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 22,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 22,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-winnipeg",
+      "name": "Global News \u00b7 Winnipeg",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/R5XZJcTAQPuyvhsVWIKRhw/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 17,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 17,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 17,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:45:12.633202+00:00",
+      "previous_checks": [
+        {
+          "id": "global-winnipeg",
+          "name": "Global News \u00b7 Winnipeg",
+          "result": "not-verified",
+          "adaptive": false,
+          "sources": [
+            {
+              "source": "https://dai.google.com/linear/hls/event/R5XZJcTAQPuyvhsVWIKRhw/master.m3u8",
+              "result": "not-verified",
+              "stage": "rendition/media",
+              "master_host": "dai.google.com",
+              "renditions": [
+                {
+                  "width": 848,
+                  "height": 480,
+                  "bandwidth": 1570000,
+                  "codecs": "mp4a.40.2,avc1.4D401F",
+                  "frame_rate": 29.97,
+                  "error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+                  "result": "not-verified"
+                },
+                {
+                  "width": 960,
+                  "height": 540,
+                  "bandwidth": 2270000,
+                  "codecs": "mp4a.40.2,avc1.4D401F",
+                  "frame_rate": 29.97,
+                  "playlist_host": "dai.google.com",
+                  "segment_count": 20,
+                  "media": {
+                    "host": "live.corusdigitaldev.com",
+                    "sample_bytes": 65536,
+                    "framing": "mpeg-ts"
+                  },
+                  "initializations": [],
+                  "aes128_keys_checked": 0,
+                  "result": "media-reachable"
+                },
+                {
+                  "width": 1280,
+                  "height": 720,
+                  "bandwidth": 3027000,
+                  "codecs": "mp4a.40.2,avc1.4D401F",
+                  "frame_rate": 29.97,
+                  "playlist_host": "dai.google.com",
+                  "segment_count": 20,
+                  "media": {
+                    "host": "live.corusdigitaldev.com",
+                    "sample_bytes": 65536,
+                    "framing": "mpeg-ts"
+                  },
+                  "initializations": [],
+                  "aes128_keys_checked": 0,
+                  "result": "media-reachable"
+                }
+              ],
+              "audio": [],
+              "video_variants": 3,
+              "adaptive": true,
+              "api17_renditions": 3,
+              "error": "one or more rendition/media checks failed"
+            }
+          ],
+          "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+        }
+      ]
+    },
+    {
+      "id": "global-edmonton",
+      "name": "Global News \u00b7 Edmonton",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/K8ZZN35nQA2N_hskrUB2oQ/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-bc",
+      "name": "Global News \u00b7 BC",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/eIIBH8jkR-SWGaD5E4MesA/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-calgary",
+      "name": "Global News \u00b7 Calgary",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/AYQ1ssB7RcOX9D78FtdoQQ/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-halifax",
+      "name": "Global News \u00b7 Halifax",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/ljv6O6ZiSiKudWk7qwWbEw/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 19,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 19,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 19,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-kingston",
+      "name": "Global News \u00b7 Kingston",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/poxVVQNQSMqFBnT6qR-Lwg/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-lethbridge",
+      "name": "Global News \u00b7 Lethbridge",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/hYQh95EXRwaF0IOhUrJoEQ/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-montreal",
+      "name": "Global News \u00b7 Montreal",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/wI13hMWhRSKbyZ8Q1DQR3Q/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-okanagan",
+      "name": "Global News \u00b7 Okanagan",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/PLPlPfeDQCCe4GaxAWpi4g/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-peterborough",
+      "name": "Global News \u00b7 Peterborough",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/CQ82MHxxS7qwe7Zvs4_sUA/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-regina",
+      "name": "Global News \u00b7 Regina",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/A69Xh6OaTfOrRf2oHVLaPQ/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 21,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "global-saskatoon",
+      "name": "Global News \u00b7 Saskatoon",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/cAeO9FUXSRatnrvaksoJ9A/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1570000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2270000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3027000,
+              "codecs": "mp4a.40.2,avc1.4D401F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 20,
+              "media": {
+                "host": "live.corusdigitaldev.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 3,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "nbc-news-now",
+      "name": "NBC News NOW",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://d4whmvwm0rdvi.cloudfront.net/10007/99991247/hls/master.m3u8?ads.xumo_channelId=99991247&ads.asnw=169843&ads.afid=137704898&ads.sfid=16772607&ads.csid=xumo_android_NBCNewsNOW_ssai_cro&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads._fw_did=00000000-0000-0000-0000-000000000000&ads._fw_vcid2=512116%3A00000000-0000-0000-0000-000000000000&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads._fw_content_category=&ads._fw_content_genre=News%2CN%2CDN%2CLocal%2CLocalNews%2CNews-Local&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0-beta-1&ads.appName=GrapefruitFAST&ads.xumo_contentId=1828&ads.xumo_contentName=NBCNewsNOW&ads.xumo_providerId=1828&ads.xumo_providerName=NBCNewsNOW&ads.channelId=99991247&ads._fw_ifa_type=",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "d4whmvwm0rdvi.cloudfront.net",
+          "renditions": [
+            {
+              "width": 768,
+              "height": 432,
+              "bandwidth": 1249600,
+              "codecs": "avc1.64001e,mp4a.40.2",
+              "frame_rate": 30.0,
+              "playlist_host": "d4whmvwm0rdvi.cloudfront.net",
+              "segment_count": 20,
+              "media": {
+                "host": "xumo-drct-nbcnn-ir8ze.fast.nbcuni.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 963600,
+              "codecs": "avc1.64001e,mp4a.40.2",
+              "frame_rate": 30.0,
+              "playlist_host": "d4whmvwm0rdvi.cloudfront.net",
+              "segment_count": 20,
+              "media": {
+                "host": "xumo-drct-nbcnn-ir8ze.fast.nbcuni.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 1707200,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 30.0,
+              "playlist_host": "d4whmvwm0rdvi.cloudfront.net",
+              "segment_count": 20,
+              "media": {
+                "host": "xumo-drct-nbcnn-ir8ze.fast.nbcuni.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 2851200,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 30.0,
+              "playlist_host": "d4whmvwm0rdvi.cloudfront.net",
+              "segment_count": 20,
+              "media": {
+                "host": "xumo-drct-nbcnn-ir8ze.fast.nbcuni.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "bandwidth": 5253600,
+              "codecs": "avc1.640028,mp4a.40.2",
+              "frame_rate": 30.0,
+              "playlist_host": "d4whmvwm0rdvi.cloudfront.net",
+              "segment_count": 20,
+              "media": {
+                "host": "xumo-drct-nbcnn-ir8ze.fast.nbcuni.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 426,
+              "height": 240,
+              "bandwidth": 534600,
+              "codecs": "avc1.640015,mp4a.40.2",
+              "frame_rate": 30.0,
+              "playlist_host": "d4whmvwm0rdvi.cloudfront.net",
+              "segment_count": 20,
+              "media": {
+                "host": "xumo-drct-nbcnn-ir8ze.fast.nbcuni.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 6,
+          "adaptive": true,
+          "api17_renditions": 5
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "abc-news-live",
+      "name": "ABC News Live",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://abcnews-streams.akamaized.net/hls/live/2023570/abcnewslive_applenews/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "abcnews-streams.akamaized.net",
+          "renditions": [
+            {
+              "width": 320,
+              "height": 180,
+              "bandwidth": 410386,
+              "codecs": "avc1.4d400d,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "abcnews-streams.akamaized.net",
+              "segment_count": 10,
+              "media": {
+                "host": "abcnews-streams.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 815134,
+              "codecs": "avc1.77.30,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "abcnews-streams.akamaized.net",
+              "segment_count": 10,
+              "media": {
+                "host": "abcnews-streams.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 1219881,
+              "codecs": "avc1.77.30,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "abcnews-streams.akamaized.net",
+              "segment_count": 10,
+              "media": {
+                "host": "abcnews-streams.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 2535309,
+              "codecs": "avc1.4d401f,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "abcnews-streams.akamaized.net",
+              "segment_count": 10,
+              "media": {
+                "host": "abcnews-streams.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 4058752,
+              "codecs": "avc1.4d401f,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "abcnews-streams.akamaized.net",
+              "segment_count": 10,
+              "media": {
+                "host": "abcnews-streams.akamaized.net",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 5,
+          "adaptive": true,
+          "api17_renditions": 5
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "cbs-news",
+      "name": "CBS News 24/7",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dai.google.com/linear/hls/event/Sid4xiTQTkCT1SLu6rjUSQ/master.m3u8",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dai.google.com",
+          "renditions": [
+            {
+              "width": 400,
+              "height": 224,
+              "bandwidth": 441000,
+              "codecs": "mp4a.40.2,avc1.64000D",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 25,
+              "media": {
+                "host": "news20e7hhcb.airspace-cdn.cbsivideo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 512,
+              "height": 288,
+              "bandwidth": 733000,
+              "codecs": "mp4a.40.2,avc1.640015",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 25,
+              "media": {
+                "host": "news20e7hhcb.airspace-cdn.cbsivideo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 1083000,
+              "codecs": "mp4a.40.2,avc1.64001E",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 25,
+              "media": {
+                "host": "news20e7hhcb.airspace-cdn.cbsivideo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 768,
+              "height": 432,
+              "bandwidth": 1549000,
+              "codecs": "mp4a.40.2,avc1.64001E",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 25,
+              "media": {
+                "host": "news20e7hhcb.airspace-cdn.cbsivideo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 960,
+              "height": 540,
+              "bandwidth": 2249000,
+              "codecs": "mp4a.40.2,avc1.64001F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 25,
+              "media": {
+                "host": "news20e7hhcb.airspace-cdn.cbsivideo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 4231000,
+              "codecs": "mp4a.40.2,avc1.64001F",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 25,
+              "media": {
+                "host": "news20e7hhcb.airspace-cdn.cbsivideo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "bandwidth": 5980000,
+              "codecs": "mp4a.40.2,avc1.640028",
+              "frame_rate": 29.97,
+              "playlist_host": "dai.google.com",
+              "segment_count": 25,
+              "media": {
+                "host": "news20e7hhcb.airspace-cdn.cbsivideo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 0,
+              "height": 0,
+              "bandwidth": 150000,
+              "codecs": "mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dai.google.com",
+              "segment_count": 25,
+              "media": {
+                "host": "news20e7hhcb.airspace-cdn.cbsivideo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 7,
+          "adaptive": true,
+          "api17_renditions": 6
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "carol-burnett",
+      "name": "The Carol Burnett Show",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dbrb49pjoymg4.cloudfront.net/10001/99951380/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951380&ads.xumo_streamId=99951380&ads.channelId=99951380&ads.channelName=ShoutFactoryTheCarolBurnettShow&ads.caid=ShoutFactoryTheCarolBurnettShow&ads.csid=xumo_android_ShoutFactoryTheCarolBurnettShow_ssai&ads.genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4181&ads.xumo_contentName=ShoutFactoryTheCarolBurnettShow&ads.xumo_providerId=4181&ads.xumo_providerName=ShoutFactoryTheCarolBurnettShow&ads.asnw=&ads.xumo_channelName=ShoutFactoryTheCarolBurnettShow&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dbrb49pjoymg4.cloudfront.net",
+          "renditions": [
+            {
+              "width": 426,
+              "height": 240,
+              "bandwidth": 611520,
+              "codecs": "avc1.4d5015,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "amg00163-amg00163c1-xumo-us-5979.playouts.now.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 1157520,
+              "codecs": "avc1.4d501e,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "amg00163-amg00163c1-xumo-us-5979.playouts.now.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1782040,
+              "codecs": "avc1.64101f,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "amg00163-amg00163c1-xumo-us-5979.playouts.now.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3420560,
+              "codecs": "avc1.64101f,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "amg00163-amg00163c1-xumo-us-5979.playouts.now.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "bandwidth": 6137560,
+              "codecs": "avc1.641028,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "amg00163-amg00163c1-xumo-us-5979.playouts.now.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 5,
+          "adaptive": true,
+          "api17_renditions": 4
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "baywatch",
+      "name": "Baywatch",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dbrb49pjoymg4.cloudfront.net/10001/99951133/hls/playlist.m3u8?includeAssetTags=true&ads.xumo_channelId=99951133&ads.xumo_streamId=99951133&ads.channelId=99951133&ads.channelName=FreemantleBaywatch&ads.caid=FreemantleBaywatch&ads.csid=xumo_android_FreemantleBaywatch_ssai&ads.genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_content_genre=Action%2CDrama%2CGD%2CGV%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=3535&ads.xumo_contentName=FreemantleBaywatch&ads.xumo_providerId=3535&ads.xumo_providerName=FreemantleBaywatch&ads.asnw=&ads.xumo_channelName=FreemantleBaywatch&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dbrb49pjoymg4.cloudfront.net",
+          "renditions": [
+            {
+              "width": 426,
+              "height": 240,
+              "bandwidth": 511680,
+              "codecs": "avc1.4d5015,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "baywatch-xumo.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 1057680,
+              "codecs": "avc1.4d501e,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "baywatch-xumo.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 848,
+              "height": 480,
+              "bandwidth": 1686360,
+              "codecs": "avc1.64101f,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "baywatch-xumo.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 3329040,
+              "codecs": "avc1.64101f,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "baywatch-xumo.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "bandwidth": 6046040,
+              "codecs": "avc1.641028,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "baywatch-xumo.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 5,
+          "adaptive": true,
+          "api17_renditions": 4
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "unsolved-mysteries",
+      "name": "Unsolved Mysteries",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dbrb49pjoymg4.cloudfront.net/10001/99991680/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991680&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=UnsolvedMysteries&ads.csid=xumo_android_UnsolvedMysteries_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_rating=&ads.xumo_contentId=260&ads.xumo_contentName=FilmRise&ads.xumo_providerId=260&ads.xumo_providerName=FilmRise&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991680&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dbrb49pjoymg4.cloudfront.net",
+          "renditions": [
+            {
+              "width": 768,
+              "height": 432,
+              "bandwidth": 1200000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 256,
+              "height": 144,
+              "bandwidth": 230000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 440000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 700000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 2500000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 5000000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 6,
+          "adaptive": true,
+          "api17_renditions": 6
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "forensic-files",
+      "name": "Forensic Files",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dbrb49pjoymg4.cloudfront.net/10001/99991367/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991367&ads.xumo_streamId=99991367&ads.channelId=99991367&ads.channelName=ForensicFiles&ads.caid=ForensicFiles&ads.csid=xumo_android_ForensicFiles_ssai&ads.genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_content_genre=Documentary%2CCrime%2CDO%2CEntertainment%2CGV%2CSM&ads._fw_coppa=0&ads.xumo_contentId=260&ads.xumo_contentName=FilmRise&ads.xumo_providerId=260&ads.xumo_providerName=FilmRise&ads.asnw=&ads.xumo_channelName=ForensicFiles&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dbrb49pjoymg4.cloudfront.net",
+          "renditions": [
+            {
+              "width": 768,
+              "height": 432,
+              "bandwidth": 1200000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 256,
+              "height": 144,
+              "bandwidth": 230000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 440000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 700000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 2500000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 5000000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 6,
+          "adaptive": true,
+          "api17_renditions": 6
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "deal-or-no-deal",
+      "name": "Deal or No Deal",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dbrb49pjoymg4.cloudfront.net/10001/99991113/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99991113&ads.xumo_streamId=99991113&ads.channelId=99991113&ads.channelName=EndemolshineDealNoDeal&ads.caid=EndemolshineDealNoDeal&ads.csid=xumo_android_EndemolshineDealNoDeal_ssai&ads.genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_content_genre=GameShow%2CGame%2CQuiz%2CQG%2CQP%2CEntertainment&ads._fw_coppa=0&ads.xumo_contentId=2041&ads.xumo_contentName=EndemolshineDealNoDeal&ads.xumo_providerId=2041&ads.xumo_providerName=EndemolshineDealNoDeal&ads.asnw=&ads.xumo_channelName=EndemolshineDealNoDeal&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dbrb49pjoymg4.cloudfront.net",
+          "renditions": [
+            {
+              "width": 768,
+              "height": 432,
+              "bandwidth": 1200000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 11,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 256,
+              "height": 144,
+              "bandwidth": 230000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 11,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 440000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 11,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 700000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 2500000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 5000000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 6,
+          "adaptive": true,
+          "api17_renditions": 6
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "martha-stewart",
+      "name": "The Martha Stewart Channel",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dbrb49pjoymg4.cloudfront.net/10001/99951513/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951513&ads.xumo_streamId=99951513&ads.channelId=99951513&ads.channelName=MarqueeBrandsMarthaStewart&ads.caid=MarqueeBrandsMarthaStewart&ads.csid=xumo_android_MarqueeBrandsMarthaStewart_ssai&ads.genre=Lifestyle%2CCooking%2CFood%2CCuisine%2CEntertainment%2CIA%2CGV&ads._fw_content_genre=Lifestyle%2CCooking%2CFood%2CCuisine%2CEntertainment%2CIA%2CGV&ads._fw_coppa=0&ads.xumo_contentId=4380&ads.xumo_contentName=MarqueeBrandsMarthaStewart&ads.xumo_providerId=4380&ads.xumo_providerName=MarqueeBrandsMarthaStewart&ads.asnw=&ads.xumo_channelName=MarqueeBrandsMarthaStewart&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dbrb49pjoymg4.cloudfront.net",
+          "renditions": [
+            {
+              "width": 426,
+              "height": 240,
+              "bandwidth": 350000,
+              "codecs": "avc1.4D4029,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 9,
+              "media": {
+                "host": "amg17902-amg17902c1-amgplt0055.playout.now3.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 1000000,
+              "codecs": "avc1.4D4029,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 9,
+              "media": {
+                "host": "amg17902-amg17902c1-amgplt0055.playout.now3.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 854,
+              "height": 480,
+              "bandwidth": 1200000,
+              "codecs": "avc1.640029,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 9,
+              "media": {
+                "host": "amg17902-amg17902c1-amgplt0055.playout.now3.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 2500000,
+              "codecs": "avc1.640029,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 9,
+              "media": {
+                "host": "amg17902-amg17902c1-amgplt0055.playout.now3.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "bandwidth": 4300000,
+              "codecs": "avc1.640029,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 9,
+              "media": {
+                "host": "amg17902-amg17902c1-amgplt0055.playout.now3.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 5,
+          "adaptive": true,
+          "api17_renditions": 4
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "test-kitchen",
+      "name": "America\u2019s Test Kitchen",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dbrb49pjoymg4.cloudfront.net/10001/99991369/hls/8-9-878.m3u8?ads.xumo_channelId=99991369&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads.asnw=&ads.caid=AmericasTestKitchen&ads.csid=xumo_android_AmericasTestKitchen_ssai&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_coppa=0&ads.genre=&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_genre=&ads._fw_content_rating=&ads.xumo_contentId=1066&ads.xumo_contentName=AmericasTestKitchen&ads.xumo_providerId=1066&ads.xumo_providerName=AmericasTestKitchen&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.channelId=99991369&ads.xumo_platform=android&ads.site_id=&ads.appName=GrapefruitFAST&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dbrb49pjoymg4.cloudfront.net",
+          "renditions": [
+            {
+              "width": 854,
+              "height": 480,
+              "bandwidth": 1249336,
+              "codecs": "avc1.4d4029,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "amg01420-americastestkitchen-amg01420c1-xumo-us-878.playouts.now.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 2964940,
+              "codecs": "avc1.640029,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "amg01420-americastestkitchen-amg01420c1-xumo-us-878.playouts.now.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 871015,
+              "codecs": "avc1.77.30,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "amg01420-americastestkitchen-amg01420c1-xumo-us-878.playouts.now.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "bandwidth": 5287612,
+              "codecs": "avc1.640029,mp4a.40.2",
+              "frame_rate": 29.97,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 10,
+              "media": {
+                "host": "amg01420-americastestkitchen-amg01420c1-xumo-us-878.playouts.now.amagi.tv",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 4,
+          "adaptive": true,
+          "api17_renditions": 3
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    },
+    {
+      "id": "family-affair",
+      "name": "Family Affair Channel",
+      "result": "media-reachable",
+      "adaptive": true,
+      "sources": [
+        {
+          "source": "https://dbrb49pjoymg4.cloudfront.net/10001/99951146/hls/master.m3u8?includeAssetTags=true&ads.xumo_channelId=99951146&ads.xumo_streamId=99951146&ads.channelId=99951146&ads.channelName=MPIMediaFamilyAffair&ads.caid=MPIMediaFamilyAffair&ads.csid=xumo_android_MPIMediaFamilyAffair_ssai&ads.genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_content_genre=Entertainment%2CDrama%2CGD%2CGV&ads._fw_coppa=0&ads.xumo_contentId=3769&ads.xumo_contentName=MPIMediaFamilyAffair&ads.xumo_providerId=3769&ads.xumo_providerName=MPIMediaFamilyAffair&ads.asnw=&ads.xumo_channelName=MPIMediaFamilyAffair&ads._fw_h_x_country=US&ads._fw_ifa_type=&ads._fw_did=00000000-0000-0000-0000-000000000000&ads.amznappId=&ads.lat=&ads.lon=&ads.os=Android&ads.osv=4.2.2&ads._fw_is_lat=1&ads._fw_us_privacy=1---&ads._fw_content_category=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=unknown&ads._fw_device_model=unknown&ads.xumo_platform=android&ads.site_id=&ads.appVersion=1.0-beta-1&ads._fw_app_bundle=io.github.hayliewordsman.grapefruitfast&ads._fw_app_store_url=&ads.appName=GrapefruitFAST",
+          "result": "media-reachable",
+          "stage": "complete",
+          "master_host": "dbrb49pjoymg4.cloudfront.net",
+          "renditions": [
+            {
+              "width": 768,
+              "height": 432,
+              "bandwidth": 1200000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 11,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 256,
+              "height": 144,
+              "bandwidth": 230000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 11,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 440000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 11,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 640,
+              "height": 360,
+              "bandwidth": 700000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 11,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 2500000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 11,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            },
+            {
+              "width": 1280,
+              "height": 720,
+              "bandwidth": 5000000,
+              "codecs": "avc1.64001f,mp4a.40.2",
+              "frame_rate": 0.0,
+              "playlist_host": "dbrb49pjoymg4.cloudfront.net",
+              "segment_count": 11,
+              "media": {
+                "host": "live-content-cf.xumo.com",
+                "sample_bytes": 65536,
+                "framing": "mpeg-ts"
+              },
+              "initializations": [],
+              "aes128_keys_checked": 0,
+              "result": "media-reachable"
+            }
+          ],
+          "audio": [],
+          "video_variants": 6,
+          "adaptive": true,
+          "api17_renditions": 6
+        }
+      ],
+      "checked_utc": "2026-11-03T02:44:03.800345+00:00"
+    }
+  ],
+  "note": "Global National and Winnipeg had intermittent runtime proxy CONNECT 403 on media samples in the full run; all renditions passed on targeted follow-up. Prior failures are retained per channel."
+}

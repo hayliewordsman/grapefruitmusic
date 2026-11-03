@@ -23,11 +23,11 @@ A jailbroken JP5S needs no additional root permissions for this app. Actual devi
 
 ## Channel catalog
 
-`src/main/assets/channels.json` contains 28 initial channel candidates: three CityNews feeds (Toronto, West/Calgary & Edmonton, Vancouver), fourteen Global News feeds (National, Toronto, Winnipeg, Edmonton, BC, Calgary, Halifax, Kingston, Lethbridge, Montreal, Okanagan, Peterborough, Regina, Saskatoon), NBC News NOW, ABC News Live, CBS News 24/7, and eight series/reality/lifestyle channels.
+`src/main/assets/channels.json` contains 28 source-reviewed channels: three distinct CityNews feeds (Toronto, Alberta/Calgary & Edmonton, Vancouver), fourteen Global News feeds (National, Toronto, Winnipeg, Edmonton, BC, Calgary, Halifax, Kingston, Lethbridge, Montreal, Okanagan, Peterborough, Regina, Saskatoon), NBC News NOW, ABC News Live, CBS News 24/7, and eight entertainment channels: The Carol Burnett Show, Baywatch, Unsolved Mysteries, Forensic Files, Deal or No Deal, The Martha Stewart Channel, America’s Test Kitchen and Family Affair Channel.
 
 **CP24 is excluded:** no public video stream was obtained from cp24.com. Do not add third-party CP24 restreams.
 
-Each entry has an official viewing page and endpoint provenance. Only public broadcaster/distributor CDN candidates are included; an IPTV directory listing is not proof of permission for third-party redistribution or current availability. No broad community playlist is imported at runtime. Channel names belong to their owners; Grapefruit is not affiliated with them. Before distribution, review the source terms and run the probes from the intended region. The catalog currently contains unverified candidates, including older Global origin paths; replace failed paths with current official ones after live verification. Fourteen listed Global regions do not imply that every stream is currently reachable.
+Each entry has an official viewing page and first-party endpoint provenance. News sources come from the broadcasters' current player metadata; NBC and entertainment sources come from Xumo's official guide and HLS/SSAI metadata. Provider ads and regional restrictions remain. `docs/fast/catalog-sources.json` records the source URLs, ad-template handling and retired candidates. No community playlist is imported at runtime. A reachable public feed is not a grant of third-party redistribution rights. Review the source terms and probe from the intended region before distribution. Channel names belong to their owners; Grapefruit is not affiliated with them.
 
 The beta has a channel guide, **not a programme schedule/EPG**. It does not invent programme titles or times. Stream links ship in the APK, so catalog corrections currently require an app update.
 
@@ -37,7 +37,15 @@ Source checks:
 python3 tools/fast/check_streams.py --output work/stream-report.json
 ```
 
-The checker follows the public HLS master to a media playlist and checks a media segment sample. It records variants, failures and hosts without adding location workarounds or stripping ads. A successful check establishes reachability, not distribution rights or JP5S compatibility. During implementation the environment policy blocked the stream hosts, so successful playback is **not yet verified**.
+The checker follows every public HLS master through all video/audio renditions and bounded media samples, including initialization/key resources where present. It rejects DRM, insecure redirects, non-media responses and ended playlists without adding location workarounds or stripping ads. The refreshed catalog passed all 28 channels across the full run and a recorded follow-up; Global National and Winnipeg had intermittent runtime proxy denials in the full run. Bounded ffprobe samples identified H.264/AAC for all 28. See `docs/fast/validation.md` and the committed JSON reports for exact scope and failures. JP5S playback remains untested.
+
+The quality caps are strict: Global's lowest track exceeds Data saver's bitrate cap, so Global video requires Auto. Compatibility has no matching track for CityNews, Global or America's Test Kitchen. The player reports this and suggests Auto. Auto adaptation still depends on measured bandwidth and the available provider tracks.
+
+Offline probe regression tests (also run in FAST CI):
+
+```sh
+python3 -m unittest discover -s tools/fast -p 'test_*.py' -v
+```
 
 Official availability references:
 
@@ -56,7 +64,7 @@ JDK 21, Android SDK 36, build tools 35:
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
-Debug APK: `fast/build/outputs/apk/debug/fast-debug.apk`. Debug signatures are for testing, separate from the permanent release key.
+Debug APK: `fast/build/outputs/apk/debug/fast-debug.apk`. Debug signatures are for testing, separate from the permanent release key. PR Actions also supplies a `grapefruit-fast-1.0-beta-1-test-apk` artifact with an installable test APK, checksum and verification evidence.
 
 `.github/workflows/fast.yml` builds/tests/lints FAST and uploads its own APK/report artifacts. To publish, run it manually on the repository's default branch with `publish` enabled. Set these repository secrets first:
 

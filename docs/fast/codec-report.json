@@ -1,0 +1,701 @@
+{
+  "scope": "ffprobe of bounded 512 KiB samples from the lowest video rendition plus separate audio; codec metadata only, not JP5S playback.",
+  "channels": [
+    {
+      "id": "citynews-toronto",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 640,
+          "height": 360,
+          "level": 30
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "citynews-west",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 640,
+          "height": 360,
+          "level": 30
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "citynews-vancouver",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 640,
+          "height": 360,
+          "level": 30
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-national",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-toronto",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-winnipeg",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-edmonton",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-bc",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-calgary",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-halifax",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-kingston",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-lethbridge",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-montreal",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-okanagan",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-peterborough",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-regina",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "global-saskatoon",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 848,
+          "height": 480,
+          "level": 31
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "nbc-news-now",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "High",
+          "codec_type": "video",
+          "width": 426,
+          "height": 240,
+          "level": 21
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "scte_35",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "abc-news-live",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 320,
+          "height": 180,
+          "level": 13
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "32000",
+          "channels": 2
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "cbs-news",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "h264",
+          "profile": "High",
+          "codec_type": "video",
+          "width": 400,
+          "height": 224,
+          "level": 13
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "carol-burnett",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 426,
+          "height": 240,
+          "level": 21
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "scte_35",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "baywatch",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 426,
+          "height": 240,
+          "level": 21
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "scte_35",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "unsolved-mysteries",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "High",
+          "codec_type": "video",
+          "width": 192,
+          "height": 144,
+          "level": 12
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "44100",
+          "channels": 2
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "forensic-files",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "High",
+          "codec_type": "video",
+          "width": 256,
+          "height": 144,
+          "level": 12
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "deal-or-no-deal",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "High",
+          "codec_type": "video",
+          "width": 256,
+          "height": 144,
+          "level": 12
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "martha-stewart",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 426,
+          "height": 240,
+          "level": 41
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "test-kitchen",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "Main",
+          "codec_type": "video",
+          "width": 640,
+          "height": 360,
+          "level": 30
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        },
+        {
+          "codec_name": "scte_35",
+          "codec_type": "data"
+        },
+        {
+          "codec_name": "timed_id3",
+          "codec_type": "data"
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    },
+    {
+      "id": "family-affair",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "profile": "High",
+          "codec_type": "video",
+          "width": 256,
+          "height": 144,
+          "level": 12
+        },
+        {
+          "codec_name": "aac",
+          "profile": "LC",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "h264_video": true,
+      "aac_audio": true
+    }
+  ]
+}
