@@ -67,7 +67,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     private View mini;
     private View miniSeparator;
     private ArtworkView miniArt;
-    private TextView miniTitle;
+    private com.grapefruitmusic.ui.widget.MarqueeText miniTitle;
     private IconView miniPlay;
     private TextView notice;
     private final Runnable hideNotice = new Runnable() {
@@ -125,11 +125,13 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         miniSeparator = findViewById(R.id.mini_separator);
         miniArt = (ArtworkView) findViewById(R.id.mini_art);
         miniArt.setPlaceholderColors(Ui.color(this, R.attr.gfFill), Ui.color(this, R.attr.gfTextSecondary));
-        miniTitle = (TextView) findViewById(R.id.mini_title);
-        // A title too long for the mini player scrolls by (marquee, in the layout), three times a
-        // song; Android only scrolls a selected line, and Now Playing deselects it while it covers it.
-        miniTitle.setSelected(true);
+        miniTitle = (com.grapefruitmusic.ui.widget.MarqueeText) findViewById(R.id.mini_title);
+        // A title too long for the mini player scrolls by, three times a song (MarqueeText: a
+        // TextView's marquee started over after a letter); not while Now Playing covers it.
+        miniTitle.setTextSize(15);
+        miniTitle.setTextColor(Ui.color(this, R.attr.gfTextPrimary));
         miniTitle.setTypeface(Fonts.semiBold());
+        miniTitle.setRepeats(3);
         miniArtist = (TextView) findViewById(R.id.mini_artist);
         miniArtist.setTypeface(Fonts.regular());
         // A pill above the tabs, a shade darker while pressed; the artwork round in its end.
@@ -446,7 +448,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
 
     /** Whether the mini player's title may scroll (not while Now Playing covers it). */
     void setMiniTitleScrolls(boolean scrolls) {
-        if (miniTitle != null) miniTitle.setSelected(scrolls);
+        if (miniTitle != null) miniTitle.setScrolls(scrolls);
     }
 
     void openNowPlaying() {
@@ -645,10 +647,9 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         miniArtist.setVisibility(text == null || text.length() == 0 ? View.GONE : View.VISIBLE);
     }
 
-    /** Only when it changes: setting the same text again would start its scrolling over. */
+    /** The same text again leaves it scrolling where it is (MarqueeText.setText). */
     private void setMiniTitle(String text) {
-        if (text == null) text = "";
-        if (!text.equals(miniTitle.getText().toString())) miniTitle.setText(text);
+        miniTitle.setText(text);
     }
 
     @Override

@@ -11,7 +11,8 @@
         <LinearLayout android:id="@+id/mini_player" android:layout_width="match_parent" android:layout_height="64dp" android:layout_marginLeft="12dp" android:layout_marginRight="12dp" android:layout_marginTop="4dp" android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="10dp" android:paddingRight="8dp" android:visibility="gone">
             <com.grapefruitmusic.ui.widget.ArtworkView android:id="@+id/mini_art" android:layout_width="44dp" android:layout_height="44dp" />
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginLeft="12dp" android:layout_weight="1" android:orientation="vertical">
-                <TextView android:id="@+id/mini_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="marquee" android:marqueeRepeatLimit="3" android:requiresFadingEdge="horizontal" android:fadingEdgeLength="16dp" android:singleLine="true" android:textColor="?attr/gfTextPrimary" android:textSize="15sp" android:textStyle="bold" />
+                <!-- Scrolls by when too long (MarqueeText; size, colour and font set in MainActivity). -->
+                <com.grapefruitmusic.ui.widget.MarqueeText android:id="@+id/mini_title" android:layout_width="match_parent" android:layout_height="wrap_content" />
                 <TextView android:id="@+id/mini_artist" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:singleLine="true" android:textColor="?attr/gfTextSecondary" android:textSize="13sp" />
             </LinearLayout>
             <com.grapefruitmusic.ui.widget.IconView android:id="@+id/mini_play" android:layout_width="44dp" android:layout_height="44dp" android:padding="12dp" />

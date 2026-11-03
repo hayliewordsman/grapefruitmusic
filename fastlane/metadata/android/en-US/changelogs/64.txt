@@ -1,0 +1,2 @@
+5.1
+Podcasts on a wide screen scroll sideways like the Library. Lyrics and Up Next fill the left side in landscape and on square phones, sized to fit. The playing notification always names the song. Long titles in the mini player scroll smoothly instead of jumping back. Playlist saves on this device can't be taken down by the phone's media library, and a crash always leaves a report.
