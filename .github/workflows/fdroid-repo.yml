@@ -161,13 +161,13 @@ jobs:
           if [ -f "$notes" ]; then
             cp "$notes" "$RUNNER_TEMP/notes.md"
           else
-            echo "Grapefruit Music $NAME" > "$RUNNER_TEMP/notes.md"
+            echo "Grapefruit Audio $NAME" > "$RUNNER_TEMP/notes.md"
           fi
           flags=()
           if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
           # Tagged on the commit this run built. (GitHub doesn't let a workflow's token tag an older
           # commit whose workflow files differ from the current ones.)
-          gh release create "$TAG" "$APK" --target "$GITHUB_SHA" --title "Grapefruit Music $NAME" \
+          gh release create "$TAG" "$APK" --target "$GITHUB_SHA" --title "Grapefruit Audio $NAME" \
             --notes-file "$RUNNER_TEMP/notes.md" "${flags[@]}"
 
   publish:
