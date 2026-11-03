@@ -179,12 +179,21 @@ public final class AboutFragment extends BaseFragment {
         Notice.show(c, "Copied " + text);
     }
 
-    /** The wordmark's sizes where there's room (the name, the line under it); smaller on a narrow screen. */
-    private static final float WORDMARK_SP = 30;
-    private static final float TAGLINE_SP = 17;
+    /**
+     * The wordmark's largest sizes (the name, the line under it), for a tablet: on a phone each line
+     * is as large as fits across, the tagline as wide as the name. Large because the lettering's
+     * triangles (19 to a capital) only look like triangles when they're a couple of dp across.
+     */
+    private static final float WORDMARK_SP = 44;
+    private static final float TAGLINE_SP = 23;
 
-    /** Keeps a wordmark line on one line at the largest size up to sp that fits (and on turning). */
+    /**
+     * Keeps a wordmark line on one line at the largest size up to sp that fits (and on turning), drawn
+     * without hinting, which would snap the tiny triangles to the pixel grid as squares.
+     */
     private static void fitWordmark(final TextView t, final float sp) {
+        t.getPaint().setHinting(android.graphics.Paint.HINTING_OFF);
+        t.getPaint().setSubpixelText(true);
         t.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int l, int top, int r, int b, int ol, int ot, int or, int ob) {

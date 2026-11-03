@@ -71,6 +71,9 @@ public final class Icons {
     /** A screen on a stand with a play mark: the TV & Movies tab. */
     public static final int TV = 39;
 
+    /** Two beamed eighth notes, bold: the Music tab. */
+    public static final int MUSIC = 40;
+
     private static final Paint PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final Path PATH = new Path();
     private static final RectF OVAL = new RectF();
@@ -428,6 +431,27 @@ public final class Icons {
                 c.drawPath(path, p);
                 c.drawCircle(5.1f, 12, 1.4f, p);
                 c.drawCircle(5.1f, 18, 1.4f, p);
+                break;
+            case MUSIC:
+                stroke(p, 2);
+                c.drawLine(9.2f, 17.4f, 9.2f, 7, p);
+                c.drawLine(19.8f, 15.2f, 19.8f, 4.8f, p);
+                p.setStyle(Paint.Style.FILL);
+                // The beam across the stems' tops, rising to the right.
+                path.moveTo(8.2f, 5.6f);
+                path.lineTo(20.8f, 3);
+                path.lineTo(20.8f, 6.4f);
+                path.lineTo(8.2f, 9);
+                path.close();
+                c.drawPath(path, p);
+                // The heads, tilted as written.
+                for (float[] head : new float[][] {{6.4f, 17.8f}, {17, 15.6f}}) {
+                    c.save();
+                    c.rotate(-22, head[0], head[1]);
+                    OVAL.set(head[0] - 3.3f, head[1] - 2.55f, head[0] + 3.3f, head[1] + 2.55f);
+                    c.drawOval(OVAL, p);
+                    c.restore();
+                }
                 break;
             case TV:
                 stroke(p, 1.8f);

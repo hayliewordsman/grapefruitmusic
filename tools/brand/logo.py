@@ -13,8 +13,9 @@ are taken from the font, shaped with HarfBuzz, so the SVGs need no font to show 
                                              "Music, Podcasts, and Audiobooks"
   ("-dark" for dark backgrounds)
 
-With a third argument, also the splash screen's pictures and the app's icons for Android (PNG:
-Android 4.2 has no vector drawables) into that res folder: the launcher icon (the grapefruit, round,
+With a third argument, also the splash screen's pictures (at three widths, for screens from 320dp,
+360dp and 400dp wide) and the app's icons for Android (PNG: Android 4.2 has no vector drawables)
+into that res folder: the launcher icon (the grapefruit, round,
 the same in every theme), its adaptive layers for Android 8 and later, and the About page's icon.
 
 Needs Python 3 with fontTools, uharfbuzz and brotli (cairosvg and pngquant for the PNGs), and the
@@ -255,15 +256,17 @@ def horizontal(text, colours):
 
 
 def stacked(text, colours):
-    """The grapefruit, then "Grapefruit Audio" ("Grapefruit" in the name's colour), then the tagline."""
+    """The grapefruit, then "Grapefruit Audio" ("Grapefruit" in the name's colour), then the tagline,
+    both lines the picture's width: as large as they can be, since the lettering's triangles (19 to
+    a capital) are only seen as triangles when they're a couple of dp across."""
     d = 256.0
     big = 92.0
-    medium = 44.0
     space = " "
     w_name = text.width(NAME + space, big)
     w1 = w_name + text.width(AUDIO, big)
+    medium = big * w1 / text.width(TAGLINE, big)
     w2 = text.width(TAGLINE, medium)
-    width = max(d, w1, w2) + 16
+    width = max(d, w1, w2) + 8
     cx = width / 2
     top = 8.0
     line1 = top + d + d * 0.16 + big * text.cap
@@ -293,14 +296,23 @@ def png(svg_text, width, path):
                     "--strip", "--output", str(path), str(path)], check=False)
 
 
+# The splash screen's stacked logo, as wide as the screen allows (a window background's picture
+# isn't scaled: wider than the screen, it would be cut off): 8dp clear each side of a 320dp phone,
+# 12dp of a 360dp one, 16dp of a 400dp one and anything wider.
+SPLASH_WIDTHS = (("", 304), ("-w360dp", 336), ("-w400dp", 368))
+
+
 def android(text, res):
-    """The splash screen's pictures: the stacked logo (light themes, dark themes) 280dp wide at each
-    density, and Android 12's splash icon (the grapefruit, 192dp in a 288dp square)."""
-    for density, scale in DENSITIES.items():
-        folder = Path(res) / ("drawable-" + density)
-        folder.mkdir(parents=True, exist_ok=True)
-        png(stacked(text, LIGHT_BG), 280 * scale, folder / "splash_logo_light.png")
-        png(stacked(text, DARK_BG), 280 * scale, folder / "splash_logo_dark.png")
+    """The splash screen's pictures: the stacked logo (light themes, dark themes) at each width in
+    SPLASH_WIDTHS and each density, and Android 12's splash icon (the grapefruit, 192dp in a 288dp
+    square)."""
+    light, dark = stacked(text, LIGHT_BG), stacked(text, DARK_BG)
+    for qualifier, width in SPLASH_WIDTHS:
+        for density, scale in DENSITIES.items():
+            folder = Path(res) / ("drawable" + qualifier + "-" + density)
+            folder.mkdir(parents=True, exist_ok=True)
+            png(light, width * scale, folder / "splash_logo_light.png")
+            png(dark, width * scale, folder / "splash_logo_dark.png")
     icon = svg(288, 288, "Grapefruit", grapefruit(144, 144, 192, "i"))
     folder = Path(res) / "drawable-xxhdpi"
     png(icon, 288 * 3, folder / "splash_icon.png")
@@ -351,6 +363,9 @@ def wordmark_font(text, path):
     options.layout_features = ["kern"]
     options.name_IDs = ["*"]
     options.notdef_outline = True
+    # No TrueType hinting: it would move the triangles' points to the pixel grid, and at a couple of
+    # pixels across a triangle snapped to the grid is a square. (AboutFragment draws it unhinted too.)
+    options.hinting = False
     sub = subset.Subsetter(options)
     font = TTFont(io.BytesIO(text_font_bytes(text)))
     sub.populate(text=WORDMARK)

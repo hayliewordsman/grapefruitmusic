@@ -52,7 +52,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             TAB_SETTINGS};
     private static final String[] TAB_NAMES = {"Music", "Radio", "Podcasts", "Audiobooks", "TV & Movies", "Search",
             "Settings"};
-    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.RADIO, Icons.PODCASTS, Icons.BOOK, Icons.TV,
+    private static final int[] TAB_ICONS = {Icons.MUSIC, Icons.RADIO, Icons.PODCASTS, Icons.BOOK, Icons.TV,
             Icons.SEARCH, Icons.SETTINGS};
     /** Grapefruit TV & Movies' package, while it's installed (the TV & Movies tab shows then). */
     private String tvPackage;
