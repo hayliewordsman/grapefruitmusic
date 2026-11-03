@@ -18,12 +18,12 @@ AutoName: Grapefruit Music & Podcasts
 
 RepoType: git
 Repo: https://github.com/hayliewordsman/grapefruitmusic.git
-Binaries: https://github.com/hayliewordsman/grapefruitmusic/releases/download/v%v/grapefruit-music-%v.apk
+Binaries: https://github.com/hayliewordsman/grapefruitmusic/releases/download/v%v/grapefruit-%v.apk
 
 Builds:
-  - versionName: '5.0'
-    versionCode: 61
-    commit: 3968601ae9b87d679b79306500143be7de138b24
+  - versionName: '5.1'
+    versionCode: 64
+    commit: 769bfa9a47739262536c1c58fda1cf36e9d8ed11
     subdir: app
     sudo:
       - apt-get update
@@ -49,12 +49,14 @@ MaintainerNotes: |-
   is Live Mode's crowd sound: mu-law audio synthesized by tools/live/render_crowd.py from noise and
   arithmetic (no recordings), read by LiveCrowd.read; GPL-3.0-or-later like the app, manifest
   app/src/main/assets/live_crowd.json.
-  app/src/main/assets/fonts holds Geist and a subset of Geist Pixel (Vercel, SIL OFL 1.1; the licence
-  is beside them). app/src/test/resources holds unit-test fixtures only.
+  grapefruit-ui/src/main/assets/fonts holds Geist and a subset of Geist Pixel (Vercel, SIL OFL 1.1; the
+  licence is beside them); grapefruit-ui is a library module this app builds from source.
+  app/src/test/resources holds unit-test fixtures only. fast/ is a second app in the same
+  repository (Grapefruit FAST), not built by this recipe.
   NonFreeNet: podcast search and charts use Apple's directory (itunes.apple.com search and lookup,
   rss.applemarketingtools.com); playing and subscribing use each podcast's own RSS feed.
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9.]+$
-CurrentVersion: '5.0'
-CurrentVersionCode: 61
+CurrentVersion: '5.1'
+CurrentVersionCode: 64
