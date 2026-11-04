@@ -43,6 +43,13 @@ interface Engine {
     default void setLength(long ms) {
     }
 
+    /**
+     * How fast to play, pitch kept (Grapefruit's own engine only, which Player uses whenever the
+     * speed isn't 1).
+     */
+    default void setSpeed(float speed) {
+    }
+
     /** Volume Match and ducking, 0 to 1. */
     void setVolume(float volume);
 

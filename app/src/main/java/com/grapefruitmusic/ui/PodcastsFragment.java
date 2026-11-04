@@ -61,6 +61,11 @@ public final class PodcastsFragment extends BaseFragment {
         return true;
     }
 
+    /** Search Podcasts (the Search chip, and the tab bar's Podcasts menu). */
+    static PodcastsFragment search() {
+        return page(SEARCH, null);
+    }
+
     public static PodcastsFragment show(MediaItem show) {
         return page(SHOW, show);
     }
@@ -138,6 +143,25 @@ public final class PodcastsFragment extends BaseFragment {
                         return true;
                     });
             addHeaderControl(header, Ui.button(c, "Add by RSS address", v -> addFeed()), 8);
+        }
+        if (mode == SUBSCRIPTIONS) {
+            // Subscriptions in and out as an OPML file, the file podcast apps trade them in.
+            LinearLayout transfer = Ui.actionRow(c);
+            LinearLayout in = Ui.pill(c, com.grapefruitmusic.ui.widget.Icons.PLUS, "Import");
+            in.setContentDescription("Import subscriptions from an OPML file");
+            in.setOnClickListener(v -> OpmlTransfer.importFile(this, this::reloadSubscriptions));
+            transfer.addView(in, new LinearLayout.LayoutParams(0, Ui.dp(c, 44), 1));
+            LinearLayout out = Ui.pill(c, com.grapefruitmusic.ui.widget.Icons.DOWNLOAD, "Export");
+            out.setContentDescription("Export subscriptions to an OPML file");
+            out.setOnClickListener(v -> OpmlTransfer.export(this));
+            LinearLayout.LayoutParams outLp = new LinearLayout.LayoutParams(0, Ui.dp(c, 44), 1);
+            outLp.leftMargin = Ui.dp(c, 8);
+            transfer.addView(out, outLp);
+            menu.addNote(transfer);
+            TextView hint = Ui.text(c, 13, R.attr.gfTextSecondary, false);
+            hint.setSingleLine(false);
+            hint.setText("Move your subscriptions to or from another podcast app with an OPML file.");
+            menu.addNote(hint);
         }
         if (mode == DOWNLOADED) {
             TextView hint = Ui.text(c, 14, R.attr.gfTextSecondary, false);
@@ -327,50 +351,60 @@ public final class PodcastsFragment extends BaseFragment {
     }
 
     static void episodeActions(final BaseFragment page, final MediaItem m, final Runnable refresh) {
+        final List<String> labels = new ArrayList<String>();
+        final List<Runnable> actions = new ArrayList<Runnable>();
+        episodeItems(page, m, refresh, labels, actions);
+        Ui.dialog(page.getActivity())
+                .setTitle(m.title)
+                .setItems(labels.toArray(new String[labels.size()]), (d, w) -> actions.get(w).run())
+                .show();
+    }
+
+    /** An episode's menu rows (Play, its download, Mark Unplayed), added to labels and actions. */
+    static void episodeItems(final BaseFragment page, final MediaItem m, final Runnable refresh,
+                             List<String> labels, List<Runnable> actions) {
         final Context c = page.getActivity();
         final PodcastStore store = PodcastStore.get(c);
         PodcastDownload progress = store.downloadProgress(m);
-        boolean local = progress != null && progress.status == PodcastDownload.COMPLETE;
-        boolean active = progress != null && progress.active();
+        final boolean local = progress != null && progress.status == PodcastDownload.COMPLETE;
+        final boolean active = progress != null && progress.active();
         String action =
                 local
                         ? "Remove Download"
                         : active
                                 ? "Cancel Download"
                                 : progress != null ? "Retry Download" : "Download Episode";
-        Ui.dialog(c)
-                .setTitle(m.title)
-                .setItems(
-                        new String[] {"Play", action, "Mark Unplayed"},
-                        (d, w) -> {
-                            if (w == 0) {
-                                Player.get(c).playNow(m);
-                                page.main().openNowPlaying();
-                            } else if (w == 2) {
-                                PodcastPositions.get(c).clear(m.id);
-                                if (m.sameAs(Player.get(c).current())) Player.get(c).seekTo(0);
-                            } else {
-                                try {
-                                    if (local || active) store.removeDownload(m);
-                                    else store.download(m);
-                                    Notice.show(
-                                            c,
-                                            local
-                                                    ? "Download removed"
-                                                    : active
-                                                            ? "Download canceled"
-                                                            : "Episode queued for download");
-                                    if (refresh != null) refresh.run();
-                                } catch (Exception e) {
-                                    Notice.show(
-                                            c,
-                                            e.getMessage() != null
-                                                    ? e.getMessage()
-                                                    : "Couldn't download episode");
-                                }
-                            }
-                        })
-                .show();
+        labels.add("Play");
+        actions.add(() -> {
+            Player.get(c).playNow(m);
+            page.main().openNowPlaying();
+        });
+        labels.add(action);
+        actions.add(() -> {
+            try {
+                if (local || active) store.removeDownload(m);
+                else store.download(m);
+                Notice.show(
+                        c,
+                        local
+                                ? "Download removed"
+                                : active
+                                        ? "Download canceled"
+                                        : "Episode queued for download");
+                if (refresh != null) refresh.run();
+            } catch (Exception e) {
+                Notice.show(
+                        c,
+                        e.getMessage() != null
+                                ? e.getMessage()
+                                : "Couldn't download episode");
+            }
+        });
+        labels.add("Mark Unplayed");
+        actions.add(() -> {
+            PodcastPositions.get(c).clear(m.id);
+            if (m.sameAs(Player.get(c).current())) Player.get(c).seekTo(0);
+        });
     }
 
     private void render() {
@@ -450,6 +484,17 @@ public final class PodcastsFragment extends BaseFragment {
                     }
                     scheduleDownloadPoll();
                 });
+    }
+
+    /** After an import: the list again, if this page is still here. */
+    private void reloadSubscriptions() {
+        if (getActivity() != null && getView() != null && mode() == SUBSCRIPTIONS) load();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        OpmlTransfer.onResult(this, requestCode, resultCode, data, this::reloadSubscriptions);
     }
 
     @Override

@@ -44,10 +44,10 @@ final class SectionMenu {
     /** Each tab's first section: the Library's Recently Added, Podcasts' Discover. */
     static final int FIRST = 0;
     /** The Library's sections: Recently Added, then BrowseFragment's PLAYLISTS to SONGS (1 to 4). */
-    private static final String[] LIBRARY = {"Recently Added", "Playlists", "Artists", "Albums", "Songs"};
+    static final String[] LIBRARY = {"Recently Added", "Playlists", "Artists", "Albums", "Songs"};
     /** Podcasts' sections after Discover. */
     static final int SUBSCRIPTIONS = 1, DOWNLOADS = 2;
-    private static final String[] PODCASTS = {"Discover", "Subscriptions", "Downloads"};
+    static final String[] PODCASTS = {"Discover", "Subscriptions", "Downloads"};
 
     /** Width of the chip column on a wide screen, with the fade at its right edge. */
     private static final int COLUMN_DP = 232;
@@ -92,7 +92,7 @@ final class SectionMenu {
 
     /** The Library's menu: Search, where the music comes from, and its sections. */
     static SectionMenu library(final BaseFragment page, int chosen) {
-        SectionMenu menu = new SectionMenu(page, "Library");
+        SectionMenu menu = new SectionMenu(page, "Music");
         menu.addSearch(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

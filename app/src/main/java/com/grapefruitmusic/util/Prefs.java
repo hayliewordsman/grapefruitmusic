@@ -111,6 +111,18 @@ public final class Prefs {
     }
 
     /** How much of the vocal Karaoke Mode takes away, 0 to 1. */
+    /** Playback speed (pitch kept), its own for music, for podcasts and for audiobooks. */
+    public static final int SPEED_MUSIC = 0, SPEED_PODCASTS = 1, SPEED_AUDIOBOOKS = 2;
+    private static final String[] SPEED_KEYS = {"speed_music", "speed_podcasts", "speed_audiobooks"};
+
+    public static float speed(int kind) {
+        return prefs.getFloat(SPEED_KEYS[kind], 1f);
+    }
+
+    public static void setSpeed(int kind, float speed) {
+        prefs.edit().putFloat(SPEED_KEYS[kind], Math.max(0.5f, Math.min(2.5f, speed))).apply();
+    }
+
     public static float karaokeAmount() {
         return prefs.getFloat("karaoke_amount", 1f);
     }

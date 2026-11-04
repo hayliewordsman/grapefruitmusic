@@ -1,9 +1,12 @@
-Grapefruit Music & Podcasts is a small, native music and podcast player for Android 4.2.2 (Jelly Bean) and later. It plays music you own: files on your device, and your own Navidrome, Subsonic or Jellyfin servers.
+Grapefruit Audio (until 6.0, Grapefruit Music & Podcasts) is a small, native music, podcast and audiobook player for Android 4.2.2 (Jelly Bean) and later. It plays music you own: files on your device, and your own Navidrome, Subsonic or Jellyfin servers.
 
 • Download albums, playlists and songs for offline listening
-• Discover podcasts, subscribe, download episodes and receive periodic new-episode notifications
+• Discover podcasts, subscribe, download episodes and receive periodic new-episode notifications; import and export your subscriptions as OPML
+• Audiobooks: DRM-free M4B and MP3 books (Libro.fm's downloads included) with chapters, and your place kept
+• Playback speed from 0.8× to 2× with the pitch kept, set separately for music, podcasts and audiobooks
+• A sleep timer for music, podcasts, audiobooks and radio
 • Search music, radio stations and podcasts together
-• Time-synced lyrics from .lrc files, your server or LRCLIB
+• Time-synced lyrics from .lrc files, your server or LRCLIB, with a timing nudge for lyrics that run early or late
 • Internet radio from the Radio Browser directory, and FM radio on tablets whose built-in radio Grapefruit supports
 • Volume Match, Volume Boost, a 10-band equalizer, Mono Audio and Karaoke Mode
 • Live Mode: any song as a stadium show, with a crowd that cheers, sings along and applauds

@@ -14,7 +14,7 @@ public final class Db extends SQLiteOpenHelper {
     }
 
     private Db(Context context) {
-        super(context, "grapefruit.db", null, 5);
+        super(context, "grapefruit.db", null, 6);
     }
 
     @Override
@@ -37,6 +37,22 @@ public final class Db extends SQLiteOpenHelper {
         createPlaylistMeta(db);
         createLoudness(db);
         createPodcasts(db);
+        createSix(db);
+    }
+
+    /**
+     * Version 6 (Grapefruit Audio 6.0): each song's lyrics timing, kept apart from its cached lyrics
+     * so a fresh copy of them keeps it; and the audiobooks found, with where each was left.
+     */
+    private static void createSix(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE lyrics_timing (song_key TEXT PRIMARY KEY, offset_ms INTEGER NOT NULL)");
+        // An audiobook: its folder (or its one file), what it's called, its files and chapters (JSON),
+        // the files' signature (names, sizes, dates: read again when it changes), and where it was left.
+        db.execSQL("CREATE TABLE audiobooks ("
+                + "id TEXT PRIMARY KEY, title TEXT, author TEXT, art TEXT, duration_ms INTEGER,"
+                + "parts TEXT, chapters TEXT, signature TEXT, added_at INTEGER, played_at INTEGER,"
+                + "part INTEGER NOT NULL DEFAULT 0, position_ms INTEGER NOT NULL DEFAULT 0,"
+                + "finished INTEGER NOT NULL DEFAULT 0)");
     }
 
     /** Version 2 (Grapefruit 1.5). */
@@ -73,5 +89,6 @@ public final class Db extends SQLiteOpenHelper {
         if (oldVersion < 3) createLoudness(db);
         if (oldVersion < 4) createPodcasts(db);
         else if (oldVersion < 5) createPodcastTransfers(db);
+        if (oldVersion < 6) createSix(db);
     }
 }

@@ -41,7 +41,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
 
     @Override
     String backTitle() {
-        return "Library";
+        return "Music";
     }
 
     @Override
@@ -59,7 +59,7 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
             @Override
             public void onItem(MediaItem item, int index) {
                 if (item.kind == MediaItem.PODCAST) push(PodcastsFragment.show(item));
-                else push(AlbumFragment.newInstance(item.sourceId, item, "Library"));
+                else push(AlbumFragment.newInstance(item.sourceId, item, "Music"));
             }
 
             @Override
@@ -175,10 +175,8 @@ public final class LibraryFragment extends BaseFragment implements Sources.Liste
         bg(new com.grapefruitmusic.util.Bg.Work<List<MediaItem>>() {
             @Override
             public List<MediaItem> run() throws Exception {
-                List<MediaItem> albums = new java.util.ArrayList<MediaItem>();
-                try { albums.addAll(s.recentAlbums(20)); }
-                catch (Exception e) { if (com.grapefruitmusic.podcast.PodcastStore.get(app).subscriptions().isEmpty()) throw e; }
-                albums.addAll(com.grapefruitmusic.podcast.PodcastStore.get(app).subscriptions());
+                // Music only: podcasts have their own tab (and audiobooks theirs).
+                List<MediaItem> albums = new java.util.ArrayList<MediaItem>(s.recentAlbums(20));
                 List<MediaItem> playlists;
                 try {
                     playlists = meta.apply(s.playlists());

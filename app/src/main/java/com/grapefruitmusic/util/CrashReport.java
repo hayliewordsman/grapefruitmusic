@@ -114,7 +114,7 @@ public final class CrashReport {
 
     static String report(Context context, Thread thread, Throwable e) {
         StringBuilder b = new StringBuilder();
-        b.append("Grapefruit Music & Podcasts crash report\n");
+        b.append("Grapefruit Audio crash report\n");
         String version = "?";
         try {
             PackageInfo p = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
@@ -144,7 +144,7 @@ public final class CrashReport {
     /** The fault and the first few places in the code, in as little memory as can be. */
     static String brief(Throwable e) {
         StringBuilder b = new StringBuilder(1024);
-        b.append("Grapefruit Music & Podcasts crash report (short)\n");
+        b.append("Grapefruit Audio crash report (short)\n");
         b.append("Android: ").append(Build.VERSION.RELEASE).append('\n');
         b.append(e.getClass().getName()).append('\n');
         StackTraceElement[] trace = e.getStackTrace();

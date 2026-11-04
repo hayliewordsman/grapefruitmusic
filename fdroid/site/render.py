@@ -1,4 +1,4 @@
-"""Fills in the front page of Grapefruit Music's F-Droid site (index.html here) and draws its QR code.
+"""Fills in the front page of Grapefruit's F-Droid site (index.html here) and draws its QR code.
 
 Run by .github/workflows/fdroid-repo.yml after fdroid update, with fdroidserver's Python (which has
 the qrcode package): render.py <template> <repo/index-v2.json> <app id> <repo fingerprint> <page url> <out dir>

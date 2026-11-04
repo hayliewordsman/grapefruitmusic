@@ -63,10 +63,15 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         @Override public void run() {
             savePodcastPosition();
             MediaItem m = current();
-            if (playWhenReady && m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId))
-                Bg.mainDelayed(this, 15000);
+            if (playWhenReady && keepsPlace(m)) Bg.mainDelayed(this, 15000);
         }
     };
+
+    /** Podcast episodes and audiobooks: where they were left is kept, every 15 seconds and on pause. */
+    private static boolean keepsPlace(MediaItem m) {
+        return m != null && !m.live && (isAudiobook(m)
+                || com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId));
+    }
     private Engine engine;
     private boolean prepared;
     private boolean playWhenReady;
@@ -129,7 +134,17 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
 
     private void applyVolume() {
         if (engine == null) return;
-        engine.setVolume(matchVolume * (ducked ? 0.2f : 1f));
+        engine.setVolume(matchVolume * (ducked ? 0.2f : 1f) * fade);
+    }
+
+    /** The sleep timer's fade-out: 1 at full volume, down to 0 as it goes off. */
+    private float fade = 1f;
+
+    void setFade(float f) {
+        f = Math.max(0f, Math.min(1f, f));
+        if (f == fade) return;
+        fade = f;
+        applyVolume();
     }
 
     /** Starts the prepared song once nothing's holding it back (it may still be measured). */
@@ -159,8 +174,52 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         if (want != engine.hasEffects()) load(playWhenReady, item.live ? 0 : positionMs());
     }
 
+    /** Grapefruit's own engine: for effects, and for any speed but 1 (Android 4's can't change it). */
     private boolean wantsEffects(MediaItem item) {
-        return effectsFor(item).anyOn() && !item.key().equals(effectsFailedKey);
+        return (effectsFor(item).anyOn() || speedFor(item) != 1f) && !item.key().equals(effectsFailedKey);
+    }
+
+    // ---- Speed ----
+
+    /** The speeds offered (Now Playing's Speed button). */
+    public static final float[] SPEEDS = {0.8f, 1f, 1.2f, 1.5f, 1.75f, 2f};
+
+    /** Which speed an item plays at (Prefs.SPEED_...), or -1 for none: radio and live streams. */
+    public static int speedKind(MediaItem item) {
+        if (item == null || item.live) return -1;
+        if (isAudiobook(item)) return Prefs.SPEED_AUDIOBOOKS;
+        return isPodcast(item) ? Prefs.SPEED_PODCASTS : Prefs.SPEED_MUSIC;
+    }
+
+    public static float speedFor(MediaItem item) {
+        int kind = speedKind(item);
+        return kind < 0 ? 1f : Prefs.speed(kind);
+    }
+
+    /** The speed of what's playing (1 for the radio). */
+    public float speed() {
+        return speedFor(current());
+    }
+
+    /**
+     * Plays what's playing, and the rest of its kind (music, podcasts or audiobooks), at this speed:
+     * switching engines at the same spot when it goes to or from 1.
+     */
+    public void setSpeed(float speed) {
+        MediaItem item = current();
+        int kind = speedKind(item);
+        if (kind < 0) return;
+        Prefs.setSpeed(kind, speed);
+        if (engine != null) {
+            engine.setSpeed(speedFor(item));
+            if (wantsEffects(item) != engine.hasEffects()) load(playWhenReady, positionMs());
+        }
+        changed();
+    }
+
+    /** Is this part of an audiobook? */
+    public static boolean isAudiobook(MediaItem item) {
+        return item != null && com.grapefruitmusic.audiobooks.AudiobookSource.ID.equals(item.sourceId);
     }
 
     /** Is this a podcast episode? */
@@ -174,7 +233,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
      */
     public static Effects effectsFor(MediaItem item) {
         Effects e = effects();
-        if (!isPodcast(item) || (!e.karaoke && !e.live)) return e;
+        if (!(isPodcast(item) || isAudiobook(item)) || (!e.karaoke && !e.live)) return e;
         return new Effects(e.boost, e.eq, e.mono, false, e.karaokeAmount, false, e.liveAmount);
     }
 
@@ -320,8 +379,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     private void changed() {
         Bg.cancelMain(podcastCheckpoint);
         MediaItem m = current();
-        if (playWhenReady && m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId))
-            Bg.mainDelayed(podcastCheckpoint, 15000);
+        if (playWhenReady && keepsPlace(m)) Bg.mainDelayed(podcastCheckpoint, 15000);
         for (Listener l : listeners) l.onPlayerChanged();
     }
 
@@ -390,6 +448,15 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         if (from == to || from < 0 || to < 0 || a >= order.size() || b >= order.size()) return;
         Lists.move(order, a, b);
         changed();
+    }
+
+    /** Plays the queue's index-th item (in its order) from ms: an audiobook's chapter in another part. */
+    public void jumpTo(int index, long ms) {
+        if (index < 0 || index >= order.size()) return;
+        savePodcastPosition();
+        position = index;
+        consecutiveErrors = 0;
+        load(true, ms);
     }
 
     /** Jump to the n-th item of upNext(). */
@@ -521,12 +588,17 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         if (order.isEmpty()) return;
         if (position + 1 < order.size()) {
             position++;
-        } else if (repeat == REPEAT_ALL) {
+        } else if (repeatFor(current()) == REPEAT_ALL) {
             position = 0;
         } else {
             return;
         }
         load(playWhenReady || engine == null);
+    }
+
+    /** The repeat mode for this item: an audiobook plays its parts once, in order, whatever it is. */
+    private int repeatFor(MediaItem item) {
+        return item != null && isAudiobook(item) ? REPEAT_OFF : repeat;
     }
 
     /** Restarts the track if more than 3 seconds in, otherwise goes back one. */
@@ -575,6 +647,11 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
 
     private void savePodcastPosition() {
         MediaItem m = loadedItem;
+        if (isAudiobook(m) && engine != null && prepared) {
+            com.grapefruitmusic.audiobooks.AudiobookStore.get(context)
+                    .savePosition(m.albumId, m.trackNumber - 1, engine.getCurrentPosition());
+            return;
+        }
         if (m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId) && engine != null && prepared) {
             long position = engine.getCurrentPosition(), duration = engine.getDuration();
             if (duration > 0 && position >= duration - 1500) position = 0;
@@ -597,8 +674,11 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
     private void load(boolean play) {
         MediaItem m = current();
         savePodcastPosition();
-        load(play, m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId)
-                ? com.grapefruitmusic.podcast.PodcastPositions.get(context).get(m.id) : 0);
+        long at = 0;
+        if (isAudiobook(m)) at = com.grapefruitmusic.audiobooks.AudiobookStore.get(context).positionFor(m);
+        else if (m != null && com.grapefruitmusic.podcast.PodcastSource.ID.equals(m.sourceId))
+            at = com.grapefruitmusic.podcast.PodcastPositions.get(context).get(m.id);
+        load(play, at);
     }
 
     /** Loads the current song, starting at startAt ms. */
@@ -625,6 +705,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
         playWhenReady = play && requestFocus();
         engine = wantsEffects(item) ? new DspEngine(context) : new MediaPlayerEngine(context);
         engine.setEffects(effectsFor(item));
+        engine.setSpeed(speedFor(item));
         final Engine player = engine;
         matchVolume = volumeMatch.volumeFor(item);
         measuring = false;
@@ -655,10 +736,26 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 }
                 if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId))
                     com.grapefruitmusic.podcast.PodcastPositions.get(context).clear(item.id);
-                if (repeat == REPEAT_ONE) {
+                if (isAudiobook(item) && position + 1 >= order.size()) {
+                    // The book's end: finished, and next time from the start.
+                    com.grapefruitmusic.audiobooks.AudiobookStore.get(context).setFinished(item.albumId, true);
+                }
+                if (SleepTimer.get(context).stopsAfter(item)) {
+                    // The sleep timer, set for the end of this: the next one ready, but not playing.
+                    playWhenReady = false;
+                    if (position + 1 < order.size()) {
+                        next();
+                    } else {
+                        e.seekTo(0);
+                        changed();
+                    }
+                    return;
+                }
+                int repeating = repeatFor(item);
+                if (repeating == REPEAT_ONE) {
                     e.seekTo(0);
                     e.start();
-                } else if (position + 1 < order.size() || repeat == REPEAT_ALL) {
+                } else if (position + 1 < order.size() || repeating == REPEAT_ALL) {
                     next();
                 } else {
                     playWhenReady = false;

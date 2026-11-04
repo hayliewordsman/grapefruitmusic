@@ -59,6 +59,21 @@ public final class Icons {
     /** A speaker's head on a stem, inside two rings open at the bottom: the Podcasts tab. */
     public static final int PODCASTS = 35;
 
+    /** A gauge with its needle past the middle: playback speed. */
+    public static final int SPEED = 36;
+
+    /** An open book: the Audiobooks tab. */
+    public static final int BOOK = 37;
+
+    /** Lines with a bookmark beside the first: an audiobook's chapters. */
+    public static final int CHAPTERS = 38;
+
+    /** A screen on a stand with a play mark: the TV & Movies tab. */
+    public static final int TV = 39;
+
+    /** Two beamed eighth notes, bold: the Music tab. */
+    public static final int MUSIC = 40;
+
     private static final Paint PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final Path PATH = new Path();
     private static final RectF OVAL = new RectF();
@@ -374,6 +389,80 @@ public final class Icons {
                 path.moveTo(5, 12.5f);
                 path.lineTo(10, 17.5f);
                 path.lineTo(19, 7);
+                c.drawPath(path, p);
+                break;
+            case SPEED:
+                stroke(p, 1.9f);
+                // Three quarters of a dial, open at the bottom.
+                OVAL.set(3, 4, 21, 22);
+                c.drawArc(OVAL, 135, 270, false, p);
+                // The needle, a little past straight up.
+                c.drawLine(12, 13, 16.2f, 8.4f, p);
+                p.setStyle(Paint.Style.FILL);
+                c.drawCircle(12, 13, 1.9f, p);
+                break;
+            case BOOK:
+                stroke(p, 1.8f);
+                // Two pages from a spine down the middle.
+                path.moveTo(12, 6.5f);
+                path.cubicTo(9.5f, 4.8f, 6, 4.6f, 3, 5.2f);
+                path.lineTo(3, 18.6f);
+                path.cubicTo(6, 18, 9.5f, 18.3f, 12, 20);
+                path.cubicTo(14.5f, 18.3f, 18, 18, 21, 18.6f);
+                path.lineTo(21, 5.2f);
+                path.cubicTo(18, 4.6f, 14.5f, 4.8f, 12, 6.5f);
+                path.close();
+                c.drawPath(path, p);
+                c.drawLine(12, 6.5f, 12, 20, p);
+                break;
+            case CHAPTERS:
+                stroke(p, 2);
+                c.drawLine(10, 6, 20.5f, 6, p);
+                c.drawLine(10, 12, 20.5f, 12, p);
+                c.drawLine(10, 18, 20.5f, 18, p);
+                p.setStyle(Paint.Style.FILL);
+                // A bookmark ribbon beside the first line; dots beside the others.
+                path.moveTo(3.2f, 3);
+                path.lineTo(7, 3);
+                path.lineTo(7, 9.6f);
+                path.lineTo(5.1f, 8.1f);
+                path.lineTo(3.2f, 9.6f);
+                path.close();
+                c.drawPath(path, p);
+                c.drawCircle(5.1f, 12, 1.4f, p);
+                c.drawCircle(5.1f, 18, 1.4f, p);
+                break;
+            case MUSIC:
+                stroke(p, 2);
+                c.drawLine(9.2f, 17.4f, 9.2f, 7, p);
+                c.drawLine(19.8f, 15.2f, 19.8f, 4.8f, p);
+                p.setStyle(Paint.Style.FILL);
+                // The beam across the stems' tops, rising to the right.
+                path.moveTo(8.2f, 5.6f);
+                path.lineTo(20.8f, 3);
+                path.lineTo(20.8f, 6.4f);
+                path.lineTo(8.2f, 9);
+                path.close();
+                c.drawPath(path, p);
+                // The heads, tilted as written.
+                for (float[] head : new float[][] {{6.4f, 17.8f}, {17, 15.6f}}) {
+                    c.save();
+                    c.rotate(-22, head[0], head[1]);
+                    OVAL.set(head[0] - 3.3f, head[1] - 2.55f, head[0] + 3.3f, head[1] + 2.55f);
+                    c.drawOval(OVAL, p);
+                    c.restore();
+                }
+                break;
+            case TV:
+                stroke(p, 1.8f);
+                OVAL.set(2.5f, 4, 21.5f, 17);
+                c.drawRoundRect(OVAL, 2.6f, 2.6f, p);
+                c.drawLine(8, 20.5f, 16, 20.5f, p);
+                p.setStyle(Paint.Style.FILL);
+                path.moveTo(10.2f, 7.8f);
+                path.lineTo(15.4f, 10.5f);
+                path.lineTo(10.2f, 13.2f);
+                path.close();
                 c.drawPath(path, p);
                 break;
             default:

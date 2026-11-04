@@ -57,6 +57,8 @@ final class NowPlaying {
     private static final int MODE_ART = 0;
     private static final int MODE_LYRICS = 1;
     private static final int MODE_QUEUE = 2;
+    /** An audiobook's chapters, in Up Next's place. */
+    private static final int MODE_CHAPTERS = 3;
     private static final float DIM = 0.45f;
     private static final long FOLLOW_PAUSE_MS = 3000;
 
@@ -94,6 +96,18 @@ final class NowPlaying {
     private final IconView btnQueue;
     /** A live station: + keeps it in My Stations (✓ when it's there; tap again to let it go). */
     private final IconView btnStation;
+    /** The ⋯ button: the accent while the sleep timer is set. */
+    private IconView moreButton;
+    private final com.grapefruitmusic.playback.SleepTimer.Listener sleepListener = this::showSleepState;
+    /** Audiobooks: their chapters (a list where Up Next goes), and the one being heard. */
+    private final com.grapefruitmusic.ui.widget.ActionIconView btnChapters;
+    private final ListView chaptersList;
+    private final ChaptersAdapter chaptersAdapter;
+    private int chapterIndex = -2;
+    /** Synced lyrics' timing: a pill in the corner of Lyrics, with a menu to nudge them. */
+    private final TextView lyricsTiming;
+    /** Playback speed: a menu of speeds from the button (music, podcasts and audiobooks each their own). */
+    private final com.grapefruitmusic.ui.widget.ActionIconView btnSpeed;
     private final View condensed;
     private final ArtworkView smallArt;
     private final TextView smallTitle;
@@ -248,12 +262,40 @@ final class NowPlaying {
         btnLive = (IconView) root.findViewById(R.id.np_btn_live);
         btnQueue = (IconView) root.findViewById(R.id.np_btn_queue);
         btnStation = new com.grapefruitmusic.ui.widget.ActionIconView(a);
-        for (IconView button : new IconView[]{btnLyrics, btnQueue, btnKaraoke, btnLive, btnStation}) {
+        for (IconView button : new IconView[]{btnLyrics, btnQueue, btnKaraoke, btnLive}) {
             ((com.grapefruitmusic.ui.widget.ActionIconView)button).setLabelVisible(true);
         }
+        // + or ✓ alone (said in full to TalkBack): "Save" and "Saved" barely fit under it.
+        ((com.grapefruitmusic.ui.widget.ActionIconView) btnStation).setLabelVisible(false);
+        // As big as the labelled buttons' icons beside it, centred.
+        btnStation.setPadding(Ui.dp(a, 13), Ui.dp(a, 16), Ui.dp(a, 13), Ui.dp(a, 16));
 
         btnStation.setVisibility(View.GONE);
         ((LinearLayout) root.findViewById(R.id.np_buttons)).addView(btnStation,
+                new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
+        btnChapters = new com.grapefruitmusic.ui.widget.ActionIconView(a);
+        btnChapters.setIcon(Icons.CHAPTERS);
+        btnChapters.setContentDescription("Chapters");
+        btnChapters.setLabelVisible(true);
+        btnChapters.setVisibility(View.GONE);
+        btnChapters.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setMode(mode == MODE_CHAPTERS ? MODE_ART : MODE_CHAPTERS);
+            }
+        });
+        ((LinearLayout) root.findViewById(R.id.np_buttons)).addView(btnChapters,
+                new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
+        btnSpeed = new com.grapefruitmusic.ui.widget.ActionIconView(a);
+        btnSpeed.setIcon(Icons.SPEED);
+        btnSpeed.setLabelVisible(true);
+        btnSpeed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSpeeds();
+            }
+        });
+        ((LinearLayout) root.findViewById(R.id.np_buttons)).addView(btnSpeed,
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
         condensed = root.findViewById(R.id.np_condensed);
         smallArt = (ArtworkView) root.findViewById(R.id.np_small_art);
@@ -280,12 +322,38 @@ final class NowPlaying {
                 endDrag();
             }
         });
+        chaptersList = new ListView(a);
+        RowAdapter.style(chaptersList);
+        chaptersList.setVerticalFadingEdgeEnabled(true);
+        chaptersList.setFadingEdgeLength(Ui.dp(a, 32));
+        chaptersList.setVisibility(View.GONE);
+        chaptersAdapter = new ChaptersAdapter(a);
+        chaptersList.setAdapter(chaptersAdapter);
+        chaptersList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                goToChapter(position);
+            }
+        });
+        listArea.addView(chaptersList, 0, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        lyricsTiming = Ui.text(a, 13, R.attr.gfTextPrimary, false);
+        lyricsTiming.setTypeface(Fonts.medium());
+        lyricsTiming.setBackground(Ui.pressable(a, Ui.color(a, R.attr.gfControl), Ui.PILL, true));
+        lyricsTiming.setPadding(Ui.dp(a, 14), Ui.dp(a, 7), Ui.dp(a, 14), Ui.dp(a, 7));
+        lyricsTiming.setVisibility(View.GONE);
+        lyricsTiming.setOnClickListener(v -> showLyricsTiming());
+        FrameLayout.LayoutParams timingLp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.RIGHT);
+        timingLp.setMargins(0, 0, Ui.dp(a, 14), Ui.dp(a, 12));
+        listArea.addView(lyricsTiming, timingLp);
         times = root.findViewById(R.id.np_times);
         tunerRow = root.findViewById(R.id.np_tuner);
         dial = (TuningDial) root.findViewById(R.id.np_dial);
         musicButtons = root.findViewById(R.id.np_buttons);
         radioButtons = root.findViewById(R.id.np_radio_buttons);
         btnPreset = (IconView) root.findViewById(R.id.np_btn_preset);
+        ((com.grapefruitmusic.ui.widget.ActionIconView) btnPreset).setLabelVisible(false);
         output = new Segmented(a, new String[]{"Headphones", "Speaker"}, 0);
         FrameLayout outputArea = (FrameLayout) root.findViewById(R.id.np_output);
         outputArea.addView(output);
@@ -344,17 +412,8 @@ final class NowPlaying {
         moreIcon.setIcon(Icons.MORE);
         Ui.styleCircle(moreIcon, false);
         moreIcon.setContentDescription("More actions");
-        moreIcon.setOnClickListener(v -> {
-            if (radio.inSession()) { PresetLabel.add(activity, radio.frequency()); return; }
-            MediaItem current = player.current();
-            android.app.Fragment fragment = activity.getFragmentManager().findFragmentById(R.id.content);
-            if (current != null && fragment instanceof BaseFragment) {
-                com.grapefruitmusic.source.MusicSource source = com.grapefruitmusic.source.Sources.get(activity).byId(current.sourceId);
-                if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(current.sourceId))
-                    PodcastsFragment.episodeActions((BaseFragment)fragment, current, null);
-                else if (source != null) TrackActions.show((BaseFragment)fragment, current, source);
-            }
-        });
+        moreIcon.setOnClickListener(v -> showMore());
+        moreButton = moreIcon;
         // The play button: the accent gradient, in a soft glow of it.
         android.graphics.drawable.LayerDrawable glow = new android.graphics.drawable.LayerDrawable(
                 new android.graphics.drawable.Drawable[]{
@@ -568,7 +627,7 @@ final class NowPlaying {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (lyrics != null && lyrics.synced && position < lyrics.lines.size()) {
-                    player.seekTo(lyrics.lines.get(position).timeMs);
+                    player.seekTo(Math.max(0, lyrics.lines.get(position).timeMs + lyrics.offsetMs));
                     lastUserScroll = 0;
                     lyricIndex = -2;
                 }
@@ -841,11 +900,127 @@ final class NowPlaying {
             Bg.cancelMain(ticker);
             Bg.main(ticker);
         }
+        com.grapefruitmusic.playback.SleepTimer.get(activity).addListener(sleepListener);
+        showSleepState();
     }
 
     void onStop() {
         started = false;
         Bg.cancelMain(ticker);
+        com.grapefruitmusic.playback.SleepTimer.get(activity).removeListener(sleepListener);
+    }
+
+    // ---- The ⋯ menu ----
+
+    /**
+     * What's playing's menu (the song's, the episode's, the station's, the book's, the FM radio's),
+     * then the sleep timer, on every kind of Now Playing.
+     */
+    private void showMore() {
+        final List<String> labels = new ArrayList<String>();
+        final List<Runnable> actions = new ArrayList<Runnable>();
+        String heading;
+        final MediaItem current = player.current();
+        if (radio.inSession()) {
+            heading = radio.title();
+            labels.add("Add to Presets\u2026");
+            actions.add(() -> PresetLabel.add(activity, radio.frequency()));
+        } else if (current != null) {
+            heading = current.title;
+            android.app.Fragment fragment = activity.getFragmentManager().findFragmentById(R.id.content);
+            if (Player.isAudiobook(current)) {
+                final com.grapefruitmusic.audiobooks.Audiobook b = book(current);
+                if (b != null) {
+                    labels.add("Play from the Start");
+                    actions.add(() -> {
+                        com.grapefruitmusic.audiobooks.AudiobookStore.get(activity).startOver(b.id);
+                        player.jumpTo(0, 0);
+                    });
+                }
+            } else if (fragment instanceof BaseFragment) {
+                BaseFragment page = (BaseFragment) fragment;
+                if (Player.isPodcast(current)) PodcastsFragment.episodeItems(page, current, null, labels, actions);
+                else TrackActions.collect(page, current, null, labels, actions);
+            }
+        } else {
+            return;
+        }
+        labels.add(sleepLabel(current));
+        actions.add(() -> showSleepTimer(current));
+        Ui.dialog(activity)
+                .setTitle(heading)
+                .setItems(labels.toArray(new String[labels.size()]), (d, which) -> actions.get(which).run())
+                .show();
+    }
+
+    /** "Sleep Timer", or what it's set for. */
+    private String sleepLabel(MediaItem current) {
+        com.grapefruitmusic.playback.SleepTimer t = com.grapefruitmusic.playback.SleepTimer.get(activity);
+        switch (t.mode()) {
+            case com.grapefruitmusic.playback.SleepTimer.TIMED:
+                long min = (t.remainingMs() + 59999) / 60000;
+                return "Sleep Timer: " + (min <= 1 ? "1 min left" : min + " min left");
+            case com.grapefruitmusic.playback.SleepTimer.END_OF_ITEM:
+            case com.grapefruitmusic.playback.SleepTimer.END_OF_CHAPTER:
+                return "Sleep Timer: " + endLabel(current);
+            default:
+                return "Sleep Timer\u2026";
+        }
+    }
+
+    /** The end the sleep timer can wait for: the song's, the episode's, the chapter's; null live. */
+    private String endLabel(MediaItem current) {
+        if (radio.inSession() || current == null || current.live) return null;
+        if (Player.isAudiobook(current)) {
+            com.grapefruitmusic.audiobooks.Audiobook b = book(current);
+            return b != null && b.chapters.size() > 1 ? "End of Chapter" : "End of Book";
+        }
+        return Player.isPodcast(current) ? "End of Episode" : "End of Song";
+    }
+
+    /** Off, a time, or the end of what's playing; the one set ticked. */
+    private void showSleepTimer(final MediaItem current) {
+        final com.grapefruitmusic.playback.SleepTimer t = com.grapefruitmusic.playback.SleepTimer.get(activity);
+        final int[] minutes = com.grapefruitmusic.playback.SleepTimer.MINUTES;
+        final String end = endLabel(current);
+        final List<String> options = new ArrayList<String>();
+        options.add("Off");
+        int checked = t.active() ? -1 : 0;
+        for (int i = 0; i < minutes.length; i++) {
+            options.add(minutes[i] == 60 ? "1 Hour" : minutes[i] + " Minutes");
+            if (t.minutes() == minutes[i]) checked = i + 1;
+        }
+        if (end != null) {
+            options.add(end);
+            if (t.mode() == com.grapefruitmusic.playback.SleepTimer.END_OF_ITEM
+                    || t.mode() == com.grapefruitmusic.playback.SleepTimer.END_OF_CHAPTER) checked = options.size() - 1;
+        }
+        Ui.dialog(activity)
+                .setTitle("Sleep Timer")
+                .setSingleChoiceItems(options.toArray(new String[options.size()]), checked, (d, which) -> {
+                    d.dismiss();
+                    if (which == 0) {
+                        t.cancel();
+                        Notice.show(activity, "Sleep timer off");
+                    } else if (which <= minutes.length) {
+                        t.setMinutes(minutes[which - 1]);
+                        Notice.show(activity, "Stopping in " + options.get(which).toLowerCase(java.util.Locale.US));
+                    } else {
+                        com.grapefruitmusic.audiobooks.Audiobook b = current != null ? book(current) : null;
+                        if (b != null && b.chapters.size() > 1) t.setEndOfChapter(b);
+                        else t.setEndOfItem();
+                        Notice.show(activity, "Stopping at the " + end.toLowerCase(java.util.Locale.US).replace("end of", "end of this"));
+                    }
+                })
+                .show();
+    }
+
+    /** The ⋯ button in the accent while the sleep timer is set. */
+    private void showSleepState() {
+        if (moreButton == null) return;
+        boolean on = com.grapefruitmusic.playback.SleepTimer.get(activity).active();
+        moreButton.setColor(on ? accent : Ui.color(activity, R.attr.gfTextPrimary));
+        moreButton.setContentDescription(on ? "More actions, sleep timer on" : "More actions");
     }
 
     /**
@@ -921,8 +1096,194 @@ final class NowPlaying {
      * Only the buttons that do something for what's playing: a podcast has no lyrics, and Karaoke
      * Mode and Live Mode are for music. The rest share the row.
      */
+    /** The Timing pill: "Timing" when the lyrics are as timed, else how far they're nudged. */
+    private void showTimingLabel() {
+        long off = lyrics != null ? lyrics.offsetMs : 0;
+        String amount = String.valueOf(Math.abs(off) / 1000f).replaceAll("\\.0$", "");
+        lyricsTiming.setText(off == 0 ? "Timing" : (off > 0 ? "+" : "\u2212") + amount + " s");
+        lyricsTiming.setContentDescription(off == 0 ? "Lyrics timing, as timed"
+                : "Lyrics timing, " + amount + " seconds " + (off > 0 ? "later" : "earlier"));
+    }
+
+    /** Earlier, later or as timed: half a second at a time, kept for this song. */
+    private void showLyricsTiming() {
+        if (lyrics == null) return;
+        TabMenu.Builder b = new TabMenu.Builder();
+        b.add("Earlier by 0.5 s", TabMenu.NO_ICON, false, () -> nudgeLyrics(lyrics.offsetMs - 500));
+        b.add("Later by 0.5 s", TabMenu.NO_ICON, false, () -> nudgeLyrics(lyrics.offsetMs + 500));
+        b.rule();
+        b.add("As Timed", TabMenu.NO_ICON, lyrics.offsetMs == 0, () -> nudgeLyrics(0));
+        TabMenu.show(activity, lyricsTiming, false, b.items);
+    }
+
+    private void nudgeLyrics(long offset) {
+        final MediaItem item = player.current();
+        if (lyrics == null || item == null) return;
+        final long off = Math.max(-30000, Math.min(30000, offset));
+        lyrics.offsetMs = off;
+        final Context app = activity.getApplicationContext();
+        Bg.execute(() -> LyricsRepository.setOffset(app, item, off));
+        lyricIndex = -2;
+        showTimingLabel();
+        tick();
+    }
+
+    /** 1.5 as "1.5×", 2 as "2×". */
+    static String speedLabel(float speed) {
+        String n = speed == Math.round(speed) ? String.valueOf(Math.round(speed))
+                : String.valueOf(Math.round(speed * 100) / 100f).replaceAll("0+$", "");
+        return n + "\u00d7";
+    }
+
+    /** The Speed button: "Speed" at 1×, the speed (in the accent) otherwise. */
+    private void showSpeed() {
+        float s = player.speed();
+        btnSpeed.setContentDescription(s == 1f ? "Speed" : "Speed, " + speedLabel(s));
+        btnSpeed.setColor(s == 1f ? secondary : accent);
+        btnSpeed.invalidate();
+    }
+
+    /** The speeds, rising from the button, the one playing ticked. */
+    private void showSpeeds() {
+        TabMenu.Builder b = new TabMenu.Builder();
+        float now = player.speed();
+        for (final float s : Player.SPEEDS) {
+            b.add(speedLabel(s), TabMenu.NO_ICON, Math.abs(s - now) < 0.01f, new Runnable() {
+                @Override
+                public void run() {
+                    player.setSpeed(s);
+                    showSpeed();
+                    tick();
+                }
+            });
+        }
+        TabMenu.show(activity, btnSpeed, false, b.items);
+    }
+
+    // ---- Audiobooks ----
+
+    private com.grapefruitmusic.audiobooks.Audiobook book(MediaItem item) {
+        return Player.isAudiobook(item)
+                ? com.grapefruitmusic.audiobooks.AudiobookStore.get(activity).book(item.albumId) : null;
+    }
+
+    /** The chapter list, the one being heard marked (and, when opened, scrolled to). */
+    private void showChapters(boolean scroll) {
+        MediaItem item = player.current();
+        com.grapefruitmusic.audiobooks.Audiobook b = book(item);
+        if (b == null) return;
+        int at = b.chapterAt(item.trackNumber - 1, player.positionMs());
+        chaptersAdapter.set(b, at);
+        if (scroll && at >= 0) chaptersList.setSelectionFromTop(at, Ui.dp(activity, 48));
+    }
+
+    private void goToChapter(int index) {
+        MediaItem item = player.current();
+        com.grapefruitmusic.audiobooks.Audiobook b = book(item);
+        if (b == null || index < 0 || index >= b.chapters.size()) return;
+        com.grapefruitmusic.audiobooks.Audiobook.Chapter c = b.chapters.get(index);
+        if (c.part == item.trackNumber - 1) player.seekTo(c.startMs);
+        else player.jumpTo(c.part, c.startMs);
+        chapterIndex = -2;
+        tick();
+    }
+
+    /** An audiobook's lines: the chapter as the title, "author · Chapter 3 of 12" under it. */
+    private void showAudiobookTitles(MediaItem item, int chapter) {
+        com.grapefruitmusic.audiobooks.Audiobook b = book(item);
+        if (b == null) return;
+        boolean chapters = b.chapters.size() > 1;
+        String heading = chapters && chapter >= 0 ? b.chapters.get(chapter).title : b.title;
+        String by = b.author != null ? b.author : "";
+        if (chapters && chapter >= 0) {
+            by = (by.length() == 0 ? "" : by + "  \u00b7  ") + "Chapter " + (chapter + 1) + " of " + b.chapters.size();
+        }
+        setText(title, heading);
+        setText(artist, by);
+        setText(smallTitle, heading);
+        setText(smallArtist, b.title + (b.author != null ? " \u2014 " + b.author : ""));
+    }
+
+    /** One row a chapter: its title and where it starts; the one playing in the accent. */
+    private final class ChaptersAdapter extends BaseAdapter {
+        private final Context context;
+        private com.grapefruitmusic.audiobooks.Audiobook book;
+        private int current = -1;
+
+        ChaptersAdapter(Context context) {
+            this.context = context;
+        }
+
+        void set(com.grapefruitmusic.audiobooks.Audiobook b, int at) {
+            book = b;
+            current = at;
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public int getCount() {
+            return book == null ? 0 : book.chapters.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return book.chapters.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            LinearLayout row = (LinearLayout) convertView;
+            if (row == null) {
+                row = new LinearLayout(context);
+                row.setOrientation(LinearLayout.HORIZONTAL);
+                row.setGravity(Gravity.CENTER_VERTICAL);
+                row.setMinimumHeight(Ui.dp(context, 52));
+                row.setPadding(Ui.dp(context, 20), Ui.dp(context, 6), Ui.dp(context, 20), Ui.dp(context, 6));
+                row.setBackground(Ui.rowBackground(context));
+                TextView name = Ui.text(context, 16, R.attr.gfTextPrimary, false);
+                name.setSingleLine(false);
+                name.setMaxLines(2);
+                row.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+                TextView at = Ui.text(context, 13, R.attr.gfTextSecondary, false);
+                at.setPadding(Ui.dp(context, 12), 0, 0, 0);
+                row.addView(at);
+            }
+            com.grapefruitmusic.audiobooks.Audiobook.Chapter c = book.chapters.get(position);
+            TextView name = (TextView) row.getChildAt(0);
+            TextView at = (TextView) row.getChildAt(1);
+            name.setText(c.title);
+            boolean now = position == current;
+            name.setTextColor(now ? accent : primary);
+            name.setTypeface(now ? Fonts.semiBold() : Fonts.regular());
+            // Where it starts in the book.
+            long start = c.startMs;
+            for (int i = 0; i < c.part && i < book.parts.size(); i++) start += Math.max(0, book.parts.get(i).durationMs);
+            at.setText(Format.duration(start));
+            row.setContentDescription(c.title + ", at " + Format.duration(start) + (now ? ", playing" : ""));
+            return row;
+        }
+    }
+
     private void showButtonsFor(MediaItem item) {
-        boolean podcast = Player.isPodcast(item);
+        btnSpeed.setVisibility(Player.speedKind(item) >= 0 ? View.VISIBLE : View.GONE);
+        showSpeed();
+        boolean audiobook = Player.isAudiobook(item);
+        com.grapefruitmusic.audiobooks.Audiobook heardBook = book(item);
+        btnChapters.setVisibility(heardBook != null && heardBook.chapters.size() > 1 ? View.VISIBLE : View.GONE);
+        btnQueue.setVisibility(audiobook ? View.GONE : View.VISIBLE);
+        if (audiobook && (mode == MODE_LYRICS || mode == MODE_QUEUE)) setMode(MODE_ART);
+        if (btnChapters.getVisibility() != View.VISIBLE && mode == MODE_CHAPTERS) setMode(MODE_ART);
+        // A book's parts play once, in order: no shuffle or repeat.
+        if (!radioMode && !liveMode) {
+            btnShuffle.setVisibility(audiobook ? View.GONE : View.VISIBLE);
+            btnRepeat.setVisibility(audiobook ? View.GONE : View.VISIBLE);
+        }
+        boolean podcast = Player.isPodcast(item) || audiobook;
         btnLyrics.setVisibility(item.live || podcast ? View.GONE : View.VISIBLE);
         btnKaraoke.setVisibility(podcast ? View.GONE : View.VISIBLE);
         btnLive.setVisibility(podcast ? View.GONE : View.VISIBLE);
@@ -1095,7 +1456,11 @@ final class NowPlaying {
         boolean playing = player.wantsToPlay();
         play.setIcon(playing ? (item.live ? Icons.STOP : Icons.PAUSE) : Icons.PLAY);
         if (item.live) showStationButton(item);
-        setSkipMode(Player.isPodcast(item) && !item.live);
+        setSkipMode((Player.isPodcast(item) || Player.isAudiobook(item)) && !item.live);
+        if (Player.isAudiobook(item)) {
+            chapterIndex = -2;
+            showAudiobookTitles(item, -1);
+        }
         showButtonsFor(item);
         btnShuffle.setColor(player.isShuffle() ? accent : secondary);
         btnRepeat.setIcon(player.repeatMode() == Player.REPEAT_ONE ? Icons.REPEAT_ONE : Icons.REPEAT);
@@ -1190,6 +1555,7 @@ final class NowPlaying {
         lyricIndex = -2;
         lastUserScroll = 0;
         if (m == MODE_QUEUE) refreshQueue(true);
+        if (m == MODE_CHAPTERS) showChapters(true);
         showMode();
         tick();
     }
@@ -1213,21 +1579,32 @@ final class NowPlaying {
         artist.setVisibility(condensedMode && !keepTitle ? View.GONE : View.VISIBLE);
         boolean showLyrics = mode == MODE_LYRICS && lyrics != null;
         lyricsList.setVisibility(showLyrics ? View.VISIBLE : View.GONE);
+        lyricsTiming.setVisibility(showLyrics && lyrics.synced ? View.VISIBLE : View.GONE);
+        showTimingLabel();
         queueList.setVisibility(mode == MODE_QUEUE ? View.VISIBLE : View.GONE);
+        chaptersList.setVisibility(mode == MODE_CHAPTERS ? View.VISIBLE : View.GONE);
+        btnChapters.setColor(mode == MODE_CHAPTERS ? accent : secondary);
         if (mode == MODE_LYRICS && lyrics == null) {
             message.setVisibility(View.VISIBLE);
             message.setText(lyricsLoading ? "Looking for lyrics…" : "No lyrics for this song");
         } else {
             message.setVisibility(View.GONE);
         }
-        card.setScrollingChild(mode == MODE_LYRICS ? lyricsList : mode == MODE_QUEUE ? queueList : null);
+        card.setScrollingChild(mode == MODE_LYRICS ? lyricsList : mode == MODE_QUEUE ? queueList
+                : mode == MODE_CHAPTERS ? chaptersList : null);
         btnLyrics.setColor(mode == MODE_LYRICS ? accent : secondary);
         btnQueue.setColor(mode == MODE_QUEUE ? accent : secondary);
     }
 
     private void showTimes(long pos, long dur) {
         elapsed.setText(Format.duration(pos));
-        remaining.setText(Format.duration(dur));
+        // Faster or slower: how long is left to listen, at that speed; otherwise the length.
+        float speed = player.speed();
+        if (speed != 1f && dur > 0) {
+            remaining.setText("\u2212" + Format.duration(Math.round(Math.max(0, dur - pos) / speed)));
+        } else {
+            remaining.setText(Format.duration(dur));
+        }
     }
 
     private void tick() {
@@ -1251,9 +1628,19 @@ final class NowPlaying {
             scrubber.setValue(pos);
             showTimes(pos, dur);
         }
+        MediaItem heard = player.current();
+        if (Player.isAudiobook(heard)) {
+            com.grapefruitmusic.audiobooks.Audiobook book = book(heard);
+            int at = book != null ? book.chapterAt(heard.trackNumber - 1, pos) : -1;
+            if (at != chapterIndex) {
+                chapterIndex = at;
+                showAudiobookTitles(heard, at);
+                if (mode == MODE_CHAPTERS) showChapters(false);
+            }
+        }
         if (mode == MODE_LYRICS && lyrics != null && lyrics.synced) {
             // Highlight a moment early, as the singer starts the line.
-            int idx = lyrics.indexAt(pos + 250);
+            int idx = lyrics.indexAt(pos + 250 - lyrics.offsetMs);
             if (idx != lyricIndex) {
                 lyricIndex = idx;
                 lyricsAdapter.setCurrent(idx);

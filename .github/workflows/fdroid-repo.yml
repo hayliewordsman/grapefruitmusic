@@ -142,7 +142,7 @@ jobs:
             echo "::error::The APK's package or version doesn't match app/build.gradle."
             exit 1
           fi
-          out="$RUNNER_TEMP/grapefruit-${NAME// /-}.apk"
+          out="$RUNNER_TEMP/grapefruit-audio-${NAME// /-}.apk"
           cp "$apk" "$out"
           echo "path=$out" >> "$GITHUB_OUTPUT"
 
@@ -161,13 +161,13 @@ jobs:
           if [ -f "$notes" ]; then
             cp "$notes" "$RUNNER_TEMP/notes.md"
           else
-            echo "Grapefruit Music $NAME" > "$RUNNER_TEMP/notes.md"
+            echo "Grapefruit Audio $NAME" > "$RUNNER_TEMP/notes.md"
           fi
           flags=()
           if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
           # Tagged on the commit this run built. (GitHub doesn't let a workflow's token tag an older
           # commit whose workflow files differ from the current ones.)
-          gh release create "$TAG" "$APK" --target "$GITHUB_SHA" --title "Grapefruit Music $NAME" \
+          gh release create "$TAG" "$APK" --target "$GITHUB_SHA" --title "Grapefruit Audio $NAME" \
             --notes-file "$RUNNER_TEMP/notes.md" "${flags[@]}"
 
   publish:

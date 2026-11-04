@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Grapefruit Music &amp; Podcasts</string>
-    <!-- Under the icon in the launcher, where there's room for one word. -->
-    <string name="launcher_name">Grapefruit</string>
+    <!-- In full, Grapefruit Audio: Music, Podcasts, and Audiobooks (the About page's wordmark). -->
+    <string name="app_name">Grapefruit Audio</string>
+    <!-- Under the icon in the launcher. -->
+    <string name="launcher_name">Grapefruit Audio</string>
 </resources>

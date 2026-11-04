@@ -45,9 +45,17 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     private static final int TAB_PODCASTS = 3;
     static final int TAB_SEARCH = 4;
     private static final int TAB_SETTINGS = 5;
-    private static final int[] TAB_IDS = {TAB_LIBRARY, TAB_RADIO, TAB_PODCASTS, TAB_SEARCH, TAB_SETTINGS};
-    private static final String[] TAB_NAMES = {"Library", "Radio", "Podcasts", "Search", "Settings"};
-    private static final int[] TAB_ICONS = {Icons.LIBRARY, Icons.RADIO, Icons.PODCASTS, Icons.SEARCH, Icons.SETTINGS};
+    static final int TAB_AUDIOBOOKS = 6;
+    /** Not a page here: Grapefruit TV & Movies (or Grapefruit TV), opened when it's installed. */
+    private static final int TAB_TV = 7;
+    private static final int[] TAB_IDS = {TAB_LIBRARY, TAB_RADIO, TAB_PODCASTS, TAB_AUDIOBOOKS, TAB_TV, TAB_SEARCH,
+            TAB_SETTINGS};
+    private static final String[] TAB_NAMES = {"Music", "Radio", "Podcasts", "Audiobooks", "TV & Movies", "Search",
+            "Settings"};
+    private static final int[] TAB_ICONS = {Icons.MUSIC, Icons.RADIO, Icons.PODCASTS, Icons.BOOK, Icons.TV,
+            Icons.SEARCH, Icons.SETTINGS};
+    /** Grapefruit TV & Movies' package, while it's installed (the TV & Movies tab shows then). */
+    private String tvPackage;
 
     /** Grapefruit's open windows (normally one), for the notification's close button. Main thread. */
     private static final Map<MainActivity, Boolean> LIVE = new WeakHashMap<MainActivity, Boolean>();
@@ -175,7 +183,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         } else {
             tab = saved.getInt("tab", TAB_LIBRARY);
             boolean visible = false;
-            for (int id : TAB_IDS) if (id == tab) visible = true;
+            for (int id : TAB_IDS) if (id == tab && id != TAB_TV) visible = true;
             if (!visible) showTab(TAB_LIBRARY);
             else highlightTab();
             if (saved.getBoolean("now_playing_open")) nowPlaying.openImmediately();
@@ -267,7 +275,58 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     /** Show a tab's name beside its icon when it's chosen (when there's room across). */
     private boolean tabNames;
 
+    /** Grapefruit TV & Movies' (or Grapefruit TV's) package, if it's installed, else null. */
+    static String findTvApp(android.content.Context c) {
+        android.content.pm.PackageManager pm = c.getPackageManager();
+        // Grapefruit FAST, Grapefruit TV and Grapefruit TV & Movies have kept this id.
+        String known = "io.github.hayliewordsman.grapefruitfast";
+        if (pm.getLaunchIntentForPackage(known) != null) return known;
+        // In case a later version takes another: any of the developer's apps called Grapefruit TV…
+        Intent main = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
+        try {
+            for (android.content.pm.ResolveInfo r : pm.queryIntentActivities(main, 0)) {
+                String pkg = r.activityInfo.packageName;
+                if (!pkg.startsWith("io.github.hayliewordsman.") || pkg.equals(c.getPackageName())) continue;
+                CharSequence label = r.loadLabel(pm);
+                if (label != null && label.toString().startsWith("Grapefruit TV")) return pkg;
+            }
+        } catch (RuntimeException ignored) {
+            // The package manager went away (the system restarting): no tab this time.
+        }
+        return null;
+    }
+
+    private void openTv() {
+        if (tvPackage == null) return;
+        Intent launch = getPackageManager().getLaunchIntentForPackage(tvPackage);
+        if (launch == null && Build.VERSION.SDK_INT >= 21) {
+            launch = getPackageManager().getLeanbackLaunchIntentForPackage(tvPackage);
+        }
+        if (launch == null) {
+            updateTvTab();
+            return;
+        }
+        try {
+            startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } catch (android.content.ActivityNotFoundException e) {
+            updateTvTab();
+        }
+    }
+
+    /** Shows or hides the TV & Movies tab as Grapefruit TV & Movies is installed or removed. */
+    private void updateTvTab() {
+        String found = findTvApp(this);
+        boolean changed = found == null ? tvPackage != null : !found.equals(tvPackage);
+        tvPackage = found;
+        if (!changed) return;
+        for (int i = 0; i < TAB_IDS.length; i++) {
+            if (TAB_IDS[i] == TAB_TV) ((View) tabIcons[i].getParent()).setVisibility(found != null ? View.VISIBLE : View.GONE);
+        }
+        fitBars();
+    }
+
     private void buildTabBar() {
+        tvPackage = findTvApp(this);
         LinearLayout bar = (LinearLayout) findViewById(R.id.tab_bar);
         // A floating pill: the page shows around it.
         bar.setBackground(Ui.shape(this, Ui.color(this, R.attr.gfSurface), Ui.PILL, true, false));
@@ -288,13 +347,46 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             label.setVisibility(View.GONE);
             item.addView(label, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
+            if (index == TAB_TV) {
+                // Opens Grapefruit TV & Movies; no page, no menu here.
+                item.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        openTv();
+                    }
+                });
+                item.setVisibility(tvPackage != null ? View.VISIBLE : View.GONE);
+                LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                        Ui.dp(this, 48));
+                tlp.leftMargin = Ui.dp(this, 2);
+                bar.addView(item, tlp);
+                tabIcons[i] = icon;
+                tabLabels[i] = label;
+                continue;
+            }
             item.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (nowPlaying.isOpen()) nowPlaying.close();
-                    showTab(index);
+                    if (nowPlaying.isOpen()) {
+                        nowPlaying.close();
+                        if (index == tab) return;
+                    }
+                    // The tab showing, tapped again: its menu (Settings: back to its first page).
+                    if (index == tab && index != TAB_SETTINGS) showTabMenu(index, v);
+                    else showTab(index);
                 }
             });
+            if (index != TAB_SETTINGS) {
+                // Touch and hold any tab but Settings, from anywhere: its menu.
+                item.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        if (nowPlaying.isOpen()) nowPlaying.close();
+                        showTabMenu(index, v);
+                        return true;
+                    }
+                });
+            }
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     Ui.dp(this, 48));
             if (i > 0) lp.leftMargin = Ui.dp(this, 2);
@@ -309,7 +401,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         int inactive = Ui.color(this, R.attr.gfTextSecondary);
         int on = Ui.onAccent(this);
         for (int i = 0; i < TAB_NAMES.length; i++) {
-            boolean chosen = TAB_IDS[i] == tab;
+            boolean chosen = TAB_IDS[i] == tab && TAB_IDS[i] != TAB_TV;
             View item = (View) tabIcons[i].getParent();
             item.setBackground(chosen ? Ui.accentFill(this, Ui.dp(this, 24), false) : null);
             item.setSelected(chosen);
@@ -374,8 +466,172 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         }
     }
 
-    /** Switches tab; tapping the current tab returns to its first page. */
+    /** Each tab's section as last shown (Library's and Podcasts'), for the tick in their menus. */
+    private final int[] shownSection = new int[TAB_TV + 1];
+
+    /**
+     * A tab's menu, from its button (TabMenu): the tab's chips as rows, the one showing ticked.
+     * Choosing one goes to the tab (if it isn't showing) and does what the chip does.
+     */
+    private void showTabMenu(final int index, View button) {
+        TabMenu.Builder b = new TabMenu.Builder();
+        boolean here = index == tab;
+        if (index == TAB_LIBRARY) {
+            b.add("Search", Icons.SEARCH, false, new Runnable() {
+                @Override
+                public void run() {
+                    showTab(TAB_SEARCH);
+                }
+            });
+            b.add(Sources.get(this).current().name(), Icons.CHEVRON_DOWN, false, new Runnable() {
+                @Override
+                public void run() {
+                    if (tab != TAB_LIBRARY) showLibrary(SectionMenu.FIRST);
+                    SectionMenu.pickSource(MainActivity.this);
+                }
+            });
+            b.rule();
+            for (int i = 0; i < SectionMenu.LIBRARY.length; i++) {
+                final int section = i;
+                b.add(SectionMenu.LIBRARY[i], TabMenu.NO_ICON, here && shownSection[TAB_LIBRARY] == i, new Runnable() {
+                    @Override
+                    public void run() {
+                        showLibrary(section);
+                    }
+                });
+            }
+        } else if (index == TAB_PODCASTS) {
+            b.add("Search", Icons.SEARCH, false, new Runnable() {
+                @Override
+                public void run() {
+                    if (tab != TAB_PODCASTS) showPodcasts(shownSection[TAB_PODCASTS]);
+                    push(PodcastsFragment.search());
+                }
+            });
+            b.rule();
+            for (int i = 0; i < SectionMenu.PODCASTS.length; i++) {
+                final int section = i;
+                b.add(SectionMenu.PODCASTS[i], TabMenu.NO_ICON, here && shownSection[TAB_PODCASTS] == i, new Runnable() {
+                    @Override
+                    public void run() {
+                        showPodcasts(section);
+                    }
+                });
+            }
+        } else if (index == TAB_RADIO) {
+            // As the top of the Radio tab: FM or Internet Radio (on a device with FM), then that one's buttons.
+            boolean fm = radio.known() && !radio.unsupported();
+            boolean internet = !fm || Prefs.radioShowsInternet();
+            if (fm) {
+                b.add("FM Radio", TabMenu.NO_ICON, here && !internet, radioAction(new RadioStep() {
+                    @Override
+                    public void on(RadioFragment page) {
+                        page.showInternet(false);
+                    }
+                }));
+                b.add("Internet Radio", TabMenu.NO_ICON, here && internet, radioAction(new RadioStep() {
+                    @Override
+                    public void on(RadioFragment page) {
+                        page.showInternet(true);
+                    }
+                }));
+                b.rule();
+            }
+            if (internet) {
+                b.add("Search Stations", Icons.SEARCH, false, radioAction(new RadioStep() {
+                    @Override
+                    public void on(RadioFragment page) {
+                        page.searchStations();
+                    }
+                }));
+                b.add("Add by Link", Icons.PLUS, false, radioAction(new RadioStep() {
+                    @Override
+                    public void on(RadioFragment page) {
+                        page.addByLink();
+                    }
+                }));
+            } else {
+                boolean on = radio.wantsToPlay();
+                b.add(on ? "Stop" : "Listen to " + Radio.format(radio.frequency()), on ? Icons.STOP : Icons.PLAY, false,
+                        radioAction(new RadioStep() {
+                            @Override
+                            public void on(RadioFragment page) {
+                                page.listen();
+                            }
+                        }));
+                b.add("Find Stations", Icons.SEARCH, false, radioAction(new RadioStep() {
+                    @Override
+                    public void on(RadioFragment page) {
+                        page.findStations();
+                    }
+                }));
+            }
+        } else if (index == TAB_AUDIOBOOKS) {
+            // As the top of the Audiobooks tab: Add, and where to buy them.
+            b.add("Add", Icons.PLUS, false, new Runnable() {
+                @Override
+                public void run() {
+                    AudiobooksFragment page = (AudiobooksFragment) rootOf(TAB_AUDIOBOOKS, AudiobooksFragment.class);
+                    if (page != null) AudiobooksFragment.add(page);
+                }
+            });
+            b.add("Libro.fm", Icons.BOOK, false, new Runnable() {
+                @Override
+                public void run() {
+                    AudiobooksFragment.openLibroFm(MainActivity.this);
+                }
+            });
+        } else if (index == TAB_SEARCH) {
+            // Search has no chips: its menu chooses what it looks for.
+            for (int i = 0; i < SearchFragment.FILTERS.length; i++) {
+                final int filter = i;
+                b.add(SearchFragment.FILTERS[i], TabMenu.NO_ICON, SearchFragment.filter() == i, new Runnable() {
+                    @Override
+                    public void run() {
+                        SearchFragment page = (SearchFragment) rootOf(TAB_SEARCH, SearchFragment.class);
+                        if (page != null) page.setFilter(filter);
+                    }
+                });
+            }
+        } else {
+            return;
+        }
+        TabMenu.show(this, button, Ui.wide(getResources().getConfiguration()), b.items);
+    }
+
+    private interface RadioStep {
+        void on(RadioFragment page);
+    }
+
+    /** Goes to the Radio tab's own page (if it isn't showing), then does step there. */
+    private Runnable radioAction(final RadioStep step) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                RadioFragment page = (RadioFragment) rootOf(TAB_RADIO, RadioFragment.class);
+                if (page != null) step.on(page);
+            }
+        };
+    }
+
+    /** The tab's own first page, showing: switched to (or back to, from a page opened on it) first. */
+    private Fragment rootOf(int index, Class<? extends Fragment> type) {
+        FragmentManager fm = getFragmentManager();
+        Fragment showing = fm.findFragmentById(R.id.content);
+        if (tab != index || !type.isInstance(showing) || fm.getBackStackEntryCount() > 0) {
+            showTab(index);
+            fm.executePendingTransactions();
+            showing = fm.findFragmentById(R.id.content);
+        }
+        return type.isInstance(showing) && showing.getView() != null ? showing : null;
+    }
+
+    /** Switches tab, to its first page (tapping the tab showing opens its menu instead, but for Settings). */
     void showTab(int index) {
+        if (index == TAB_TV) {
+            openTv();
+            return;
+        }
         if (index == TAB_LIBRARY || index == TAB_PODCASTS) {
             showSection(index, 0, true, false);
             return;
@@ -389,6 +645,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         }
         Fragment root;
         if (index == TAB_RADIO) root = new RadioFragment();
+        else if (index == TAB_AUDIOBOOKS) root = new AudiobooksFragment();
         else if (index == TAB_SEARCH) root = new SearchFragment();
         else root = new SettingsFragment();
         fm.beginTransaction().replace(R.id.content, root).commit();
@@ -415,6 +672,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
      */
     private void showSection(int tabIndex, int section, boolean afresh, boolean now) {
         tab = tabIndex;
+        shownSection[tabIndex] = section;
         highlightTab();
         FragmentManager fm = getFragmentManager();
         if (fm.getBackStackEntryCount() > 0) {
@@ -504,6 +762,8 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         com.grapefruitmusic.podcast.PodcastStore.get(this).resumeDownloads();
         Notice.setSink(this);
         com.grapefruitmusic.download.Downloads.get(this).startWorker();
+        // Grapefruit TV & Movies may have been installed or removed meanwhile.
+        updateTvTab();
     }
 
     @Override
@@ -514,6 +774,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
 
     @Override
     protected void onPause() {
+        TabMenu.dismiss();
         Notice.clearSink(this);
         super.onPause();
     }
@@ -568,6 +829,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        TabMenu.dismiss();
         fitBars();
         nowPlaying.configurationChanged();
     }
@@ -606,8 +868,30 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
             lp.bottomMargin = Ui.dp(this, compact ? 6 : 10);
         }
         bar.setLayoutParams(lp);
-        // Names beside the chosen tab's icon: along the bottom, where there's room.
-        tabNames = !rail && config.screenWidthDp >= 360;
+        // Along the bottom: as much room around each icon as fits (up to 14dp a side), with the
+        // chosen tab's name beside its icon if that fits too. Five tabs, or seven with Audiobooks and
+        // TV & Movies, on a 320dp phone or a tablet.
+        int shown = 0;
+        float widestName = 0;
+        float scaled = getResources().getDisplayMetrics().scaledDensity / getResources().getDisplayMetrics().density;
+        for (int i = 0; i < TAB_IDS.length; i++) {
+            if (TAB_IDS[i] == TAB_TV && tvPackage == null) continue;
+            shown++;
+            if (TAB_IDS[i] != TAB_TV) {
+                widestName = Math.max(widestName, tabLabels[i].getPaint().measureText(TAB_NAMES[i])
+                        / getResources().getDisplayMetrics().density);
+            }
+        }
+        int room = config.screenWidthDp - 16 - 12;
+        int name = Math.round(8 + widestName * Math.max(1f, scaled));
+        tabNames = !rail;
+        int tabPad = 14;
+        while (tabPad > 7 && width(shown, tabPad, tabNames ? name : 0) > room) tabPad--;
+        if (tabNames && width(shown, tabPad, name) > room) {
+            tabNames = false;
+            tabPad = 14;
+            while (tabPad > 7 && width(shown, tabPad, 0) > room) tabPad--;
+        }
         int item = Ui.dp(this, compact ? 44 : 48);
         for (int i = 0; i < bar.getChildCount(); i++) {
             View tab = bar.getChildAt(i);
@@ -617,8 +901,8 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
                 if (rail) ip.topMargin = Ui.dp(this, compact ? 2 : 6);
                 else ip.leftMargin = Ui.dp(this, 2);
             }
-            tab.setPadding(rail ? 0 : Ui.dp(this, 14), 0, rail ? 0 : Ui.dp(this, 14), 0);
-            tab.setMinimumWidth(rail ? 0 : Ui.dp(this, 48));
+            tab.setPadding(rail ? 0 : Ui.dp(this, tabPad), 0, rail ? 0 : Ui.dp(this, tabPad), 0);
+            tab.setMinimumWidth(rail ? 0 : Ui.dp(this, 22 + 2 * tabPad));
             tab.setLayoutParams(ip);
         }
         LinearLayout.LayoutParams mp = (LinearLayout.LayoutParams) mini.getLayoutParams();
@@ -628,6 +912,11 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
         mp.topMargin = Ui.dp(this, rail ? 6 : 4);
         mini.setLayoutParams(mp);
         highlightTab();
+    }
+
+    /** The tabs' width along the bottom (dp): icons, room around them, gaps, and the chosen one's name. */
+    private static int width(int tabs, int pad, int name) {
+        return tabs * (22 + 2 * pad) + (tabs - 1) * 2 + name;
     }
 
     @Override

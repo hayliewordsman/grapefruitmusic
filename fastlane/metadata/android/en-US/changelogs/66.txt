@@ -1,0 +1,1 @@
+6.0 beta 2: the wordmark's Geist Pixel triangles are bigger and sharper, on the splash screen and the About page: both lines are as wide as the screen allows, and the lettering is drawn without the hinting that turned its tiny triangles into dots. The Music tab has a music-note icon.
