@@ -1,1 +1,1 @@
-Music and podcasts from your files and Navidrome, Subsonic or Jellyfin
+Music, podcasts and audiobooks: your files, Navidrome, Subsonic and Jellyfin

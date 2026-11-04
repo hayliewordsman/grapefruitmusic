@@ -26,15 +26,34 @@ final class TrackActions {
     }
 
     static void show(final BaseFragment page, final MediaItem item, final MusicSource listSource) {
+        final List<String> labels = new ArrayList<String>();
+        final List<Runnable> actions = new ArrayList<Runnable>();
+        if (!collect(page, item, listSource, labels, actions)) return;
+        Ui.dialog(page.getActivity())
+                .setTitle(item.title)
+                .setItems(labels.toArray(new String[labels.size()]), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        actions.get(which).run();
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * The menu's rows for item (its labels and what each does), added to labels and actions; false
+     * if it has none. listSource may be null for a song (Now Playing's menu): its own source is used.
+     */
+    static boolean collect(final BaseFragment page, final MediaItem item, MusicSource listSource,
+                           final List<String> labels, final List<Runnable> actions) {
         final Context c = page.getActivity();
         final Player player = Player.get(c);
         final Downloads downloads = Downloads.get(c);
-        final List<String> labels = new ArrayList<String>();
-        final List<Runnable> actions = new ArrayList<Runnable>();
-
         if (item.kind == MediaItem.TRACK && item.live) {
             stationActions(c, player, item, labels, actions);
         } else if (item.kind == MediaItem.TRACK) {
+            if (listSource == null) listSource = Sources.get(c).byId(item.sourceId);
+            if (listSource == null) return false;
             labels.add("Play Next");
             actions.add(new Runnable() {
                 @Override
@@ -109,33 +128,34 @@ final class TrackActions {
                     }
                 });
             }
-        } else if (item.kind == MediaItem.ALBUM || item.kind == MediaItem.PLAYLIST) {
+        } else if ((item.kind == MediaItem.ALBUM || item.kind == MediaItem.PLAYLIST) && listSource != null) {
+            final MusicSource source = listSource;
             labels.add("Play");
-            actions.add(withTracks(page, listSource, item, new TracksAction() {
+            actions.add(withTracks(page, source, item, new TracksAction() {
                 @Override
                 public void run(List<MediaItem> tracks) {
                     player.play(tracks, 0, false);
                 }
             }));
             labels.add("Shuffle");
-            actions.add(withTracks(page, listSource, item, new TracksAction() {
+            actions.add(withTracks(page, source, item, new TracksAction() {
                 @Override
                 public void run(List<MediaItem> tracks) {
                     player.play(tracks, -1, true);
                 }
             }));
-            if (listSource.canEditPlaylists()) {
+            if (source.canEditPlaylists()) {
                 labels.add("Add to Playlist\u2026");
-                actions.add(withTracks(page, listSource, item, new TracksAction() {
+                actions.add(withTracks(page, source, item, new TracksAction() {
                     @Override
                     public void run(List<MediaItem> tracks) {
-                        PlaylistPicker.show(page, listSource, tracks);
+                        PlaylistPicker.show(page, source, tracks);
                     }
                 }));
             }
-            if (listSource.canDownload()) {
+            if (source.canDownload()) {
                 labels.add("Download");
-                actions.add(withTracks(page, listSource, item, new TracksAction() {
+                actions.add(withTracks(page, source, item, new TracksAction() {
                     @Override
                     public void run(List<MediaItem> tracks) {
                         downloads.enqueue(tracks, item.kind == MediaItem.PLAYLIST ? item : null);
@@ -143,37 +163,28 @@ final class TrackActions {
                     }
                 }));
             }
-            if (listSource instanceof DownloadedSource) {
+            if (source instanceof DownloadedSource) {
                 labels.add("Remove Download");
-                actions.add(withTracks(page, listSource, item, new TracksAction() {
+                actions.add(withTracks(page, source, item, new TracksAction() {
                     @Override
                     public void run(List<MediaItem> tracks) {
                         removeDownloadedContainer(c, item, tracks);
                     }
                 }));
             }
-            if (item.kind == MediaItem.PLAYLIST && listSource.canEditPlaylists()) {
+            if (item.kind == MediaItem.PLAYLIST && source.canEditPlaylists()) {
                 labels.add("Delete Playlist");
                 actions.add(new Runnable() {
                     @Override
                     public void run() {
-                        confirmDelete(page, item, listSource);
+                        confirmDelete(page, item, source);
                     }
                 });
             }
         } else {
-            return;
+            return false;
         }
-
-        Ui.dialog(c)
-                .setTitle(item.title)
-                .setItems(labels.toArray(new String[labels.size()]), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        actions.get(which).run();
-                    }
-                })
-                .show();
+        return true;
     }
 
     /** An internet radio station: queue it, keep it in My Stations or let it go. */

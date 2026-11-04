@@ -17,16 +17,18 @@ The repository also contains **Grapefruit TV 2.0** (formerly Grapefruit FAST), a
   resume listening, and download episodes for offline playback. The Podcasts tab is immediately after Radio.
   Subscriptions appear in Recently Added. New-episode notifications use periodic feed checks (about every six
   hours, subject to battery restrictions), not immediate push. Downloads follow the Wi-Fi preference.
-- **Audiobooks (6.0 beta):** the Audiobooks tab plays DRM-free audiobooks: M4B/M4A (with their chapters), MP3
+- **Audiobooks:** the Audiobooks tab plays DRM-free audiobooks: M4B/M4A (with their chapters), MP3
   (ID3 chapters, or a folder of parts), FLAC, Ogg Vorbis, WAV and Opus (Android 5 and later), and Libro.fm's
   downloads (its MP3 zips are unzipped on import). Books are found in the phone's `Audiobooks` folder or added
   with **Add**; each remembers where you were, and Now Playing has Chapters in place of Up Next. Grapefruit
   suggests buying from [Libro.fm](https://libro.fm), whose audiobooks are DRM-free and support local bookstores.
-- **Playback speed (6.0 beta):** 0.8× to 2× with the pitch kept, chosen separately for music, podcasts and
+- **Playback speed:** 0.8× to 2× with the pitch kept, chosen separately for music, podcasts and
   audiobooks (Speed in Now Playing).
-- **Podcast subscriptions in OPML (6.0 beta):** Podcasts › Subscriptions › Import and Export, to and from other
+- **Sleep timer:** in every Now Playing's ⋯ menu (music, podcasts, audiobooks, internet and FM radio):
+  5 minutes to an hour, fading out at the end, or the end of the song, episode or chapter.
+- **Podcast subscriptions in OPML:** Podcasts › Subscriptions › Import and Export, to and from other
   podcast apps.
-- **TV & Movies tab (6.0 beta):** shown only when Grapefruit TV (or TV & Movies) is installed; it opens that app.
+- **TV & Movies tab:** shown only when Grapefruit TV (or TV & Movies) is installed; it opens that app.
 - **Unified search:** music from the selected source, internet radio stations and podcasts in separate groups.
   Radio and Podcasts retain dedicated searches.
 

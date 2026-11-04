@@ -203,6 +203,11 @@ public final class Radio implements Player.Listener, AudioManager.OnAudioFocusCh
         return instance;
     }
 
+    /** The radio, if anything has used it yet (without starting it up). */
+    public static synchronized Radio peek() {
+        return instance;
+    }
+
     /** Uses a different radio chip (tests). Call before the first get(). */
     public static void setTunerFactory(TunerFactory f) {
         factory = f;

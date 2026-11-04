@@ -134,7 +134,17 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
 
     private void applyVolume() {
         if (engine == null) return;
-        engine.setVolume(matchVolume * (ducked ? 0.2f : 1f));
+        engine.setVolume(matchVolume * (ducked ? 0.2f : 1f) * fade);
+    }
+
+    /** The sleep timer's fade-out: 1 at full volume, down to 0 as it goes off. */
+    private float fade = 1f;
+
+    void setFade(float f) {
+        f = Math.max(0f, Math.min(1f, f));
+        if (f == fade) return;
+        fade = f;
+        applyVolume();
     }
 
     /** Starts the prepared song once nothing's holding it back (it may still be measured). */
@@ -729,6 +739,17 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
                 if (isAudiobook(item) && position + 1 >= order.size()) {
                     // The book's end: finished, and next time from the start.
                     com.grapefruitmusic.audiobooks.AudiobookStore.get(context).setFinished(item.albumId, true);
+                }
+                if (SleepTimer.get(context).stopsAfter(item)) {
+                    // The sleep timer, set for the end of this: the next one ready, but not playing.
+                    playWhenReady = false;
+                    if (position + 1 < order.size()) {
+                        next();
+                    } else {
+                        e.seekTo(0);
+                        changed();
+                    }
+                    return;
                 }
                 int repeating = repeatFor(item);
                 if (repeating == REPEAT_ONE) {

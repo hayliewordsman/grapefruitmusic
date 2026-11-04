@@ -351,50 +351,60 @@ public final class PodcastsFragment extends BaseFragment {
     }
 
     static void episodeActions(final BaseFragment page, final MediaItem m, final Runnable refresh) {
+        final List<String> labels = new ArrayList<String>();
+        final List<Runnable> actions = new ArrayList<Runnable>();
+        episodeItems(page, m, refresh, labels, actions);
+        Ui.dialog(page.getActivity())
+                .setTitle(m.title)
+                .setItems(labels.toArray(new String[labels.size()]), (d, w) -> actions.get(w).run())
+                .show();
+    }
+
+    /** An episode's menu rows (Play, its download, Mark Unplayed), added to labels and actions. */
+    static void episodeItems(final BaseFragment page, final MediaItem m, final Runnable refresh,
+                             List<String> labels, List<Runnable> actions) {
         final Context c = page.getActivity();
         final PodcastStore store = PodcastStore.get(c);
         PodcastDownload progress = store.downloadProgress(m);
-        boolean local = progress != null && progress.status == PodcastDownload.COMPLETE;
-        boolean active = progress != null && progress.active();
+        final boolean local = progress != null && progress.status == PodcastDownload.COMPLETE;
+        final boolean active = progress != null && progress.active();
         String action =
                 local
                         ? "Remove Download"
                         : active
                                 ? "Cancel Download"
                                 : progress != null ? "Retry Download" : "Download Episode";
-        Ui.dialog(c)
-                .setTitle(m.title)
-                .setItems(
-                        new String[] {"Play", action, "Mark Unplayed"},
-                        (d, w) -> {
-                            if (w == 0) {
-                                Player.get(c).playNow(m);
-                                page.main().openNowPlaying();
-                            } else if (w == 2) {
-                                PodcastPositions.get(c).clear(m.id);
-                                if (m.sameAs(Player.get(c).current())) Player.get(c).seekTo(0);
-                            } else {
-                                try {
-                                    if (local || active) store.removeDownload(m);
-                                    else store.download(m);
-                                    Notice.show(
-                                            c,
-                                            local
-                                                    ? "Download removed"
-                                                    : active
-                                                            ? "Download canceled"
-                                                            : "Episode queued for download");
-                                    if (refresh != null) refresh.run();
-                                } catch (Exception e) {
-                                    Notice.show(
-                                            c,
-                                            e.getMessage() != null
-                                                    ? e.getMessage()
-                                                    : "Couldn't download episode");
-                                }
-                            }
-                        })
-                .show();
+        labels.add("Play");
+        actions.add(() -> {
+            Player.get(c).playNow(m);
+            page.main().openNowPlaying();
+        });
+        labels.add(action);
+        actions.add(() -> {
+            try {
+                if (local || active) store.removeDownload(m);
+                else store.download(m);
+                Notice.show(
+                        c,
+                        local
+                                ? "Download removed"
+                                : active
+                                        ? "Download canceled"
+                                        : "Episode queued for download");
+                if (refresh != null) refresh.run();
+            } catch (Exception e) {
+                Notice.show(
+                        c,
+                        e.getMessage() != null
+                                ? e.getMessage()
+                                : "Couldn't download episode");
+            }
+        });
+        labels.add("Mark Unplayed");
+        actions.add(() -> {
+            PodcastPositions.get(c).clear(m.id);
+            if (m.sameAs(Player.get(c).current())) Player.get(c).seekTo(0);
+        });
     }
 
     private void render() {

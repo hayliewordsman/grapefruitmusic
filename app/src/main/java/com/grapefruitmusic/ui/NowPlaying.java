@@ -96,6 +96,9 @@ final class NowPlaying {
     private final IconView btnQueue;
     /** A live station: + keeps it in My Stations (✓ when it's there; tap again to let it go). */
     private final IconView btnStation;
+    /** The ⋯ button: the accent while the sleep timer is set. */
+    private IconView moreButton;
+    private final com.grapefruitmusic.playback.SleepTimer.Listener sleepListener = this::showSleepState;
     /** Audiobooks: their chapters (a list where Up Next goes), and the one being heard. */
     private final com.grapefruitmusic.ui.widget.ActionIconView btnChapters;
     private final ListView chaptersList;
@@ -259,9 +262,13 @@ final class NowPlaying {
         btnLive = (IconView) root.findViewById(R.id.np_btn_live);
         btnQueue = (IconView) root.findViewById(R.id.np_btn_queue);
         btnStation = new com.grapefruitmusic.ui.widget.ActionIconView(a);
-        for (IconView button : new IconView[]{btnLyrics, btnQueue, btnKaraoke, btnLive, btnStation}) {
+        for (IconView button : new IconView[]{btnLyrics, btnQueue, btnKaraoke, btnLive}) {
             ((com.grapefruitmusic.ui.widget.ActionIconView)button).setLabelVisible(true);
         }
+        // + or ✓ alone (said in full to TalkBack): "Save" and "Saved" barely fit under it.
+        ((com.grapefruitmusic.ui.widget.ActionIconView) btnStation).setLabelVisible(false);
+        // As big as the labelled buttons' icons beside it, centred.
+        btnStation.setPadding(Ui.dp(a, 13), Ui.dp(a, 16), Ui.dp(a, 13), Ui.dp(a, 16));
 
         btnStation.setVisibility(View.GONE);
         ((LinearLayout) root.findViewById(R.id.np_buttons)).addView(btnStation,
@@ -346,6 +353,7 @@ final class NowPlaying {
         musicButtons = root.findViewById(R.id.np_buttons);
         radioButtons = root.findViewById(R.id.np_radio_buttons);
         btnPreset = (IconView) root.findViewById(R.id.np_btn_preset);
+        ((com.grapefruitmusic.ui.widget.ActionIconView) btnPreset).setLabelVisible(false);
         output = new Segmented(a, new String[]{"Headphones", "Speaker"}, 0);
         FrameLayout outputArea = (FrameLayout) root.findViewById(R.id.np_output);
         outputArea.addView(output);
@@ -404,17 +412,8 @@ final class NowPlaying {
         moreIcon.setIcon(Icons.MORE);
         Ui.styleCircle(moreIcon, false);
         moreIcon.setContentDescription("More actions");
-        moreIcon.setOnClickListener(v -> {
-            if (radio.inSession()) { PresetLabel.add(activity, radio.frequency()); return; }
-            MediaItem current = player.current();
-            android.app.Fragment fragment = activity.getFragmentManager().findFragmentById(R.id.content);
-            if (current != null && fragment instanceof BaseFragment) {
-                com.grapefruitmusic.source.MusicSource source = com.grapefruitmusic.source.Sources.get(activity).byId(current.sourceId);
-                if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(current.sourceId))
-                    PodcastsFragment.episodeActions((BaseFragment)fragment, current, null);
-                else if (source != null) TrackActions.show((BaseFragment)fragment, current, source);
-            }
-        });
+        moreIcon.setOnClickListener(v -> showMore());
+        moreButton = moreIcon;
         // The play button: the accent gradient, in a soft glow of it.
         android.graphics.drawable.LayerDrawable glow = new android.graphics.drawable.LayerDrawable(
                 new android.graphics.drawable.Drawable[]{
@@ -901,11 +900,127 @@ final class NowPlaying {
             Bg.cancelMain(ticker);
             Bg.main(ticker);
         }
+        com.grapefruitmusic.playback.SleepTimer.get(activity).addListener(sleepListener);
+        showSleepState();
     }
 
     void onStop() {
         started = false;
         Bg.cancelMain(ticker);
+        com.grapefruitmusic.playback.SleepTimer.get(activity).removeListener(sleepListener);
+    }
+
+    // ---- The ⋯ menu ----
+
+    /**
+     * What's playing's menu (the song's, the episode's, the station's, the book's, the FM radio's),
+     * then the sleep timer, on every kind of Now Playing.
+     */
+    private void showMore() {
+        final List<String> labels = new ArrayList<String>();
+        final List<Runnable> actions = new ArrayList<Runnable>();
+        String heading;
+        final MediaItem current = player.current();
+        if (radio.inSession()) {
+            heading = radio.title();
+            labels.add("Add to Presets\u2026");
+            actions.add(() -> PresetLabel.add(activity, radio.frequency()));
+        } else if (current != null) {
+            heading = current.title;
+            android.app.Fragment fragment = activity.getFragmentManager().findFragmentById(R.id.content);
+            if (Player.isAudiobook(current)) {
+                final com.grapefruitmusic.audiobooks.Audiobook b = book(current);
+                if (b != null) {
+                    labels.add("Play from the Start");
+                    actions.add(() -> {
+                        com.grapefruitmusic.audiobooks.AudiobookStore.get(activity).startOver(b.id);
+                        player.jumpTo(0, 0);
+                    });
+                }
+            } else if (fragment instanceof BaseFragment) {
+                BaseFragment page = (BaseFragment) fragment;
+                if (Player.isPodcast(current)) PodcastsFragment.episodeItems(page, current, null, labels, actions);
+                else TrackActions.collect(page, current, null, labels, actions);
+            }
+        } else {
+            return;
+        }
+        labels.add(sleepLabel(current));
+        actions.add(() -> showSleepTimer(current));
+        Ui.dialog(activity)
+                .setTitle(heading)
+                .setItems(labels.toArray(new String[labels.size()]), (d, which) -> actions.get(which).run())
+                .show();
+    }
+
+    /** "Sleep Timer", or what it's set for. */
+    private String sleepLabel(MediaItem current) {
+        com.grapefruitmusic.playback.SleepTimer t = com.grapefruitmusic.playback.SleepTimer.get(activity);
+        switch (t.mode()) {
+            case com.grapefruitmusic.playback.SleepTimer.TIMED:
+                long min = (t.remainingMs() + 59999) / 60000;
+                return "Sleep Timer: " + (min <= 1 ? "1 min left" : min + " min left");
+            case com.grapefruitmusic.playback.SleepTimer.END_OF_ITEM:
+            case com.grapefruitmusic.playback.SleepTimer.END_OF_CHAPTER:
+                return "Sleep Timer: " + endLabel(current);
+            default:
+                return "Sleep Timer\u2026";
+        }
+    }
+
+    /** The end the sleep timer can wait for: the song's, the episode's, the chapter's; null live. */
+    private String endLabel(MediaItem current) {
+        if (radio.inSession() || current == null || current.live) return null;
+        if (Player.isAudiobook(current)) {
+            com.grapefruitmusic.audiobooks.Audiobook b = book(current);
+            return b != null && b.chapters.size() > 1 ? "End of Chapter" : "End of Book";
+        }
+        return Player.isPodcast(current) ? "End of Episode" : "End of Song";
+    }
+
+    /** Off, a time, or the end of what's playing; the one set ticked. */
+    private void showSleepTimer(final MediaItem current) {
+        final com.grapefruitmusic.playback.SleepTimer t = com.grapefruitmusic.playback.SleepTimer.get(activity);
+        final int[] minutes = com.grapefruitmusic.playback.SleepTimer.MINUTES;
+        final String end = endLabel(current);
+        final List<String> options = new ArrayList<String>();
+        options.add("Off");
+        int checked = t.active() ? -1 : 0;
+        for (int i = 0; i < minutes.length; i++) {
+            options.add(minutes[i] == 60 ? "1 Hour" : minutes[i] + " Minutes");
+            if (t.minutes() == minutes[i]) checked = i + 1;
+        }
+        if (end != null) {
+            options.add(end);
+            if (t.mode() == com.grapefruitmusic.playback.SleepTimer.END_OF_ITEM
+                    || t.mode() == com.grapefruitmusic.playback.SleepTimer.END_OF_CHAPTER) checked = options.size() - 1;
+        }
+        Ui.dialog(activity)
+                .setTitle("Sleep Timer")
+                .setSingleChoiceItems(options.toArray(new String[options.size()]), checked, (d, which) -> {
+                    d.dismiss();
+                    if (which == 0) {
+                        t.cancel();
+                        Notice.show(activity, "Sleep timer off");
+                    } else if (which <= minutes.length) {
+                        t.setMinutes(minutes[which - 1]);
+                        Notice.show(activity, "Stopping in " + options.get(which).toLowerCase(java.util.Locale.US));
+                    } else {
+                        com.grapefruitmusic.audiobooks.Audiobook b = current != null ? book(current) : null;
+                        if (b != null && b.chapters.size() > 1) t.setEndOfChapter(b);
+                        else t.setEndOfItem();
+                        Notice.show(activity, "Stopping at the " + end.toLowerCase(java.util.Locale.US).replace("end of", "end of this"));
+                    }
+                })
+                .show();
+    }
+
+    /** The ⋯ button in the accent while the sleep timer is set. */
+    private void showSleepState() {
+        if (moreButton == null) return;
+        boolean on = com.grapefruitmusic.playback.SleepTimer.get(activity).active();
+        moreButton.setColor(on ? accent : Ui.color(activity, R.attr.gfTextPrimary));
+        moreButton.setContentDescription(on ? "More actions, sleep timer on" : "More actions");
     }
 
     /**
