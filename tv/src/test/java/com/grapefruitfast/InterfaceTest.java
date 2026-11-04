@@ -228,6 +228,52 @@ public class InterfaceTest {
             capture(root,"portrait-ondemand.png");
         }
     }
+    /**
+     * Beta 2: tapping a chip that was scrolled to (Adventure, far along Movies' row) leaves the row where it
+     * was, with that chip in view, instead of jumping back to the start. Live TV's regions too, and a tab
+     * shown again keeps its row's place.
+     */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void chipRowsKeepTheirPlace() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(described(root,"Movies"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            // Scrolled along until Adventure is on screen, as it is when it's tapped.
+            TextView adventure=text(root,"Adventure");HorizontalScrollView row=rowOf(adventure);
+            row.scrollTo(adventure.getLeft()-120,0);int before=row.getScrollX();assertTrue("the row scrolls",before>0);
+            assertTrue("on screen before the tap",adventure.getRight()<=before+row.getWidth());
+            tap(text(root,"Adventure"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            TextView chip=text(root,"Adventure");HorizontalScrollView after=rowOf(chip);
+            assertNotSame("the page was rebuilt",row,after);
+            assertEquals(before,after.getScrollX());
+            assertTrue("the chosen chip is in view",chip.getLeft()>=after.getScrollX()&&chip.getRight()<=after.getScrollX()+after.getWidth());
+            assertNotNull(text(root,"Hercules Unchained"));assertNull(text(root,"His Girl Friday"));
+            settle();measure(root,1233,2742);root.getViewTreeObserver().dispatchOnPreDraw();capture(root,"portrait-movies-adventure.png");
+            // Live TV's region chips, at the far end of its row.
+            tap(described(root,"Live TV"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            HorizontalScrollView live=rowOf(text(root,"Australia"));live.scrollTo(100000,0);int liveAt=live.getScrollX();assertTrue(liveAt>0);
+            tap(text(root,"Australia"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertEquals(liveAt,rowOf(text(root,"Australia")).getScrollX());
+            // Back to Movies: its row is still where it was left.
+            tap(described(root,"Movies"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertEquals(before,rowOf(text(root,"Adventure")).getScrollX());
+        }
+    }
+    /** A row with no place yet scrolls its chosen chip into view (Movies opened with Animation chosen). */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void aChosenChipFarAlongStartsInView() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(described(root,"Movies"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            HorizontalScrollView row=rowOf(text(root,"Animation"));row.scrollTo(100000,0);
+            tap(text(root,"Animation"));
+            // A fresh activity, as after Android recreates it: no remembered place, Animation still chosen.
+            controller.recreate();root=controller.get().getWindow().getDecorView();measure(root,1233,2742);
+            TextView chip=text(root,"Animation");HorizontalScrollView fresh=rowOf(chip);
+            assertTrue("scrolled to it",fresh.getScrollX()>0);
+            assertTrue("in view",chip.getLeft()>=fresh.getScrollX()&&chip.getRight()<=fresh.getScrollX()+fresh.getWidth());
+            assertNotNull(text(root,"Sintel"));
+        }
+    }
+    private static HorizontalScrollView rowOf(View v){while(v!=null&&!(v instanceof HorizontalScrollView))v=(View)v.getParent();return (HorizontalScrollView)v;}
     private static org.robolectric.android.controller.ActivityController<MainActivity> launch(){
         MainActivity.splashShown=false;
         org.robolectric.android.controller.ActivityController<MainActivity> c=Robolectric.buildActivity(MainActivity.class).setup();
@@ -255,7 +301,7 @@ public class InterfaceTest {
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
             tap(text(root,"About Grapefruit TV & Movies"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 3.0-beta-1"));assertNotNull(text(root,"Source Code"));
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 3.0-beta-2"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }

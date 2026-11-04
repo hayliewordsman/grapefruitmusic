@@ -19,7 +19,7 @@ import java.util.*;
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
     static final String NAME="Grapefruit TV & Movies";
-    static final String VERSION="3.0-beta-1 · build 18";
+    static final String VERSION="3.0-beta-2 · build 19";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     /** The tabs, in order; On Demand only while one of the viewer's services offers films or series. */
@@ -97,8 +97,10 @@ public final class MainActivity extends Activity {
             tab=saved.getString("tab","Live TV"); category=saved.getString("category","All");
             country=saved.getString("country","All");query=saved.getString("query","");
             fullScreen=saved.getBoolean("fullscreen",false);
-            watching=find(saved.getString("watching"));settingsPage=saved.getString("settingsPage");
-            playing=watching!=null?watching:find(saved.getString("playing"));
+            watching=findAny(saved.getString("watching"));settingsPage=saved.getString("settingsPage");
+            playing=watching!=null?watching:findAny(saved.getString("playing"));
+            movieChip=saved.getString("movieChip","All");onDemandChip=saved.getString("onDemandChip","Films");
+            onDemandGroup=saved.getString("onDemandGroup","All");recordingsChip=saved.getString("recordingsChip","All");
         }
         build();
         splash();
@@ -430,9 +432,8 @@ public final class MainActivity extends Activity {
      * service's groups. Recordings: All, Finished and Scheduled.
      */
     private void chips(LinearLayout parent) {
-        HorizontalScrollView scroll=new HorizontalScrollView(this);scroll.setHorizontalScrollBarEnabled(false);
-        scroll.setClipToPadding(false);
-        LinearLayout row=b.row();row.setPadding(dp(18),dp(6),dp(10),dp(6));scroll.addView(row);
+        LinearLayout row=b.row();row.setPadding(dp(18),dp(6),dp(10),dp(6));
+        HorizontalScrollView scroll=chipRow(row);
         if(tab.equals("Movies")){
             row.addView(chip("All",movieChip.equals("All"),()->movieChip="All"));
             for(String g:Movies.GENRES){boolean any=false;for(Channel m:movies)if(m.category.equals(g))any=true;
@@ -461,6 +462,36 @@ public final class MainActivity extends Activity {
         }
         parent.addView(scroll,new LinearLayout.LayoutParams(-1,-2));
     }
+    /** Where each page's chip row was scrolled to (by tab, or by series). */
+    private final Map<String,Integer> chipScroll=new HashMap<>();
+    /**
+     * A chip row that keeps its place. A chip's tap rebuilds the page, row and all, so the new row goes back
+     * to where the old one was scrolled (with the chip just tapped still under the finger), rather than to
+     * the start. A row with no place yet (a page shown again later, say) scrolls its chosen chip into view.
+     */
+    private HorizontalScrollView chipRow(final LinearLayout row) {
+        final String key=tab.equals("On Demand")&&series!=null?"series:"+series.id:tab;
+        HorizontalScrollView scroll=new HorizontalScrollView(this){
+            private boolean placed;
+            @Override protected void onLayout(boolean changed,int l,int t,int r,int btm){
+                super.onLayout(changed,l,t,r,btm);
+                if(placed||getWidth()==0||row.getWidth()==0)return;
+                placed=true;
+                Integer was=chipScroll.get(key);
+                if(was!=null){scrollTo(was,0);return;}
+                // The chosen chip furthest along, brought just into view.
+                View chosen=null;
+                for(int i=0;i<row.getChildCount();i++)if("chosen".equals(row.getChildAt(i).getTag()))chosen=row.getChildAt(i);
+                if(chosen!=null&&chosen.getRight()>getWidth()-dp(10))scrollTo(chosen.getRight()-getWidth()+dp(18),0);
+            }
+            @Override protected void onScrollChanged(int l,int t,int ol,int ot){
+                super.onScrollChanged(l,t,ol,ot);
+                if(placed)chipScroll.put(key,l);
+            }
+        };
+        scroll.setHorizontalScrollBarEnabled(false);scroll.setClipToPadding(false);scroll.addView(row);
+        return scroll;
+    }
     private void divider(LinearLayout row){
         View divider=new View(this);divider.setBackgroundColor(b.outline);
         LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(Math.max(1,dp(1)),dp(24));d.rightMargin=dp(8);row.addView(divider,d);
@@ -468,6 +499,7 @@ public final class MainActivity extends Activity {
     private static String kindFor(String chip){return chip.equals("Series")?Channel.SERIES:Channel.FILM;}
     private View chip(String label,boolean chosen,Runnable pick) {
         TextView chip=b.button(label,chosen,v->{pick.run();listPosition=0;if(watching!=null)watchPage();else browse();});
+        if(chosen)chip.setTag("chosen");
         chip.setTextSize(13);chip.setMinHeight(dp(40));chip.setPadding(dp(16),0,dp(16),0);
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(40));p.rightMargin=dp(8);chip.setLayoutParams(p);
         return chip;
@@ -1186,10 +1218,11 @@ public final class MainActivity extends Activity {
         top.addView(name,new LinearLayout.LayoutParams(0,-2,1));header.addView(top);
         TextView meta=b.label((series.year>0?series.year+"  ·  ":"")+series.source,13,b.secondary);meta.setPadding(dp(4),dp(6),0,dp(10));header.addView(meta);
         LinearLayout bar=b.column();bar.setPadding(0,0,0,dp(FADE_DP));
-        HorizontalScrollView scroll=new HorizontalScrollView(this);scroll.setHorizontalScrollBarEnabled(false);scroll.setClipToPadding(false);
-        LinearLayout row=b.row();row.setPadding(dp(18),dp(6),dp(10),dp(6));scroll.addView(row);
+        LinearLayout row=b.row();row.setPadding(dp(18),dp(6),dp(10),dp(6));
+        HorizontalScrollView scroll=chipRow(row);
         if(seasons!=null)for(final int n:seasons.keySet()){
             TextView chip=b.button(n==0?"Extras":"Season "+n,n==season,v->{season=n;listPosition=0;seriesPage();});
+            if(n==season)chip.setTag("chosen");
             chip.setTextSize(13);chip.setPadding(dp(16),0,dp(16),0);LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-2,dp(40));cp.rightMargin=dp(8);row.addView(chip,cp);
         }
         bar.addView(scroll,new LinearLayout.LayoutParams(-1,-2));
@@ -1805,7 +1838,8 @@ public final class MainActivity extends Activity {
         }
         return super.onKeyDown(key,event);
     }
-    @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);out.putString("tab",tab);out.putString("category",category);out.putString("country",country);out.putString("query",query);out.putString("watching",watching==null?null:watching.id);out.putString("playing",playing==null?null:playing.id);out.putBoolean("fullscreen",fullScreen);out.putString("settingsPage",settingsPage);}
+    @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);out.putString("tab",tab);out.putString("category",category);out.putString("country",country);out.putString("query",query);out.putString("watching",watching==null?null:watching.id);out.putString("playing",playing==null?null:playing.id);out.putBoolean("fullscreen",fullScreen);out.putString("settingsPage",settingsPage);
+        out.putString("movieChip",movieChip);out.putString("onDemandChip",onDemandChip);out.putString("onDemandGroup",onDemandGroup);out.putString("recordingsChip",recordingsChip);}
     /** Keeps the picture at its aspect ratio inside a 16:9 frame; other children (the corner mask) fill the frame. */
     private static class AspectFrame extends FrameLayout {
         float ratio=16f/9;
