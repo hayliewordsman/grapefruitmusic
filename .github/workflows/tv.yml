@@ -1,4 +1,4 @@
-name: Grapefruit TV
+name: Grapefruit TV & Movies
 on:
   push:
     paths: ["tv/**", "grapefruit-ui/**", "tools/tv/**", "docs/tv/**", "build.gradle", "settings.gradle", "gradle.properties", "gradle/**", ".github/workflows/tv.yml"]
@@ -140,7 +140,7 @@ jobs:
           notes="docs/tv/releases/$VERSION.md"
           test -f "$notes"
           gh release create "tv-v$VERSION" "grapefruit-tv-$VERSION.apk" --target "$GITHUB_SHA" \
-            --title "Grapefruit TV $VERSION" --notes-file "$notes" "${flags[@]}"
+            --title "Grapefruit TV & Movies $VERSION" --notes-file "$notes" "${flags[@]}"
       - name: Publish to the F-Droid repo
         # A stable release goes into Grapefruit's F-Droid repo beside Music (prereleases stay out).
         if: ${{ !contains(needs.build.outputs.version, 'alpha') && !contains(needs.build.outputs.version, 'beta') && !contains(needs.build.outputs.version, 'rc') }}

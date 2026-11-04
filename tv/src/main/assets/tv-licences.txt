@@ -1,4 +1,4 @@
-Grapefruit TV 2.0
+Grapefruit TV & Movies 3.0
 Copyright 2026 MagicFlute LLC. GPL-3.0-or-later; full app licence is included as GPL-3.0.txt.
 
 Geist and Geist Pixel Triangle, Copyright Vercel, SIL Open Font License 1.1; full font licence is in fonts/Geist-OFL.txt.
@@ -216,3 +216,5 @@ Apache License 2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 
+
+Movies: films in the public domain in the United States, or under Creative Commons licences (Blender Foundation open movies: CC BY; Sita Sings the Blues by Nina Paley: CC0), streamed from the Internet Archive (archive.org).

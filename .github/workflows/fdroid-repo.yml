@@ -1,6 +1,6 @@
 name: F-Droid repo
 
-# Publishes Grapefruit Music and Grapefruit TV (formerly Grapefruit FAST) as an F-Droid repository on GitHub Pages:
+# Publishes Grapefruit Music and Grapefruit TV & Movies (formerly Grapefruit TV and Grapefruit FAST) as an F-Droid repository on GitHub Pages:
 # https://hayliewordsman.github.io/grapefruitmusic/repo (setting it up: fdroid/README.md).
 #
 # 1. Release: if the default branch's version (app/build.gradle) has no GitHub release yet, builds

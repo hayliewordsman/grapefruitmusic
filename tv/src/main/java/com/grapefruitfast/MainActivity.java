@@ -19,7 +19,7 @@ import java.util.*;
 /** Native touch + remote interface; no WebView, Play Services or account is required. */
 public final class MainActivity extends Activity {
     static final String NAME="Grapefruit TV & Movies";
-    static final String VERSION="3.0-beta-2 · build 19";
+    static final String VERSION="3.0 · build 20";
     static final String COPYRIGHT="Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER="Haylie", TELEGRAM="afishinauto", PAYPAL="paypal.me/fishglub", SOURCE="github.com/hayliewordsman/grapefruitmusic";
     /** The tabs, in order; On Demand only while one of the viewer's services offers films or series. */

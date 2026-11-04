@@ -301,7 +301,7 @@ public class InterfaceTest {
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
             tap(text(root,"About Grapefruit TV & Movies"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 3.0-beta-2"));assertNotNull(text(root,"Source Code"));
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 3.0"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
