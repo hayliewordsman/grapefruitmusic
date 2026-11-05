@@ -1,0 +1,2510 @@
+[
+  {
+    "country": "Afghanistan",
+    "region": "Afghanistan",
+    "path": "asia/afghanistan.map",
+    "size": "136M"
+  },
+  {
+    "country": "Albania",
+    "region": "Albania",
+    "path": "europe/albania.map",
+    "size": "43M"
+  },
+  {
+    "country": "Algeria",
+    "region": "Algeria",
+    "path": "africa/algeria.map",
+    "size": "297M"
+  },
+  {
+    "country": "American Oceania 1",
+    "region": "American Oceania 1",
+    "path": "australia-oceania/american-oceania-1.map",
+    "size": "24M"
+  },
+  {
+    "country": "American Oceania 2",
+    "region": "American Oceania 2",
+    "path": "australia-oceania/american-oceania-2.map",
+    "size": "44M"
+  },
+  {
+    "country": "American Oceania 3",
+    "region": "American Oceania 3",
+    "path": "australia-oceania/american-oceania-3.map",
+    "size": "44M"
+  },
+  {
+    "country": "Andorra",
+    "region": "Andorra",
+    "path": "europe/andorra.map",
+    "size": "2.4M"
+  },
+  {
+    "country": "Angola",
+    "region": "Angola",
+    "path": "africa/angola.map",
+    "size": "116M"
+  },
+  {
+    "country": "Argentina",
+    "region": "Argentina",
+    "path": "south-america/argentina.map",
+    "size": "542M"
+  },
+  {
+    "country": "Armenia",
+    "region": "Armenia",
+    "path": "asia/armenia.map",
+    "size": "45M"
+  },
+  {
+    "country": "Australia",
+    "region": "Australia",
+    "path": "australia-oceania/australia.map",
+    "size": "1.6G"
+  },
+  {
+    "country": "Austria",
+    "region": "Austria",
+    "path": "europe/austria.map",
+    "size": "528M"
+  },
+  {
+    "country": "Azerbaijan",
+    "region": "Azerbaijan",
+    "path": "asia/azerbaijan.map",
+    "size": "54M"
+  },
+  {
+    "country": "Azores",
+    "region": "Azores",
+    "path": "europe/azores.map",
+    "size": "23M"
+  },
+  {
+    "country": "Bahamas",
+    "region": "Bahamas",
+    "path": "central-america/bahamas.map",
+    "size": "29M"
+  },
+  {
+    "country": "Bangladesh",
+    "region": "Bangladesh",
+    "path": "asia/bangladesh.map",
+    "size": "400M"
+  },
+  {
+    "country": "Belarus",
+    "region": "Belarus",
+    "path": "europe/belarus.map",
+    "size": "311M"
+  },
+  {
+    "country": "Belgium",
+    "region": "Belgium",
+    "path": "europe/belgium.map",
+    "size": "494M"
+  },
+  {
+    "country": "Belize",
+    "region": "Belize",
+    "path": "central-america/belize.map",
+    "size": "22M"
+  },
+  {
+    "country": "Benin",
+    "region": "Benin",
+    "path": "africa/benin.map",
+    "size": "49M"
+  },
+  {
+    "country": "Bhutan",
+    "region": "Bhutan",
+    "path": "asia/bhutan.map",
+    "size": "23M"
+  },
+  {
+    "country": "Bolivia",
+    "region": "Bolivia",
+    "path": "south-america/bolivia.map",
+    "size": "171M"
+  },
+  {
+    "country": "Bosnia Herzegovina",
+    "region": "Bosnia Herzegovina",
+    "path": "europe/bosnia-herzegovina.map",
+    "size": "151M"
+  },
+  {
+    "country": "Botswana",
+    "region": "Botswana",
+    "path": "africa/botswana.map",
+    "size": "96M"
+  },
+  {
+    "country": "Brazil",
+    "region": "Brazil",
+    "path": "south-america/brazil.map",
+    "size": "2.1G"
+  },
+  {
+    "country": "Brazil",
+    "region": "Centro Oeste",
+    "path": "south-america/brazil/centro-oeste.map",
+    "size": "234M"
+  },
+  {
+    "country": "Brazil",
+    "region": "Nordeste",
+    "path": "south-america/brazil/nordeste.map",
+    "size": "442M"
+  },
+  {
+    "country": "Brazil",
+    "region": "Norte",
+    "path": "south-america/brazil/norte.map",
+    "size": "284M"
+  },
+  {
+    "country": "Brazil",
+    "region": "Sudeste",
+    "path": "south-america/brazil/sudeste.map",
+    "size": "768M"
+  },
+  {
+    "country": "Brazil",
+    "region": "Sul",
+    "path": "south-america/brazil/sul.map",
+    "size": "387M"
+  },
+  {
+    "country": "Bulgaria",
+    "region": "Bulgaria",
+    "path": "europe/bulgaria.map",
+    "size": "147M"
+  },
+  {
+    "country": "Burkina Faso",
+    "region": "Burkina Faso",
+    "path": "africa/burkina-faso.map",
+    "size": "88M"
+  },
+  {
+    "country": "Burundi",
+    "region": "Burundi",
+    "path": "africa/burundi.map",
+    "size": "39M"
+  },
+  {
+    "country": "Cambodia",
+    "region": "Cambodia",
+    "path": "asia/cambodia.map",
+    "size": "43M"
+  },
+  {
+    "country": "Cameroon",
+    "region": "Cameroon",
+    "path": "africa/cameroon.map",
+    "size": "261M"
+  },
+  {
+    "country": "Canada",
+    "region": "Alberta",
+    "path": "north-america/canada/alberta.map",
+    "size": "310M"
+  },
+  {
+    "country": "Canada",
+    "region": "British Columbia",
+    "path": "north-america/canada/british-columbia.map",
+    "size": "757M"
+  },
+  {
+    "country": "Canada",
+    "region": "Manitoba",
+    "path": "north-america/canada/manitoba.map",
+    "size": "218M"
+  },
+  {
+    "country": "Canada",
+    "region": "New Brunswick",
+    "path": "north-america/canada/new-brunswick.map",
+    "size": "59M"
+  },
+  {
+    "country": "Canada",
+    "region": "Newfoundland And Labrador",
+    "path": "north-america/canada/newfoundland-and-labrador.map",
+    "size": "332M"
+  },
+  {
+    "country": "Canada",
+    "region": "Northwest Territories",
+    "path": "north-america/canada/northwest-territories.map",
+    "size": "735M"
+  },
+  {
+    "country": "Canada",
+    "region": "Nova Scotia",
+    "path": "north-america/canada/nova-scotia.map",
+    "size": "81M"
+  },
+  {
+    "country": "Canada",
+    "region": "Nunavut",
+    "path": "north-america/canada/nunavut.map",
+    "size": "2.0G"
+  },
+  {
+    "country": "Canada",
+    "region": "Ontario",
+    "path": "north-america/canada/ontario.map",
+    "size": "697M"
+  },
+  {
+    "country": "Canada",
+    "region": "Prince Edward Island",
+    "path": "north-america/canada/prince-edward-island.map",
+    "size": "11M"
+  },
+  {
+    "country": "Canada",
+    "region": "Quebec",
+    "path": "north-america/canada/quebec.map",
+    "size": "972M"
+  },
+  {
+    "country": "Canada",
+    "region": "Saskatchewan",
+    "path": "north-america/canada/saskatchewan.map",
+    "size": "136M"
+  },
+  {
+    "country": "Canada",
+    "region": "Yukon",
+    "path": "north-america/canada/yukon.map",
+    "size": "139M"
+  },
+  {
+    "country": "Canary Islands",
+    "region": "Canary Islands",
+    "path": "africa/canary-islands.map",
+    "size": "49M"
+  },
+  {
+    "country": "Cape Verde",
+    "region": "Cape Verde",
+    "path": "africa/cape-verde.map",
+    "size": "11M"
+  },
+  {
+    "country": "Central African Republic",
+    "region": "Central African Republic",
+    "path": "africa/central-african-republic.map",
+    "size": "155M"
+  },
+  {
+    "country": "Chad",
+    "region": "Chad",
+    "path": "africa/chad.map",
+    "size": "159M"
+  },
+  {
+    "country": "Chile",
+    "region": "Chile",
+    "path": "south-america/chile.map",
+    "size": "651M"
+  },
+  {
+    "country": "China",
+    "region": "Anhui",
+    "path": "asia/china/anhui.map",
+    "size": "52M"
+  },
+  {
+    "country": "China",
+    "region": "Beijing",
+    "path": "asia/china/beijing.map",
+    "size": "34M"
+  },
+  {
+    "country": "China",
+    "region": "Chongqing",
+    "path": "asia/china/chongqing.map",
+    "size": "35M"
+  },
+  {
+    "country": "China",
+    "region": "Fujian",
+    "path": "asia/china/fujian.map",
+    "size": "47M"
+  },
+  {
+    "country": "China",
+    "region": "Gansu",
+    "path": "asia/china/gansu.map",
+    "size": "99M"
+  },
+  {
+    "country": "China",
+    "region": "Guangdong",
+    "path": "asia/china/guangdong.map",
+    "size": "164M"
+  },
+  {
+    "country": "China",
+    "region": "Guangxi",
+    "path": "asia/china/guangxi.map",
+    "size": "63M"
+  },
+  {
+    "country": "China",
+    "region": "Guizhou",
+    "path": "asia/china/guizhou.map",
+    "size": "37M"
+  },
+  {
+    "country": "China",
+    "region": "Hainan",
+    "path": "asia/china/hainan.map",
+    "size": "19M"
+  },
+  {
+    "country": "China",
+    "region": "Hebei",
+    "path": "asia/china/hebei.map",
+    "size": "125M"
+  },
+  {
+    "country": "China",
+    "region": "Heilongjiang",
+    "path": "asia/china/heilongjiang.map",
+    "size": "82M"
+  },
+  {
+    "country": "China",
+    "region": "Henan",
+    "path": "asia/china/henan.map",
+    "size": "64M"
+  },
+  {
+    "country": "China",
+    "region": "Hong Kong",
+    "path": "asia/china/hong-kong.map",
+    "size": "28M"
+  },
+  {
+    "country": "China",
+    "region": "Hubei",
+    "path": "asia/china/hubei.map",
+    "size": "63M"
+  },
+  {
+    "country": "China",
+    "region": "Hunan",
+    "path": "asia/china/hunan.map",
+    "size": "57M"
+  },
+  {
+    "country": "China",
+    "region": "Inner Mongolia",
+    "path": "asia/china/inner-mongolia.map",
+    "size": "170M"
+  },
+  {
+    "country": "China",
+    "region": "Jiangsu",
+    "path": "asia/china/jiangsu.map",
+    "size": "92M"
+  },
+  {
+    "country": "China",
+    "region": "Jiangxi",
+    "path": "asia/china/jiangxi.map",
+    "size": "56M"
+  },
+  {
+    "country": "China",
+    "region": "Jilin",
+    "path": "asia/china/jilin.map",
+    "size": "44M"
+  },
+  {
+    "country": "China",
+    "region": "Liaoning",
+    "path": "asia/china/liaoning.map",
+    "size": "39M"
+  },
+  {
+    "country": "China",
+    "region": "Macau",
+    "path": "asia/china/macau.map",
+    "size": "2.3M"
+  },
+  {
+    "country": "China",
+    "region": "Ningxia",
+    "path": "asia/china/ningxia.map",
+    "size": "14M"
+  },
+  {
+    "country": "China",
+    "region": "Qinghai",
+    "path": "asia/china/qinghai.map",
+    "size": "45M"
+  },
+  {
+    "country": "China",
+    "region": "Shaanxi",
+    "path": "asia/china/shaanxi.map",
+    "size": "107M"
+  },
+  {
+    "country": "China",
+    "region": "Shandong",
+    "path": "asia/china/shandong.map",
+    "size": "85M"
+  },
+  {
+    "country": "China",
+    "region": "Shanghai",
+    "path": "asia/china/shanghai.map",
+    "size": "27M"
+  },
+  {
+    "country": "China",
+    "region": "Shanxi",
+    "path": "asia/china/shanxi.map",
+    "size": "42M"
+  },
+  {
+    "country": "China",
+    "region": "Sichuan",
+    "path": "asia/china/sichuan.map",
+    "size": "124M"
+  },
+  {
+    "country": "China",
+    "region": "Tianjin",
+    "path": "asia/china/tianjin.map",
+    "size": "16M"
+  },
+  {
+    "country": "China",
+    "region": "Tibet",
+    "path": "asia/china/tibet.map",
+    "size": "100M"
+  },
+  {
+    "country": "China",
+    "region": "Xinjiang",
+    "path": "asia/china/xinjiang.map",
+    "size": "134M"
+  },
+  {
+    "country": "China",
+    "region": "Yunnan",
+    "path": "asia/china/yunnan.map",
+    "size": "99M"
+  },
+  {
+    "country": "China",
+    "region": "Zhejiang",
+    "path": "asia/china/zhejiang.map",
+    "size": "96M"
+  },
+  {
+    "country": "Colombia",
+    "region": "Colombia",
+    "path": "south-america/colombia.map",
+    "size": "331M"
+  },
+  {
+    "country": "Comores",
+    "region": "Comores",
+    "path": "africa/comores.map",
+    "size": "4.6M"
+  },
+  {
+    "country": "Congo Brazzaville",
+    "region": "Congo Brazzaville",
+    "path": "africa/congo-brazzaville.map",
+    "size": "50M"
+  },
+  {
+    "country": "Congo Democratic Republic",
+    "region": "Congo Democratic Republic",
+    "path": "africa/congo-democratic-republic.map",
+    "size": "483M"
+  },
+  {
+    "country": "Cook Islands",
+    "region": "Cook Islands",
+    "path": "australia-oceania/cook-islands.map",
+    "size": "33M"
+  },
+  {
+    "country": "Costa Rica",
+    "region": "Costa Rica",
+    "path": "central-america/costa-rica.map",
+    "size": "37M"
+  },
+  {
+    "country": "Croatia",
+    "region": "Croatia",
+    "path": "europe/croatia.map",
+    "size": "167M"
+  },
+  {
+    "country": "Cuba",
+    "region": "Cuba",
+    "path": "central-america/cuba.map",
+    "size": "62M"
+  },
+  {
+    "country": "Cyprus",
+    "region": "Cyprus",
+    "path": "europe/cyprus.map",
+    "size": "31M"
+  },
+  {
+    "country": "Czechia",
+    "region": "Czechia",
+    "path": "europe/czech-republic.map",
+    "size": "578M"
+  },
+  {
+    "country": "Denmark",
+    "region": "Denmark",
+    "path": "europe/denmark.map",
+    "size": "321M"
+  },
+  {
+    "country": "Djibouti",
+    "region": "Djibouti",
+    "path": "africa/djibouti.map",
+    "size": "7.4M"
+  },
+  {
+    "country": "East Timor",
+    "region": "East Timor",
+    "path": "asia/east-timor.map",
+    "size": "18M"
+  },
+  {
+    "country": "Ecuador",
+    "region": "Ecuador",
+    "path": "south-america/ecuador.map",
+    "size": "125M"
+  },
+  {
+    "country": "Egypt",
+    "region": "Egypt",
+    "path": "africa/egypt.map",
+    "size": "175M"
+  },
+  {
+    "country": "El Salvador",
+    "region": "El Salvador",
+    "path": "central-america/el-salvador.map",
+    "size": "33M"
+  },
+  {
+    "country": "Equatorial Guinea",
+    "region": "Equatorial Guinea",
+    "path": "africa/equatorial-guinea.map",
+    "size": "13M"
+  },
+  {
+    "country": "Eritrea",
+    "region": "Eritrea",
+    "path": "africa/eritrea.map",
+    "size": "36M"
+  },
+  {
+    "country": "Estonia",
+    "region": "Estonia",
+    "path": "europe/estonia.map",
+    "size": "104M"
+  },
+  {
+    "country": "Ethiopia",
+    "region": "Ethiopia",
+    "path": "africa/ethiopia.map",
+    "size": "169M"
+  },
+  {
+    "country": "Faroe Islands",
+    "region": "Faroe Islands",
+    "path": "europe/faroe-islands.map",
+    "size": "8.2M"
+  },
+  {
+    "country": "Fiji 1",
+    "region": "Fiji 1",
+    "path": "australia-oceania/fiji-1.map",
+    "size": "5.7M"
+  },
+  {
+    "country": "Fiji 2",
+    "region": "Fiji 2",
+    "path": "australia-oceania/fiji-2.map",
+    "size": "27M"
+  },
+  {
+    "country": "Finland",
+    "region": "Finland",
+    "path": "europe/finland.map",
+    "size": "677M"
+  },
+  {
+    "country": "France",
+    "region": "Alsace",
+    "path": "europe/france/alsace.map",
+    "size": "86M"
+  },
+  {
+    "country": "France",
+    "region": "Aquitaine",
+    "path": "europe/france/aquitaine.map",
+    "size": "212M"
+  },
+  {
+    "country": "France",
+    "region": "Auvergne",
+    "path": "europe/france/auvergne.map",
+    "size": "115M"
+  },
+  {
+    "country": "France",
+    "region": "Basse Normandie",
+    "path": "europe/france/basse-normandie.map",
+    "size": "104M"
+  },
+  {
+    "country": "France",
+    "region": "Bourgogne",
+    "path": "europe/france/bourgogne.map",
+    "size": "153M"
+  },
+  {
+    "country": "France",
+    "region": "Bretagne",
+    "path": "europe/france/bretagne.map",
+    "size": "209M"
+  },
+  {
+    "country": "France",
+    "region": "Centre",
+    "path": "europe/france/centre.map",
+    "size": "176M"
+  },
+  {
+    "country": "France",
+    "region": "Champagne Ardenne",
+    "path": "europe/france/champagne-ardenne.map",
+    "size": "80M"
+  },
+  {
+    "country": "France",
+    "region": "Corse",
+    "path": "europe/france/corse.map",
+    "size": "26M"
+  },
+  {
+    "country": "France",
+    "region": "France",
+    "path": "europe/france.map",
+    "size": "3.3G"
+  },
+  {
+    "country": "France",
+    "region": "Franche Comte",
+    "path": "europe/france/franche-comte.map",
+    "size": "89M"
+  },
+  {
+    "country": "France",
+    "region": "Guadeloupe",
+    "path": "europe/france/guadeloupe.map",
+    "size": "17M"
+  },
+  {
+    "country": "France",
+    "region": "Guyane",
+    "path": "europe/france/guyane.map",
+    "size": "16M"
+  },
+  {
+    "country": "France",
+    "region": "Haute Normandie",
+    "path": "europe/france/haute-normandie.map",
+    "size": "79M"
+  },
+  {
+    "country": "France",
+    "region": "Ile De France",
+    "path": "europe/france/ile-de-france.map",
+    "size": "201M"
+  },
+  {
+    "country": "France",
+    "region": "Languedoc Roussillon",
+    "path": "europe/france/languedoc-roussillon.map",
+    "size": "179M"
+  },
+  {
+    "country": "France",
+    "region": "Limousin",
+    "path": "europe/france/limousin.map",
+    "size": "73M"
+  },
+  {
+    "country": "France",
+    "region": "Lorraine",
+    "path": "europe/france/lorraine.map",
+    "size": "123M"
+  },
+  {
+    "country": "France",
+    "region": "Martinique",
+    "path": "europe/france/martinique.map",
+    "size": "14M"
+  },
+  {
+    "country": "France",
+    "region": "Mayotte",
+    "path": "europe/france/mayotte.map",
+    "size": "7.4M"
+  },
+  {
+    "country": "France",
+    "region": "Midi Pyrenees",
+    "path": "europe/france/midi-pyrenees.map",
+    "size": "249M"
+  },
+  {
+    "country": "France",
+    "region": "Nord Pas De Calais",
+    "path": "europe/france/nord-pas-de-calais.map",
+    "size": "160M"
+  },
+  {
+    "country": "France",
+    "region": "Pays De La Loire",
+    "path": "europe/france/pays-de-la-loire.map",
+    "size": "239M"
+  },
+  {
+    "country": "France",
+    "region": "Picardie",
+    "path": "europe/france/picardie.map",
+    "size": "106M"
+  },
+  {
+    "country": "France",
+    "region": "Poitou Charentes",
+    "path": "europe/france/poitou-charentes.map",
+    "size": "147M"
+  },
+  {
+    "country": "France",
+    "region": "Provence Alpes Cote D Azur",
+    "path": "europe/france/provence-alpes-cote-d-azur.map",
+    "size": "234M"
+  },
+  {
+    "country": "France",
+    "region": "Reunion",
+    "path": "europe/france/reunion.map",
+    "size": "22M"
+  },
+  {
+    "country": "France",
+    "region": "Rhone Alpes",
+    "path": "europe/france/rhone-alpes.map",
+    "size": "343M"
+  },
+  {
+    "country": "Gabon",
+    "region": "Gabon",
+    "path": "africa/gabon.map",
+    "size": "40M"
+  },
+  {
+    "country": "Gcc States",
+    "region": "Gcc States",
+    "path": "asia/gcc-states.map",
+    "size": "313M"
+  },
+  {
+    "country": "Georgia",
+    "region": "Georgia",
+    "path": "europe/georgia.map",
+    "size": "87M"
+  },
+  {
+    "country": "Germany",
+    "region": "Baden Wuerttemberg",
+    "path": "europe/germany/baden-wuerttemberg.map",
+    "size": "406M"
+  },
+  {
+    "country": "Germany",
+    "region": "Bayern",
+    "path": "europe/germany/bayern.map",
+    "size": "551M"
+  },
+  {
+    "country": "Germany",
+    "region": "Berlin",
+    "path": "europe/germany/berlin.map",
+    "size": "52M"
+  },
+  {
+    "country": "Germany",
+    "region": "Brandenburg",
+    "path": "europe/germany/brandenburg.map",
+    "size": "188M"
+  },
+  {
+    "country": "Germany",
+    "region": "Bremen",
+    "path": "europe/germany/bremen.map",
+    "size": "13M"
+  },
+  {
+    "country": "Germany",
+    "region": "Germany",
+    "path": "europe/germany.map",
+    "size": "3.0G"
+  },
+  {
+    "country": "Germany",
+    "region": "Hamburg",
+    "path": "europe/germany/hamburg.map",
+    "size": "28M"
+  },
+  {
+    "country": "Germany",
+    "region": "Hessen",
+    "path": "europe/germany/hessen.map",
+    "size": "219M"
+  },
+  {
+    "country": "Germany",
+    "region": "Mecklenburg Vorpommern",
+    "path": "europe/germany/mecklenburg-vorpommern.map",
+    "size": "96M"
+  },
+  {
+    "country": "Germany",
+    "region": "Niedersachsen",
+    "path": "europe/germany/niedersachsen.map",
+    "size": "349M"
+  },
+  {
+    "country": "Germany",
+    "region": "Nordrhein Westfalen",
+    "path": "europe/germany/nordrhein-westfalen.map",
+    "size": "586M"
+  },
+  {
+    "country": "Germany",
+    "region": "Rheinland Pfalz",
+    "path": "europe/germany/rheinland-pfalz.map",
+    "size": "183M"
+  },
+  {
+    "country": "Germany",
+    "region": "Saarland",
+    "path": "europe/germany/saarland.map",
+    "size": "35M"
+  },
+  {
+    "country": "Germany",
+    "region": "Sachsen",
+    "path": "europe/germany/sachsen.map",
+    "size": "166M"
+  },
+  {
+    "country": "Germany",
+    "region": "Sachsen Anhalt",
+    "path": "europe/germany/sachsen-anhalt.map",
+    "size": "124M"
+  },
+  {
+    "country": "Germany",
+    "region": "Schleswig Holstein",
+    "path": "europe/germany/schleswig-holstein.map",
+    "size": "110M"
+  },
+  {
+    "country": "Germany",
+    "region": "Thueringen",
+    "path": "europe/germany/thueringen.map",
+    "size": "112M"
+  },
+  {
+    "country": "Ghana",
+    "region": "Ghana",
+    "path": "africa/ghana.map",
+    "size": "110M"
+  },
+  {
+    "country": "Greece",
+    "region": "Greece",
+    "path": "europe/greece.map",
+    "size": "256M"
+  },
+  {
+    "country": "Greenland",
+    "region": "Greenland",
+    "path": "north-america/greenland.map",
+    "size": "1.5G"
+  },
+  {
+    "country": "Guatemala",
+    "region": "Guatemala",
+    "path": "central-america/guatemala.map",
+    "size": "129M"
+  },
+  {
+    "country": "Guernsey Jersey",
+    "region": "Guernsey Jersey",
+    "path": "europe/guernsey-jersey.map",
+    "size": "3.4M"
+  },
+  {
+    "country": "Guinea",
+    "region": "Guinea",
+    "path": "africa/guinea.map",
+    "size": "112M"
+  },
+  {
+    "country": "Guinea Bissau",
+    "region": "Guinea Bissau",
+    "path": "africa/guinea-bissau.map",
+    "size": "12M"
+  },
+  {
+    "country": "Guyana",
+    "region": "Guyana",
+    "path": "south-america/guyana.map",
+    "size": "23M"
+  },
+  {
+    "country": "Haiti And Domrep",
+    "region": "Haiti And Domrep",
+    "path": "central-america/haiti-and-domrep.map",
+    "size": "77M"
+  },
+  {
+    "country": "Honduras",
+    "region": "Honduras",
+    "path": "central-america/honduras.map",
+    "size": "77M"
+  },
+  {
+    "country": "Hungary",
+    "region": "Hungary",
+    "path": "europe/hungary.map",
+    "size": "255M"
+  },
+  {
+    "country": "Iceland",
+    "region": "Iceland",
+    "path": "europe/iceland.map",
+    "size": "92M"
+  },
+  {
+    "country": "Ile De Clipperton",
+    "region": "Ile De Clipperton",
+    "path": "australia-oceania/ile-de-clipperton.map",
+    "size": "432K"
+  },
+  {
+    "country": "India",
+    "region": "Central Zone",
+    "path": "asia/india/central-zone.map",
+    "size": "313M"
+  },
+  {
+    "country": "India",
+    "region": "Eastern Zone",
+    "path": "asia/india/eastern-zone.map",
+    "size": "210M"
+  },
+  {
+    "country": "India",
+    "region": "India",
+    "path": "asia/india.map",
+    "size": "1.5G"
+  },
+  {
+    "country": "India",
+    "region": "North Eastern Zone",
+    "path": "asia/india/north-eastern-zone.map",
+    "size": "113M"
+  },
+  {
+    "country": "India",
+    "region": "Northern Zone",
+    "path": "asia/india/northern-zone.map",
+    "size": "205M"
+  },
+  {
+    "country": "India",
+    "region": "Southern Zone",
+    "path": "asia/india/southern-zone.map",
+    "size": "520M"
+  },
+  {
+    "country": "India",
+    "region": "Western Zone",
+    "path": "asia/india/western-zone.map",
+    "size": "203M"
+  },
+  {
+    "country": "Indonesia",
+    "region": "Indonesia",
+    "path": "asia/indonesia.map",
+    "size": "1.7G"
+  },
+  {
+    "country": "Indonesia",
+    "region": "Java",
+    "path": "asia/indonesia/java.map",
+    "size": "875M"
+  },
+  {
+    "country": "Indonesia",
+    "region": "Kalimantan",
+    "path": "asia/indonesia/kalimantan.map",
+    "size": "159M"
+  },
+  {
+    "country": "Indonesia",
+    "region": "Maluku",
+    "path": "asia/indonesia/maluku.map",
+    "size": "50M"
+  },
+  {
+    "country": "Indonesia",
+    "region": "Nusa Tenggara",
+    "path": "asia/indonesia/nusa-tenggara.map",
+    "size": "172M"
+  },
+  {
+    "country": "Indonesia",
+    "region": "Papua",
+    "path": "asia/indonesia/papua.map",
+    "size": "56M"
+  },
+  {
+    "country": "Indonesia",
+    "region": "Sulawesi",
+    "path": "asia/indonesia/sulawesi.map",
+    "size": "171M"
+  },
+  {
+    "country": "Indonesia",
+    "region": "Sumatra",
+    "path": "asia/indonesia/sumatra.map",
+    "size": "295M"
+  },
+  {
+    "country": "Iran",
+    "region": "Iran",
+    "path": "asia/iran.map",
+    "size": "292M"
+  },
+  {
+    "country": "Iraq",
+    "region": "Iraq",
+    "path": "asia/iraq.map",
+    "size": "100M"
+  },
+  {
+    "country": "Ireland and Northern Ireland",
+    "region": "Ireland and Northern Ireland",
+    "path": "europe/ireland-and-northern-ireland.map",
+    "size": "323M"
+  },
+  {
+    "country": "Isle Of Man",
+    "region": "Isle Of Man",
+    "path": "europe/isle-of-man.map",
+    "size": "4.9M"
+  },
+  {
+    "country": "Israel And Palestine",
+    "region": "Israel And Palestine",
+    "path": "asia/israel-and-palestine.map",
+    "size": "88M"
+  },
+  {
+    "country": "Italy",
+    "region": "Centro",
+    "path": "europe/italy/centro.map",
+    "size": "284M"
+  },
+  {
+    "country": "Italy",
+    "region": "Isole",
+    "path": "europe/italy/isole.map",
+    "size": "174M"
+  },
+  {
+    "country": "Italy",
+    "region": "Italy",
+    "path": "europe/italy.map",
+    "size": "1.6G"
+  },
+  {
+    "country": "Italy",
+    "region": "Nord Est",
+    "path": "europe/italy/nord-est.map",
+    "size": "440M"
+  },
+  {
+    "country": "Italy",
+    "region": "Nord Ovest",
+    "path": "europe/italy/nord-ovest.map",
+    "size": "405M"
+  },
+  {
+    "country": "Italy",
+    "region": "Sud",
+    "path": "europe/italy/sud.map",
+    "size": "319M"
+  },
+  {
+    "country": "Ivory Coast",
+    "region": "Ivory Coast",
+    "path": "africa/ivory-coast.map",
+    "size": "86M"
+  },
+  {
+    "country": "Jamaica",
+    "region": "Jamaica",
+    "path": "central-america/jamaica.map",
+    "size": "37M"
+  },
+  {
+    "country": "Japan",
+    "region": "Chubu",
+    "path": "asia/japan/chubu.map",
+    "size": "377M"
+  },
+  {
+    "country": "Japan",
+    "region": "Chugoku",
+    "path": "asia/japan/chugoku.map",
+    "size": "164M"
+  },
+  {
+    "country": "Japan",
+    "region": "Hokkaido",
+    "path": "asia/japan/hokkaido.map",
+    "size": "164M"
+  },
+  {
+    "country": "Japan",
+    "region": "Japan",
+    "path": "asia/japan.map",
+    "size": "1.6G"
+  },
+  {
+    "country": "Japan",
+    "region": "Kansai",
+    "path": "asia/japan/kansai.map",
+    "size": "281M"
+  },
+  {
+    "country": "Japan",
+    "region": "Kanto",
+    "path": "asia/japan/kanto.map",
+    "size": "422M"
+  },
+  {
+    "country": "Japan",
+    "region": "Kyushu",
+    "path": "asia/japan/kyushu.map",
+    "size": "257M"
+  },
+  {
+    "country": "Japan",
+    "region": "Shikoku",
+    "path": "asia/japan/shikoku.map",
+    "size": "69M"
+  },
+  {
+    "country": "Japan",
+    "region": "Tohoku",
+    "path": "asia/japan/tohoku.map",
+    "size": "230M"
+  },
+  {
+    "country": "Jordan",
+    "region": "Jordan",
+    "path": "asia/jordan.map",
+    "size": "29M"
+  },
+  {
+    "country": "Kazakhstan",
+    "region": "Kazakhstan",
+    "path": "asia/kazakhstan.map",
+    "size": "419M"
+  },
+  {
+    "country": "Kenya",
+    "region": "Kenya",
+    "path": "africa/kenya.map",
+    "size": "321M"
+  },
+  {
+    "country": "Kiribati 1",
+    "region": "Kiribati 1",
+    "path": "australia-oceania/kiribati-1.map",
+    "size": "80K"
+  },
+  {
+    "country": "Kiribati 2",
+    "region": "Kiribati 2",
+    "path": "australia-oceania/kiribati-2.map",
+    "size": "81M"
+  },
+  {
+    "country": "Kiribati 3",
+    "region": "Kiribati 3",
+    "path": "australia-oceania/kiribati-3.map",
+    "size": "15M"
+  },
+  {
+    "country": "Kosovo",
+    "region": "Kosovo",
+    "path": "europe/kosovo.map",
+    "size": "27M"
+  },
+  {
+    "country": "Kyrgyzstan",
+    "region": "Kyrgyzstan",
+    "path": "asia/kyrgyzstan.map",
+    "size": "90M"
+  },
+  {
+    "country": "Laos",
+    "region": "Laos",
+    "path": "asia/laos.map",
+    "size": "59M"
+  },
+  {
+    "country": "Latvia",
+    "region": "Latvia",
+    "path": "europe/latvia.map",
+    "size": "105M"
+  },
+  {
+    "country": "Lebanon",
+    "region": "Lebanon",
+    "path": "asia/lebanon.map",
+    "size": "42M"
+  },
+  {
+    "country": "Lesotho",
+    "region": "Lesotho",
+    "path": "africa/lesotho.map",
+    "size": "91M"
+  },
+  {
+    "country": "Liberia",
+    "region": "Liberia",
+    "path": "africa/liberia.map",
+    "size": "41M"
+  },
+  {
+    "country": "Libya",
+    "region": "Libya",
+    "path": "africa/libya.map",
+    "size": "116M"
+  },
+  {
+    "country": "Liechtenstein",
+    "region": "Liechtenstein",
+    "path": "europe/liechtenstein.map",
+    "size": "2.2M"
+  },
+  {
+    "country": "Lithuania",
+    "region": "Lithuania",
+    "path": "europe/lithuania.map",
+    "size": "182M"
+  },
+  {
+    "country": "Luxembourg",
+    "region": "Luxembourg",
+    "path": "europe/luxembourg.map",
+    "size": "32M"
+  },
+  {
+    "country": "Macedonia",
+    "region": "Macedonia",
+    "path": "europe/macedonia.map",
+    "size": "24M"
+  },
+  {
+    "country": "Madagascar",
+    "region": "Madagascar",
+    "path": "africa/madagascar.map",
+    "size": "373M"
+  },
+  {
+    "country": "Malawi",
+    "region": "Malawi",
+    "path": "africa/malawi.map",
+    "size": "139M"
+  },
+  {
+    "country": "Malaysia Singapore Brunei",
+    "region": "Malaysia Singapore Brunei",
+    "path": "asia/malaysia-singapore-brunei.map",
+    "size": "217M"
+  },
+  {
+    "country": "Maldives",
+    "region": "Maldives",
+    "path": "asia/maldives.map",
+    "size": "6.2M"
+  },
+  {
+    "country": "Mali",
+    "region": "Mali",
+    "path": "africa/mali.map",
+    "size": "207M"
+  },
+  {
+    "country": "Malta",
+    "region": "Malta",
+    "path": "europe/malta.map",
+    "size": "6.4M"
+  },
+  {
+    "country": "Marshall Islands",
+    "region": "Marshall Islands",
+    "path": "australia-oceania/marshall-islands.map",
+    "size": "36M"
+  },
+  {
+    "country": "Mauritania",
+    "region": "Mauritania",
+    "path": "africa/mauritania.map",
+    "size": "57M"
+  },
+  {
+    "country": "Mauritius",
+    "region": "Mauritius",
+    "path": "africa/mauritius.map",
+    "size": "26M"
+  },
+  {
+    "country": "Mexico",
+    "region": "Mexico",
+    "path": "north-america/mexico.map",
+    "size": "686M"
+  },
+  {
+    "country": "Micronesia",
+    "region": "Micronesia",
+    "path": "australia-oceania/micronesia.map",
+    "size": "52M"
+  },
+  {
+    "country": "Moldova",
+    "region": "Moldova",
+    "path": "europe/moldova.map",
+    "size": "83M"
+  },
+  {
+    "country": "Monaco",
+    "region": "Monaco",
+    "path": "europe/monaco.map",
+    "size": "346K"
+  },
+  {
+    "country": "Mongolia",
+    "region": "Mongolia",
+    "path": "asia/mongolia.map",
+    "size": "151M"
+  },
+  {
+    "country": "Montenegro",
+    "region": "Montenegro",
+    "path": "europe/montenegro.map",
+    "size": "27M"
+  },
+  {
+    "country": "Morocco",
+    "region": "Morocco",
+    "path": "africa/morocco.map",
+    "size": "214M"
+  },
+  {
+    "country": "Mozambique",
+    "region": "Mozambique",
+    "path": "africa/mozambique.map",
+    "size": "267M"
+  },
+  {
+    "country": "Myanmar",
+    "region": "Myanmar",
+    "path": "asia/myanmar.map",
+    "size": "314M"
+  },
+  {
+    "country": "Namibia",
+    "region": "Namibia",
+    "path": "africa/namibia.map",
+    "size": "84M"
+  },
+  {
+    "country": "Nauru",
+    "region": "Nauru",
+    "path": "australia-oceania/nauru.map",
+    "size": "4.0M"
+  },
+  {
+    "country": "Nepal",
+    "region": "Nepal",
+    "path": "asia/nepal.map",
+    "size": "378M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Drenthe",
+    "path": "europe/netherlands/drenthe.map",
+    "size": "41M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Flevoland",
+    "path": "europe/netherlands/flevoland.map",
+    "size": "24M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Friesland",
+    "path": "europe/netherlands/friesland.map",
+    "size": "62M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Gelderland",
+    "path": "europe/netherlands/gelderland.map",
+    "size": "121M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Groningen",
+    "path": "europe/netherlands/groningen.map",
+    "size": "37M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Limburg",
+    "path": "europe/netherlands/limburg.map",
+    "size": "63M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Netherlands",
+    "path": "europe/netherlands.map",
+    "size": "903M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Noord Brabant",
+    "path": "europe/netherlands/noord-brabant.map",
+    "size": "135M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Noord Holland",
+    "path": "europe/netherlands/noord-holland.map",
+    "size": "124M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Overijssel",
+    "path": "europe/netherlands/overijssel.map",
+    "size": "75M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Utrecht",
+    "path": "europe/netherlands/utrecht.map",
+    "size": "62M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Zeeland",
+    "path": "europe/netherlands/zeeland.map",
+    "size": "30M"
+  },
+  {
+    "country": "Netherlands",
+    "region": "Zuid Holland",
+    "path": "europe/netherlands/zuid-holland.map",
+    "size": "140M"
+  },
+  {
+    "country": "New Caledonia",
+    "region": "New Caledonia",
+    "path": "australia-oceania/new-caledonia.map",
+    "size": "39M"
+  },
+  {
+    "country": "New Zealand 1",
+    "region": "New Zealand 1",
+    "path": "australia-oceania/new-zealand-1.map",
+    "size": "373M"
+  },
+  {
+    "country": "New Zealand 2",
+    "region": "New Zealand 2",
+    "path": "australia-oceania/new-zealand-2.map",
+    "size": "356M"
+  },
+  {
+    "country": "Nicaragua",
+    "region": "Nicaragua",
+    "path": "central-america/nicaragua.map",
+    "size": "57M"
+  },
+  {
+    "country": "Niger",
+    "region": "Niger",
+    "path": "africa/niger.map",
+    "size": "114M"
+  },
+  {
+    "country": "Nigeria",
+    "region": "Nigeria",
+    "path": "africa/nigeria.map",
+    "size": "729M"
+  },
+  {
+    "country": "Niue",
+    "region": "Niue",
+    "path": "australia-oceania/niue.map",
+    "size": "6.2M"
+  },
+  {
+    "country": "North Korea",
+    "region": "North Korea",
+    "path": "asia/north-korea.map",
+    "size": "99M"
+  },
+  {
+    "country": "Norway",
+    "region": "Norway",
+    "path": "europe/norway.map",
+    "size": "1.7G"
+  },
+  {
+    "country": "Pakistan",
+    "region": "Pakistan",
+    "path": "asia/pakistan.map",
+    "size": "189M"
+  },
+  {
+    "country": "Palau",
+    "region": "Palau",
+    "path": "australia-oceania/palau.map",
+    "size": "8.9M"
+  },
+  {
+    "country": "Panama",
+    "region": "Panama",
+    "path": "central-america/panama.map",
+    "size": "37M"
+  },
+  {
+    "country": "Papua New Guinea",
+    "region": "Papua New Guinea",
+    "path": "australia-oceania/papua-new-guinea.map",
+    "size": "103M"
+  },
+  {
+    "country": "Paraguay",
+    "region": "Paraguay",
+    "path": "south-america/paraguay.map",
+    "size": "146M"
+  },
+  {
+    "country": "Peru",
+    "region": "Peru",
+    "path": "south-america/peru.map",
+    "size": "289M"
+  },
+  {
+    "country": "Philippines",
+    "region": "Philippines",
+    "path": "asia/philippines.map",
+    "size": "563M"
+  },
+  {
+    "country": "Pitcairn Islands",
+    "region": "Pitcairn Islands",
+    "path": "australia-oceania/pitcairn-islands.map",
+    "size": "22M"
+  },
+  {
+    "country": "Poland",
+    "region": "Poland",
+    "path": "europe/poland.map",
+    "size": "1.5G"
+  },
+  {
+    "country": "Polynesie Francaise",
+    "region": "Polynesie Francaise",
+    "path": "australia-oceania/polynesie-francaise.map",
+    "size": "98M"
+  },
+  {
+    "country": "Portugal",
+    "region": "Portugal",
+    "path": "europe/portugal.map",
+    "size": "365M"
+  },
+  {
+    "country": "Romania",
+    "region": "Romania",
+    "path": "europe/romania.map",
+    "size": "287M"
+  },
+  {
+    "country": "Russia",
+    "region": "Central Fed District",
+    "path": "russia/central-fed-district.map",
+    "size": "773M"
+  },
+  {
+    "country": "Russia",
+    "region": "Crimean Fed District",
+    "path": "russia/crimean-fed-district.map",
+    "size": "34M"
+  },
+  {
+    "country": "Russia",
+    "region": "Far Eastern Fed District 1",
+    "path": "russia/far-eastern-fed-district-1.map",
+    "size": "1.5G"
+  },
+  {
+    "country": "Russia",
+    "region": "Far Eastern Fed District 2",
+    "path": "russia/far-eastern-fed-district-2.map",
+    "size": "1.5G"
+  },
+  {
+    "country": "Russia",
+    "region": "Kaliningrad",
+    "path": "russia/kaliningrad.map",
+    "size": "27M"
+  },
+  {
+    "country": "Russia",
+    "region": "North Caucasus Fed District",
+    "path": "russia/north-caucasus-fed-district.map",
+    "size": "138M"
+  },
+  {
+    "country": "Russia",
+    "region": "Northwestern Fed District",
+    "path": "russia/northwestern-fed-district.map",
+    "size": "1.3G"
+  },
+  {
+    "country": "Russia",
+    "region": "Siberian Fed District",
+    "path": "russia/siberian-fed-district.map",
+    "size": "1.7G"
+  },
+  {
+    "country": "Russia",
+    "region": "South Fed District",
+    "path": "russia/south-fed-district.map",
+    "size": "309M"
+  },
+  {
+    "country": "Russia",
+    "region": "Ural Fed District",
+    "path": "russia/ural-fed-district.map",
+    "size": "624M"
+  },
+  {
+    "country": "Russia",
+    "region": "Volga Fed District",
+    "path": "russia/volga-fed-district.map",
+    "size": "791M"
+  },
+  {
+    "country": "Rwanda",
+    "region": "Rwanda",
+    "path": "africa/rwanda.map",
+    "size": "63M"
+  },
+  {
+    "country": "Saint Helena Ascension And Tristan Da Cunha",
+    "region": "Saint Helena Ascension And Tristan Da Cunha",
+    "path": "africa/saint-helena-ascension-and-tristan-da-cunha.map",
+    "size": "65M"
+  },
+  {
+    "country": "Samoa",
+    "region": "Samoa",
+    "path": "australia-oceania/samoa.map",
+    "size": "5.4M"
+  },
+  {
+    "country": "Sao Tome And Principe",
+    "region": "Sao Tome And Principe",
+    "path": "africa/sao-tome-and-principe.map",
+    "size": "2.5M"
+  },
+  {
+    "country": "Senegal And Gambia",
+    "region": "Senegal And Gambia",
+    "path": "africa/senegal-and-gambia.map",
+    "size": "103M"
+  },
+  {
+    "country": "Serbia",
+    "region": "Serbia",
+    "path": "europe/serbia.map",
+    "size": "193M"
+  },
+  {
+    "country": "Seychelles",
+    "region": "Seychelles",
+    "path": "africa/seychelles.map",
+    "size": "16M"
+  },
+  {
+    "country": "Sierra Leone",
+    "region": "Sierra Leone",
+    "path": "africa/sierra-leone.map",
+    "size": "40M"
+  },
+  {
+    "country": "Slovakia",
+    "region": "Slovakia",
+    "path": "europe/slovakia.map",
+    "size": "226M"
+  },
+  {
+    "country": "Slovenia",
+    "region": "Slovenia",
+    "path": "europe/slovenia.map",
+    "size": "228M"
+  },
+  {
+    "country": "Solomon Islands",
+    "region": "Solomon Islands",
+    "path": "australia-oceania/solomon-islands.map",
+    "size": "40M"
+  },
+  {
+    "country": "Somalia",
+    "region": "Somalia",
+    "path": "africa/somalia.map",
+    "size": "190M"
+  },
+  {
+    "country": "South Africa And Lesotho",
+    "region": "South Africa And Lesotho",
+    "path": "africa/south-africa-and-lesotho.map",
+    "size": "560M"
+  },
+  {
+    "country": "South Korea",
+    "region": "South Korea",
+    "path": "asia/south-korea.map",
+    "size": "262M"
+  },
+  {
+    "country": "South Sudan",
+    "region": "South Sudan",
+    "path": "africa/south-sudan.map",
+    "size": "159M"
+  },
+  {
+    "country": "Spain",
+    "region": "Andalucia",
+    "path": "europe/spain/andalucia.map",
+    "size": "168M"
+  },
+  {
+    "country": "Spain",
+    "region": "Aragon",
+    "path": "europe/spain/aragon.map",
+    "size": "80M"
+  },
+  {
+    "country": "Spain",
+    "region": "Asturias",
+    "path": "europe/spain/asturias.map",
+    "size": "26M"
+  },
+  {
+    "country": "Spain",
+    "region": "Cantabria",
+    "path": "europe/spain/cantabria.map",
+    "size": "25M"
+  },
+  {
+    "country": "Spain",
+    "region": "Castilla La Mancha",
+    "path": "europe/spain/castilla-la-mancha.map",
+    "size": "86M"
+  },
+  {
+    "country": "Spain",
+    "region": "Castilla Y Leon",
+    "path": "europe/spain/castilla-y-leon.map",
+    "size": "145M"
+  },
+  {
+    "country": "Spain",
+    "region": "Cataluna",
+    "path": "europe/spain/cataluna.map",
+    "size": "199M"
+  },
+  {
+    "country": "Spain",
+    "region": "Ceuta",
+    "path": "europe/spain/ceuta.map",
+    "size": "408K"
+  },
+  {
+    "country": "Spain",
+    "region": "Extremadura",
+    "path": "europe/spain/extremadura.map",
+    "size": "33M"
+  },
+  {
+    "country": "Spain",
+    "region": "Galicia",
+    "path": "europe/spain/galicia.map",
+    "size": "79M"
+  },
+  {
+    "country": "Spain",
+    "region": "Islas Baleares",
+    "path": "europe/spain/islas-baleares.map",
+    "size": "38M"
+  },
+  {
+    "country": "Spain",
+    "region": "La Rioja",
+    "path": "europe/spain/la-rioja.map",
+    "size": "9.8M"
+  },
+  {
+    "country": "Spain",
+    "region": "Madrid",
+    "path": "europe/spain/madrid.map",
+    "size": "62M"
+  },
+  {
+    "country": "Spain",
+    "region": "Melilla",
+    "path": "europe/spain/melilla.map",
+    "size": "528K"
+  },
+  {
+    "country": "Spain",
+    "region": "Murcia",
+    "path": "europe/spain/murcia.map",
+    "size": "27M"
+  },
+  {
+    "country": "Spain",
+    "region": "Navarra",
+    "path": "europe/spain/navarra.map",
+    "size": "29M"
+  },
+  {
+    "country": "Spain",
+    "region": "Pais Vasco",
+    "path": "europe/spain/pais-vasco.map",
+    "size": "52M"
+  },
+  {
+    "country": "Spain",
+    "region": "Spain",
+    "path": "europe/spain.map",
+    "size": "1.1G"
+  },
+  {
+    "country": "Spain",
+    "region": "Valencia",
+    "path": "europe/spain/valencia.map",
+    "size": "109M"
+  },
+  {
+    "country": "Sri Lanka",
+    "region": "Sri Lanka",
+    "path": "asia/sri-lanka.map",
+    "size": "138M"
+  },
+  {
+    "country": "Sudan",
+    "region": "Sudan",
+    "path": "africa/sudan.map",
+    "size": "257M"
+  },
+  {
+    "country": "Suriname",
+    "region": "Suriname",
+    "path": "south-america/suriname.map",
+    "size": "28M"
+  },
+  {
+    "country": "Swaziland",
+    "region": "Swaziland",
+    "path": "africa/swaziland.map",
+    "size": "27M"
+  },
+  {
+    "country": "Sweden",
+    "region": "Sweden",
+    "path": "europe/sweden.map",
+    "size": "792M"
+  },
+  {
+    "country": "Switzerland",
+    "region": "Switzerland",
+    "path": "europe/switzerland.map",
+    "size": "319M"
+  },
+  {
+    "country": "Syria",
+    "region": "Syria",
+    "path": "asia/syria.map",
+    "size": "84M"
+  },
+  {
+    "country": "Taiwan",
+    "region": "Taiwan",
+    "path": "asia/taiwan.map",
+    "size": "243M"
+  },
+  {
+    "country": "Tajikistan",
+    "region": "Tajikistan",
+    "path": "asia/tajikistan.map",
+    "size": "50M"
+  },
+  {
+    "country": "Tanzania",
+    "region": "Tanzania",
+    "path": "africa/tanzania.map",
+    "size": "612M"
+  },
+  {
+    "country": "Thailand",
+    "region": "Thailand",
+    "path": "asia/thailand.map",
+    "size": "299M"
+  },
+  {
+    "country": "Togo",
+    "region": "Togo",
+    "path": "africa/togo.map",
+    "size": "59M"
+  },
+  {
+    "country": "Tokelau",
+    "region": "Tokelau",
+    "path": "australia-oceania/tokelau.map",
+    "size": "5.2M"
+  },
+  {
+    "country": "Tonga",
+    "region": "Tonga",
+    "path": "australia-oceania/tonga.map",
+    "size": "14M"
+  },
+  {
+    "country": "Tunisia",
+    "region": "Tunisia",
+    "path": "africa/tunisia.map",
+    "size": "67M"
+  },
+  {
+    "country": "Turkey",
+    "region": "Turkey",
+    "path": "europe/turkey.map",
+    "size": "586M"
+  },
+  {
+    "country": "Turkmenistan",
+    "region": "Turkmenistan",
+    "path": "asia/turkmenistan.map",
+    "size": "57M"
+  },
+  {
+    "country": "Tuvalu 1",
+    "region": "Tuvalu 1",
+    "path": "australia-oceania/tuvalu-1.map",
+    "size": "3.4M"
+  },
+  {
+    "country": "Tuvalu 2",
+    "region": "Tuvalu 2",
+    "path": "australia-oceania/tuvalu-2.map",
+    "size": "7.8M"
+  },
+  {
+    "country": "Uganda",
+    "region": "Uganda",
+    "path": "africa/uganda.map",
+    "size": "368M"
+  },
+  {
+    "country": "Ukraine",
+    "region": "Ukraine",
+    "path": "europe/ukraine.map",
+    "size": "833M"
+  },
+  {
+    "country": "United Kingdom",
+    "region": "England",
+    "path": "europe/united-kingdom/england.map",
+    "size": "1.1G"
+  },
+  {
+    "country": "United Kingdom",
+    "region": "Scotland",
+    "path": "europe/united-kingdom/scotland.map",
+    "size": "276M"
+  },
+  {
+    "country": "United Kingdom",
+    "region": "United Kingdom",
+    "path": "europe/great-britain.map",
+    "size": "1.5G"
+  },
+  {
+    "country": "United Kingdom",
+    "region": "Wales",
+    "path": "europe/united-kingdom/wales.map",
+    "size": "111M"
+  },
+  {
+    "country": "United States",
+    "region": "Alabama",
+    "path": "north-america/us/alabama.map",
+    "size": "123M"
+  },
+  {
+    "country": "United States",
+    "region": "Alaska 1",
+    "path": "north-america/us/alaska-1.map",
+    "size": "590M"
+  },
+  {
+    "country": "United States",
+    "region": "Alaska 2",
+    "path": "north-america/us/alaska-2.map",
+    "size": "577M"
+  },
+  {
+    "country": "United States",
+    "region": "Arizona",
+    "path": "north-america/us/arizona.map",
+    "size": "241M"
+  },
+  {
+    "country": "United States",
+    "region": "Arkansas",
+    "path": "north-america/us/arkansas.map",
+    "size": "77M"
+  },
+  {
+    "country": "United States",
+    "region": "California",
+    "path": "north-america/us/california.map",
+    "size": "855M"
+  },
+  {
+    "country": "United States",
+    "region": "Colorado",
+    "path": "north-america/us/colorado.map",
+    "size": "262M"
+  },
+  {
+    "country": "United States",
+    "region": "Connecticut",
+    "path": "north-america/us/connecticut.map",
+    "size": "133M"
+  },
+  {
+    "country": "United States",
+    "region": "Delaware",
+    "path": "north-america/us/delaware.map",
+    "size": "17M"
+  },
+  {
+    "country": "United States",
+    "region": "District Of Columbia",
+    "path": "north-america/us/district-of-columbia.map",
+    "size": "12M"
+  },
+  {
+    "country": "United States",
+    "region": "Florida",
+    "path": "north-america/us/florida.map",
+    "size": "637M"
+  },
+  {
+    "country": "United States",
+    "region": "Georgia",
+    "path": "north-america/us/georgia.map",
+    "size": "253M"
+  },
+  {
+    "country": "United States",
+    "region": "Hawaii",
+    "path": "north-america/us/hawaii.map",
+    "size": "80M"
+  },
+  {
+    "country": "United States",
+    "region": "Idaho",
+    "path": "north-america/us/idaho.map",
+    "size": "100M"
+  },
+  {
+    "country": "United States",
+    "region": "Illinois",
+    "path": "north-america/us/illinois.map",
+    "size": "273M"
+  },
+  {
+    "country": "United States",
+    "region": "Indiana",
+    "path": "north-america/us/indiana.map",
+    "size": "159M"
+  },
+  {
+    "country": "United States",
+    "region": "Iowa",
+    "path": "north-america/us/iowa.map",
+    "size": "102M"
+  },
+  {
+    "country": "United States",
+    "region": "Kansas",
+    "path": "north-america/us/kansas.map",
+    "size": "97M"
+  },
+  {
+    "country": "United States",
+    "region": "Kentucky",
+    "path": "north-america/us/kentucky.map",
+    "size": "107M"
+  },
+  {
+    "country": "United States",
+    "region": "Louisiana",
+    "path": "north-america/us/louisiana.map",
+    "size": "111M"
+  },
+  {
+    "country": "United States",
+    "region": "Maine",
+    "path": "north-america/us/maine.map",
+    "size": "72M"
+  },
+  {
+    "country": "United States",
+    "region": "Maryland",
+    "path": "north-america/us/maryland.map",
+    "size": "156M"
+  },
+  {
+    "country": "United States",
+    "region": "Massachusetts",
+    "path": "north-america/us/massachusetts.map",
+    "size": "192M"
+  },
+  {
+    "country": "United States",
+    "region": "Michigan",
+    "path": "north-america/us/michigan.map",
+    "size": "260M"
+  },
+  {
+    "country": "United States",
+    "region": "Minnesota",
+    "path": "north-america/us/minnesota.map",
+    "size": "213M"
+  },
+  {
+    "country": "United States",
+    "region": "Mississippi",
+    "path": "north-america/us/mississippi.map",
+    "size": "63M"
+  },
+  {
+    "country": "United States",
+    "region": "Missouri",
+    "path": "north-america/us/missouri.map",
+    "size": "153M"
+  },
+  {
+    "country": "United States",
+    "region": "Montana",
+    "path": "north-america/us/montana.map",
+    "size": "94M"
+  },
+  {
+    "country": "United States",
+    "region": "Nebraska",
+    "path": "north-america/us/nebraska.map",
+    "size": "82M"
+  },
+  {
+    "country": "United States",
+    "region": "Nevada",
+    "path": "north-america/us/nevada.map",
+    "size": "103M"
+  },
+  {
+    "country": "United States",
+    "region": "New Hampshire",
+    "path": "north-america/us/new-hampshire.map",
+    "size": "51M"
+  },
+  {
+    "country": "United States",
+    "region": "New Jersey",
+    "path": "north-america/us/new-jersey.map",
+    "size": "120M"
+  },
+  {
+    "country": "United States",
+    "region": "New Mexico",
+    "path": "north-america/us/new-mexico.map",
+    "size": "108M"
+  },
+  {
+    "country": "United States",
+    "region": "New York",
+    "path": "north-america/us/new-york.map",
+    "size": "360M"
+  },
+  {
+    "country": "United States",
+    "region": "North Carolina",
+    "path": "north-america/us/north-carolina.map",
+    "size": "303M"
+  },
+  {
+    "country": "United States",
+    "region": "North Dakota",
+    "path": "north-america/us/north-dakota.map",
+    "size": "79M"
+  },
+  {
+    "country": "United States",
+    "region": "Ohio",
+    "path": "north-america/us/ohio.map",
+    "size": "256M"
+  },
+  {
+    "country": "United States",
+    "region": "Oklahoma",
+    "path": "north-america/us/oklahoma.map",
+    "size": "116M"
+  },
+  {
+    "country": "United States",
+    "region": "Oregon",
+    "path": "north-america/us/oregon.map",
+    "size": "188M"
+  },
+  {
+    "country": "United States",
+    "region": "Pennsylvania",
+    "path": "north-america/us/pennsylvania.map",
+    "size": "258M"
+  },
+  {
+    "country": "United States",
+    "region": "Puerto Rico",
+    "path": "north-america/us/puerto-rico.map",
+    "size": "65M"
+  },
+  {
+    "country": "United States",
+    "region": "Rhode Island",
+    "path": "north-america/us/rhode-island.map",
+    "size": "34M"
+  },
+  {
+    "country": "United States",
+    "region": "South Carolina",
+    "path": "north-america/us/south-carolina.map",
+    "size": "120M"
+  },
+  {
+    "country": "United States",
+    "region": "South Dakota",
+    "path": "north-america/us/south-dakota.map",
+    "size": "46M"
+  },
+  {
+    "country": "United States",
+    "region": "Tennessee",
+    "path": "north-america/us/tennessee.map",
+    "size": "142M"
+  },
+  {
+    "country": "United States",
+    "region": "Texas",
+    "path": "north-america/us/texas.map",
+    "size": "569M"
+  },
+  {
+    "country": "United States",
+    "region": "Us Midwest",
+    "path": "north-america/us-midwest.map",
+    "size": "1.6G"
+  },
+  {
+    "country": "United States",
+    "region": "Us Northeast",
+    "path": "north-america/us-northeast.map",
+    "size": "1.1G"
+  },
+  {
+    "country": "United States",
+    "region": "Us South",
+    "path": "north-america/us-south.map",
+    "size": "2.8G"
+  },
+  {
+    "country": "United States",
+    "region": "Us Virgin Islands",
+    "path": "north-america/us/us-virgin-islands.map",
+    "size": "3.0M"
+  },
+  {
+    "country": "United States",
+    "region": "Us West",
+    "path": "north-america/us-west.map",
+    "size": "2.1G"
+  },
+  {
+    "country": "United States",
+    "region": "Utah",
+    "path": "north-america/us/utah.map",
+    "size": "124M"
+  },
+  {
+    "country": "United States",
+    "region": "Vermont",
+    "path": "north-america/us/vermont.map",
+    "size": "33M"
+  },
+  {
+    "country": "United States",
+    "region": "Virginia",
+    "path": "north-america/us/virginia.map",
+    "size": "287M"
+  },
+  {
+    "country": "United States",
+    "region": "Washington",
+    "path": "north-america/us/washington.map",
+    "size": "281M"
+  },
+  {
+    "country": "United States",
+    "region": "West Virginia",
+    "path": "north-america/us/west-virginia.map",
+    "size": "90M"
+  },
+  {
+    "country": "United States",
+    "region": "Wisconsin",
+    "path": "north-america/us/wisconsin.map",
+    "size": "225M"
+  },
+  {
+    "country": "United States",
+    "region": "Wyoming",
+    "path": "north-america/us/wyoming.map",
+    "size": "84M"
+  },
+  {
+    "country": "Uruguay",
+    "region": "Uruguay",
+    "path": "south-america/uruguay.map",
+    "size": "45M"
+  },
+  {
+    "country": "Uzbekistan",
+    "region": "Uzbekistan",
+    "path": "asia/uzbekistan.map",
+    "size": "155M"
+  },
+  {
+    "country": "Vanuatu",
+    "region": "Vanuatu",
+    "path": "australia-oceania/vanuatu.map",
+    "size": "20M"
+  },
+  {
+    "country": "Venezuela",
+    "region": "Venezuela",
+    "path": "south-america/venezuela.map",
+    "size": "152M"
+  },
+  {
+    "country": "Vietnam",
+    "region": "Vietnam",
+    "path": "asia/vietnam.map",
+    "size": "278M"
+  },
+  {
+    "country": "Wallis Et Futuna",
+    "region": "Wallis Et Futuna",
+    "path": "australia-oceania/wallis-et-futuna.map",
+    "size": "5.6M"
+  },
+  {
+    "country": "Yemen",
+    "region": "Yemen",
+    "path": "asia/yemen.map",
+    "size": "60M"
+  },
+  {
+    "country": "Zambia",
+    "region": "Zambia",
+    "path": "africa/zambia.map",
+    "size": "247M"
+  },
+  {
+    "country": "Zimbabwe",
+    "region": "Zimbabwe",
+    "path": "africa/zimbabwe.map",
+    "size": "172M"
+  }
+]
