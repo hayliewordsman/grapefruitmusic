@@ -1,4 +1,9 @@
-# Grapefruit Maps 1.0 beta 1
+# Grapefruit Maps 1.0 beta 1.1
+
+Beta 1.1 replaces the accidentally reused Audio icon with an original folded map
+and grapefruit location pin. Legacy PNG and adaptive launcher assets are generated
+from the GPL SVG masters in `brand/` by `python3 tools/maps/icon.py` (CairoSVG).
+It installs over beta 1 with the same package and signing certificate.
 
 A separate, native GPL-3.0-or-later Android app in the Grapefruit repository.
 Android **4.2.2 (API 17) and later**, targeting API 36. No Google Maps SDK,
@@ -75,8 +80,8 @@ uploads a verified APK, signature, checksum and reports. It does not publish
 other apps or modify the F-Droid repository. Refresh the bundled country
 catalogue with `python3 tools/maps/catalogue.py`; it reads provider directory
 indexes only, without downloading map files or raster tiles.
-Successful pushes to `maps-beta-1` also publish the requested beta 1 prerelease
-using the workflow's repository token. An existing beta 1 release is preserved.
+Successful pushes to `maps-beta-1` also publish the versioned prerelease using
+the workflow's repository token. Existing releases are preserved.
 
 ## Licenses, privacy and providers
 

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><title>Grapefruit Maps</title><desc>A folded map and a grapefruit location pin. Original GPL-3.0-or-later artwork.</desc><defs><linearGradient id="background" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FF8C6B"/><stop offset="1" stop-color="#EC485C"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#background)"/>
+  <defs>
+    <clipPath id="map"><path d="M72 214 L194 176 L318 212 L440 174 L440 382 L318 420 L194 384 L72 422 Z"/></clipPath>
+    <linearGradient id="pin" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#D63250"/><stop offset="1" stop-color="#A71E40"/></linearGradient>
+  </defs>
+  <path d="M72 226 L194 188 L318 224 L440 186 L440 394 L318 432 L194 396 L72 434 Z" fill="#851936" opacity=".2"/>
+  <path d="M72 214 L194 176 L194 384 L72 422 Z" fill="#FFF7EE"/>
+  <path d="M194 176 L318 212 L318 420 L194 384 Z" fill="#FFD6C8"/>
+  <path d="M318 212 L440 174 L440 382 L318 420 Z" fill="#FFF7EE"/>
+  <g clip-path="url(#map)" fill="none" stroke-linejoin="round">
+    <path d="M48 356 L166 318 L226 340 L312 304 L462 346" stroke="#E8BEA4" stroke-width="29"/>
+    <path d="M48 356 L166 318 L226 340 L312 304 L462 346" stroke="#FFFFFF" stroke-width="14"/>
+    <path d="M122 180 L122 270 L164 318 L164 446 M380 172 L380 282 L334 316 L334 434" stroke="#E8BEA4" stroke-width="21"/>
+    <path d="M122 180 L122 270 L164 318 L164 446 M380 172 L380 282 L334 316 L334 434" stroke="#FFFFFF" stroke-width="10"/>
+    <path d="M194 176 L194 384 M318 212 L318 420" stroke="#9B644B" stroke-opacity=".12" stroke-width="4"/>
+  </g>
+  <ellipse cx="256" cy="315" rx="42" ry="13" fill="#87233A" opacity=".18"/>
+  <path d="M256 80 C204 80 166 118 166 170 C166 225 256 310 256 310 C256 310 346 225 346 170 C346 118 308 80 256 80 Z" fill="url(#pin)" stroke="#FFF7EE" stroke-width="7" stroke-linejoin="round"/>
+  <circle cx="256" cy="170" r="56" fill="#FFF7EE"/>
+  <circle cx="256" cy="170" r="49" fill="#FFD6C8"/>
+<path d="M256 170 L298.941 172.250 A43 43 0 0 1 287.955 198.773 Z" fill="#EC3B56"/>
+<path d="M256 170 L284.773 201.955 A43 43 0 0 1 258.250 212.941 Z" fill="#F2545B"/>
+<path d="M256 170 L253.750 212.941 A43 43 0 0 1 227.227 201.955 Z" fill="#EC3B56"/>
+<path d="M256 170 L224.045 198.773 A43 43 0 0 1 213.059 172.250 Z" fill="#F2545B"/>
+<path d="M256 170 L213.059 167.750 A43 43 0 0 1 224.045 141.227 Z" fill="#EC3B56"/>
+<path d="M256 170 L227.227 138.045 A43 43 0 0 1 253.750 127.059 Z" fill="#F2545B"/>
+<path d="M256 170 L258.250 127.059 A43 43 0 0 1 284.773 138.045 Z" fill="#EC3B56"/>
+<path d="M256 170 L287.955 141.227 A43 43 0 0 1 298.941 167.750 Z" fill="#F2545B"/>
+  <circle cx="256" cy="170" r="3" fill="#FFF7EE"/></svg>
