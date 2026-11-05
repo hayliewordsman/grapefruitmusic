@@ -1,25 +1,26 @@
 # Grapefruit Launcher downloads
 
-## 1.0 beta 2
+## 1.0 beta 3 — scrolling icon fix
 
-Download `Grapefruit-Launcher-1.0-beta2.apk`. It installs over the first preview:
-the package ID and signing certificate are unchanged, and version code is now 2.
-No uninstall is required. Home and theme settings are retained.
+Download `Grapefruit-Launcher-1.0-beta3.apk`. Install it over beta 2; the package ID
+and signing certificate match, and the version code is now 3. No uninstall is needed.
+Home, theme and dock settings are retained.
 
-- Low-memory icon cache: 256 KiB, down from 4 MiB. Android 4.2/4.3 always get this budget.
-- Shared/bounded icon jobs, recycled-view cancellation, background icon cleanup, and idle thread shutdown.
-- Multiline app-label chips, up to three lines.
-- Phone, Messages, All Apps, Chrome, Grapefruit Audio dock. Missing apps leave blank slots.
-- The new default dock is applied once on upgrade. All four app slots remain editable;
-  later choices and deliberately blank slots stay saved.
-- Unused TLS/native dependencies removed from this offline launcher.
+Beta 3 fixes icons clearing and reloading when cells are rebound while scrolling
+in All Apps or Home. Already displayed images stay in place, and recycled cells
+can reuse a bitmap that is still displayed elsewhere. The 256 KiB low-memory cache,
+background cleanup and idle-worker shutdown remain. Weak references locate existing
+images without keeping an additional bitmap cache alive. Package updates and theme
+changes still refresh the artwork correctly.
 
-This is a **debug-signed testing build**, supporting Android 4.2.2 (API 17) and later.
-Both builds, 15 automated tests, and lint passed. Total JP5S process RAM has not been
-measured on a physical device.
+Both builds, 19 automated tests and lint passed. Four new regressions cover cache
+eviction, same-app rebinding, recycled-cell reuse, memory trim and content/theme refresh.
+New or garbage-collected icons still load asynchronously when needed. No physical
+JP5S performance measurement is implied by these tests.
 
 Source for this exact beta:
-https://github.com/hayliewordsman/grapefruitmusic/tree/2058cca938522ad396f66e37c6576edc752d5e13
+https://github.com/hayliewordsman/grapefruitmusic/tree/1eafad74247360576f51830fe897c6713a0ca126
 
-SHA-256 checksums are in `SHA256SUMS.txt`. The first preview APK is retained below
-for reference; beta 2 is the update to install.
+The launcher supports Android 4.2.2 (API 17) and later. This is a debug-signed test
+build. SHA-256 checksums are in `SHA256SUMS.txt`. Earlier preview and beta 2 APKs
+are kept for reference; beta 3 is the update to install.
