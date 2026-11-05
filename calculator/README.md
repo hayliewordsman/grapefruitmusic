@@ -1,5 +1,7 @@
 # Grapefruit Calculator LegacyHolo
 
+[Download the 1.0 beta 1 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-calculator-legacyholo/downloads/Grapefruit-Calculator-LegacyHolo-1.0-beta1.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
+
 A standalone Grapefruit redesign of the AOSP **Android 4.2.2** calculator for
 **Android 4.2.2–4.4.4 (API 17–19)**. Application ID:
 `io.github.hayliewordsman.grapefruitcalculator.legacyholo`.
