@@ -4,10 +4,48 @@ A separate native Android Home app in the Grapefruit repository. Application ID:
 `io.github.hayliewordsman.grapefruitlauncher`. Minimum Android 4.2.2 (API 17), compile
 and target SDK 36 (Android 16). It installs alongside Audio and TV.
 
+## 1.0 beta 2
+
+- Version code 2 updates over the first preview (code 1) when signed with its same
+  certificate. The published beta 2 APK keeps that preview's debug certificate.
+- Labels wrap naturally to **up to three lines**. Short labels keep a compact chip;
+  the app grid reserves a consistent row height so longer chips do not overlap.
+- The default dock is **Phone, Messages, All Apps, Chrome, Grapefruit Audio**.
+  Phone and Messages use available Android handlers; Chrome and Audio use their
+  app packages. Missing apps leave their own slots blank. Every app position is
+  still replaceable or removable with a long press, and a blank slot opens a picker.
+- On upgrade, beta 2 replaces the first preview's arbitrary initial dock once.
+  Later user changes, including deliberately empty slots, survive catalog refreshes
+  and restarts. An untouched blank slot can fill if its suggested app is installed
+  later. Settings offers **Reset dock to suggested apps**. Home and theme are kept.
+
+### Memory work for older tablets such as the JP5S
+
+- Icon-cache budget reduced from **4 MiB to 256 KiB** on Android 4.2/4.3, for
+  a heap class of 64 MiB or less, or on a device Android reports as low RAM;
+  other devices use 1 MiB. The JP5S gets the small budget even though Android
+  4.2 predates `isLowRamDevice()`.
+- Icons render at their displayed size, capped at 96 px on low-memory devices
+  (144 px otherwise), retaining transparency and the themed plates.
+- A single worker drain shares duplicate icon requests, skips recycled views,
+  limits pending icon jobs to 64, and keeps weak references to destination views.
+  Old screen/theme requests are discarded. Theme changes evict the previous pack.
+- While another app is open, the launcher releases its icon cache, grid cells and
+  dock views; these restore on return. Memory-pressure callbacks also clear the
+  cache. App catalog queries coalesce and run on startup/package changes rather
+  than each opening of All Apps. Worker threads exit after two idle seconds.
+- Screen references are cleared when switching pages; fonts load once per process.
+  The launcher compiles the shared `Fonts.java` and uses the same shared font assets
+  directly, without the unused Conscrypt/TLS code or native libraries.
+
+These are bounded allocations and lifecycle checks, **not a measurement of total
+JP5S process RAM**. Device profiling is still needed to quantify total PSS and the
+system/GPU memory retained by Android.
+
 ## Appearance
 
 - The exact bundled **Geist Regular, Medium, SemiBold and Bold** fonts used by
-  Audio and TV, through `:grapefruit-ui`. The shared asset includes its SIL OFL license,
+  Audio and TV, from `grapefruit-ui/`. The shared asset includes its SIL OFL license,
   also available in Settings.
 - **Grapefruit Light**, **Grapefruit Dark** (default), **Pitch Black** and
   **Victory Blue**. The first three use Audio's palette values. Victory Blue uses
@@ -73,8 +111,10 @@ convention. Debug uses Android's normal debug certificate. Release publication i
 not configured; CI uploads build artifacts only.
 
 Tests cover catalog search, launch intents, installation refresh, Home removal and
-ordering, dock capacity/replacement/persistence, theme persistence, teardrop rendering,
-portrait/landscape layout and startup on API 21 and API 35. Native rendering tests
+ordering, default dock holes and migration, user replacements/cleared slots,
+shared icon work, low-memory cache limits, background cleanup/restoration,
+multiline chips, theme persistence, teardrop rendering, portrait/landscape layout
+and startup on API 21 and API 35. Native rendering tests
 write previews under `work/launcher/previews/`. API 17 compatibility is checked by
 lint and the APK's minimum-SDK metadata; Robolectric 4.14 cannot run API 17. Device
 testing on Android 4.2.2 and Android 16 remains necessary before a production release,

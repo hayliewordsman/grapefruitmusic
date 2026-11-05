@@ -17,8 +17,9 @@ final class AppCatalog {
     static final class App {
         final ComponentName component;
         final String label;
-        App(ComponentName c,String title) {component=c;label=title;}
-        String id() {return component.flattenToString();}
+        private final String id;
+        App(ComponentName c,String title) {component=c;label=title;id=c.flattenToString();}
+        String id() {return id;}
         Intent launch() {
             return new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setComponent(component)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
@@ -51,4 +52,34 @@ final class AppCatalog {
         return result;
     }
     static App find(List<App> apps,String id) {for(App a:apps)if(a.id().equals(id))return a;return null;}
+
+    /** Phone, Messages, Chrome, Audio; a missing app deliberately leaves its own position blank. */
+    static String[] suggestedDock(Context context,List<App> apps) {
+        PackageManager pm=context.getPackageManager();
+        return new String[]{handler(pm,apps,new Intent(Intent.ACTION_DIAL,android.net.Uri.parse("tel:"))),
+                handler(pm,apps,new Intent(Intent.ACTION_SENDTO,android.net.Uri.parse("smsto:"))),
+                packageId(apps,"com.android.chrome"),
+                packageId(apps,"io.github.hayliewordsman.grapefruitmusic","com.grapefruitmusic")};
+    }
+    private static String handler(PackageManager pm,List<App> apps,Intent intent) {
+        try {
+            String chosen=launchable(apps,pm.resolveActivity(intent,PackageManager.MATCH_DEFAULT_ONLY));
+            if(!chosen.isEmpty())return chosen;
+            // An unset default can resolve to Android's chooser, which is not an app to pin.
+            for(ResolveInfo r:pm.queryIntentActivities(intent,0)) {
+                chosen=launchable(apps,r);if(!chosen.isEmpty())return chosen;
+            }
+        }catch(RuntimeException ignored) { /* A missing/disabled handler is an empty slot. */ }
+        return "";
+    }
+    private static String launchable(List<App> apps,ResolveInfo resolved) {
+        if(resolved==null || resolved.activityInfo==null || !resolved.activityInfo.enabled)return "";
+        ActivityInfo a=resolved.activityInfo;
+        App exact=find(apps,new ComponentName(a.packageName,a.name).flattenToString());
+        return exact!=null?exact.id():packageId(apps,a.packageName);
+    }
+    private static String packageId(List<App> apps,String... packages) {
+        for(String pkg:packages)for(App app:apps)if(pkg.equals(app.component.getPackageName()))return app.id();
+        return "";
+    }
 }

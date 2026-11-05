@@ -22,9 +22,12 @@ public class LauncherTest {
     @Before public void setup() {
         context=RuntimeEnvironment.getApplication();
         context.getSharedPreferences("launcher",0).edit().clear().commit();
-        addApp("test.audio","Grapefruit Audio");addApp("test.camera","Camera");addApp("test.mail","Mail");
+        addApp("io.github.hayliewordsman.grapefruitmusic","Grapefruit Audio");addApp("test.camera","Camera");addApp("test.mail","Mail");
         addApp("test.browser","Browser");addApp("test.maps","Maps");addApp("test.long","A very long app label that must fit its chip");
         addApp("test.tv","Grapefruit TV");
+        addApp("com.android.dialer","Phone");addApp("com.android.mms","Messages");addApp("com.android.chrome","Chrome");
+        handler("com.android.dialer",new Intent(Intent.ACTION_DIAL,android.net.Uri.parse("tel:")));
+        handler("com.android.mms",new Intent(Intent.ACTION_SENDTO,android.net.Uri.parse("smsto:")));
     }
     private void addApp(String pkg,String label) {
         ResolveInfo r=new ResolveInfo();r.nonLocalizedLabel=label;r.activityInfo=new ActivityInfo();
@@ -32,8 +35,8 @@ public class LauncherTest {
         r.activityInfo.applicationInfo=new ApplicationInfo();r.activityInfo.applicationInfo.packageName=pkg;r.activityInfo.applicationInfo.enabled=true;
         Shadows.shadowOf(context.getPackageManager()).addResolveInfoForIntent(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),r);
         android.graphics.drawable.Drawable icon;
-        if(pkg.equals("test.audio") || pkg.equals("test.tv")) {
-            String module=pkg.equals("test.audio")?"app":"tv";
+        if(pkg.endsWith("grapefruitmusic") || pkg.equals("test.tv")) {
+            String module=pkg.endsWith("grapefruitmusic")?"app":"tv";
             icon=android.graphics.drawable.Drawable.createFromPath("../"+module+"/src/main/res/mipmap-xxxhdpi/ic_launcher.png");
         } else {
             int id=pkg.equals("test.camera")?android.R.drawable.ic_menu_camera:pkg.equals("test.mail")?android.R.drawable.ic_dialog_email:
@@ -41,6 +44,11 @@ public class LauncherTest {
             icon=context.getResources().getDrawable(id);
         }
         if(icon!=null)Shadows.shadowOf(context.getPackageManager()).addActivityIcon(new ComponentName(pkg,pkg+".Main"),icon);
+    }
+    private void handler(String pkg,Intent intent) {
+        ResolveInfo r=new ResolveInfo();r.activityInfo=new ActivityInfo();r.activityInfo.packageName=pkg;
+        r.activityInfo.name=pkg+".Main";r.activityInfo.enabled=true;r.activityInfo.exported=true;r.isDefault=true;
+        Shadows.shadowOf(context.getPackageManager()).addResolveInfoForIntent(intent,r);
     }
     @Test public void allAppsSearchDockReplacementAndHomeReset() throws Exception {
         try(ActivityController<MainActivity> controller=launch()) {
@@ -84,7 +92,7 @@ public class LauncherTest {
     @Test public void removingHomeAppDoesNotRemoveItFromAllApps() throws Exception {
         try(ActivityController<MainActivity> controller=launch()) {
             MainActivity a=controller.get();waitForApps(a);LauncherStore store=new LauncherStore(context.getSharedPreferences("launcher",0));
-            String id="test.audio/test.audio.Main";store.remove(id);
+            String id="io.github.hayliewordsman.grapefruitmusic/io.github.hayliewordsman.grapefruitmusic.Main";store.remove(id);
             controller.newIntent(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME));
             GridView grid=content(a).findViewById(android.R.id.list);
             for(int i=0;i<grid.getAdapter().getCount();i++)assertNotEquals(id,((AppCatalog.App)grid.getAdapter().getItem(i)).id());

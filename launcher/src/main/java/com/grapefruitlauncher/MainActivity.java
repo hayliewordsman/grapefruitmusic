@@ -15,8 +15,7 @@ import android.widget.*;
 import com.grapefruitmusic.ui.Fonts;
 import java.text.DateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /** A native HOME activity. Every app, label, dialog and dock uses the selected Grapefruit theme. */
 public final class MainActivity extends Activity {
@@ -24,11 +23,12 @@ public final class MainActivity extends Activity {
     private LauncherStore store;
     private LauncherTheme theme;
     private IconPack icons;
-    private final ExecutorService loader=Executors.newSingleThreadExecutor();
+    private final ThreadPoolExecutor loader=MemoryPolicy.worker("launcher-apps");
     private final Handler main=new Handler(Looper.getMainLooper());
     private List<AppCatalog.App> apps=new ArrayList<>();
-    private int screen=HOME, dockSlot=-1, generation;
-    private boolean destroyed, loading=true, registered;
+    private int screen=HOME, dockSlot=-1, savedPosition, savedTop;
+    private boolean destroyed, loading=true, registered, resumed, uiReleased, catalogDirty=true, refreshRunning;
+    private static boolean fontsReady;
     private String query="";
     private FrameLayout root;
     private GridView grid;
@@ -36,12 +36,12 @@ public final class MainActivity extends Activity {
     private TextView subtitle, empty;
     private Dialog dialog;
     private final BroadcastReceiver packageChanges=new BroadcastReceiver() {
-        @Override public void onReceive(Context c,Intent i) {icons.invalidate();refresh();}
+        @Override public void onReceive(Context c,Intent i) {icons.invalidate();catalogDirty=true;refresh();}
     };
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
-        Fonts.init(this);
+        if(!fontsReady){Fonts.init(getApplicationContext());fontsReady=true;}
         store=new LauncherStore(getSharedPreferences("launcher",MODE_PRIVATE));
         icons=new IconPack(this);
         if(state!=null) {
@@ -53,34 +53,78 @@ public final class MainActivity extends Activity {
         changes.addAction(Intent.ACTION_PACKAGE_REPLACED);changes.addDataScheme("package");
         if(Build.VERSION.SDK_INT>=33)registerReceiver(packageChanges,changes,Context.RECEIVER_NOT_EXPORTED);
         else registerReceiver(packageChanges,changes);
+        IntentFilter externalApps=new IntentFilter(Intent.ACTION_EXTERNAL_APPLICATIONS_AVAILABLE);
+        externalApps.addAction(Intent.ACTION_EXTERNAL_APPLICATIONS_UNAVAILABLE);
+        if(Build.VERSION.SDK_INT>=33)registerReceiver(packageChanges,externalApps,Context.RECEIVER_NOT_EXPORTED);
+        else registerReceiver(packageChanges,externalApps);
         registered=true;
         if(Build.VERSION.SDK_INT>=33)ModernBack.register(this);
         build();
     }
-    @Override protected void onResume() {super.onResume();refresh();}
+    @Override protected void onResume() {
+        super.onResume();resumed=true;
+        if(uiReleased) {
+            uiReleased=false;
+            if(grid!=null){
+                grid.setAdapter(adapter);updateApps();
+                if(Build.VERSION.SDK_INT>=21)grid.setSelectionFromTop(savedPosition,savedTop);
+                else grid.setSelection(savedPosition);
+            }
+            updateDock();
+        }
+        refresh();
+    }
+    @Override protected void onStop() {resumed=false;releaseBackgroundUi();super.onStop();}
+    @Override public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if(icons!=null){icons.trim();if(!resumed)releaseBackgroundUi();}
+    }
+    @Override public void onLowMemory() {
+        super.onLowMemory();if(icons!=null){icons.trim();if(!resumed)releaseBackgroundUi();}
+    }
+    private void releaseBackgroundUi() {
+        if(uiReleased)return;
+        uiReleased=true;
+        icons.invalidate();
+        if(grid!=null) {
+            savedPosition=grid.getFirstVisiblePosition();View first=grid.getChildAt(0);
+            savedTop=first==null?0:first.getTop()-grid.getPaddingTop();
+            // Detach the adapter to release both visible icon bitmaps and GridView's recycled cells.
+            grid.setAdapter(null);
+        }
+        if(dockContainer!=null)dockContainer.removeAllViews();
+    }
     @Override protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);out.putInt("screen",screen);out.putInt("slot",dockSlot);out.putString("query",query);
     }
     @Override protected void onNewIntent(Intent intent) {super.onNewIntent(intent);setIntent(intent);go(HOME);}
     @Override protected void onDestroy() {
-        destroyed=true;generation++;if(registered)unregisterReceiver(packageChanges);
+        destroyed=true;if(registered)unregisterReceiver(packageChanges);
         dismissDialog();loader.shutdownNow();icons.close();main.removeCallbacksAndMessages(null);super.onDestroy();
     }
     private void refresh() {
-        int request=++generation;
+        if(destroyed || !resumed || !catalogDirty || refreshRunning)return;
+        catalogDirty=false;refreshRunning=true;
         loader.execute(()->{
             List<AppCatalog.App> result;
             try {result=AppCatalog.load(getApplicationContext());}
-            catch(RuntimeException e) {main.post(()->{if(!destroyed)notice("Apps could not be loaded. Open All Apps to try again.");});return;}
+            catch(RuntimeException e) {main.post(()->{
+                refreshRunning=false;catalogDirty=true;
+                if(!destroyed && resumed)notice("Apps could not be loaded. Open All Apps to try again.");
+            });return;}
             main.post(()->{
-                if(destroyed || request!=generation)return;
+                refreshRunning=false;if(destroyed)return;
+                if(catalogDirty){refresh();return;}
                 apps=result;loading=false;store.seed(apps);
-                if(screen!=SETTINGS){updateApps();updateDock();}
+                store.suggestedDock(AppCatalog.suggestedDock(getApplicationContext(),apps));
+                if(screen!=SETTINGS && resumed){updateApps();updateDock();}
             });
         });
     }
     private void go(int next) {
-        hideKeyboard();dismissDialog();screen=next;query="";if(next!=PICK_DOCK)dockSlot=-1;build();
+        hideKeyboard();dismissDialog();
+        if(screen==HOME && next==HOME){savedPosition=0;savedTop=0;if(grid!=null)grid.setSelection(0);updateApps();return;}
+        screen=next;query="";if(next!=PICK_DOCK)dockSlot=-1;build();
         if(next==APPS)refresh();
     }
     private void hideKeyboard() {
@@ -90,7 +134,11 @@ public final class MainActivity extends Activity {
     @Override public void onBackPressed() {go(HOME);}
 
     private void build() {
+        // Drop references to the previous hierarchy, including Settings' hidden app grid.
+        grid=null;adapter=null;empty=null;dockContainer=null;subtitle=null;uiReleased=false;
+        savedPosition=0;savedTop=0;
         theme=new LauncherTheme(this,store.theme());
+        icons.screenChanged(theme.id);
         root=new FrameLayout(this);root.setBackgroundColor(theme.bg);root.setFocusableInTouchMode(true);
         if(Build.VERSION.SDK_INT>=30) {
             root.setOnApplyWindowInsetsListener((v,insets)->{
@@ -110,7 +158,7 @@ public final class MainActivity extends Activity {
             grid.setClipToPadding(false);grid.setSelector(new ColorDrawable(android.graphics.Color.TRANSPARENT));
             grid.setNumColumns(columns());grid.setVerticalScrollBarEnabled(false);
             grid.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{
-                int n=columns();if(grid.getNumColumns()!=n)grid.setNumColumns(n);
+                GridView resized=(GridView)v;int n=columns();if(resized.getNumColumns()!=n)resized.setNumColumns(n);
             });
             adapter=new AppAdapter();grid.setAdapter(adapter);
             grid.setOnItemClickListener((p,v,pos,id)->{
@@ -183,6 +231,12 @@ public final class MainActivity extends Activity {
     }
     private final class AppAdapter extends BaseAdapter {
         List<AppCatalog.App> visible=new ArrayList<>();
+        private final int cellHeight;
+        AppAdapter() {
+            android.graphics.Paint font=new android.graphics.Paint();font.setTypeface(Fonts.medium());
+            font.setTextSize(12*getResources().getDisplayMetrics().scaledDensity);
+            cellHeight=dp(58+9+12+16)+(int)Math.ceil(font.getFontSpacing()*3);
+        }
         @Override public int getCount(){return visible.size();}
         @Override public Object getItem(int p){return visible.get(p);}
         @Override public long getItemId(int p){return p;}
@@ -191,7 +245,7 @@ public final class MainActivity extends Activity {
             if(recycled instanceof LinearLayout)cell=(LinearLayout)recycled;
             else {
                 cell=column();cell.setGravity(Gravity.CENTER_HORIZONTAL);cell.setPadding(dp(3),dp(6),dp(3),dp(6));
-                cell.setBackground(theme.interactive(false));
+                cell.setLayoutParams(new AbsListView.LayoutParams(-1,cellHeight));
                 // Only the label is a chip: the enclosing app tile is transparent at rest.
                 android.graphics.drawable.StateListDrawable states=new android.graphics.drawable.StateListDrawable();
                 states.addState(new int[]{android.R.attr.state_pressed},theme.shape(theme.pressed,24,false));
@@ -201,7 +255,8 @@ public final class MainActivity extends Activity {
                 image.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
                 cell.addView(image,new LinearLayout.LayoutParams(dp(58),dp(58)));
                 TextView label=theme.text("",12,false);label.setTypeface(Fonts.medium());label.setGravity(Gravity.CENTER);
-                label.setMaxLines(1);label.setEllipsize(TextUtils.TruncateAt.END);label.setPadding(dp(10),dp(8),dp(10),dp(8));
+                label.setSingleLine(false);label.setMaxLines(3);label.setEllipsize(TextUtils.TruncateAt.END);
+                label.setPadding(dp(10),dp(8),dp(10),dp(8));
                 label.setBackground(theme.shape(theme.control,100000,true));
                 label.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
                 LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-2,-2);lp.topMargin=dp(9);cell.addView(label,lp);
@@ -322,6 +377,10 @@ public final class MainActivity extends Activity {
         paragraph(page,Build.VERSION.SDK_INT>=21?"Choose Grapefruit Launcher as your Home app in Android’s settings.":"Press Home, choose Grapefruit Launcher, then Always. If another launcher is already the default, clear its defaults in Android’s app settings first.");
         section(page,"Make it yours");
         paragraph(page,"Touch and hold an app to add it to Home, move it earlier or later, or choose one of four dock slots. Touch an empty dock slot to pick an app. All Apps always stays in the middle. Dock icons have no labels.");
+        TextView reset=theme.chip("Reset dock to suggested apps",false,v->{
+            store.resetDock(AppCatalog.suggestedDock(getApplicationContext(),apps));
+            notice("Dock reset to available Phone, Messages, Chrome and Grapefruit Audio apps.");
+        });page.addView(reset,new LinearLayout.LayoutParams(-1,-2));
         paragraph(page,"No wallpaper. No account. No ads. Android 4.2.2 and later.\n\nGeist by Vercel, shared with Grapefruit Audio and TV. Licensed under the SIL Open Font License 1.1.");
         TextView license=theme.chip("Font license",false,v->fontLicense());page.addView(license,new LinearLayout.LayoutParams(-1,-2));
     }
@@ -346,7 +405,7 @@ public final class MainActivity extends Activity {
     private void open(AppCatalog.App app){external(app.launch());}
     private void external(Intent intent) {
         hideKeyboard();
-        try{startActivity(intent);}catch(ActivityNotFoundException|SecurityException e){notice("This app or action is no longer available.");refresh();}
+        try{startActivity(intent);}catch(ActivityNotFoundException|SecurityException e){notice("This app or action is no longer available.");catalogDirty=true;refresh();}
     }
     private void notice(String value) {
         if(root==null || destroyed)return;

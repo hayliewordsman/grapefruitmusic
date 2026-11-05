@@ -26,9 +26,6 @@ final class LauncherStore {
                 && !a.component.getPackageName().endsWith("grapefruitlauncher")) home.add(a.id());
         for (AppCatalog.App a:apps) if (home.size()<12 && !home.contains(a.id())) home.add(a.id());
         writeHome(home);
-        SharedPreferences.Editor dock=prefs.edit();
-        for(int i=0;i<Math.min(DOCK_APPS,home.size());i++)dock.putString("dock_"+i,home.get(i));
-        dock.apply();
         prefs.edit().putBoolean("seeded",true).apply();
     }
     void add(String id) { List<String> ids=home(); if (!ids.contains(id)) {ids.add(id);writeHome(ids);} }
@@ -47,8 +44,22 @@ final class LauncherStore {
         checkSlot(slot);
         SharedPreferences.Editor e=prefs.edit();
         // Moving to another dock slot frees the previous one rather than duplicating it.
-        for(int i=0;i<DOCK_APPS;i++) if(!id.isEmpty() && id.equals(dock(i)))e.remove("dock_"+i);
-        e.putString("dock_"+slot,id).apply();
+        for(int i=0;i<DOCK_APPS;i++) if(i!=slot && !id.isEmpty() && id.equals(dock(i)))
+            e.remove("dock_"+i).putBoolean("dock_custom_"+i,true);
+        e.putString("dock_"+slot,id).putBoolean("dock_custom_"+slot,true).apply();
+    }
+    void suggestedDock(String[] defaults) {
+        if(defaults.length!=DOCK_APPS)throw new IllegalArgumentException("Four default dock slots required");
+        boolean migrate=prefs.getInt("dock_defaults_version",0)<2;
+        SharedPreferences.Editor e=prefs.edit();
+        for(int i=0;i<DOCK_APPS;i++) {
+            if(migrate || !prefs.getBoolean("dock_custom_"+i,false))e.putString("dock_"+i,defaults[i]);
+            if(migrate)e.putBoolean("dock_custom_"+i,false);
+        }
+        e.putInt("dock_defaults_version",2).apply();
+    }
+    void resetDock(String[] defaults) {
+        prefs.edit().remove("dock_defaults_version").apply();suggestedDock(defaults);
     }
     private void checkSlot(int slot) {
         if(slot<0 || slot>=DOCK_APPS)throw new IllegalArgumentException("Dock app slot must be 0–3");

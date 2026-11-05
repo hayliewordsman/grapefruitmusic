@@ -16,7 +16,7 @@ final class LauncherTheme {
     private final Context context;
 
     LauncherTheme(Context c, int choice) {
-        context = c;
+        context = c.getApplicationContext();
         id = choice >= 0 && choice < NAMES.length ? choice : 0;
         light = id == 1;
         // Columns: background, surface, control, pressed, text, secondary, accent, accent end,

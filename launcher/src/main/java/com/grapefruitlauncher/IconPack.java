@@ -7,35 +7,126 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.LruCache;
 import android.widget.ImageView;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.lang.ref.WeakReference;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /** Four private, procedural icon packs. No activity-name allowlist: every icon gets a plate. */
 final class IconPack {
     private final Context context;
-    private final ExecutorService worker=Executors.newSingleThreadExecutor();
+    private static final int MAX_PENDING=64;
+    private final ThreadPoolExecutor worker=MemoryPolicy.worker("launcher-icons");
     private final Handler main=new Handler(Looper.getMainLooper());
-    private final LruCache<String,Bitmap> cache=new LruCache<String,Bitmap>(4*1024*1024) {
-        @Override protected int sizeOf(String key,Bitmap b) {return b.getByteCount();}
-    };
-    IconPack(Context c) {context=c.getApplicationContext();}
+    private final Object lock=new Object();
+    private final MemoryPolicy memory;
+    private final LruCache<String,Bitmap> cache;
+    private final Map<String,Request> pending=new HashMap<>();
+    private final ArrayDeque<Request> queue=new ArrayDeque<>();
+    private boolean draining,closed;
+    private int generation,themeId=-1;
+    IconPack(Context c) {
+        context=c.getApplicationContext();memory=new MemoryPolicy(context);
+        cache=new LruCache<String,Bitmap>(memory.cacheBytes) {
+            @Override protected int sizeOf(String key,Bitmap b){return b.getByteCount();}
+        };
+    }
     void bind(ImageView view,AppCatalog.App app,LauncherTheme theme) {
-        String key=theme.id+":"+app.id();
+        int pixels=memory.iconPixels(theme);
+        String key=theme.id+":"+pixels+":"+app.id();
         view.setTag(key);
         Bitmap hit=cache.get(key);
         if(hit!=null){view.setImageBitmap(hit);return;}
         view.setImageDrawable(new Plate(theme,null,0));
-        worker.execute(()->{
-            Drawable original;
-            try {original=context.getPackageManager().getActivityIcon(app.component);}
-            catch(Exception e) {original=context.getPackageManager().getDefaultActivityIcon();}
-            Bitmap bitmap=render(theme,original,theme.dp(64));
-            cache.put(key,bitmap);
-            main.post(()->{if(key.equals(view.getTag()))view.setImageBitmap(bitmap);});
-        });
+        synchronized(lock) {
+            if(closed)return;
+            Request existing=pending.get(key);
+            if(existing!=null){existing.watch(view);return;}
+            if(pending.size()>=MAX_PENDING) {
+                // Retry only while this view still wants the icon. Never retain a screen in a job queue.
+                WeakReference<ImageView> weak=new WeakReference<>(view);int epoch=generation;
+                main.postDelayed(()->{
+                    ImageView target=weak.get();
+                    if(epoch==generation && target!=null && key.equals(target.getTag()))bind(target,app,theme);
+                },32);
+                return;
+            }
+            Request request=new Request(key,app,theme,pixels,generation);request.watch(view);
+            pending.put(key,request);queue.addLast(request);
+            if(!draining){draining=true;worker.execute(this::drain);}
+        }
     }
-    void invalidate() {cache.evictAll();}
-    void close() {worker.shutdownNow();main.removeCallbacksAndMessages(null);}
+    private void drain() {
+        while(true) {
+            Request request;
+            synchronized(lock) {
+                request=queue.pollFirst();
+                if(closed || request==null){draining=false;return;}
+                if(!request.hasTargets()) {
+                    if(pending.get(request.key)==request)pending.remove(request.key);
+                    continue;
+                }
+            }
+            Bitmap bitmap=null;
+            try {
+                Drawable original;
+                try{original=context.getPackageManager().getActivityIcon(request.app.component);}
+                catch(Exception e){original=context.getPackageManager().getDefaultActivityIcon();}
+                bitmap=render(request.theme,original,request.pixels);
+            }catch(OutOfMemoryError e){cache.evictAll();}
+            catch(RuntimeException ignored){ /* Keep the plate if a broken package drawable cannot render. */ }
+            synchronized(lock) {
+                if(pending.get(request.key)==request)pending.remove(request.key);
+                if(!closed && request.generation==generation && bitmap!=null) {
+                    cache.put(request.key,bitmap);final Bitmap ready=bitmap;
+                    main.post(()->{
+                        if(closed || request.generation!=generation)return;
+                        for(WeakReference<ImageView> weak:request.views) {
+                            ImageView target=weak.get();
+                            if(target!=null && request.key.equals(target.getTag()))target.setImageBitmap(ready);
+                        }
+                    });
+                }
+            }
+        }
+    }
+    void screenChanged(int selectedTheme) {
+        synchronized(lock) {
+            generation++;queue.clear();pending.clear();main.removeCallbacksAndMessages(null);
+            if(themeId!=selectedTheme){cache.evictAll();themeId=selectedTheme;}
+        }
+    }
+    void invalidate(){synchronized(lock){screenChanged(themeId);cache.evictAll();}}
+    void trim(){cache.evictAll();}
+    int cachedBytes(){return cache.size();}
+    void close() {
+        synchronized(lock){closed=true;invalidate();worker.shutdownNow();}
+    }
+    private static final class Request {
+        final String key;
+        final AppCatalog.App app;
+        final LauncherTheme theme;
+        final int pixels,generation;
+        final List<WeakReference<ImageView>> views=new ArrayList<>();
+        Request(String k,AppCatalog.App a,LauncherTheme t,int size,int epoch){key=k;app=a;theme=t;pixels=size;generation=epoch;}
+        void watch(ImageView view) {
+            for(int i=views.size()-1;i>=0;i--) {
+                ImageView old=views.get(i).get();
+                if(old==view)return;
+                if(old==null)views.remove(i);
+            }
+            views.add(new WeakReference<>(view));
+        }
+        boolean hasTargets() {
+            for(WeakReference<ImageView> weak:views) {
+                ImageView view=weak.get();if(view!=null && key.equals(view.getTag()))return true;
+            }
+            return false;
+        }
+    }
     static Bitmap render(LauncherTheme theme,Drawable original,int size) {
         Bitmap b=Bitmap.createBitmap(size,size,Bitmap.Config.ARGB_8888);
         Plate plate=new Plate(theme,original,0);plate.setBounds(0,0,size,size);plate.draw(new Canvas(b));return b;
