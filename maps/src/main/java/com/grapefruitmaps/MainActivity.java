@@ -301,7 +301,16 @@ public final class MainActivity extends Activity {
         note(col,"Grapefruit Maps is free software. No ads, tracking SDKs, accounts or Google Play services.");
     }
     private void about() {
-        LinearLayout col=scrollPage("Grapefruit Maps","Version "+versionName(),"Settings",true);
+        LinearLayout col=scrollPage("About",null,"Settings",true);
+        // Match the media apps' spacious, centered About branding, below navigation.
+        LinearLayout hero=b.column();hero.setGravity(Gravity.CENTER_HORIZONTAL);hero.setPadding(0,b.dp(16),0,b.dp(8));
+        ImageView icon=new ImageView(this);icon.setImageResource(R.drawable.ic_about);
+        icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        hero.addView(icon,new LinearLayout.LayoutParams(b.dp(88),b.dp(88)));
+        TextView wordmark=b.wordmark(40,false);wordmark.setPadding(0,b.dp(14),0,0);
+        hero.addView(wordmark,new LinearLayout.LayoutParams(-1,-2));
+        TextView version=b.label("Version "+versionName(),15,b.secondary);version.setGravity(Gravity.CENTER);version.setPadding(0,b.dp(8),0,0);
+        hero.addView(version,new LinearLayout.LayoutParams(-1,-2));col.addView(hero);
         section(col,"License");row(col,"GNU GPL","Version 3 or later",v->open("https://www.gnu.org/licenses/gpl-3.0.html"));
         row(col,"Source code","GitHub ›",v->open("https://github.com/hayliewordsman/grapefruitmusic/tree/maps-beta-1/maps"));
         note(col,"Free software: you can share and change this app under the GNU General Public License, version 3 or later. It comes with no warranty.");

@@ -1,4 +1,10 @@
-# Grapefruit Maps 1.0 beta 1.2
+# Grapefruit Maps 1.0 beta 1.3
+
+Beta 1.3 gives About the media apps' spacious, centered branding layout: the Maps
+icon, a large Maps-specific Geist Pixel Triangle wordmark and the version below
+the compact navigation row. Its static, bundled TTF works on Android 4.2.2;
+SVG masters for all four themes and the font subset generator
+(`tools/maps/wordmark.py`) are included.
 
 Beta 1.2 uses a compact top-left back icon beside the heading on Settings
 subpages (About, Licenses and the Victory Blue Easter egg).

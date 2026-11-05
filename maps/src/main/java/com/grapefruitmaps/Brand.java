@@ -34,22 +34,22 @@ public final class Brand {
         toggleOffSegments=Color.parseColor(light?"#F1C8B9":blue?"#BDDDF6":"#F2D0C6");
     }
     private static Typeface pixel;
-    /** Geist Pixel Triangle, cut down to the letters of "Grapefruit Maps" (tools/tv/wordmark.py). */
+    /** Static Geist Pixel Triangle, subset for Maps by tools/maps/wordmark.py. */
     public synchronized Typeface pixel() {
         if(pixel==null) {
-            try {pixel=Typeface.createFromAsset(context.getAssets(),"fonts/GeistPixel-Triangle-TV.ttf");}
+            try {pixel=Typeface.createFromAsset(context.getAssets(),"fonts/GeistPixel-Triangle-Maps.ttf");}
             catch(RuntimeException e){pixel=Fonts.bold();}
         }
         return pixel;
     }
     /**
-     * The wordmark, as Music's: Geist Pixel Triangle, "Grapefruit" in the accent and "TV" in the text
+     * The Maps wordmark: Geist Pixel Triangle, "Grapefruit" in the accent and "Maps" in the text
      * colour. On one line it shrinks to fit (up to sp); stacked, the words go one over the other.
      */
     public TextView wordmark(float sp, boolean stacked) {
         final TextView t=new TextView(context);t.setTypeface(pixel());t.setTextSize(sp);t.setTextColor(text);
         t.setIncludeFontPadding(false);t.setGravity(Gravity.CENTER);t.setContentDescription("Grapefruit Maps");
-        android.text.SpannableString mark=new android.text.SpannableString(stacked?"Grapefruit\nTV":"Grapefruit Maps");
+        android.text.SpannableString mark=new android.text.SpannableString(stacked?"Grapefruit\nMaps":"Grapefruit Maps");
         mark.setSpan(new android.text.style.ForegroundColorSpan(accent),0,"Grapefruit".length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         t.setText(mark);
         if(stacked){t.setLineSpacing(dp(4),1);return t;}

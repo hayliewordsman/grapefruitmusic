@@ -1,4 +1,4 @@
-Grapefruit Maps 1.0 beta 1.2
+Grapefruit Maps 1.0 beta 1.3
 App source and build scripts, GPL-3.0-or-later:
 https://github.com/hayliewordsman/grapefruitmusic/tree/maps-beta-1
 
@@ -17,6 +17,9 @@ https://boringssl.googlesource.com/boringssl/
 Geist static fonts, Vercel, SIL Open Font License 1.1:
 https://github.com/vercel/geist-font
 See assets/fonts/Geist-OFL.txt in the APK.
+The Maps-specific Geist Pixel Triangle subset is generated from the shared
+static font by tools/maps/wordmark.py. Its outlined SVG wordmarks live in
+maps/brand/wordmark-*.svg. Both the font and outlines retain the SIL OFL 1.1.
 
 OpenStreetMap data: copyright OpenStreetMap contributors, ODbL 1.0.
 https://www.openstreetmap.org/copyright

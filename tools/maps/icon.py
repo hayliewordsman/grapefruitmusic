@@ -65,7 +65,11 @@ def main():
         directory.mkdir(parents=True, exist_ok=True)
         for source, name, pixels in [(normal, 'ic_launcher.png', size), (foreground, 'ic_launcher_foreground.png', adaptive)]:
             cairosvg.svg2png(bytestring=source.encode(), write_to=str(directory / name), output_width=pixels, output_height=pixels)
-    print('Wrote original Maps SVGs, five legacy icon sizes and five adaptive layers.')
+        about = RES / ('drawable-' + density)
+        about.mkdir(parents=True, exist_ok=True)
+        about_size = size * 88 // 48
+        cairosvg.svg2png(bytestring=normal.encode(), write_to=str(about / 'ic_about.png'), output_width=about_size, output_height=about_size)
+    print('Wrote original Maps SVGs, legacy and adaptive icons, and density-specific 88dp About artwork.')
 
 
 if __name__ == '__main__':
