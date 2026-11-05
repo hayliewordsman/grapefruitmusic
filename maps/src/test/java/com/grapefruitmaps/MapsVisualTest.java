@@ -5,6 +5,7 @@ import android.app.*;
 import android.graphics.*;
 import android.os.Looper;
 import android.view.*;
+import android.widget.ListView;
 import java.io.*;
 import java.nio.file.Files;
 import org.junit.Test;
@@ -28,6 +29,10 @@ public class MapsVisualTest {
                 MainActivity a=controller.get();a.show("settings");layout(a);capture(a,"settings-"+theme+".png");
                 a.show("about");layout(a);capture(a,"about-"+theme+".png");
                 a.show("licenses");layout(a);capture(a,"licenses-"+theme+".png");
+                a.show("search");layout(a);capture(a,"search-"+theme+".png");
+                a.show("offline");layout(a);ListView countries=list(a.content);
+                for(int i=0;i<countries.getCount();i++)if("United States".equals(countries.getItemAtPosition(i))){countries.performItemClick(null,i,i);break;}
+                layout(a);capture(a,"country-"+theme+".png");
                 if(theme==3){a.show("egg");for(int i=0;i<9;i++)hat(a.getWindow().getDecorView()).performClick();Shadows.shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(700));layout(a);capture(a,"victory-egg.png");assertTrue(a.egg.getHeight()>150);}
             }
         }
@@ -48,6 +53,7 @@ public class MapsVisualTest {
             a.show("directions");assertNull(a.map);
         } finally {map.delete();}
     }
+    private ListView list(View v){if(v instanceof ListView)return (ListView)v;if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++){ListView l=list(((ViewGroup)v).getChildAt(i));if(l!=null)return l;}return null;}
     private EggView.Hat hat(View v){if(v instanceof EggView.Hat)return (EggView.Hat)v;if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++){EggView.Hat h=hat(((ViewGroup)v).getChildAt(i));if(h!=null)return h;}return null;}
     private void layout(MainActivity a){View v=a.getWindow().getDecorView();v.measure(View.MeasureSpec.makeMeasureSpec(360,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(640,View.MeasureSpec.EXACTLY));v.layout(0,0,360,640);Shadows.shadowOf(Looper.getMainLooper()).idle();}
     private void capture(MainActivity a,String name)throws Exception{View v=a.getWindow().getDecorView();Bitmap bitmap=Bitmap.createBitmap(360,640,Bitmap.Config.ARGB_8888);v.draw(new Canvas(bitmap));File f=new File("build/reports/maps-preview/"+name);f.getParentFile().mkdirs();try(FileOutputStream out=new FileOutputStream(f)){bitmap.compress(Bitmap.CompressFormat.PNG,100,out);}}

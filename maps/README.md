@@ -1,4 +1,8 @@
-# Grapefruit Maps 1.0 beta 1.3
+# Grapefruit Maps 1.0 beta 1.4
+
+Beta 1.4 uses the Settings back-button/header layout across the app, including
+place search and country downloads. Every back icon and title share one header
+row with the same size and spacing, with subtitles beneath the title.
 
 Beta 1.3 gives About the media apps' spacious, centered branding layout: the Maps
 icon, a large Maps-specific Geist Pixel Triangle wordmark and the version below

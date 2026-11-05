@@ -108,21 +108,12 @@ public final class MainActivity extends Activity {
         }
     }
     private LinearLayout column(String title,String subtitle) {
-        LinearLayout col=b.column(); col.setPadding(b.dp(16),b.dp(12),b.dp(16),b.dp(16));
-        TextView t=b.text(title,32,true); t.setPadding(0,b.dp(4),0,b.dp(8)); col.addView(t);
-        if(subtitle!=null) { TextView sub=b.label(subtitle,13,b.secondary); sub.setPadding(0,0,0,b.dp(12)); col.addView(sub); }
-        return col;
+        return column(title,subtitle,null);
     }
-    private LinearLayout scrollPage(String title,String subtitle,String back) {
-        return scrollPage(title,subtitle,back,false);
-    }
-    private LinearLayout scrollPage(String title,String subtitle,String back,boolean inlineHeader) {
-        ScrollView s=new ScrollView(this); s.setFillViewport(true); s.setClipToPadding(false);
-        LinearLayout outer=b.column(); s.addView(outer); content.addView(s);
-        if(back!=null&&!inlineHeader) { TextView button=b.button("‹ "+back,false,v->onBackPressed()); margin(outer,button,12,8); }
-        LinearLayout col;
-        if(inlineHeader) {
-            col=b.column();col.setPadding(b.dp(16),b.dp(12),b.dp(16),b.dp(16));
+    /** Every page with a back action uses the same icon, spacing and title row. */
+    private LinearLayout column(String title,String subtitle,String back) {
+        LinearLayout col=b.column();col.setPadding(b.dp(16),b.dp(12),b.dp(16),b.dp(16));
+        if(back!=null) {
             LinearLayout header=b.row();
             ImageButton button=b.back(back,v->onBackPressed());
             header.addView(button,new LinearLayout.LayoutParams(b.dp(48),b.dp(48)));
@@ -130,8 +121,16 @@ public final class MainActivity extends Activity {
             LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(0,-2,1);titleParams.leftMargin=b.dp(12);
             header.addView(heading,titleParams);col.addView(header);
             if(subtitle!=null) { TextView sub=b.label(subtitle,13,b.secondary);sub.setPadding(b.dp(60),b.dp(8),0,b.dp(12));col.addView(sub); }
-        } else col=column(title,subtitle);
-        outer.addView(col); return col;
+        } else {
+            TextView heading=b.text(title,32,true);heading.setPadding(0,b.dp(4),0,b.dp(8));col.addView(heading);
+            if(subtitle!=null) { TextView sub=b.label(subtitle,13,b.secondary);sub.setPadding(0,0,0,b.dp(12));col.addView(sub); }
+        }
+        return col;
+    }
+    private LinearLayout scrollPage(String title,String subtitle,String back) {
+        ScrollView s=new ScrollView(this);s.setFillViewport(true);s.setClipToPadding(false);
+        LinearLayout outer=b.column();s.addView(outer);content.addView(s);
+        LinearLayout col=column(title,subtitle,back);outer.addView(col);return col;
     }
     private void margin(LinearLayout parent,View v,int x,int y) {
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2); lp.setMargins(b.dp(x),b.dp(y),b.dp(x),b.dp(y)); parent.addView(v,lp);
@@ -305,7 +304,7 @@ public final class MainActivity extends Activity {
         note(col,"Grapefruit Maps is free software. No ads, tracking SDKs, accounts or Google Play services.");
     }
     private void about() {
-        LinearLayout col=scrollPage("About",null,"Settings",true);
+        LinearLayout col=scrollPage("About",null,"Settings");
         // Match the media apps' spacious, centered About branding, below navigation.
         LinearLayout hero=b.column();hero.setGravity(Gravity.CENTER_HORIZONTAL);hero.setPadding(0,b.dp(16),0,b.dp(8));
         ImageView icon=new ImageView(this);icon.setImageResource(R.drawable.ic_about);
@@ -348,13 +347,13 @@ public final class MainActivity extends Activity {
         dialog.setContentView(body);dialog.show();if(dialog.getWindow()!=null){dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);dialog.getWindow().setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-b.dp(24),b.dp(460)),-2);}
     }
     private void licenses() {
-        LinearLayout col=scrollPage("Licenses","Free software and open data acknowledgements.","About",true);
+        LinearLayout col=scrollPage("Licenses","Free software and open data acknowledgements.","About");
         try {for(String file:getAssets().list("licenses"))row(col,file,"Read ›",v->{try(InputStream in=getAssets().open("licenses/"+file);ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] buffer=new byte[4096];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);message(file,out.toString("UTF-8"));}catch(IOException e){message("License unavailable",e.getMessage());}});}
         catch(IOException e){note(col,e.getMessage());}
     }
     private void easterEgg() {
         if(prefs.getInt("theme",0)!=3) {show("about");return;}
-        LinearLayout col=scrollPage("Victory break","Tap the red cap. Make your mark.","About",true);
+        LinearLayout col=scrollPage("Victory break","Tap the red cap. Make your mark.","About");
         EggView.Hat hat=new EggView.Hat(this);col.addView(hat,new LinearLayout.LayoutParams(-1,b.dp(112)));
         egg=new EggView(this,b);col.addView(egg,new LinearLayout.LayoutParams(-1,b.dp(Math.min(280,getResources().getConfiguration().screenWidthDp*.65f))));
         TextView counter=b.label("0 drops",14,b.secondary);counter.setGravity(Gravity.CENTER);col.addView(counter);
@@ -362,8 +361,7 @@ public final class MainActivity extends Activity {
         note(col,"Drops clear when you go back.");
     }
     private void offline(String selectedCountry) {
-        LinearLayout col=column(selectedCountry==null?"Offline maps":selectedCountry,"Country maps from OpenStreetMap · Mapsforge");content.addView(col);
-        if(selectedCountry!=null)margin(col,b.button("‹ Countries",false,v->show("offline")),0,4);
+        LinearLayout col=column(selectedCountry==null?"Offline maps":selectedCountry,"Country maps from OpenStreetMap · Mapsforge",selectedCountry==null?null:"Countries");content.addView(col);
         EditText filter=field(selectedCountry==null?"Find a country or territory":"Find a region","");col.addView(filter);
         downloadStatus=b.label("",13,b.secondary);downloadStatus.setPadding(0,b.dp(10),0,b.dp(10));col.addView(downloadStatus);
         downloadStatus.setOnClickListener(v->{if(downloads.active!=null)choose("Download in progress",new String[]{"Pause download"},i->downloads.cancel());});

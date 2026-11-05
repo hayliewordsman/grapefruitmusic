@@ -13,7 +13,7 @@ The repository also contains **Grapefruit TV 2.0** (formerly Grapefruit FAST), a
 
 ## Grapefruit Maps
 
-**Grapefruit Maps 1.0 beta 1.3** is a separate GPL app for Android 4.2.2 and later, with the four Grapefruit themes, 2D and satellite views, country downloads and driving directions. See [maps/README.md](maps/README.md) for features, data licensing, beta limits and build instructions.
+**Grapefruit Maps 1.0 beta 1.4** is a separate GPL app for Android 4.2.2 and later, with the four Grapefruit themes, 2D and satellite views, country downloads and driving directions. See [maps/README.md](maps/README.md) for features, data licensing, beta limits and build instructions.
 
 ## Features
 
