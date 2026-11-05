@@ -283,11 +283,11 @@ public final class MainActivity extends Activity {
         row(col,"Driving routes","OSRM ›",v->server("Driving routes","route_url",Net.ROUTING));
         note(col,"You can use your own compatible HTTPS search and routing servers. Community services have usage limits.");
         section(col,"About");
-        row(col,"About Grapefruit Maps","Beta 1 ›",v->show("about"));
+        row(col,"About Grapefruit Maps",versionName()+" ›",v->show("about"));
         note(col,"Grapefruit Maps is free software. No ads, tracking SDKs, accounts or Google Play services.");
     }
     private void about() {
-        LinearLayout col=scrollPage("Grapefruit Maps","Version 1.0 · beta 1","Settings");
+        LinearLayout col=scrollPage("Grapefruit Maps","Version "+versionName(),"Settings");
         section(col,"License");row(col,"GNU GPL","Version 3 or later",v->open("https://www.gnu.org/licenses/gpl-3.0.html"));
         row(col,"Source code","GitHub ›",v->open("https://github.com/hayliewordsman/grapefruitmusic/tree/maps-beta-1/maps"));
         note(col,"Free software: you can share and change this app under the GNU General Public License, version 3 or later. It comes with no warranty.");
@@ -303,6 +303,10 @@ public final class MainActivity extends Activity {
         section(col,"Open-source components");
         row(col,"Open-source licenses","Read ›",v->show("licenses"));
         note(col,"Mapsforge 0.21.0 · LGPL-3.0 with exception. AndroidSVG 1.4 · Apache-2.0. Conscrypt 2.5.3 · Apache-2.0, with bundled BoringSSL notices. Geist by Vercel · SIL OFL 1.1. Library licenses and source links ship in assets/licenses; the original game artwork is GPL-3.0-or-later.");
+    }
+    private String versionName() {
+        try { return getPackageManager().getPackageInfo(getPackageName(),0).versionName; }
+        catch(PackageManager.NameNotFoundException e) { return "Beta"; }
     }
     private void open(String url) { try {startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));} catch(ActivityNotFoundException e){message("No browser",url);} }
     private void server(String title,String key,String standard) {
