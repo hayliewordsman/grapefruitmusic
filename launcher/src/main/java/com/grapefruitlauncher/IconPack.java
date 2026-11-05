@@ -27,6 +27,7 @@ final class IconPack {
     private final Handler main=new Handler(Looper.getMainLooper());
     private final Object lock=new Object();
     private final MemoryPolicy memory;
+    private final IconDiskCache disk;
     private final LruCache<String,Bitmap> cache;
     // A bitmap can outlive its LRU entry because an on-screen/recycled cell still displays it.
     // Weak references find those existing images without keeping any extra bitmap memory alive.
@@ -35,16 +36,16 @@ final class IconPack {
     private final Map<String,Request> pending=new HashMap<>();
     private final ArrayDeque<Request> queue=new ArrayDeque<>();
     private boolean draining,closed;
-    private int generation,themeId=-1,contentVersion;
+    private int generation,themeId=-1;
     IconPack(Context c) {
-        context=c.getApplicationContext();memory=new MemoryPolicy(context);
+        context=c.getApplicationContext();memory=new MemoryPolicy(context);disk=new IconDiskCache(context);
         cache=new LruCache<String,Bitmap>(memory.cacheBytes) {
             @Override protected int sizeOf(String key,Bitmap b){return b.getByteCount();}
         };
     }
     void bind(ImageView view,AppCatalog.App app,LauncherTheme theme) {
         int pixels=memory.iconPixels(theme);
-        String key=contentVersion+":"+theme.id+":"+pixels+":"+app.id();
+        String key=key(app,theme,pixels);
         Drawable current=view.getDrawable();
         if(key.equals(view.getTag()) && current instanceof BitmapDrawable) {
             Bitmap displayed=((BitmapDrawable)current).getBitmap();
@@ -63,6 +64,10 @@ final class IconPack {
                     else cache.put(key,hit);
                 }
             }
+        }
+        if(hit==null) {
+            hit=disk.read(app,theme.id,pixels);
+            if(hit!=null)synchronized(lock){cache.put(key,hit);rememberLive(key,hit);}
         }
         if(hit!=null){view.setImageBitmap(hit);return;}
         view.setImageDrawable(new Plate(theme,null,0));
@@ -97,15 +102,12 @@ final class IconPack {
             }
             Bitmap bitmap=null;
             try {
-                Drawable original;
-                try{original=context.getPackageManager().getActivityIcon(request.app.component);}
-                catch(Exception e){original=context.getPackageManager().getDefaultActivityIcon();}
-                bitmap=render(request.theme,original,request.pixels);
+                bitmap=disk.load(request.app,request.theme,request.pixels);
             }catch(OutOfMemoryError e){cache.evictAll();}
             catch(RuntimeException ignored){ /* Keep the plate if a broken package drawable cannot render. */ }
             synchronized(lock) {
                 if(pending.get(request.key)==request)pending.remove(request.key);
-                if(!closed && request.generation==generation && bitmap!=null) {
+                if(!closed && request.generation==generation && request.key.equals(key(request.app,request.theme,request.pixels)) && bitmap!=null) {
                     cache.put(request.key,bitmap);rememberLive(request.key,bitmap);final Bitmap ready=bitmap;
                     main.post(()->{
                         if(closed || request.generation!=generation)return;
@@ -118,17 +120,35 @@ final class IconPack {
             }
         }
     }
+    private String key(AppCatalog.App app,LauncherTheme theme,int pixels) {
+        return app.id()+"|"+theme.id+"|"+pixels+"|"+disk.version(app);
+    }
+    int prepare(List<AppCatalog.App> apps,IconDiskCache.Progress progress)throws InterruptedException {
+        return disk.prepare(apps,memory.iconPixels(new LauncherTheme(context,0)),progress);
+    }
+    void packageChanged(String pkg) {
+        disk.packageChanged(pkg);
+        synchronized(lock) {
+            String prefix=pkg+"/";
+            for(String key:cache.snapshot().keySet())if(key.startsWith(prefix))cache.remove(key);
+            java.util.Iterator<String> keys=live.keySet().iterator();
+            while(keys.hasNext())if(keys.next().startsWith(prefix))keys.remove();
+            java.util.Iterator<Request> jobs=queue.iterator();
+            while(jobs.hasNext()){Request job=jobs.next();if(job.key.startsWith(prefix)){jobs.remove();pending.remove(job.key);}}
+        }
+    }
     void screenChanged(int selectedTheme) {
         synchronized(lock) {
             generation++;queue.clear();pending.clear();main.removeCallbacksAndMessages(null);
             if(themeId!=selectedTheme){cache.evictAll();live.clear();themeId=selectedTheme;}
         }
     }
-    void invalidate(){synchronized(lock){contentVersion++;screenChanged(themeId);cache.evictAll();live.clear();pruneLiveReferences();}}
+    void invalidate(){disk.invalidate();clearMemory();}
+    void clearMemory(){synchronized(lock){screenChanged(themeId);cache.evictAll();live.clear();pruneLiveReferences();}}
     void trim(){synchronized(lock){cache.evictAll();live.clear();pruneLiveReferences();}}
     int cachedBytes(){return cache.size();}
     void close() {
-        synchronized(lock){closed=true;invalidate();worker.shutdownNow();}
+        synchronized(lock){closed=true;clearMemory();worker.shutdownNow();}
     }
     // Caller holds lock: only reference metadata is retained, bounded independently of the LRU.
     private void rememberLive(String key,Bitmap bitmap) {

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -17,8 +18,10 @@ final class AppCatalog {
     static final class App {
         final ComponentName component;
         final String label;
+        final String sourceStamp;
         private final String id;
-        App(ComponentName c,String title) {component=c;label=title;id=c.flattenToString();}
+        App(ComponentName c,String title) {this(c,title,"0");}
+        App(ComponentName c,String title,String stamp) {component=c;label=title;sourceStamp=stamp;id=c.flattenToString();}
         String id() {return id;}
         Intent launch() {
             return new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setComponent(component)
@@ -29,13 +32,20 @@ final class AppCatalog {
         PackageManager pm=context.getPackageManager();
         Intent launcher=new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
         LinkedHashMap<String,App> unique=new LinkedHashMap<>();
+        java.util.Map<String,String> stamps=new java.util.HashMap<>();
         for(ResolveInfo r:pm.queryIntentActivities(launcher,0)) {
             ActivityInfo a=r.activityInfo;
             if(a==null || !a.enabled || !a.exported || (a.applicationInfo!=null && !a.applicationInfo.enabled))continue;
             ComponentName component=new ComponentName(a.packageName,a.name);
             CharSequence title;
             try {title=r.loadLabel(pm);} catch(RuntimeException e) {title=null;}
-            App app=new App(component,title==null||title.length()==0?a.packageName:title.toString());
+            String stamp=stamps.get(a.packageName);
+            if(stamp==null) {
+                try{PackageInfo info=pm.getPackageInfo(a.packageName,0);stamp=info.lastUpdateTime+":"+info.versionCode;}
+                catch(PackageManager.NameNotFoundException|RuntimeException e){stamp="0";}
+                stamps.put(a.packageName,stamp);
+            }
+            App app=new App(component,title==null||title.length()==0?a.packageName:title.toString(),stamp);
             unique.put(app.id(),app);
         }
         List<App> apps=new ArrayList<>(unique.values());

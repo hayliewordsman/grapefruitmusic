@@ -36,7 +36,15 @@ public final class MainActivity extends Activity {
     private TextView subtitle, empty;
     private Dialog dialog;
     private final BroadcastReceiver packageChanges=new BroadcastReceiver() {
-        @Override public void onReceive(Context c,Intent i) {icons.invalidate();catalogDirty=true;refresh();}
+        @Override public void onReceive(Context c,Intent i) {
+            String pkg=i.getData()==null?null:i.getData().getSchemeSpecificPart();
+            if(pkg!=null)icons.packageChanged(pkg);
+            else {
+                String[] packages=i.getStringArrayExtra(Intent.EXTRA_CHANGED_PACKAGE_LIST);
+                if(packages==null)icons.invalidate();else for(String name:packages)icons.packageChanged(name);
+            }
+            catalogDirty=true;refresh();
+        }
     };
 
     @Override public void onCreate(Bundle state) {
@@ -85,7 +93,7 @@ public final class MainActivity extends Activity {
     private void releaseBackgroundUi() {
         if(uiReleased)return;
         uiReleased=true;
-        icons.invalidate();
+        icons.clearMemory();
         if(grid!=null) {
             savedPosition=grid.getFirstVisiblePosition();View first=grid.getChildAt(0);
             savedTop=first==null?0:first.getTop()-grid.getPaddingTop();
@@ -103,11 +111,17 @@ public final class MainActivity extends Activity {
         dismissDialog();loader.shutdownNow();icons.close();main.removeCallbacksAndMessages(null);super.onDestroy();
     }
     private void refresh() {
-        if(destroyed || !resumed || !catalogDirty || refreshRunning)return;
+        if(destroyed || !catalogDirty || refreshRunning)return;
         catalogDirty=false;refreshRunning=true;
         loader.execute(()->{
-            List<AppCatalog.App> result;
-            try {result=AppCatalog.load(getApplicationContext());}
+            List<AppCatalog.App> result;int failed;
+            try {
+                result=AppCatalog.load(getApplicationContext());
+                failed=icons.prepare(result,(count,total)->main.post(()->{
+                    if(!destroyed && resumed && loading && empty!=null)empty.setText(getString(R.string.preparing_apps,count,total));
+                }));
+            }
+            catch(InterruptedException e){Thread.currentThread().interrupt();return;}
             catch(RuntimeException e) {main.post(()->{
                 refreshRunning=false;catalogDirty=true;
                 if(!destroyed && resumed)notice("Apps could not be loaded. Open All Apps to try again.");
@@ -118,6 +132,7 @@ public final class MainActivity extends Activity {
                 apps=result;loading=false;store.seed(apps);
                 store.suggestedDock(AppCatalog.suggestedDock(getApplicationContext(),apps));
                 if(screen!=SETTINGS && resumed){updateApps();updateDock();}
+                if(failed>0 && resumed)notice("Some app icons could not be saved. Check available storage.");
             });
         });
     }

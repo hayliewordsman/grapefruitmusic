@@ -4,6 +4,30 @@ A separate native Android Home app in the Grapefruit repository. Application ID:
 `io.github.hayliewordsman.grapefruitlauncher`. Minimum Android 4.2.2 (API 17), compile
 and target SDK 36 (Android 16). It installs alongside Audio and TV.
 
+## 1.0 beta 4
+
+- On first launch after installation or upgrading from a version without a disk
+  cache, the launcher prepares **every launchable installed app's icon in all four
+  themes**. It shows progress while preparing the app list. Icon PNGs are stored
+  in private internal app files, so they survive restarts and memory cleanup.
+- All Apps and Home read prepared icons before changing a cell, so a RAM-cache
+  miss no longer replaces a saved icon with an asynchronous loading plate. There
+  is no repeated PackageManager lookup or plate rendering during normal scrolling.
+- App-added/changed/replaced broadcasts rebuild only the affected app's icon set,
+  including when the launcher is in the background. Uninstalls remove obsolete
+  files. On startup, package version/update timestamps also catch changes that
+  happened while the launcher process was stopped.
+- Theme switches use their prepared files immediately. The small RAM cache,
+  weak image reuse, background memory cleanup and idle-thread shutdown remain.
+  Disk metadata holds no bitmaps; preparation renders and saves one small image
+  at a time. Storage scales with installed icons rather than retaining all of them
+  in the JP5S's RAM.
+- Files are written atomically; incomplete/corrupt images can be rebuilt. If app
+  storage is unavailable, the launcher still lists/opens apps and reports the
+  failed preparation, with individual icons falling back to background loading.
+- Version code 4; the APK uses the existing debug certificate and application ID,
+  installs over beta 3, and preserves Home, dock and theme settings.
+
 ## 1.0 beta 3
 
 - Fixes icon flashing/reloading when All Apps or Home rebinds cells while scrolling.
@@ -45,9 +69,9 @@ and target SDK 36 (Android 16). It installs alongside Audio and TV.
 - A single worker drain shares duplicate icon requests, skips recycled views,
   limits pending icon jobs to 64, and keeps weak references to destination views.
   Old screen/theme requests are discarded. Theme changes evict the previous pack.
-- While another app is open, the launcher releases its icon cache, grid cells and
+- While another app is open, the launcher releases its RAM icon cache, grid cells and
   dock views; these restore on return. Memory-pressure callbacks also clear the
-  cache. App catalog queries coalesce and run on startup/package changes rather
+  RAM cache (persistent files remain). App catalog queries coalesce and run on startup/package changes rather
   than each opening of All Apps. Worker threads exit after two idle seconds.
 - Screen references are cleared when switching pages; fonts load once per process.
   The launcher compiles the shared `Fonts.java` and uses the same shared font assets
@@ -128,7 +152,9 @@ not configured; CI uploads build artifacts only.
 Tests cover catalog search, launch intents, installation refresh, Home removal and
 ordering, default dock holes and migration, user replacements/cleared slots,
 shared icon work, low-memory cache limits, background cleanup/restoration,
-multiline chips, theme persistence, teardrop rendering, portrait/landscape layout
+all-app/all-theme disk preparation, reuse across restart, background app installs,
+incremental updates and uninstalls, corruption recovery, synchronous icons while
+scrolling the actual app grid, multiline chips, theme persistence, teardrop rendering, portrait/landscape layout
 and startup on API 21 and API 35. Native rendering tests
 write previews under `work/launcher/previews/`. API 17 compatibility is checked by
 lint and the APK's minimum-SDK metadata; Robolectric 4.14 cannot run API 17. Device
