@@ -1,0 +1,24 @@
+License: GPL-3.0-or-later
+Categories:
+  - Local Media Player
+  - Online Media Player
+  - Podcast
+  - Radio
+
+AntiFeatures:
+  NonFreeAssets:
+    en-US: Includes Poppy Peppers' separately copyrighted advance-copy EP, distributed with the artist's permission.
+  Ads:
+    en-US: Built-in TV channels carry their broadcasters' own advertising. Blue Grapefruit adds none.
+  NonFreeNet:
+    en-US: Uses broadcasters' streaming services and Apple's public podcast directory.
+
+AuthorName: MagicFlute LLC
+SourceCode: https://github.com/hayliewordsman/grapefruitmusic/tree/HEAD/blue-victory
+IssueTracker: https://github.com/hayliewordsman/grapefruitmusic/issues
+Changelog: https://github.com/hayliewordsman/grapefruitmusic/releases/tag/blue-v1.0
+WebSite: https://hayliewordsman.github.io/grapefruitmusic/blue/
+Donate: https://paypal.me/fishglub
+CurrentVersion: '1.0'
+AllowedAPKSigningKeys:
+  - 1b8ccaa8d7dbdcf6327eb5473f7adc73a531eadb399c8e080a605b35b722ef34

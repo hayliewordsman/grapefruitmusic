@@ -1,0 +1,461 @@
+package com.grapefruitmusic.source;
+
+import com.grapefruitmusic.lyrics.Lyrics;
+import com.grapefruitmusic.model.MediaItem;
+import com.grapefruitmusic.net.Http;
+import com.grapefruitmusic.tags.Tags;
+import com.grapefruitmusic.util.Dates;
+import com.grapefruitmusic.util.Prefs;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/** Jellyfin servers (10.8+; lyrics need 10.9+). */
+public final class JellyfinSource implements MusicSource {
+    private static final long TICKS_PER_MS = 10000L;
+    private static final int MAX_ITEMS = 5000;
+
+    private final Account account;
+
+    public JellyfinSource(Account account) {
+        this.account = account;
+    }
+
+    /** Signs in and returns {accessToken, userId}. */
+    public static String[] login(String baseUrl, String username, String password) throws IOException {
+        JSONObject body = new JSONObject();
+        try {
+            body.put("Username", username);
+            body.put("Pw", password);
+        } catch (JSONException e) {
+            throw new IOException(e.getMessage());
+        }
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("Authorization", authorization(null));
+        JSONObject r = Http.parseObject(Http.post(baseUrl + "/Users/AuthenticateByName", headers,
+                "application/json", body.toString()));
+        String token = Json.str(r, "AccessToken");
+        JSONObject user = r.optJSONObject("User");
+        String userId = user != null ? Json.str(user, "Id") : null;
+        if (token == null || userId == null) throw new IOException("Jellyfin didn't return a session");
+        return new String[]{token, userId};
+    }
+
+    static String authorization(String token) {
+        return com.grapefruitmusic.util.Brand.text("MediaBrowser Client=\"Grapefruit Music\", Device=\"Android\", DeviceId=\"")
+                + Prefs.deviceId() + "\", Version=\"1.0\"" + (token == null ? "" : ", Token=\"" + token + "\"");
+    }
+
+    private Map<String, String> headers() {
+        Map<String, String> h = new HashMap<String, String>();
+        h.put("Authorization", authorization(account.token));
+        return h;
+    }
+
+    private JSONObject get(String pathAndQuery) throws IOException {
+        return Http.getJson(account.url + pathAndQuery, headers());
+    }
+
+    @Override
+    public String id() {
+        return account.id;
+    }
+
+    @Override
+    public String name() {
+        return account.name;
+    }
+
+    @Override
+    public String typeLabel() {
+        return "Jellyfin";
+    }
+
+    @Override
+    public boolean isRemote() {
+        return true;
+    }
+
+    @Override
+    public boolean canDownload() {
+        return true;
+    }
+
+    private String itemsQuery(String types, String extra) {
+        return itemsQuery(types, "ChildCount", extra);
+    }
+
+    private String itemsQuery(String types, String fields, String extra) {
+        return "/Items?userId=" + Http.enc(account.userId) + "&Recursive=true&IncludeItemTypes=" + types
+                + "&Fields=" + fields + "&EnableTotalRecordCount=false" + (extra == null ? "" : "&" + extra);
+    }
+
+    private List<MediaItem> items(String query) throws IOException {
+        List<MediaItem> out = new ArrayList<MediaItem>();
+        JSONArray items = get(query).optJSONArray("Items");
+        if (items == null) return out;
+        for (int i = 0; i < items.length(); i++) {
+            MediaItem m = item(items.optJSONObject(i));
+            if (m != null) out.add(m);
+        }
+        return out;
+    }
+
+    @Override
+    public List<MediaItem> playlists() throws IOException {
+        List<MediaItem> out = new ArrayList<MediaItem>();
+        for (MediaItem m : items(itemsQuery("Playlist", "ChildCount,Overview,DateCreated", "SortBy=SortName"))) {
+            if (m.kind == MediaItem.PLAYLIST) out.add(m);
+        }
+        return out;
+    }
+
+    @Override
+    public List<MediaItem> artists() throws IOException {
+        List<MediaItem> out = new ArrayList<MediaItem>();
+        JSONArray items = get("/Artists/AlbumArtists?userId=" + Http.enc(account.userId)
+                + "&SortBy=SortName&Limit=" + MAX_ITEMS).optJSONArray("Items");
+        if (items == null) return out;
+        for (int i = 0; i < items.length(); i++) {
+            MediaItem m = item(items.optJSONObject(i));
+            if (m != null) {
+                m.kind = MediaItem.ARTIST;
+                out.add(m);
+            }
+        }
+        return out;
+    }
+
+    @Override
+    public List<MediaItem> albums() throws IOException {
+        return items(itemsQuery("MusicAlbum", "SortBy=SortName&Limit=" + MAX_ITEMS));
+    }
+
+    @Override
+    public List<MediaItem> songs() throws IOException {
+        return items(itemsQuery("Audio", "SortBy=SortName&Limit=" + MAX_ITEMS));
+    }
+
+    @Override
+    public List<MediaItem> recentAlbums(int limit) throws IOException {
+        return items(itemsQuery("MusicAlbum", "ChildCount,DateCreated", "SortBy=DateCreated&SortOrder=Descending&Limit="
+                + limit));
+    }
+
+    @Override
+    public List<MediaItem> artistAlbums(MediaItem artist) throws IOException {
+        List<MediaItem> out = items(itemsQuery("MusicAlbum",
+                "AlbumArtistIds=" + Http.enc(artist.id) + "&SortBy=ProductionYear,SortName"));
+        if (out.isEmpty()) {
+            out = items(itemsQuery("MusicAlbum", "ArtistIds=" + Http.enc(artist.id)
+                    + "&SortBy=ProductionYear,SortName"));
+        }
+        return out;
+    }
+
+    @Override
+    public List<MediaItem> tracks(MediaItem container) throws IOException {
+        if (container.kind == MediaItem.PLAYLIST) {
+            return items("/Playlists/" + Http.enc(container.id) + "/Items?userId=" + Http.enc(account.userId));
+        }
+        return items(itemsQuery("Audio", "ParentId=" + Http.enc(container.id)
+                + "&SortBy=ParentIndexNumber,IndexNumber,SortName"));
+    }
+
+    @Override
+    public List<MediaItem> search(String query) throws IOException {
+        List<MediaItem> found = items(itemsQuery("MusicArtist,MusicAlbum,Audio",
+                "searchTerm=" + Http.enc(query) + "&Limit=80"));
+        // Artists first, then albums, then songs.
+        List<MediaItem> out = new ArrayList<MediaItem>();
+        for (int kind : new int[]{MediaItem.ARTIST, MediaItem.ALBUM, MediaItem.TRACK}) {
+            for (MediaItem m : found) {
+                if (m.kind == kind) out.add(m);
+            }
+        }
+        return out;
+    }
+
+    @Override
+    public String artworkUrl(String artKey, int sizePx) {
+        if (artKey == null) return null;
+        int bar = artKey.indexOf('|');
+        String itemId = bar >= 0 ? artKey.substring(0, bar) : artKey;
+        String tag = bar >= 0 ? artKey.substring(bar + 1) : null;
+        return account.url + "/Items/" + Http.enc(itemId) + "/Images/Primary?maxWidth=" + sizePx
+                + "&maxHeight=" + sizePx + "&quality=90" + (tag != null ? "&tag=" + Http.enc(tag) : "");
+    }
+
+    @Override
+    public StreamRequest stream(MediaItem track, int quality) {
+        boolean original = quality == Prefs.QUALITY_ORIGINAL;
+        String url = account.url + "/Audio/" + Http.enc(track.id) + "/universal?UserId=" + Http.enc(account.userId)
+                + "&DeviceId=" + Http.enc(Prefs.deviceId())
+                + "&MaxStreamingBitrate=" + (original ? 140000000 : quality * 1000)
+                + "&Container=" + Http.enc(original ? Formats.JELLYFIN_CONTAINERS : "mp3")
+                + "&TranscodingContainer=mp3&TranscodingProtocol=http&AudioCodec=mp3";
+        return new StreamRequest(url, headers(), original && Formats.playable(track.suffix) ? track.suffix : "mp3");
+    }
+
+    @Override
+    public StreamRequest download(MediaItem track, int quality) {
+        return stream(track, quality);
+    }
+
+    @Override
+    public Lyrics lyrics(MediaItem track) throws IOException {
+        JSONObject r;
+        try {
+            r = get("/Audio/" + Http.enc(track.id) + "/Lyrics");
+        } catch (Http.StatusException e) {
+            // 404: no lyrics (or a server older than 10.9).
+            return null;
+        }
+        JSONArray lines = r.optJSONArray("Lyrics");
+        if (lines == null || lines.length() == 0) return null;
+        boolean anyStart = false;
+        List<Lyrics.Line> out = new ArrayList<Lyrics.Line>();
+        for (int i = 0; i < lines.length(); i++) {
+            JSONObject l = lines.optJSONObject(i);
+            if (l == null) continue;
+            boolean hasStart = l.has("Start") && !l.isNull("Start");
+            anyStart |= hasStart;
+            out.add(new Lyrics.Line(hasStart ? l.optLong("Start") / TICKS_PER_MS : 0, l.optString("Text")));
+        }
+        JSONObject meta = r.optJSONObject("Metadata");
+        boolean synced = meta != null && meta.has("IsSynced") ? meta.optBoolean("IsSynced") : anyStart;
+        return out.isEmpty() ? null : new Lyrics(synced, out, name());
+    }
+
+    @Override
+    public boolean canEditPlaylists() {
+        return true;
+    }
+
+    @Override
+    public void addToPlaylist(MediaItem playlist, List<MediaItem> tracks) throws IOException {
+        StringBuilder ids = new StringBuilder();
+        for (MediaItem t : tracks) {
+            if (ids.length() > 0) ids.append(',');
+            ids.append(t.id);
+        }
+        Http.post(account.url + "/Playlists/" + Http.enc(playlist.id) + "/Items?ids=" + Http.enc(ids.toString())
+                + "&userId=" + Http.enc(account.userId), headers(), "application/json", "");
+    }
+
+    @Override
+    public void createPlaylist(String name, List<MediaItem> tracks) throws IOException {
+        JSONObject body = new JSONObject();
+        try {
+            JSONArray ids = new JSONArray();
+            for (MediaItem t : tracks) ids.put(t.id);
+            body.put("Name", name);
+            body.put("Ids", ids);
+            body.put("UserId", account.userId);
+            body.put("MediaType", "Audio");
+        } catch (JSONException e) {
+            throw new IOException(e.getMessage());
+        }
+        Http.post(account.url + "/Playlists", headers(), "application/json", body.toString());
+    }
+
+    @Override
+    public void deletePlaylist(MediaItem playlist) throws IOException {
+        Http.delete(account.url + "/Items/" + Http.enc(playlist.id), headers());
+    }
+
+    @Override
+    public boolean editPlaylist(MediaItem playlist, String name, String description, List<MediaItem> removed)
+            throws IOException {
+        // Jellyfin only lets admins change descriptions, so Grapefruit keeps them on the phone.
+        if (name != null) {
+            JSONObject body = new JSONObject();
+            try {
+                body.put("Name", name);
+            } catch (JSONException e) {
+                throw new IOException(e.getMessage());
+            }
+            try {
+                Http.post(account.url + "/Playlists/" + Http.enc(playlist.id), headers(), "application/json",
+                        body.toString());
+            } catch (Http.StatusException e) {
+                if (e.code == 404 || e.code == 405) {
+                    throw new IOException("Renaming playlists needs Jellyfin 10.9 or later.");
+                }
+                throw e;
+            }
+        }
+        if (!removed.isEmpty()) {
+            StringBuilder ids = new StringBuilder();
+            for (MediaItem t : removed) {
+                if (ids.length() > 0) ids.append(',');
+                ids.append(t.entryId);
+            }
+            Http.open("DELETE", account.url + "/Playlists/" + Http.enc(playlist.id) + "/Items?entryIds="
+                    + Http.enc(ids.toString()), headers(), null, null).disconnect();
+        }
+        return false;
+    }
+
+    // ---- Tags ----
+
+    /** A song's details as Jellyfin has them, with its own picture (or its album's). Blocking. */
+    public Tags readTags(MediaItem song) throws IOException {
+        JSONObject o = get("/Users/" + Http.enc(account.userId) + "/Items/" + Http.enc(song.id));
+        Tags t = new Tags();
+        t.title = text(o, "Name");
+        t.artist = join(o.optJSONArray("Artists"));
+        t.album = text(o, "Album");
+        t.albumArtist = text(o, "AlbumArtist");
+        t.genre = join(o.optJSONArray("Genres"));
+        t.year = o.optInt("ProductionYear");
+        t.track = o.optInt("IndexNumber");
+        t.disc = o.optInt("ParentIndexNumber");
+        JSONObject images = o.optJSONObject("ImageTags");
+        String picture = null;
+        if (images != null && Json.str(images, "Primary") != null) {
+            picture = "/Items/" + Http.enc(song.id) + "/Images/Primary";
+        } else if (Json.str(o, "AlbumPrimaryImageTag") != null && Json.str(o, "AlbumId") != null) {
+            picture = "/Items/" + Http.enc(Json.str(o, "AlbumId")) + "/Images/Primary";
+        }
+        if (picture != null) {
+            try {
+                t.picture = Http.getBytes(account.url + picture + "?maxWidth=600&quality=90", headers());
+            } catch (IOException e) {
+                // Shown without its picture.
+            }
+        }
+        return t;
+    }
+
+    /**
+     * Saves a song's details on the server (Jellyfin keeps them in its library; the file stays
+     * as it is), and its picture when picture is true. Needs an account that may edit. Blocking.
+     */
+    public void writeTags(MediaItem song, Tags t, boolean picture) throws IOException {
+        String item = account.url + "/Items/" + Http.enc(song.id);
+        JSONObject o = get("/Users/" + Http.enc(account.userId) + "/Items/" + Http.enc(song.id));
+        try {
+            o.put("Name", t.title.trim());
+            o.put("Album", t.album.trim());
+            o.put("AlbumArtist", t.albumArtist.trim());
+            JSONArray albumArtists = new JSONArray();
+            if (!Tags.empty(t.albumArtist)) albumArtists.put(new JSONObject().put("Name", t.albumArtist.trim()));
+            o.put("AlbumArtists", albumArtists);
+            // A list of artists stays a list unless it was changed.
+            if (!t.artist.trim().equals(join(o.optJSONArray("Artists")))) {
+                JSONArray artists = new JSONArray();
+                JSONArray artistItems = new JSONArray();
+                if (!Tags.empty(t.artist)) {
+                    artists.put(t.artist.trim());
+                    artistItems.put(new JSONObject().put("Name", t.artist.trim()));
+                }
+                o.put("Artists", artists);
+                o.put("ArtistItems", artistItems);
+            }
+            if (!t.genre.trim().equals(join(o.optJSONArray("Genres")))) {
+                JSONArray genres = new JSONArray();
+                for (String g : t.genre.split(",")) {
+                    if (g.trim().length() > 0) genres.put(g.trim());
+                }
+                o.put("Genres", genres);
+            }
+            o.put("ProductionYear", t.year > 0 ? (Object) t.year : JSONObject.NULL);
+            o.put("IndexNumber", t.track > 0 ? (Object) t.track : JSONObject.NULL);
+            o.put("ParentIndexNumber", t.disc > 0 ? (Object) t.disc : JSONObject.NULL);
+        } catch (JSONException e) {
+            throw new IllegalStateException(e);
+        }
+        Http.post(item, headers(), "application/json", o.toString());
+        if (!picture) return;
+        if (t.picture != null) {
+            // Jellyfin takes the picture as base64 text.
+            Http.post(item + "/Images/Primary", headers(), Tags.mimeOf(t.picture),
+                    android.util.Base64.encodeToString(t.picture, android.util.Base64.NO_WRAP));
+        } else {
+            try {
+                Http.delete(item + "/Images/Primary", headers());
+            } catch (Http.StatusException e) {
+                if (e.code != 404) throw e;
+            }
+        }
+    }
+
+    private static String text(JSONObject o, String key) {
+        String s = Json.str(o, key);
+        return s == null ? "" : s;
+    }
+
+    private static String join(JSONArray a) {
+        if (a == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < a.length(); i++) {
+            String s = a.optString(i, "").trim();
+            if (s.length() == 0) continue;
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+
+    private MediaItem item(JSONObject o) {
+        if (o == null) return null;
+        String type = o.optString("Type");
+        int kind;
+        if (type.equals("Audio")) kind = MediaItem.TRACK;
+        else if (type.equals("MusicAlbum")) kind = MediaItem.ALBUM;
+        else if (type.equals("MusicArtist")) kind = MediaItem.ARTIST;
+        else if (type.equals("Playlist")) kind = MediaItem.PLAYLIST;
+        else return null;
+        if (kind == MediaItem.PLAYLIST && "Video".equals(Json.str(o, "MediaType"))) return null;
+        MediaItem m = new MediaItem(kind, id(), o.optString("Id"), o.optString("Name"));
+        m.entryId = Json.str(o, "PlaylistItemId");
+        if (kind == MediaItem.PLAYLIST) m.description = Json.str(o, "Overview");
+        m.album = Json.str(o, "Album");
+        m.albumId = Json.str(o, "AlbumId");
+        m.albumArtist = Json.str(o, "AlbumArtist");
+        JSONArray artists = o.optJSONArray("Artists");
+        if (artists != null && artists.length() > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < artists.length(); i++) {
+                if (i > 0) sb.append(", ");
+                sb.append(artists.optString(i));
+            }
+            m.artist = sb.toString();
+        }
+        if (m.artist == null) m.artist = m.albumArtist;
+        if (kind == MediaItem.ALBUM) m.artist = m.albumArtist != null ? m.albumArtist : m.artist;
+        JSONArray artistItems = o.optJSONArray("AlbumArtists");
+        if (artistItems == null || artistItems.length() == 0) artistItems = o.optJSONArray("ArtistItems");
+        if (artistItems != null && artistItems.length() > 0) {
+            JSONObject first = artistItems.optJSONObject(0);
+            if (first != null) m.artistId = Json.str(first, "Id");
+        }
+        m.trackNumber = o.optInt("IndexNumber");
+        m.discNumber = o.optInt("ParentIndexNumber");
+        m.year = o.optInt("ProductionYear");
+        m.count = o.optInt("ChildCount");
+        m.durationMs = o.optLong("RunTimeTicks") / TICKS_PER_MS;
+        m.suffix = Json.str(o, "Container");
+        m.added = Dates.parseIso(Json.str(o, "DateCreated"));
+        // Jellyfin 10.9+ measures loudness itself (relative to -18 LUFS, like ReplayGain).
+        if (o.has("NormalizationGain") && !o.isNull("NormalizationGain")) {
+            m.replayGain = (float) o.optDouble("NormalizationGain");
+        }
+        JSONObject tags = o.optJSONObject("ImageTags");
+        String primary = tags != null ? Json.str(tags, "Primary") : null;
+        if (primary != null) {
+            m.artKey = m.id + "|" + primary;
+        } else if (Json.str(o, "AlbumPrimaryImageTag") != null && m.albumId != null) {
+            m.artKey = m.albumId + "|" + Json.str(o, "AlbumPrimaryImageTag");
+        }
+        return m;
+    }
+}

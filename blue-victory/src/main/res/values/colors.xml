@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The one Blue Grapefruit theme: the original dark palette roles, recoloured in blue. -->
+    <color name="grapefruit_dark_background">#07162B</color>
+    <color name="grapefruit_dark_grouped">#07162B</color>
+    <color name="grapefruit_dark_surface">#102541</color>
+    <color name="grapefruit_dark_bar">#0B1D35</color>
+    <color name="grapefruit_dark_text">#EAF4FF</color>
+    <color name="grapefruit_dark_text_secondary">#A2BAD8</color>
+    <color name="grapefruit_dark_separator">#294665</color>
+    <color name="grapefruit_dark_accent">#67C7FF</color>
+    <color name="grapefruit_dark_fill">#102541</color>
+    <color name="grapefruit_dark_pressed">#1C3B60</color>
+    <color name="grapefruit_dark_scrim">#D907162B</color>
+    <color name="grapefruit_dark_control">#1C3B60</color>
+    <color name="grapefruit_dark_control_pressed">#284F78</color>
+    <color name="grapefruit_dark_toggle_off">#294665</color>
+    <color name="grapefruit_dark_toggle_off_segments">#BDDDF6</color>
+    <color name="grapefruit_dark_knob">#BDDDF6</color>
+    <color name="grapefruit_dark_disclosure">#B2D5F5</color>
+    <color name="grapefruit_dark_accent_end">#398BFF</color>
+    <color name="grapefruit_dark_on_accent">#06172C</color>
+    <color name="grapefruit_dark_outline">#294665</color>
+    <color name="icon_background">#2368D8</color>
+</resources>

@@ -1,0 +1,11 @@
+Blue Grapefruit: Victory Edition brings your music, podcasts, audiobooks, radio and TV together in one blue-themed Android app.
+
+Includes Poppy Peppers' five-track advance-copy EP, Victory Lights: Sounds of Resistance, Hope, and Change. The included songs appear in On This Device, with separate Advance Copy titles and album tags. The music and artwork are separately copyrighted, distributed with the artist's permission, and are not covered by the app's software license.
+
+Play your own files or connect Navidrome, Subsonic and Jellyfin. Find and download podcasts, listen to internet radio and supported FM hardware, and use the equalizer and playback controls.
+
+The built-in TV section includes 59 FAST channels, a program guide, M3U and Xtream providers, and On Demand with downloads when the linked provider supports it. TV has a floating picture mini-player and audio-only background playback.
+
+Victory Roll Call contains a dated, provisional list of verified projected Democratic winners and continuing legislators after the 2026 election, plus Democratic governors-elect. Unresolved or unverified contests are identified. Bundled pride-flag artwork displays on older Android devices. Results are not a complete or certified roster.
+
+Android 4.2.2 and newer. Blue Grapefruit has its own application ID, icon and updates; Grapefruit Audio and Grapefruit TV remain separate apps.

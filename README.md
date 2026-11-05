@@ -215,11 +215,16 @@ Self-signed certificates aren't supported.
 Requirements: JDK 21 and the Android SDK (platform 36, build tools 35.0.0).
 
 ```sh
-./gradlew assembleDebug testDebugUnitTest lintDebug
+./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
 The APK ends up in `app/build/outputs/apk/debug/`. GitHub Actions runs the same build on every push
 (`.github/workflows/build.yml`).
+
+Blue Grapefruit: Victory Edition is a separate APK in this same repository, sharing this app's
+interface and player with a single blue theme and a privately supplied advance EP. Its APK-only
+beta build and private asset preparation are described in [`blue-victory/README.md`](blue-victory/README.md).
+Building that module requires the private music bundle; the standard app and its release tasks do not.
 
 The code is plain Java with no AndroidX or support libraries. Everything uses framework APIs available on API 17.
 

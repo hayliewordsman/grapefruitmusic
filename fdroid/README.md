@@ -138,3 +138,18 @@ device, or in F-Droid go to Settings › Repositories › + and paste the link (
 - The app certificate's name reads "Android Debug": it is the key Grapefruit has been signed with
   since version 1.0. Android and F-Droid check its fingerprint, not its name.
 - Grapefruit Music is also being submitted to f-droid.org itself: see `official/README.md`.
+
+## Blue Grapefruit: Victory Edition
+
+Stable `blue-v*` releases are included under their own application ID,
+`io.github.hayliewordsman.bluegrapefruit.victory`, with Blue's certificate pinned independently
+from the two originals. APK-only tags are supported with checksum-verified ZIP downloads. Blue's
+listing and artwork live under `blue-victory/fastlane`; its separate download page is
+https://hayliewordsman.github.io/grapefruitmusic/blue/. The existing front page is unchanged.
+
+For a Blue-only publication, run the F-Droid workflow on the default branch with
+`repository_only=true`. The original Audio release job is skipped, TV is never built by this
+workflow, and the full preexisting Audio/TV package records and APK hashes must be identical
+before deployment. No original app version, release or metadata edit is needed. The EP's
+separate copyright is declared as NonFreeAssets in this developer-owned repository; Blue is
+not being submitted to f-droid.org's independent source-build catalog.

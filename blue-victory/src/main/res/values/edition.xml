@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="blue_victory">true</bool>
+    <string name="app_name">Blue Grapefruit</string>
+    <string name="launcher_name">Blue Grapefruit</string>
+    <string name="brand_wordmark_name">Blue Grapefruit</string>
+    <string name="brand_wordmark_tagline">Victory Edition</string>
+</resources>

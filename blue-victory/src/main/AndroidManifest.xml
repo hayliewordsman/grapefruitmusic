@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:allowBackup="false" android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/victory_data_extraction_rules">
+        <service android:name=".ui.TvPlaybackService" android:exported="false" android:foregroundServiceType="mediaPlayback" />
+        <service android:name=".ui.TvDownloadService" android:exported="false" android:foregroundServiceType="dataSync" />
+    </application>
+</manifest>

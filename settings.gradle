@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "GrapefruitMusic"
 include ":app"
 include ":grapefruit-ui", ":tv"
+include ":blue-victory"

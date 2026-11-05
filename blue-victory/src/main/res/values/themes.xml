@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- A build-type style overlay replaces the complete style. Keep every original role and
+         parent, changing only the highlight colour; named colours resolve to the blue palette. -->
+    <style name="Theme.Grapefruit.GrapefruitDark" parent="Theme.Grapefruit.Dark">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:windowBackground">@drawable/splash_grapefruit_dark</item>
+        <item name="android:colorBackground">@color/grapefruit_dark_background</item>
+        <item name="android:textColorHighlight">#6667C7FF</item>
+        <item name="gfBackground">@color/grapefruit_dark_background</item>
+        <item name="gfSplash">@drawable/splash_grapefruit_dark</item>
+        <item name="gfGroupedBackground">@color/grapefruit_dark_grouped</item>
+        <item name="gfSurface">@color/grapefruit_dark_surface</item>
+        <item name="gfBar">@color/grapefruit_dark_bar</item>
+        <item name="gfTextPrimary">@color/grapefruit_dark_text</item>
+        <item name="gfTextSecondary">@color/grapefruit_dark_text_secondary</item>
+        <item name="gfSeparator">@color/grapefruit_dark_separator</item>
+        <item name="gfDisclosure">@color/grapefruit_dark_disclosure</item>
+        <item name="gfAccent">@color/grapefruit_dark_accent</item>
+        <item name="gfFill">@color/grapefruit_dark_fill</item>
+        <item name="gfScrim">@color/grapefruit_dark_scrim</item>
+        <item name="gfFieldBackground">@drawable/field_grapefruit_dark</item>
+        <item name="gfControl">@color/grapefruit_dark_control</item>
+        <item name="gfControlPressed">@color/grapefruit_dark_control_pressed</item>
+        <item name="gfToggleOff">@color/grapefruit_dark_toggle_off</item>
+        <item name="gfToggleOffSegments">@color/grapefruit_dark_toggle_off_segments</item>
+        <item name="gfKnob">@color/grapefruit_dark_knob</item>
+        <item name="gfAccentEnd">@color/grapefruit_dark_accent_end</item>
+        <item name="gfOnAccent">@color/grapefruit_dark_on_accent</item>
+        <item name="gfOutline">@color/grapefruit_dark_outline</item>
+        <item name="android:editTextStyle">@style/GrapefruitEditText.GrapefruitDark</item>
+    </style>
+</resources>

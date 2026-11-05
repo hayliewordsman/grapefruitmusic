@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "verifiedDate": "2026-11-05",
+  "note": "Public self-identification supplements; result/term evidence must independently place a person in the roster. Names are matched with state, chamber and district. Cached source excerpts stay outside the public source tree.",
+  "members": [
+    {
+      "names": [
+        "Allison Montgomery"
+      ],
+      "state": "AL",
+      "chamber": "state_house",
+      "district": "25",
+      "flags": {
+        "transgender": [
+          {
+            "url": "https://www.al.com/politics/2026/10/democrats-call-out-republicans-arrest-as-algop-chair-says-transgender-candidates-have-mental-disorders.html",
+            "cacheFile": "allison-self-statement.excerpt.html",
+            "requiredText": "they don’t care that I’m trans"
+          }
+        ]
+      }
+    },
+    {
+      "names": [
+        "Jaelynn Scott"
+      ],
+      "state": "WA",
+      "chamber": "state_house",
+      "district": "37-Position 2",
+      "flags": {
+        "transgender": [
+          {
+            "url": "https://victoryfund.org/candidate/jaelynn-scott/",
+            "cacheFile": "vf-profile-jaelynn-scott.html",
+            "requiredText": "Gender Identity Transgender Woman"
+          }
+        ]
+      }
+    },
+    {
+      "names": [
+        "Alexis Hoffkling"
+      ],
+      "state": "CO",
+      "chamber": "state_house",
+      "district": "23",
+      "flags": {
+        "transgender": [
+          {
+            "url": "https://victoryfund.org/candidate/alexis-hoffkling/",
+            "cacheFile": "vf-profile-alexis-hoffkling.html",
+            "requiredText": "Gender Identity Transgender Woman"
+          }
+        ]
+      }
+    },
+    {
+      "names": [
+        "Elle Abigail Boatman",
+        "Abi Boatman"
+      ],
+      "state": "KS",
+      "chamber": "state_house",
+      "district": "86",
+      "flags": {
+        "transgender": [
+          {
+            "url": "https://victoryfund.org/candidate/abi-boatman/",
+            "cacheFile": "vf-profile-abi-boatman.html",
+            "requiredText": "Gender Identity Transgender Woman"
+          }
+        ]
+      },
+      "nameSources": [
+        "https://ballotpedia.org/Elle_Abigail_Boatman"
+      ]
+    },
+    {
+      "names": [
+        "Alicia Kozlowski",
+        "Liish Kozlowski"
+      ],
+      "state": "MN",
+      "chamber": "state_house",
+      "district": "8B",
+      "flags": {
+        "transgender": [
+          {
+            "url": "https://liishforduluth.com/about",
+            "cacheFile": "liish-self-bio.html",
+            "requiredText": "first openly Trans non-binary State legislator in Minnesota"
+          }
+        ]
+      },
+      "displayName": "Liish Kozlowski",
+      "nameSources": [
+        "https://www.lrl.mn.gov/legdb/fulldetail?ID=15595"
+      ]
+    },
+    {
+      "names": [
+        "SJ Howell"
+      ],
+      "state": "MT",
+      "chamber": "state_house",
+      "district": "100",
+      "flags": {
+        "transgender": [
+          {
+            "url": "https://www.advocate.com/exclusives/2022/6/02/meet-our-50-champions-pride-around-us-2022",
+            "cacheFile": "sj-howell-self-statement.excerpt.html",
+            "requiredText": "Being an out queer and trans state representative"
+          }
+        ]
+      }
+    },
+    {
+      "names": [
+        "Alissandra Murray"
+      ],
+      "state": "NH",
+      "chamber": "state_house",
+      "district": "Hillsborough 20",
+      "flags": {
+        "transgender": [
+          {
+            "url": "https://www.thenation.com/article/society/mauree-turner-alissandra-murray/",
+            "cacheFile": "alissandra-self-statement.excerpt.html",
+            "requiredText": "I am a trans, nonbinary person"
+          }
+        ]
+      }
+    }
+  ]
+}

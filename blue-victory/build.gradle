@@ -1,0 +1,158 @@
+plugins { id "com.android.application" }
+
+// A second APK using the same Java, layouts and player as Grapefruit Audio. Keeping a separate
+// module preserves the original APK tasks and the existing F-Droid release process.
+def privateBundle = providers.environmentVariable("BLUE_VICTORY_BUNDLE").orElse("")
+
+// Keep the original app/ sources byte-for-byte intact. Blue overrides live in this module;
+// unchanged classes are copied into a build-only source tree, excluding those overrides.
+def blueSharedJava = layout.buildDirectory.dir("generated/sources/blueAudio/main")
+def prepareBlueAudioSources = tasks.register("prepareBlueAudioSources", Sync) {
+    into blueSharedJava
+    from(rootProject.file("app/src/main/java")) {
+        exclude { entry -> file("src/main/java/" + entry.path).isFile() }
+    }
+    inputs.files(fileTree("src/main/java") { include "**/*.java" })
+}
+
+android {
+    namespace "com.grapefruitmusic"
+    compileSdk 36
+    defaultConfig {
+        applicationId "io.github.hayliewordsman.bluegrapefruit.victory"
+        minSdk 17 // Android 4.2.2; do not add a maxSdkVersion.
+        targetSdk 36
+        versionCode 8
+        versionName "1.0"
+        ndk { abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64" }
+    }
+    sourceSets {
+        main {
+            manifest.srcFile "../app/src/main/AndroidManifest.xml"
+            java.srcDirs = ["src/main/java", blueSharedJava]
+            res.srcDirs = ["../app/src/main/res"]
+            assets.srcDirs = ["../app/src/main/assets"]
+            if (!privateBundle.get().isEmpty()) assets.srcDir file(privateBundle.get())
+        }
+        // Build-type overlays take priority over main, keeping every original layout intact.
+        debug.res.srcDirs = ["src/main/res"]
+        debug.manifest.srcFile "src/main/AndroidManifest.xml"
+        debug.assets.srcDir "src/main/assets"
+        release.res.srcDirs = ["src/main/res"]
+        release.manifest.srcFile "src/main/AndroidManifest.xml"
+        release.assets.srcDir "src/main/assets"
+        test.java.srcDirs = ["src/test/java"]
+    }
+    signingConfigs {
+        debug {
+            // A persistent local test key, outside both the public source and the user's home.
+            storeFile rootProject.file("work/blue-grapefruit/debug.keystore")
+        }
+        permanent {
+            def key = System.getenv("GRAPEFRUIT_KEYSTORE")
+            if (key) {
+                storeFile file(key)
+                storeType "pkcs12"
+                storePassword System.getenv("GRAPEFRUIT_KEYSTORE_PASSWORD")
+                keyAlias "grapefruit"
+                keyPassword System.getenv("GRAPEFRUIT_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            if (System.getenv("GRAPEFRUIT_KEYSTORE")) signingConfig signingConfigs.permanent
+        }
+        release {
+            minifyEnabled false
+            // Blue keeps the certificate used by its seven test releases. The standard apps'
+            // permanent key belongs to their separate application IDs and is never used here.
+            signingConfig signingConfigs.debug
+        }
+        beta {
+            initWith release
+            debuggable false
+            signingConfig System.getenv("GRAPEFRUIT_KEYSTORE") ? signingConfigs.permanent : signingConfigs.debug
+            matchingFallbacks = ["release"]
+        }
+    }
+    sourceSets.beta {
+        res.srcDirs = ["src/main/res"]
+        assets.srcDir "src/main/assets"
+        manifest.srcFile "src/main/AndroidManifest.xml"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    packaging { jniLibs { keepDebugSymbols += "**/libconscrypt_jni.so" } }
+    dependenciesInfo { includeInApk false; includeInBundle false }
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.all {
+            // Android 17's ApplicationSharedMemory shadow reaches JDK file-descriptor internals.
+            jvmArgs "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED", "--add-opens=java.base/java.io=ALL-UNNAMED"
+            def testHome = layout.buildDirectory.dir("test-home").get().asFile
+            systemProperty "user.home", testHome.absolutePath
+            systemProperty "robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2"
+            doFirst { testHome.mkdirs() }
+        }
+    }
+    lint { abortOnError true; disable "OldTargetApi" }
+}
+
+def verifyBundle = tasks.register("verifyVictoryBundle") {
+    doLast {
+        def bundle = privateBundle.get()
+        if (bundle.isEmpty() || !file(bundle + "/victory/catalog.json").isFile()) {
+            throw new GradleException("Supply an approved private EP bundle using BLUE_VICTORY_BUNDLE. See blue-victory/README.md. Never commit the music or bundle key.")
+        }
+        def catalog = new groovy.json.JsonSlurper().parse(file(bundle + "/victory/catalog.json"))
+        if (catalog.reviewStatus != "approved" || catalog.tracks.size() != 5
+                || !file(bundle + "/victory/bundle.key").isFile()
+                || !file(bundle + "/victory/" + (catalog.coverFile ?: "cover.jpg")).isFile()) {
+            throw new GradleException("The EP bundle is incomplete or its tags/artwork have not been approved.")
+        }
+        catalog.tracks.each { track ->
+            if (!file(bundle + "/victory/" + track.asset).isFile())
+                throw new GradleException("Missing bundled track: " + track.filename)
+        }
+    }
+}
+tasks.configureEach {
+    if (name == "packageDebug" || name == "packageRelease" || name == "packageBeta") dependsOn verifyBundle
+}
+
+def localTestKey = rootProject.file("work/blue-grapefruit/debug.keystore")
+def prepareTestSigning = tasks.register("prepareTestSigning") {
+    onlyIf { !System.getenv("GRAPEFRUIT_KEYSTORE") && !localTestKey.isFile() }
+    doLast {
+        localTestKey.parentFile.mkdirs()
+        project.exec {
+            executable new File(System.getProperty("java.home"), "bin/keytool")
+            args "-genkeypair", "-keystore", localTestKey.absolutePath, "-storepass", "android",
+                    "-alias", "androiddebugkey", "-keypass", "android", "-keyalg", "RSA", "-keysize", "2048",
+                    "-validity", "10000", "-dname", "CN=Blue Grapefruit Local Beta", "-noprompt"
+        }
+    }
+}
+tasks.configureEach {
+    if (name == "validateSigningBeta" || name == "validateSigningDebug") dependsOn prepareTestSigning
+}
+
+// Android's Conscrypt JNI cannot load on a desktop JVM. Robolectric supplies its desktop build.
+configurations.configureEach {
+    if (name.endsWith("UnitTestRuntimeClasspath")) exclude group: "org.conscrypt", module: "conscrypt-android"
+}
+
+dependencies {
+    implementation project(":grapefruit-ui")
+    implementation "org.conscrypt:conscrypt-android:2.5.3"
+    implementation "com.google.android.exoplayer:exoplayer-core:2.18.7"
+    implementation "com.google.android.exoplayer:exoplayer-hls:2.18.7"
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.17"
+    testImplementation "org.json:json:20240303"
+}
+
+tasks.named("preBuild").configure { dependsOn prepareBlueAudioSources }
