@@ -28,6 +28,12 @@ public final class Prefs {
 
     public static void init(Context context) {
         prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
+        syncUniversal(context);
+    }
+
+    public static boolean syncUniversal(Context context) {
+        return com.grapefruitmusic.ui.UniversalTheme.sync(context, prefs, true,
+                new int[]{THEME_GRAPEFRUIT_DARK,THEME_GRAPEFRUIT_LIGHT,THEME_PITCH_BLACK,-1});
     }
 
     public static SharedPreferences raw() {

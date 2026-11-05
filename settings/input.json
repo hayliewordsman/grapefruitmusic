@@ -1,0 +1,7 @@
+{
+  "file": "Settings.apk",
+  "package": "com.android.settings",
+  "minSdk": 17,
+  "sha256": "11e5af05c1b62f10ff614cf332beefb917b978e110b6f6dd5a1579349d4dac89",
+  "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+}

@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <queries><provider android:authorities="io.github.hayliewordsman.grapefruitsettings.theme" /></queries>
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
     <!-- Ask only for launchable activities; no broad QUERY_ALL_PACKAGES permission. -->
     <queries>

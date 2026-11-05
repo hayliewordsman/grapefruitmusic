@@ -55,6 +55,7 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
         prefs=getSharedPreferences("fast",MODE_PRIVATE);
+        com.grapefruitmusic.ui.UniversalTheme.sync(this,prefs,true,new int[]{0,1,2,-1});
         favourites.addAll(prefs.getStringSet("favourites",Collections.<String>emptySet()));
         try { builtIn=Catalog.parse(Catalog.read(getAssets().open("channels.json"))); }
         catch(Exception e) {error="The channel list could not be opened.";}
@@ -980,7 +981,7 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onStart(){super.onStart();started=true;if(watching!=null&&playback==null&&pendingSurface!=null)startPlayer(pendingSurface);}
     @Override protected void onStop(){started=false;if(playback!=null){playback.release();playback=null;}super.onStop();}
-    @Override protected void onResume(){super.onResume();if(started&&watching!=null&&playback==null)watchPage();}
+    @Override protected void onResume(){super.onResume();if(com.grapefruitmusic.ui.UniversalTheme.sync(this,prefs,true,new int[]{0,1,2,-1}))build();if(started&&watching!=null&&playback==null)watchPage();}
     /** Whether the phone is being held sideways for full screen (turning it back ends it). */
     private boolean sideways;
     private boolean phone(){return getResources().getConfiguration().smallestScreenWidthDp<600;}

@@ -1,0 +1,48 @@
+plugins { id "com.android.application" }
+
+android {
+    namespace "com.grapefruitsettings"
+    compileSdk 36
+    defaultConfig {
+        applicationId "io.github.hayliewordsman.grapefruitsettings"
+        minSdk 17
+        targetSdk 22 // JP5S / Android 4.2.2, with install-time settings permissions.
+        versionCode 1
+        versionName "1.0-jp5s-beta1"
+    }
+    signingConfigs {
+        jp5sTest {
+            storeFile file(System.getenv("GRAPEFRUIT_SETTINGS_KEYSTORE") ?: rootProject.file("work/keys/jp5s-settings.p12").absolutePath)
+            storePassword System.getenv("GRAPEFRUIT_SETTINGS_KEYSTORE_PASSWORD") ?: "android"
+            keyAlias "jp5s-settings-test"
+            keyPassword System.getenv("GRAPEFRUIT_SETTINGS_KEYSTORE_PASSWORD") ?: "android"
+        }
+    }
+    if (System.getenv("GRAPEFRUIT_SETTINGS_KEYSTORE")) buildTypes.debug.signingConfig signingConfigs.jp5sTest
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    sourceSets.main {
+        java.srcDir "../grapefruit-ui/src/main/java/com/grapefruitmusic/ui"
+        assets.srcDir "../grapefruit-ui/src/main/assets"
+    }
+    dependenciesInfo { includeInApk false; includeInBundle false }
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.all {
+            systemProperty "user.home", layout.buildDirectory.dir("test-home").get().asFile.absolutePath
+            doFirst { layout.buildDirectory.dir("test-home").get().asFile.mkdirs() }
+            systemProperty "robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2"
+            ["http.proxyHost", "http.proxyPort", "https.proxyHost", "https.proxyPort",
+             "http.nonProxyHosts", "javax.net.ssl.trustStore"].each { key ->
+                if (System.getProperty(key)) systemProperty key, System.getProperty(key)
+            }
+        }
+    }
+    lint { abortOnError true; disable "ExpiredTargetSdkVersion", "OldTargetApi" }
+}
+dependencies {
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.14.1"
+}

@@ -1,0 +1,33 @@
+<resources>
+    <!-- Native API 17 preference pages retained from the JP5S frontend. -->
+    <style name="GrapefruitLegacyDark" parent="android:Theme.Holo">
+        <item name="android:windowBackground">#1C0A0E</item>
+        <item name="android:colorBackground">#1C0A0E</item>
+        <item name="android:colorForeground">#FFF1E8</item>
+        <item name="android:textColorPrimary">#FFF1E8</item>
+        <item name="android:textColorSecondary">#B88A8F</item>
+        <item name="android:textColorLink">#FF7F6B</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+    <style name="GrapefruitLegacyLight" parent="android:Theme.Holo.Light">
+        <item name="android:windowBackground">#FCE4D9</item>
+        <item name="android:colorBackground">#FCE4D9</item>
+        <item name="android:colorForeground">#4A1622</item>
+        <item name="android:textColorPrimary">#4A1622</item>
+        <item name="android:textColorSecondary">#9A5C63</item>
+        <item name="android:textColorLink">#E83850</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+    <style name="GrapefruitLegacyBlack" parent="GrapefruitLegacyDark">
+        <item name="android:windowBackground">#000000</item>
+        <item name="android:colorBackground">#000000</item>
+    </style>
+    <style name="GrapefruitLegacyBlue" parent="GrapefruitLegacyDark">
+        <item name="android:windowBackground">#07162B</item>
+        <item name="android:colorBackground">#07162B</item>
+        <item name="android:colorForeground">#EAF4FF</item>
+        <item name="android:textColorPrimary">#EAF4FF</item>
+        <item name="android:textColorSecondary">#A2BAD8</item>
+        <item name="android:textColorLink">#67C7FF</item>
+    </style>
+</resources>

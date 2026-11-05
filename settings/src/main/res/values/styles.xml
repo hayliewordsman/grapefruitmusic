@@ -1,0 +1,13 @@
+<resources>
+    <style name="SettingsTheme" parent="android:Theme.Holo.NoActionBar">
+        <item name="android:windowBackground">#1C0A0E</item>
+        <item name="android:colorBackground">#1C0A0E</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+    <style name="SettingsDialog" parent="android:Theme.Holo.Dialog.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.55</item>
+    </style>
+</resources>

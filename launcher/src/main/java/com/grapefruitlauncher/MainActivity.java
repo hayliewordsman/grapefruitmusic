@@ -59,6 +59,7 @@ public final class MainActivity extends Activity {
         super.onCreate(state);
         if(!fontsReady){Fonts.init(getApplicationContext());fontsReady=true;}
         store=new LauncherStore(getSharedPreferences("launcher",MODE_PRIVATE));
+        syncUniversal();
         icons=new IconPack(this);
         if(state!=null) {
             screen=state.getInt("screen",HOME);dockSlot=state.getInt("slot",-1);query=state.getString("query","");
@@ -80,6 +81,7 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onResume() {
         super.onResume();resumed=true;
+        if(syncUniversal())build();
         if(uiReleased) {
             uiReleased=false;
             if(grid!=null){
@@ -91,6 +93,9 @@ public final class MainActivity extends Activity {
             updateDock();
         }
         refresh();
+    }
+    private boolean syncUniversal() {
+        return com.grapefruitmusic.ui.UniversalTheme.sync(this,getSharedPreferences("launcher",MODE_PRIVATE),false,new int[]{0,1,2,3});
     }
     @Override protected void onStop() {finishDrag(false);resumed=false;releaseBackgroundUi();super.onStop();}
     @Override public void onTrimMemory(int level) {
