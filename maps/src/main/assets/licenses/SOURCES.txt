@@ -1,4 +1,4 @@
-Grapefruit Maps 1.0 beta 1.1
+Grapefruit Maps 1.0 beta 1.2
 App source and build scripts, GPL-3.0-or-later:
 https://github.com/hayliewordsman/grapefruitmusic/tree/maps-beta-1
 

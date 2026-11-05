@@ -114,10 +114,24 @@ public final class MainActivity extends Activity {
         return col;
     }
     private LinearLayout scrollPage(String title,String subtitle,String back) {
+        return scrollPage(title,subtitle,back,false);
+    }
+    private LinearLayout scrollPage(String title,String subtitle,String back,boolean inlineHeader) {
         ScrollView s=new ScrollView(this); s.setFillViewport(true); s.setClipToPadding(false);
         LinearLayout outer=b.column(); s.addView(outer); content.addView(s);
-        if(back!=null) { TextView button=b.button("‹ "+back,false,v->onBackPressed()); margin(outer,button,12,8); }
-        LinearLayout col=column(title,subtitle); outer.addView(col); return col;
+        if(back!=null&&!inlineHeader) { TextView button=b.button("‹ "+back,false,v->onBackPressed()); margin(outer,button,12,8); }
+        LinearLayout col;
+        if(inlineHeader) {
+            col=b.column();col.setPadding(b.dp(16),b.dp(12),b.dp(16),b.dp(16));
+            LinearLayout header=b.row();
+            TextView button=b.round("‹",v->onBackPressed());button.setTextSize(30);button.setContentDescription("Back to "+back);
+            header.addView(button,new LinearLayout.LayoutParams(b.dp(48),b.dp(48)));
+            TextView heading=b.text(title,32,true);heading.setMaxLines(2);heading.setEllipsize(TextUtils.TruncateAt.END);
+            LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(0,-2,1);titleParams.leftMargin=b.dp(12);
+            header.addView(heading,titleParams);col.addView(header);
+            if(subtitle!=null) { TextView sub=b.label(subtitle,13,b.secondary);sub.setPadding(b.dp(60),b.dp(8),0,b.dp(12));col.addView(sub); }
+        } else col=column(title,subtitle);
+        outer.addView(col); return col;
     }
     private void margin(LinearLayout parent,View v,int x,int y) {
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2); lp.setMargins(b.dp(x),b.dp(y),b.dp(x),b.dp(y)); parent.addView(v,lp);
@@ -287,7 +301,7 @@ public final class MainActivity extends Activity {
         note(col,"Grapefruit Maps is free software. No ads, tracking SDKs, accounts or Google Play services.");
     }
     private void about() {
-        LinearLayout col=scrollPage("Grapefruit Maps","Version "+versionName(),"Settings");
+        LinearLayout col=scrollPage("Grapefruit Maps","Version "+versionName(),"Settings",true);
         section(col,"License");row(col,"GNU GPL","Version 3 or later",v->open("https://www.gnu.org/licenses/gpl-3.0.html"));
         row(col,"Source code","GitHub ›",v->open("https://github.com/hayliewordsman/grapefruitmusic/tree/maps-beta-1/maps"));
         note(col,"Free software: you can share and change this app under the GNU General Public License, version 3 or later. It comes with no warranty.");
@@ -321,14 +335,13 @@ public final class MainActivity extends Activity {
         dialog.setContentView(body);dialog.show();if(dialog.getWindow()!=null){dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);dialog.getWindow().setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-b.dp(24),b.dp(460)),-2);}
     }
     private void licenses() {
-        LinearLayout col=scrollPage("Licenses","Free software and open data acknowledgements.","About");
+        LinearLayout col=scrollPage("Licenses","Free software and open data acknowledgements.","About",true);
         try {for(String file:getAssets().list("licenses"))row(col,file,"Read ›",v->{try(InputStream in=getAssets().open("licenses/"+file);ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] buffer=new byte[4096];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);message(file,out.toString("UTF-8"));}catch(IOException e){message("License unavailable",e.getMessage());}});}
         catch(IOException e){note(col,e.getMessage());}
     }
     private void easterEgg() {
         if(prefs.getInt("theme",0)!=3) {show("about");return;}
-        LinearLayout col=scrollPage("Victory break","Tap the red cap. Make your mark.",null);
-        margin(col,b.button("‹ About",false,v->show("about")),0,4);
+        LinearLayout col=scrollPage("Victory break","Tap the red cap. Make your mark.","About",true);
         EggView.Hat hat=new EggView.Hat(this);col.addView(hat,new LinearLayout.LayoutParams(-1,b.dp(112)));
         egg=new EggView(this,b);col.addView(egg,new LinearLayout.LayoutParams(-1,b.dp(Math.min(280,getResources().getConfiguration().screenWidthDp*.65f))));
         TextView counter=b.label("0 drops",14,b.secondary);counter.setGravity(Gravity.CENTER);col.addView(counter);

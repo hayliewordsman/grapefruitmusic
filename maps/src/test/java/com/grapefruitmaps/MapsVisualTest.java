@@ -26,6 +26,8 @@ public class MapsVisualTest {
             app.getSharedPreferences("maps",0).edit().clear().putInt("theme",theme).putBoolean("offline_only",true).commit();
             try(ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup().visible()) {
                 MainActivity a=controller.get();a.show("settings");layout(a);capture(a,"settings-"+theme+".png");
+                a.show("about");layout(a);capture(a,"about-"+theme+".png");
+                a.show("licenses");layout(a);capture(a,"licenses-"+theme+".png");
                 if(theme==3){a.show("egg");for(int i=0;i<9;i++)hat(a.getWindow().getDecorView()).performClick();Shadows.shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(700));layout(a);capture(a,"victory-egg.png");assertTrue(a.egg.getHeight()>150);}
             }
         }

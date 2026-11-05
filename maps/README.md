@@ -1,4 +1,7 @@
-# Grapefruit Maps 1.0 beta 1.1
+# Grapefruit Maps 1.0 beta 1.2
+
+Beta 1.2 uses a compact top-left back icon beside the heading on Settings
+subpages (About, Licenses and the Victory Blue Easter egg).
 
 Beta 1.1 replaces the accidentally reused Audio icon with an original folded map
 and grapefruit location pin. Legacy PNG and adaptive launcher assets are generated
