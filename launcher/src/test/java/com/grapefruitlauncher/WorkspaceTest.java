@@ -57,11 +57,55 @@ public class WorkspaceTest {
     }
     private LauncherDrag session(MainActivity a){return ReflectionHelpers.getField(a,"activeDrag");}
     private void drop(MainActivity a,View target,float x,float y){
+        LauncherDrag drag=session(a);View root=content(a);dropWithoutEnd(a,target,x,y);
+        root.dispatchDragEvent(event(DragEvent.ACTION_DRAG_ENDED,0,0,drag));Shadows.shadowOf(Looper.getMainLooper()).idle();
+    }
+    private void dropWithoutEnd(MainActivity a,View target,float x,float y){
         LauncherDrag drag=session(a);assertNotNull("A long press starts a drag",drag);
         View root=content(a);int[] to=new int[2],from=new int[2];target.getLocationOnScreen(to);root.getLocationOnScreen(from);
         root.dispatchDragEvent(event(DragEvent.ACTION_DRAG_LOCATION,to[0]-from[0]+x,to[1]-from[1]+y,drag));
         root.dispatchDragEvent(event(DragEvent.ACTION_DROP,to[0]-from[0]+x,to[1]-from[1]+y,drag));
-        root.dispatchDragEvent(event(DragEvent.ACTION_DRAG_ENDED,0,0,drag));Shadows.shadowOf(Looper.getMainLooper()).idle();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+    }
+    @Test public void homeDropReleasesIconAndHeaderBeforeEndEvent()throws Exception {
+        try(ActivityController<MainActivity> c=launch()){
+            MainActivity a=c.get();ready(a);measure(content(a),411,820);View source=appCell(content(a),apps.get(0).id());
+            int w=source.getWidth(),h=source.getHeight();source.performLongClick();LauncherDrag first=session(a);
+            HomeSurface home=content(a).findViewById(android.R.id.list);
+            dropWithoutEnd(a,home.getChildAt(0),w*1.5f,h*2+35);measure(content(a),411,820);
+            assertNull(session(a));assertNull(ReflectionHelpers.getField(a,"dragStrip"));assertNull(ReflectionHelpers.getField(home,"drag"));
+            assertEquals(1,source.getAlpha(),0);assertNotNull(text(content(a),"Home"));assertNotNull(text(content(a),"Edit"));
+            assertEquals(new HomeLayout.Cell(2,4),store.positions("portrait",store.home()).get(apps.get(0).id()));
+            // A late notification from the old drag cannot finish a new drag.
+            content(a).dispatchDragEvent(event(DragEvent.ACTION_DRAG_ENDED,0,0,first));
+            appCell(content(a),apps.get(0).id()).performLongClick();LauncherDrag second=session(a);assertNotNull(second);
+            Shadows.shadowOf(Looper.getMainLooper()).idle();assertSame(second,session(a));
+            content(a).dispatchDragEvent(event(DragEvent.ACTION_DRAG_ENDED,0,0,second));Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertNull(session(a));assertNull(ReflectionHelpers.getField(a,"dragStrip"));
+            assertEquals(new HomeLayout.Cell(2,4),store.positions("portrait",store.home()).get(apps.get(0).id()));
+            capture(content(a),"home-after-drop.png");
+        }
+    }
+    @Test public void rejectedDrawerDropRestoresPreviousViewAndSearch()throws Exception {
+        try(ActivityController<MainActivity> c=launch()){
+            MainActivity a=c.get();ready(a);measure(content(a),411,820);((ViewGroup)content(a).findViewById(android.R.id.tabs)).getChildAt(2).performClick();
+            View searchRow=ReflectionHelpers.getField(a,"searchRow");EditText search=(EditText)((ViewGroup)searchRow).getChildAt(0);search.setText("App 15");measure(content(a),411,820);
+            GridView grid=content(a).findViewById(android.R.id.list);View source=grid.getChildAt(0);assertNotNull(source);
+            grid.getOnItemLongClickListener().onItemLongClick(grid,source,0,0);HomeSurface overlay=ReflectionHelpers.getField(a,"dragHome");measure(content(a),411,820);
+            ViewGroup board=(ViewGroup)overlay.getChildAt(0);dropWithoutEnd(a,board,board.getChildAt(0).getWidth()/2f,35);
+            assertNull(session(a));assertNull(ReflectionHelpers.getField(a,"dragHome"));assertNull(ReflectionHelpers.getField(a,"dragStrip"));
+            assertFalse(store.home().contains(apps.get(15).id()));assertEquals(8,store.home().size());assertEquals(View.VISIBLE,grid.getVisibility());
+            assertEquals(View.VISIBLE,searchRow.getVisibility());assertEquals("App 15",search.getText().toString());assertEquals(1,source.getAlpha(),0);
+            assertNotNull(text(content(a),"All Apps"));assertNull(text(content(a),"Place on Home"));
+        }
+    }
+    @Test public void removeDropRestoresHeaderBeforeEndEvent()throws Exception {
+        try(ActivityController<MainActivity> c=launch()){
+            MainActivity a=c.get();ready(a);measure(content(a),411,820);appCell(content(a),apps.get(0).id()).performLongClick();measure(content(a),411,820);
+            View remove=described(content(a),"Drop: Remove shortcut");assertNotNull(remove);dropWithoutEnd(a,remove,remove.getWidth()/2f,remove.getHeight()/2f);
+            assertFalse(store.home().contains(apps.get(0).id()));assertNull(session(a));assertNull(ReflectionHelpers.getField(a,"dragStrip"));
+            assertNotNull(text(content(a),"Home"));assertNotNull(described(content(a),"Launcher settings"));
+        }
     }
     @Test public void homeDragLeavesASavedGapAndSurvivesRestart()throws Exception {
         try(ActivityController<MainActivity> c=launch()){
@@ -81,7 +125,9 @@ public class WorkspaceTest {
             grid.setSelection(position);measure(content(a),411,820);View source=grid.getChildAt(position-grid.getFirstVisiblePosition());assertNotNull(source);
             grid.getOnItemLongClickListener().onItemLongClick(grid,source,position,position);assertNotNull(session(a));
             HomeSurface overlay=ReflectionHelpers.getField(a,"dragHome");measure(content(a),411,820);ViewGroup board=(ViewGroup)overlay.getChildAt(0);
-            View sample=board.getChildAt(0);drop(a,board,sample.getWidth()*1.5f,sample.getHeight()*3+35);
+            View sample=board.getChildAt(0);dropWithoutEnd(a,board,sample.getWidth()*1.5f,sample.getHeight()*3+35);
+            assertNull(session(a));assertNull(ReflectionHelpers.getField(a,"dragHome"));assertNull(ReflectionHelpers.getField(a,"dragStrip"));
+            assertNull(text(content(a),"Place on Home"));assertNotNull(text(content(a),"Home"));
             assertTrue(content(a).findViewById(android.R.id.list) instanceof HomeSurface);assertTrue(store.home().contains(apps.get(15).id()));
             assertEquals(new HomeLayout.Cell(2,6),store.positions("portrait",store.home()).get(apps.get(15).id()));
         }
@@ -128,7 +174,7 @@ public class WorkspaceTest {
             MainActivity a=c.get();ready(a);described(content(a),"Launcher settings").performClick();
             ((View)text(content(a),"About Grapefruit Launcher").getParent()).performClick();View root=content(a);measure(root,411,820);
             TextView mark=(TextView)described(root,"Grapefruit Launcher wordmark");assertNotNull(mark);assertSame(LauncherBrand.pixel(context),mark.getTypeface());
-            assertNotNull(text(root,"Version 1.0-beta5"));assertNotNull(text(root,"GNU GPL"));assertNotNull(text(root,"Source Code"));capture(root,"about.png");
+            assertNotNull(text(root,"Version 1.0-beta6"));assertNotNull(text(root,"GNU GPL"));assertNotNull(text(root,"Source Code"));capture(root,"about.png");
             ((View)text(root,"Source Code").getParent()).performClick();Intent source=Shadows.shadowOf(a).getNextStartedActivity();assertEquals(LauncherBrand.SOURCE,source.getDataString());
             ((View)text(root,"Open Source Licences").getParent()).performClick();View licence=ShadowDialog.getLatestDialog().getWindow().getDecorView();
             assertTrue(allText(licence).contains("WITHOUT ANY WARRANTY"));assertTrue(allText(licence).contains("SIL OPEN FONT LICENSE"));assertTrue(allText(licence).contains("Version 3, 29 June 2007"));
@@ -151,5 +197,5 @@ public class WorkspaceTest {
     private static TextView text(View v,String text){if(v instanceof TextView && text.contentEquals(((TextView)v).getText()))return(TextView)v;if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++){TextView found=text(((ViewGroup)v).getChildAt(i),text);if(found!=null)return found;}return null;}
     private static View described(View v,String description){if(description.contentEquals(String.valueOf(v.getContentDescription())))return v;if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++){View found=described(((ViewGroup)v).getChildAt(i),description);if(found!=null)return found;}return null;}
     private static String allText(View v){StringBuilder text=new StringBuilder();if(v instanceof TextView)text.append(((TextView)v).getText());if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++)text.append(allText(((ViewGroup)v).getChildAt(i)));return text.toString();}
-    private static void capture(View view,String name)throws Exception{File dir=new File("../work/launcher/previews/beta5");dir.mkdirs();Bitmap bitmap=Bitmap.createBitmap(view.getWidth(),view.getHeight(),Bitmap.Config.ARGB_8888);view.draw(new Canvas(bitmap));try(FileOutputStream out=new FileOutputStream(new File(dir,name))){bitmap.compress(Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();}
+    private static void capture(View view,String name)throws Exception{File dir=new File("../work/launcher/previews/beta6");dir.mkdirs();Bitmap bitmap=Bitmap.createBitmap(view.getWidth(),view.getHeight(),Bitmap.Config.ARGB_8888);view.draw(new Canvas(bitmap));try(FileOutputStream out=new FileOutputStream(new File(dir,name))){bitmap.compress(Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();}
 }

@@ -4,6 +4,20 @@ A separate native Android Home app in the Grapefruit repository. Application ID:
 `io.github.hayliewordsman.grapefruitlauncher`. Minimum Android 4.2.2 (API 17), compile
 and target SDK 36 (Android 16). It installs alongside Audio and TV.
 
+## 1.0 beta 6
+
+- Adds an 8 dp gap between Home's Edit/Done and Settings buttons.
+- Finishes drag UI when the drop reaches the window, after the destination saves
+  its placement, instead of waiting for Android's final drag-ended notification.
+  Home/dock icons return to full opacity, temporary drop controls and placement
+  overlays close, and Home's drag guides and edge scrolling stop. Rejected drops
+  restore the previous screen, including All Apps search; successful drawer drops
+  show the placed shortcut on Home. Cancelled drags still restore the original UI.
+- Completion callbacks belong to one drag session; a late callback cannot end the
+  next drag. Regression tests deliver drops without a final drag-ended event.
+- Version code 6; the published APK uses the existing certificate and application
+  ID, installs over beta 5 and preserves shortcuts, icon cache and settings.
+
 ## 1.0 beta 5
 
 - Hold and drag icons on Home, from All Apps to Home, between Home and the dock,

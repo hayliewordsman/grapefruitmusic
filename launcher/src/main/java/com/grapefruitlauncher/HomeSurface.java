@@ -49,6 +49,7 @@ final class HomeSurface extends ScrollView {
         board.dirty=true;board.requestLayout();board.invalidate();
     }
     void editing(boolean value){editing=value;board.invalidate();}
+    void endDrag(){cancelDrag();}
     void releaseImages(){suspended=true;cancelDrag();board.release();}
     void dispose(){releaseImages();handler.removeCallbacksAndMessages(null);}
     boolean nudge(String id,int dx,int dy) {
@@ -61,6 +62,7 @@ final class HomeSurface extends ScrollView {
     private boolean dragEvent(DragEvent event) {
         if(!(event.getLocalState() instanceof LauncherDrag))return false;
         LauncherDrag session=(LauncherDrag)event.getLocalState();
+        if(event.getAction()!=DragEvent.ACTION_DRAG_STARTED && session!=drag)return false;
         switch(event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:drag=session;board.invalidate();return true;
             case DragEvent.ACTION_DRAG_ENTERED:return true;

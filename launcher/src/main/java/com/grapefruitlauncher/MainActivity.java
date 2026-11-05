@@ -173,7 +173,9 @@ public final class MainActivity extends Activity {
         savedPosition=0;savedTop=0;
         theme=new LauncherTheme(this,store.theme());
         icons.screenChanged(theme.id);
-        root=new LauncherDrag.Root(this);root.setBackgroundColor(theme.bg);root.setFocusableInTouchMode(true);
+        root=new LauncherDrag.Root(this,session->main.post(()->{
+            if(!destroyed && activeDrag==session)finishDrag(true);
+        }));root.setBackgroundColor(theme.bg);root.setFocusableInTouchMode(true);
         if(Build.VERSION.SDK_INT>=30) {
             root.setOnApplyWindowInsetsListener((v,insets)->{
                 android.graphics.Insets i=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout()|WindowInsets.Type.ime());
@@ -214,8 +216,7 @@ public final class MainActivity extends Activity {
         }
         root.setOnDragListener((v,event)->{
             if(event.getLocalState()!=activeDrag || activeDrag==null)return false;
-            if(event.getAction()==DragEvent.ACTION_DRAG_ENDED)main.post(()->finishDrag(true));
-            return event.getAction()==DragEvent.ACTION_DRAG_STARTED || event.getAction()==DragEvent.ACTION_DRAG_ENDED;
+            return event.getAction()==DragEvent.ACTION_DRAG_STARTED;
         });
         setContentView(root);windowColours();
     }
@@ -236,7 +237,8 @@ public final class MainActivity extends Activity {
         }
         if(screen!=SETTINGS) {
             if(screen!=HOME)tools.addView(new View(this),new LinearLayout.LayoutParams(0,1,1));
-            TextView settings=theme.chip("Settings",false,v->go(SETTINGS));settings.setContentDescription("Launcher settings");tools.addView(settings);
+            TextView settings=theme.chip("Settings",false,v->go(SETTINGS));settings.setContentDescription("Launcher settings");
+            LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-2,-2);if(screen==HOME)sp.setMarginStart(dp(8));tools.addView(settings,sp);
         }
         head.addView(tools,new LinearLayout.LayoutParams(-1,-2));
         if(screen==SETTINGS && settingsPage.equals("about"))return;
@@ -435,6 +437,7 @@ public final class MainActivity extends Activity {
     }
     private void finishDrag(boolean navigate) {
         LauncherDrag session=activeDrag;if(session==null)return;activeDrag=null;
+        if(home!=null)home.endDrag();
         View source=session.source.get();if(source!=null)source.setAlpha(1);
         if(dragStrip!=null){root.removeView(dragStrip);dragStrip=null;}
         if(dragHome!=null){dragHome.dispose();if(dragHome.getParent() instanceof ViewGroup)((ViewGroup)dragHome.getParent()).removeView(dragHome);dragHome=null;}
@@ -555,7 +558,7 @@ public final class MainActivity extends Activity {
         settingValue(page,"Open Source Licences",null,()->assetText("Open Source Licences","NOTICE.txt","fonts/Geist-OFL.txt","GPL-3.0.txt"));
         settingFooter(page,"The runtime uses the Android framework and bundled open-source fonts. No proprietary SDK or online service is required.");
     }
-    private String versionName(){try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return "1.0-beta5";}}
+    private String versionName(){try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return "1.0-beta6";}}
     private void settingSection(LinearLayout page,String title){TextView text=theme.text(title,15,true);text.setTextColor(theme.accent);text.setPadding(dp(18),dp(24),dp(16),dp(6));page.addView(text);}
     private void settingFooter(LinearLayout page,String value){TextView text=theme.text(value,13,false);text.setTextColor(theme.secondary);text.setLineSpacing(dp(2),1);text.setPadding(dp(18),dp(6),dp(18),0);page.addView(text);}
     private View settingValue(LinearLayout page,String label,String value,Runnable click) {
