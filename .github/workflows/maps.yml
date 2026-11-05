@@ -65,3 +65,29 @@ jobs:
       - name: Remove temporary signing key
         if: always()
         run: rm -f "$RUNNER_TEMP/grapefruit.p12"
+  beta1-release:
+    # Beta publication is confined to the user-requested Maps branch and version.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/maps-beta-1'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: grapefruit-maps-1.0-beta1
+          path: artifacts
+      - name: Publish verified Maps beta 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(sed -n 's/^ *versionName "\([^"]*\)" *$/\1/p' maps/build.gradle)" = 1.0-beta1
+          (cd artifacts && sha256sum --check SHA256SUMS)
+          if gh release view maps-v1.0-beta1 >/dev/null 2>&1; then
+            echo 'Beta 1 already published; leaving the existing release intact.'
+            exit 0
+          fi
+          gh release create maps-v1.0-beta1 artifacts/grapefruit-maps-1.0-beta1.apk artifacts/SHA256SUMS artifacts/signature.txt \
+            --target "$GITHUB_SHA" --title 'Grapefruit Maps 1.0 beta 1' \
+            --notes-file maps/RELEASE-beta1.md --prerelease --latest=false

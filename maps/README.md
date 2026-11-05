@@ -75,6 +75,8 @@ uploads a verified APK, signature, checksum and reports. It does not publish
 other apps or modify the F-Droid repository. Refresh the bundled country
 catalogue with `python3 tools/maps/catalogue.py`; it reads provider directory
 indexes only, without downloading map files or raster tiles.
+Successful pushes to `maps-beta-1` also publish the requested beta 1 prerelease
+using the workflow's repository token. An existing beta 1 release is preserved.
 
 ## Licenses, privacy and providers
 
