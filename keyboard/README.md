@@ -1,5 +1,7 @@
 # Grapefruit Keyboard LegacyHolo
 
+[Download the 1.0 beta 1 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-keyboard-legacyholo/downloads/Grapefruit-Keyboard-LegacyHolo-1.0-beta1.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
+
 A standalone Grapefruit redesign of **AOSP LatinIME from Android 4.2.2**, for
 **Android 4.2.2–4.4.4 (API 17–19)**. Application ID:
 `io.github.hayliewordsman.grapefruitkeyboard.legacyholo`.
