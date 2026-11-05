@@ -4,6 +4,29 @@ A separate native Android Home app in the Grapefruit repository. Application ID:
 `io.github.hayliewordsman.grapefruitlauncher`. Minimum Android 4.2.2 (API 17), compile
 and target SDK 36 (Android 16). It installs alongside Audio and TV.
 
+## 1.0 beta 5
+
+- Hold and drag icons on Home, from All Apps to Home, between Home and the dock,
+  or between the four configurable dock positions. All Apps stays fixed in the
+  middle. Drop on the top strip to remove a shortcut or open app options. Cancelled
+  drags keep the original layout. Dropping onto one occupied Home cell swaps the
+  two existing Home shortcuts; overlapping multiple icons is rejected.
+- Home stores sparse cell coordinates: moving an icon leaves its space empty.
+  **Settings → Icon placement → Half-cell subgrid** enables finer snapping without
+  overlaps. Turning it off projects positions onto a normal grid; saved fine
+  positions return when re-enabled. Portrait and landscape use independent layouts.
+- Landscape moves the navigation pill to the physical right edge and adapts its
+  height/icon size to the screen. Home cells are kept only near the visible area,
+  with a small recycling pool; the persistent icon cache and low-RAM budget remain.
+- Tap **Edit** on Home, then an icon, for replacement/removal and directional
+  movement controls. Drag near the top or bottom of Home to scroll into more space.
+- Settings follows Audio/TV's grouped rounded rows. About includes an original
+  **Grapefruit Launcher** wordmark in Geist Pixel Triangle, GPL-3.0-or-later and
+  no-warranty declarations, public source/support links, privacy information,
+  acknowledgements and the complete GPL/OFL texts available offline.
+- Version code 5; the published APK uses the same application ID and debug signing
+  certificate as previous betas. Install over the existing app to retain settings.
+
 ## 1.0 beta 4
 
 - On first launch after installation or upgrading from a version without a disk
@@ -118,17 +141,20 @@ pack to other launchers. Icons are loaded in a worker and held in a bounded cach
 2. Choose **Settings → Set as default launcher**, or press Home and choose it.
    On Android 4.2, choose **Always** in the Home resolver. If another Home app is
    already the default, clear that app's defaults in Android settings first.
-3. The initial Home page contains up to twelve apps. Touch and hold an app to
-   add/remove it from Home, move it earlier/later, place it in the dock, open app
-   info, or invoke Android's uninstall screen.
+3. The initial Home page contains up to twelve apps. Hold and drag an icon to a
+   free cell, swap it with another Home icon, or move it to the dock. Drag from
+   All Apps to add a shortcut. Drop on the top strip for removal or app options.
+   Tap **Edit**, then an icon, for options including directional movement controls.
 4. The dock has **four app positions plus All Apps fixed in the center**. Touch an
-   empty position to pick an app. Hold an occupied position to replace or remove
-   it. Placing an app in another dock position moves it rather than duplicating it.
+   empty position to pick an app. Drag occupied positions to swap them; use Edit
+   then tap an occupied position to replace/remove it. All four positions remain
+   configurable. The dock is horizontal in portrait and vertical at right in landscape.
 5. Open **All Apps** for a searchable alphabetical list. Search matches labels and
    package names. Home and Back return to Home and close the keyboard/search.
-6. Settings changes all surfaces, labels and icon plates immediately. Home order,
-   dock positions and theme survive restarts. Removed/unavailable apps are omitted
-   from Home and dock, but their saved positions can return after reinstalling.
+6. Settings changes all surfaces, labels and icon plates immediately. Choose
+   **Icon placement → Half-cell subgrid** for finer placement. Home coordinates,
+   dock choices and theme survive restarts. Unavailable apps are omitted; saved
+   shortcuts can return after reinstalling. Empty Home spaces stay empty.
 
 No network permission, account, advertising, storage permission or broad
 `QUERY_ALL_PACKAGES` permission is requested. App discovery uses a scoped launcher
@@ -154,8 +180,9 @@ ordering, default dock holes and migration, user replacements/cleared slots,
 shared icon work, low-memory cache limits, background cleanup/restoration,
 all-app/all-theme disk preparation, reuse across restart, background app installs,
 incremental updates and uninstalls, corruption recovery, synchronous icons while
-scrolling the actual app grid, multiline chips, theme persistence, teardrop rendering, portrait/landscape layout
-and startup on API 21 and API 35. Native rendering tests
+scrolling the actual app grid, multiline chips, theme persistence, teardrop rendering, sparse drag/drop placement, dock transfers, grid/subgrid
+persistence, separate orientation coordinates, right-edge landscape/RTL layout,
+offline licence declarations, virtualized Home cells, and startup on API 21 and API 35. Native rendering tests
 write previews under `work/launcher/previews/`. API 17 compatibility is checked by
 lint and the APK's minimum-SDK metadata; Robolectric 4.14 cannot run API 17. Device
 testing on Android 4.2.2 and Android 16 remains necessary before a production release,
@@ -169,3 +196,23 @@ python tools/launcher/brand.py
 ```
 
 This script requires Pillow. The procedural icon packs do not need generated assets.
+
+## Free and open-source software
+
+Launcher code, original branding and icon plates are **GPL-3.0-or-later**. See the
+repository [LICENSE](../LICENSE) and the bundled [notice](src/main/assets/NOTICE.txt).
+The full GPL, source link, no-warranty declaration and acknowledgements are in
+**Settings → About Grapefruit Launcher** and work without a network connection.
+The Android framework is the only runtime API dependency; there is no proprietary
+runtime SDK. Geist fonts, including the Triangle wordmark subset, retain their
+**SIL OFL 1.1** licence and copyright notice in the shared font assets.
+
+Regenerate the wordmark from the pinned `geist@1.9.0` npm package (unpack its tarball):
+
+```sh
+python -m pip install fonttools brotli
+python tools/launcher/wordmark.py path/to/unpacked/geist/package
+```
+
+The script creates a static TTF with all glyphs in “Grapefruit Launcher” for old
+Android versions. It preserves the upstream font names and licence metadata.

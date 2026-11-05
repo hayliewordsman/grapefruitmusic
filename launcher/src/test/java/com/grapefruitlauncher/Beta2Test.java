@@ -155,7 +155,7 @@ public class Beta2Test {
             assertTrue(dock.getChildAt(4).getContentDescription().toString().startsWith("Grapefruit Audio"));
             java.lang.reflect.Field f=MainActivity.class.getDeclaredField("icons");f.setAccessible(true);IconPack icons=(IconPack)f.get(a);
             c.pause().stop();assertEquals(0,icons.cachedBytes());
-            assertNull(((GridView)root.findViewById(android.R.id.list)).getAdapter());assertNull(root.findViewById(android.R.id.tabs));
+            assertEquals(0,((ViewGroup)((HomeSurface)root.findViewById(android.R.id.list)).getChildAt(0)).getChildCount());assertNull(root.findViewById(android.R.id.tabs));
             c.restart().start().resume().visible();awaitCatalog(a);measure(content(a));
             assertEquals(5,((ViewGroup)content(a).findViewById(android.R.id.tabs)).getChildCount());
             assertNotNull(text(content(a),"Grapefruit Audio"));
@@ -172,8 +172,8 @@ public class Beta2Test {
     private static void measure(View v){v.measure(View.MeasureSpec.makeMeasureSpec(411,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(820,View.MeasureSpec.EXACTLY));v.layout(0,0,411,820);}
     private static void awaitCatalog(MainActivity a)throws Exception {
         long end=System.currentTimeMillis()+5000;
-        while(System.currentTimeMillis()<end){Shadows.shadowOf(Looper.getMainLooper()).idle();GridView grid=content(a).findViewById(android.R.id.list);
-            if(grid.getAdapter()!=null && grid.getAdapter().getCount()>=6)return;Thread.sleep(10);}
+        while(System.currentTimeMillis()<end){Shadows.shadowOf(Looper.getMainLooper()).idle();HomeSurface home=content(a).findViewById(android.R.id.list);
+            if(home.appCount()>=6)return;Thread.sleep(10);}
         fail("Catalog not loaded");
     }
     private static TextView text(View v,String value){if(v instanceof TextView && value.contentEquals(((TextView)v).getText()))return(TextView)v;

@@ -110,8 +110,8 @@ public class IconDiskCacheTest {
             MainActivity a=c.get();long deadline=System.currentTimeMillis()+15000;
             while(System.currentTimeMillis()<deadline) {
                 Shadows.shadowOf(Looper.getMainLooper()).idleFor(40,TimeUnit.MILLISECONDS);
-                GridView home=content(a).findViewById(android.R.id.list);
-                if(home.getAdapter().getCount()>=12)break;Thread.sleep(10);
+                HomeSurface home=content(a).findViewById(android.R.id.list);
+                if(home.appCount()>=12)break;Thread.sleep(10);
             }
             assertEquals(4,draws.get(79).get());
             ((ViewGroup)content(a).findViewById(android.R.id.tabs)).getChildAt(2).performClick();

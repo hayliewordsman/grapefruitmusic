@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 package com.grapefruitlauncher;
 
 import android.content.SharedPreferences;
@@ -12,6 +13,24 @@ final class LauncherStore {
     LauncherStore(SharedPreferences p) { prefs=p; }
     int theme() { return prefs.getInt("theme",0); }
     void theme(int id) { prefs.edit().putInt("theme",id).apply(); }
+    boolean subgrid(){return prefs.getBoolean("subgrid",false);}
+    void subgrid(boolean value){prefs.edit().putBoolean("subgrid",value).apply();}
+    java.util.Map<String,HomeLayout.Cell> positions(String profile,List<String> ids) {
+        java.util.Map<String,HomeLayout.Cell> result=new java.util.LinkedHashMap<>();
+        for(String id:ids) {
+            String raw=prefs.getString("position_"+profile+"_"+id,"");String[] parts=raw.split(",");
+            try{if(parts.length==2)result.put(id,new HomeLayout.Cell(Integer.parseInt(parts[0]),Integer.parseInt(parts[1])));}catch(NumberFormatException ignored){}
+        }
+        return result;
+    }
+    void positions(String profile,java.util.Map<String,HomeLayout.Cell> changed) {
+        SharedPreferences.Editor e=prefs.edit();
+        for(java.util.Map.Entry<String,HomeLayout.Cell> entry:changed.entrySet()) {
+            HomeLayout.Cell cell=entry.getValue();
+            if(cell.x>=0 && cell.y>=0 && cell.y<=HomeLayout.MAX_Y)e.putString("position_"+profile+"_"+entry.getKey(),cell.x+","+cell.y);
+        }
+        e.apply();
+    }
     List<String> home() {
         LinkedHashSet<String> ids = new LinkedHashSet<>();
         for (String id : prefs.getString("home", "").split("\n")) if (!id.isEmpty()) ids.add(id);
@@ -29,7 +48,10 @@ final class LauncherStore {
         prefs.edit().putBoolean("seeded",true).apply();
     }
     void add(String id) { List<String> ids=home(); if (!ids.contains(id)) {ids.add(id);writeHome(ids);} }
-    void remove(String id) { List<String> ids=home(); ids.remove(id);writeHome(ids); }
+    void remove(String id) {
+        List<String> ids=home();ids.remove(id);writeHome(ids);
+        prefs.edit().remove("position_portrait_"+id).remove("position_landscape_"+id).apply();
+    }
     void move(String id, int delta) {
         List<String> ids=home(); int from=ids.indexOf(id), to=from+delta;
         if (from>=0 && to>=0 && to<ids.size()) {ids.remove(from);ids.add(to,id);writeHome(ids);}
@@ -60,6 +82,11 @@ final class LauncherStore {
     }
     void resetDock(String[] defaults) {
         prefs.edit().remove("dock_defaults_version").apply();suggestedDock(defaults);
+    }
+    void swapDock(int from,int to) {
+        checkSlot(from);checkSlot(to);String first=dock(from),second=dock(to);
+        prefs.edit().putString("dock_"+from,second).putString("dock_"+to,first)
+                .putBoolean("dock_custom_"+from,true).putBoolean("dock_custom_"+to,true).apply();
     }
     private void checkSlot(int slot) {
         if(slot<0 || slot>=DOCK_APPS)throw new IllegalArgumentException("Dock app slot must be 0–3");

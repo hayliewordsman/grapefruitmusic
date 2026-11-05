@@ -67,7 +67,7 @@ public class LauncherTest {
             controller.newIntent(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME));
             assertNull(findEdit(content(a)));assertNotNull(text(content(a),"Home"));
             // Replace a populated dock slot using the searchable picker.
-            dock=content(a).findViewById(android.R.id.tabs);dock.getChildAt(0).performLongClick();
+            text(content(a),"Edit").performClick();dock=content(a).findViewById(android.R.id.tabs);dock.getChildAt(0).performClick();
             text(ShadowDialog.getLatestDialog().getWindow().getDecorView(),"Replace dock app").performClick();
             root=content(a);findEdit(root).setText("Maps");grid=root.findViewById(android.R.id.list);
             grid.performItemClick(null,0,0);
@@ -94,8 +94,8 @@ public class LauncherTest {
             MainActivity a=controller.get();waitForApps(a);LauncherStore store=new LauncherStore(context.getSharedPreferences("launcher",0));
             String id="io.github.hayliewordsman.grapefruitmusic/io.github.hayliewordsman.grapefruitmusic.Main";store.remove(id);
             controller.newIntent(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME));
-            GridView grid=content(a).findViewById(android.R.id.list);
-            for(int i=0;i<grid.getAdapter().getCount();i++)assertNotEquals(id,((AppCatalog.App)grid.getAdapter().getItem(i)).id());
+            HomeSurface home=content(a).findViewById(android.R.id.list);assertFalse(home.contains(id));
+            GridView grid;
             ((ViewGroup)content(a).findViewById(android.R.id.tabs)).getChildAt(2).performClick();
             findEdit(content(a)).setText("Audio");grid=content(a).findViewById(android.R.id.list);assertEquals(1,grid.getAdapter().getCount());
         }
@@ -141,8 +141,9 @@ public class LauncherTest {
             MainActivity a=controller.get();waitForApps(a);
             for(int id=0;id<4;id++) {
                 described(content(a),"Launcher settings").performClick();
+                ((View)text(content(a),"Theme").getParent()).performClick();
                 String label=LauncherTheme.NAMES[id]+(id==new LauncherStore(context.getSharedPreferences("launcher",0)).theme()?", selected":"");
-                described(content(a),label).performClick();text(content(a),"‹  Home").performClick();
+                described(ShadowDialog.getLatestDialog().getWindow().getDecorView(),label).performClick();text(content(a),"‹  Home").performClick();
                 View root=content(a);measure(root,411,820);waitForImages(root);
                 Bitmap b=Bitmap.createBitmap(411,820,Bitmap.Config.ARGB_8888);root.draw(new Canvas(b));
                 assertEquals(new LauncherTheme(context,id).bg,b.getPixel(0,400));
@@ -163,7 +164,7 @@ public class LauncherTest {
         try(ActivityController<MainActivity> c=launch()) {
             MainActivity a=c.get();waitForApps(a);measure(content(a),320,480);
             ((ViewGroup)content(a).findViewById(android.R.id.tabs)).getChildAt(2).performClick();assertNotNull(findEdit(content(a)));
-            described(content(a),"Launcher settings").performClick();assertNotNull(text(content(a),"Victory Blue"));
+            described(content(a),"Launcher settings").performClick();((View)text(content(a),"Theme").getParent()).performClick();assertNotNull(text(ShadowDialog.getLatestDialog().getWindow().getDecorView(),"Victory Blue"));
             a.onBackPressed();assertNotNull(text(content(a),"Home"));
         }
     }
@@ -172,7 +173,7 @@ public class LauncherTest {
     private static void waitForApps(MainActivity a)throws Exception {
         long deadline=System.currentTimeMillis()+5000;
         while(System.currentTimeMillis()<deadline){Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
-            GridView grid=content(a).findViewById(android.R.id.list);if(grid!=null&&grid.getAdapter().getCount()>=6)return;Thread.sleep(10);}
+            View list=content(a).findViewById(android.R.id.list);if(list instanceof HomeSurface && ((HomeSurface)list).appCount()>=6)return;if(list instanceof GridView && ((GridView)list).getAdapter()!=null && ((GridView)list).getAdapter().getCount()>=6)return;Thread.sleep(10);}
         fail("App discovery did not finish");
     }
     private static void measure(View v,int w,int h){v.measure(View.MeasureSpec.makeMeasureSpec(w,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(h,View.MeasureSpec.EXACTLY));v.layout(0,0,w,h);}
