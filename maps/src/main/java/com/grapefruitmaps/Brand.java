@@ -120,6 +120,11 @@ public final class Brand {
     public TextView round(String glyph,View.OnClickListener action) {
         TextView t=button(glyph,false,action);t.setTextSize(20);t.setPadding(0,0,0,0);return t;
     }
+    public ImageButton back(String parent,View.OnClickListener action) {
+        ImageButton button=new ImageButton(context);button.setBackground(interactive(false,PILL));
+        button.setImageDrawable(new ChevronDrawable(text,dp(22),false));button.setScaleType(ImageView.ScaleType.CENTER);
+        button.setContentDescription("Back to "+parent);button.setFocusable(true);button.setOnClickListener(action);return button;
+    }
     /** Lifts a floating surface: a shadow where Android draws them (5.0+), the hairline everywhere. */
     public void lift(View v,float dp) {
         if(Build.VERSION.SDK_INT>=21) v.setElevation(dp(dp));

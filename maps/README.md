@@ -5,6 +5,8 @@ icon, a large Maps-specific Geist Pixel Triangle wordmark and the version below
 the compact navigation row. Its static, bundled TTF works on Android 4.2.2;
 SVG masters for all four themes and the font subset generator
 (`tools/maps/wordmark.py`) are included.
+Map-view dropdown arrows and compact back icons are drawn as paths, so devices
+with missing arrow glyphs (including the JP5S) can display them.
 
 Beta 1.2 uses a compact top-left back icon beside the heading on Settings
 subpages (About, Licenses and the Victory Blue Easter egg).

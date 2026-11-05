@@ -124,7 +124,7 @@ public final class MainActivity extends Activity {
         if(inlineHeader) {
             col=b.column();col.setPadding(b.dp(16),b.dp(12),b.dp(16),b.dp(16));
             LinearLayout header=b.row();
-            TextView button=b.round("‹",v->onBackPressed());button.setTextSize(30);button.setContentDescription("Back to "+back);
+            ImageButton button=b.back(back,v->onBackPressed());
             header.addView(button,new LinearLayout.LayoutParams(b.dp(48),b.dp(48)));
             TextView heading=b.text(title,32,true);heading.setMaxLines(2);heading.setEllipsize(TextUtils.TruncateAt.END);
             LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(0,-2,1);titleParams.leftMargin=b.dp(12);
@@ -178,10 +178,14 @@ public final class MainActivity extends Activity {
         LinearLayout head=column("Maps",null); col.addView(head);
         LinearLayout tools=b.row();
         tools.addView(b.button("Search",false,v->show("search")),new LinearLayout.LayoutParams(0,b.dp(44),1));
-        tools.addView(b.button(satellite?"Satellite ▾":"2D map ▾",true,v->choose("Map view",new String[]{"2D map","Satellite"},i->{
+        TextView mapType=b.button(satellite?"Satellite":"2D map",true,v->choose("Map view",new String[]{"2D map","Satellite"},i->{
             if(i==1&&offlineOnly()) { message("Offline mode","Satellite imagery needs a connection. Your downloaded country maps work in 2D."); return; }
             satellite=i==1; show("map");
-        })),new LinearLayout.LayoutParams(0,b.dp(44),1)); head.addView(tools);
+        }));
+        mapType.setCompoundDrawablePadding(b.dp(6));
+        mapType.setCompoundDrawablesWithIntrinsicBounds(null,null,new ChevronDrawable(b.onAccent,b.dp(16),true),null);
+        mapType.setContentDescription("Map view: "+(satellite?"Satellite":"2D map")+". Choose map view.");
+        tools.addView(mapType,new LinearLayout.LayoutParams(0,b.dp(44),1));head.addView(tools);
         FrameLayout frame=new FrameLayout(this); col.addView(frame,new LinearLayout.LayoutParams(-1,0,1));
         File offline=null; String saved=prefs.getString("offline_file","");
         if(!satellite&&!saved.isEmpty()) { File candidate=new File(downloads.directory,saved); if(candidate.isFile()) offline=candidate; }

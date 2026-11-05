@@ -4,4 +4,6 @@ About keeps a compact back icon and About heading on the navigation row. Below i
 
 Geist Pixel is by Vercel under SIL Open Font License 1.1. The font subset generator is tools/maps/wordmark.py; the font license is bundled with the app.
 
+The 2D map / Satellite dropdown chevron and compact Settings back icons are now drawn as paths. They do not rely on missing Unicode glyphs on older devices such as the JP5S.
+
 This update keeps the Maps icon, compact Settings headers, maps, preferences and Easter egg. It installs over earlier Maps betas using the same application ID and certificate.
