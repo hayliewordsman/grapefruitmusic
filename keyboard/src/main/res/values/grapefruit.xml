@@ -1,0 +1,22 @@
+<resources>
+    <style name="GrapefruitLegacy" parent="android:Theme.Holo.NoActionBar">
+        <item name="android:windowBackground">#1C0A0E</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">#1C0A0E</item>
+    </style>
+    <style name="GrapefruitLegacyLight" parent="android:Theme.Holo.Light.NoActionBar">
+        <item name="android:windowBackground">#FCE4D9</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">#FCE4D9</item>
+    </style>
+    <string name="grapefruit_appearance">Grapefruit</string>
+    <string name="grapefruit_theme">Theme</string>
+    <string name="grapefruit_key_height">Key height</string>
+    <string name="grapefruit_enable">1. Enable Grapefruit Keyboard</string>
+    <string name="grapefruit_choose">2. Choose Grapefruit Keyboard</string>
+    <string name="grapefruit_try">Try your keyboard here</string>
+    <string-array name="grapefruit_themes"><item>Grapefruit Dark</item><item>Grapefruit Light</item><item>Pitch Black</item><item>Victory Blue</item></string-array>
+    <string-array name="grapefruit_theme_values"><item>0</item><item>1</item><item>2</item><item>3</item></string-array>
+    <string-array name="grapefruit_heights"><item>70%</item><item>80%</item><item>90%</item><item>100% (default)</item><item>110%</item><item>120%</item><item>130%</item><item>140%</item><item>150%</item></string-array>
+    <string-array name="grapefruit_height_values"><item>70</item><item>80</item><item>90</item><item>100</item><item>110</item><item>120</item><item>130</item><item>140</item><item>150</item></string-array>
+</resources>

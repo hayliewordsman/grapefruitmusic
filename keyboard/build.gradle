@@ -1,0 +1,78 @@
+plugins { id "com.android.application" }
+android {
+    namespace "com.android.inputmethod.latin"
+    compileSdk 35
+    defaultConfig {
+        applicationId "io.github.hayliewordsman.grapefruitkeyboard.legacyholo"
+        minSdk 17
+        targetSdk 19
+        versionCode 1
+        versionName "1.0-beta1"
+    }
+    signingConfigs {
+        release {
+            def key = System.getenv("GRAPEFRUIT_KEYSTORE")
+            if (key) {
+                storeFile file(key)
+                storeType "pkcs12"
+                storePassword System.getenv("GRAPEFRUIT_KEYSTORE_PASSWORD")
+                keyAlias "grapefruit"
+                keyPassword System.getenv("GRAPEFRUIT_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv("GRAPEFRUIT_KEYSTORE")) signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    // Static Geist fonts work on Jelly Bean; these offline apps do not need the TLS library.
+    sourceSets.main {
+        java.srcDir "../grapefruit-ui/src/main/java/com/grapefruitmusic/ui"
+        assets.srcDir "../grapefruit-ui/src/main/assets"
+    }
+    buildFeatures { buildConfig true }
+    dependenciesInfo { includeInApk false; includeInBundle false }
+    lint {
+        abortOnError true
+        disable "ExpiredTargetSdkVersion", "OldTargetApi"
+    }
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.all {
+            def testHome = layout.buildDirectory.dir("test-home").get().asFile
+            systemProperty "user.home", testHome.absolutePath
+            doFirst { testHome.mkdirs() }
+            systemProperty "robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2"
+            ["http.proxyHost", "http.proxyPort", "https.proxyHost", "https.proxyPort",
+             "http.nonProxyHosts", "javax.net.ssl.trustStore"].each { key ->
+                if (System.getProperty(key)) systemProperty key, System.getProperty(key)
+            }
+        }
+    }
+}
+dependencies {
+    implementation "com.android.support:support-v4:19.1.0"
+    testImplementation "junit:junit:4.13.2"
+    // Robolectric 4.8 retains Android 4.2/4.4 models; ASM 9.7 supports the build JDK.
+    testImplementation "org.robolectric:robolectric:4.8.2"
+    testImplementation "org.ow2.asm:asm:9.7.1"
+    testImplementation "org.ow2.asm:asm-commons:9.7.1"
+    testImplementation "org.ow2.asm:asm-util:9.7.1"
+}
+
+android {
+    ndkVersion "17.2.4988734"
+    externalNativeBuild { ndkBuild { path file("src/main/jni/Android.mk") } }
+    defaultConfig {
+        ndk { abiFilters "armeabi-v7a", "x86" }
+        externalNativeBuild { ndkBuild { arguments "NDK_APPLICATION_MK:=" + file("src/main/jni/Application.mk").absolutePath } }
+    }
+    androidResources { noCompress += "dict" }
+    packaging.jniLibs.useLegacyPackaging = true
+}

@@ -21,3 +21,7 @@ fdroid/metadata/io.github.hayliewordsman.grapefruitmusic/
 
 # Local implementation and verification scratch
 work/
+
+# Android native build state
+.cxx/
+.externalNativeBuild/

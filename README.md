@@ -269,3 +269,7 @@ Antoine Liutkus and Nobutaka Ito. Training/selection credits and model provenanc
 
 The logos (`docs/brand`, made by `tools/brand/logo.py`) are lettered in Geist Pixel, and the app's text is set
 in Geist, both by Vercel under the SIL Open Font License 1.1 (`grapefruit-ui/src/main/assets/fonts/Geist-OFL.txt`).
+
+## Grapefruit Keyboard LegacyHolo
+
+This branch adds the standalone Android 4.2.2–4.4.4 app in [keyboard/](keyboard/README.md), with all four Launcher themes and teardrop keys.
