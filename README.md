@@ -1,26 +1,29 @@
 # Grapefruit Launcher downloads
 
-## 1.0 beta 3 — scrolling icon fix
+## 1.0 beta 4 — persistent icon cache
 
-Download `Grapefruit-Launcher-1.0-beta3.apk`. Install it over beta 2; the package ID
-and signing certificate match, and the version code is now 3. No uninstall is needed.
-Home, theme and dock settings are retained.
+Download `Grapefruit-Launcher-1.0-beta4.apk` and install it over your current
+preview/beta. The application ID and signing certificate match; version code is 4.
+Home, dock and theme settings are preserved. No uninstall is needed.
 
-Beta 3 fixes icons clearing and reloading when cells are rebound while scrolling
-in All Apps or Home. Already displayed images stay in place, and recycled cells
-can reuse a bitmap that is still displayed elsewhere. The 256 KiB low-memory cache,
-background cleanup and idle-worker shutdown remain. Weak references locate existing
-images without keeping an additional bitmap cache alive. Package updates and theme
-changes still refresh the artwork correctly.
+On first launch after this update, let **Preparing your apps** finish. The launcher
+saves every launchable installed app's icon in all four themes to private internal
+storage. Prepared icons are read before cells change, so an icon leaving the small
+RAM cache does not require an asynchronous PackageManager reload while scrolling.
 
-Both builds, 19 automated tests and lint passed. Four new regressions cover cache
-eviction, same-app rebinding, recycled-cell reuse, memory trim and content/theme refresh.
-New or garbage-collected icons still load asynchronously when needed. No physical
-JP5S performance measurement is implied by these tests.
+New or changed apps refresh only their own cached set; uninstalled apps' obsolete
+files are removed. This also works while the launcher is in the background. Startup
+reconciles changes missed while its process was stopped. Cache files survive restarts
+and memory cleanup; the low-memory bitmap cache remains 256 KiB. Small disk metadata
+contains no bitmap artwork, and preparation saves one image at a time.
+
+Both builds, 25 automated tests and lint passed, including real-grid scrolling
+through 80 apps, background app installation, all-theme preparation, cache reuse
+after restart, incremental updates/uninstalls, and corrupted-file recovery.
+Physical JP5S performance profiling is still needed for device-specific results.
 
 Source for this exact beta:
-https://github.com/hayliewordsman/grapefruitmusic/tree/1eafad74247360576f51830fe897c6713a0ca126
+https://github.com/hayliewordsman/grapefruitmusic/tree/70302e6759e2a7e0fdb6fc511a6f91b22e13d4ed
 
-The launcher supports Android 4.2.2 (API 17) and later. This is a debug-signed test
-build. SHA-256 checksums are in `SHA256SUMS.txt`. Earlier preview and beta 2 APKs
-are kept for reference; beta 3 is the update to install.
+Android 4.2.2 (API 17) and later. This is a debug-signed test build. Checksums are in
+`SHA256SUMS.txt`. Previous preview/beta APKs remain available for reference.
