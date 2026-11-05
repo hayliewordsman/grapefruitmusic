@@ -1,4 +1,5 @@
 4856c6077d3cde909136ebda2cf29a7ee3444dcdb0bf1519b2121f9bfccd617e  Grapefruit-Launcher-1.0-beta2.apk
 2d8c75646330b75d4702a88024e9b7df48eb67470be7d42fef91bb73f9ea69c7  Grapefruit-Launcher-1.0-beta3.apk
 725f60cf36348aadec62607b0d82c79a362f2591f53d57bd1dd975f96f1d9483  Grapefruit-Launcher-1.0-beta4.apk
+c1a0281840e7e3ed5b0dc39a5eddcdbaf2e31f815662ab69d3c6242b33f47a88  Grapefruit-Launcher-1.0-beta5.apk
 76adbb78a2be966f751639dcb671277571b98ba402f18536f9cd367fa1166b0e  Grapefruit-Launcher-1.0-preview.apk

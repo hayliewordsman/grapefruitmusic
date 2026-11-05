@@ -1,29 +1,41 @@
 # Grapefruit Launcher downloads
 
-## 1.0 beta 4 — persistent icon cache
+## 1.0 beta 5 — drag-and-drop Home
 
-Download `Grapefruit-Launcher-1.0-beta4.apk` and install it over your current
-preview/beta. The application ID and signing certificate match; version code is 4.
-Home, dock and theme settings are preserved. No uninstall is needed.
+Download `Grapefruit-Launcher-1.0-beta5.apk` and install it over your existing
+preview/beta. Version code 5 uses the same application ID and signing certificate;
+your Home shortcuts, dock choices, icon cache and theme are preserved. No uninstall
+is needed. Android 4.2.2 (API 17) and later. This is a debug-signed test build.
 
-On first launch after this update, let **Preparing your apps** finish. The launcher
-saves every launchable installed app's icon in all four themes to private internal
-storage. Prepared icons are read before cells change, so an icon leaving the small
-RAM cache does not require an asynchronous PackageManager reload while scrolling.
+- Hold and drag Home icons into free cells or onto one occupied cell to swap them.
+  Gaps remain empty. Drag from All Apps to place a shortcut on Home.
+- Move shortcuts between Home and the dock; drag dock icons to swap positions.
+  All four app positions remain configurable; All Apps stays in the middle.
+- Drop on the top strip to remove a shortcut or open app options. Tap **Edit** on
+  Home, then an icon, for options and directional movement controls. Drag near
+  Home's top/bottom edge to scroll. Cancelled drags preserve the original layout.
+- **Settings → Icon placement → Half-cell subgrid** enables finer snapping without
+  overlapping icons. Portrait and landscape arrangements are saved separately.
+- Landscape places the tall navigation pill on the physical right side, adapting
+  its height and icon size to the screen.
+- Settings follows Audio/TV's grouped design. **About Grapefruit Launcher** has its
+  own Geist Pixel Triangle wordmark, GPL-3.0-or-later/no-warranty declarations,
+  public source/support links, acknowledgements and complete GPL/OFL texts offline.
 
-New or changed apps refresh only their own cached set; uninstalled apps' obsolete
-files are removed. This also works while the launcher is in the background. Startup
-reconciles changes missed while its process was stopped. Cache files survive restarts
-and memory cleanup; the low-memory bitmap cache remains 256 KiB. Small disk metadata
-contains no bitmap artwork, and preparation saves one image at a time.
+The all-installed-icon disk cache remains intact. Home creates cells only near the
+visible area, with a small recycling pool. The low-RAM bitmap cache remains 256 KiB;
+background cleanup releases visible icons without deleting prepared PNGs.
 
-Both builds, 25 automated tests and lint passed, including real-grid scrolling
-through 80 apps, background app installation, all-theme preparation, cache reuse
-after restart, incremental updates/uninstalls, and corrupted-file recovery.
-Physical JP5S performance profiling is still needed for device-specific results.
+Debug/release builds, all 40 automated tests and lint passed. Tests cover native
+view drag-event dispatch, saved gaps/restart, drawer-to-Home drops, Home/dock
+transfers and dock swaps, separate orientation coordinates, grid/subgrid settings,
+right-side landscape/RTL layout, offline licences and Home virtualization, alongside
+the existing icon-cache and compatibility checks. Android's window-manager drag
+handshake is simulated in tests. Physical JP5S/Android 4.2.2 gesture and performance
+testing is still needed; no physical-device test is implied.
 
-Source for this exact beta:
-https://github.com/hayliewordsman/grapefruitmusic/tree/70302e6759e2a7e0fdb6fc511a6f91b22e13d4ed
+Source for this exact beta (GPL-3.0-or-later, build instructions included):
+https://github.com/hayliewordsman/grapefruitmusic/tree/35b10c9f85ab9c2b63597a184d1a88fbf5e8854d
 
-Android 4.2.2 (API 17) and later. This is a debug-signed test build. Checksums are in
-`SHA256SUMS.txt`. Previous preview/beta APKs remain available for reference.
+Geist fonts are SIL OFL 1.1; notices are bundled in the APK and source.
+Checksums are in `SHA256SUMS.txt`. Previous preview/beta APKs remain available.
