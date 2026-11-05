@@ -1,41 +1,36 @@
 # Grapefruit Launcher downloads
 
-## 1.0 beta 5 — drag-and-drop Home
+## 1.0 beta 6 — release icons on drop
 
-Download `Grapefruit-Launcher-1.0-beta5.apk` and install it over your existing
-preview/beta. Version code 5 uses the same application ID and signing certificate;
-your Home shortcuts, dock choices, icon cache and theme are preserved. No uninstall
-is needed. Android 4.2.2 (API 17) and later. This is a debug-signed test build.
+Download `Grapefruit-Launcher-1.0-beta6.apk` and install it over your existing
+preview/beta. Version code 6 uses the same application ID and signing certificate;
+Home shortcuts, dock choices, prepared icon cache and settings are preserved.
+No uninstall is needed. Android 4.2.2 (API 17) and later. Debug-signed test build.
 
-- Hold and drag Home icons into free cells or onto one occupied cell to swap them.
-  Gaps remain empty. Drag from All Apps to place a shortcut on Home.
-- Move shortcuts between Home and the dock; drag dock icons to swap positions.
-  All four app positions remain configurable; All Apps stays in the middle.
-- Drop on the top strip to remove a shortcut or open app options. Tap **Edit** on
-  Home, then an icon, for options and directional movement controls. Drag near
-  Home's top/bottom edge to scroll. Cancelled drags preserve the original layout.
-- **Settings → Icon placement → Half-cell subgrid** enables finer snapping without
-  overlapping icons. Portrait and landscape arrangements are saved separately.
-- Landscape places the tall navigation pill on the physical right side, adapting
-  its height and icon size to the screen.
-- Settings follows Audio/TV's grouped design. **About Grapefruit Launcher** has its
-  own Geist Pixel Triangle wordmark, GPL-3.0-or-later/no-warranty declarations,
-  public source/support links, acknowledgements and complete GPL/OFL texts offline.
+- Adds an 8 dp gap between Home's Edit/Done and Settings buttons.
+- Finishes the drag UI on drop, after saving the placement, without waiting for
+  Android's final drag-ended notification. The icon returns to full opacity;
+  temporary drop controls/placement views close, and Home drag guides and edge
+  scrolling stop. The normal header returns.
+- Rejected drops restore the prior screen, including the All Apps search. Successful
+  drawer drops show the placed shortcut on Home. Cancellation still restores the
+  original UI, and a delayed callback from an old drag cannot finish the next drag.
 
-The all-installed-icon disk cache remains intact. Home creates cells only near the
-visible area, with a small recycling pool. The low-RAM bitmap cache remains 256 KiB;
-background cleanup releases visible icons without deleting prepared PNGs.
+The beta 5 features remain: sparse Home placement, optional half-cell subgrid,
+configurable dock, separate portrait/landscape arrangements and a tall right-side
+landscape dock. Settings includes the own Geist Pixel Triangle wordmark, public
+source links, GPL-3.0-or-later declarations and complete offline GPL/OFL notices.
+The persistent icon cache, visible-area Home cells and low-RAM bitmap budget remain.
 
-Debug/release builds, all 40 automated tests and lint passed. Tests cover native
-view drag-event dispatch, saved gaps/restart, drawer-to-Home drops, Home/dock
-transfers and dock swaps, separate orientation coordinates, grid/subgrid settings,
-right-side landscape/RTL layout, offline licences and Home virtualization, alongside
-the existing icon-cache and compatibility checks. Android's window-manager drag
-handshake is simulated in tests. Physical JP5S/Android 4.2.2 gesture and performance
-testing is still needed; no physical-device test is implied.
+Debug/release builds, all 43 automated tests and lint passed. New regression checks
+first reproduced stuck drag UI, then verified drops without a final drag-ended
+event: Home placement, drawer placement, rejected drawer drops, shortcut removal,
+header/search restoration and consecutive/cancelled drags. Android's window-manager
+handshake is simulated; actual view dispatch and drop handlers run in the tests.
+Physical JP5S/Android 4.2.2 gesture testing is still needed.
 
 Source for this exact beta (GPL-3.0-or-later, build instructions included):
-https://github.com/hayliewordsman/grapefruitmusic/tree/35b10c9f85ab9c2b63597a184d1a88fbf5e8854d
+https://github.com/hayliewordsman/grapefruitmusic/tree/7e3ce2dcfdf693652f212cf5970ed9f1845c613f
 
 Geist fonts are SIL OFL 1.1; notices are bundled in the APK and source.
 Checksums are in `SHA256SUMS.txt`. Previous preview/beta APKs remain available.
