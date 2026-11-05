@@ -1,0 +1,90 @@
+# Grapefruit Launcher
+
+A separate native Android Home app in the Grapefruit repository. Application ID:
+`io.github.hayliewordsman.grapefruitlauncher`. Minimum Android 4.2.2 (API 17), compile
+and target SDK 36 (Android 16). It installs alongside Audio and TV.
+
+## Appearance
+
+- The exact bundled **Geist Regular, Medium, SemiBold and Bold** fonts used by
+  Audio and TV, through `:grapefruit-ui`. The shared asset includes its SIL OFL license,
+  also available in Settings.
+- **Grapefruit Light**, **Grapefruit Dark** (default), **Pitch Black** and
+  **Victory Blue**. The first three use Audio's palette values. Victory Blue uses
+  the Blue Grapefruit Victory palette preserved in repository commit `f066424`.
+  The original apps' themes are unaffected.
+- A solid theme background; the launcher never displays or sets system wallpaper.
+  The Android wallpaper setting itself is left alone.
+- App labels use each theme's filled, hairline-outlined pill chips and Geist Medium.
+- The dock uses the Grapefruit apps' surface-colored floating navigation pill,
+  outline, shadow on Android 5+, and background fade. It has no visible text labels.
+  TalkBack and keyboard users still get app names and focus feedback.
+
+## Exclusive icon packs
+
+The four packs are built into this launcher and follow the theme automatically.
+Every launchable app visible to the current Android profile gets a plate, including
+newly installed apps, without an app-by-app icon mapping. Original app artwork is
+fitted inside the same teardrop: a circle extended into a gently rounded bottom-right
+corner. Wide artwork is fitted rather than cropped. Each plate uses its theme's
+surface/control gradient and accent outline; All Apps uses its accent gradient.
+
+This is implemented with ordinary Canvas paths and drawables on **API 17 and up**.
+It does not depend on the system's `AdaptiveIconDrawable`, which only exists on
+Android 8+. It accepts modern adaptive source icons through PackageManager as well
+as legacy PNGs. It does not replace icons outside this launcher or export an icon
+pack to other launchers. Icons are loaded in a worker and held in a bounded cache.
+
+## Use
+
+1. Install the debug APK to try it, and open **Grapefruit Launcher**.
+2. Choose **Settings → Set as default launcher**, or press Home and choose it.
+   On Android 4.2, choose **Always** in the Home resolver. If another Home app is
+   already the default, clear that app's defaults in Android settings first.
+3. The initial Home page contains up to twelve apps. Touch and hold an app to
+   add/remove it from Home, move it earlier/later, place it in the dock, open app
+   info, or invoke Android's uninstall screen.
+4. The dock has **four app positions plus All Apps fixed in the center**. Touch an
+   empty position to pick an app. Hold an occupied position to replace or remove
+   it. Placing an app in another dock position moves it rather than duplicating it.
+5. Open **All Apps** for a searchable alphabetical list. Search matches labels and
+   package names. Home and Back return to Home and close the keyboard/search.
+6. Settings changes all surfaces, labels and icon plates immediately. Home order,
+   dock positions and theme survive restarts. Removed/unavailable apps are omitted
+   from Home and dock, but their saved positions can return after reinstalling.
+
+No network permission, account, advertising, storage permission or broad
+`QUERY_ALL_PACKAGES` permission is requested. App discovery uses a scoped launcher
+intent query. The application does not require Audio or TV to be installed. Widgets,
+folders and cross-profile administration are outside this first version.
+
+## Build and check
+
+Use the repository's Gradle wrapper, JDK 21, SDK platform 36 and build tools 35.0.0:
+
+```sh
+./gradlew :launcher:assembleDebug :launcher:assembleRelease :launcher:testDebugUnitTest :launcher:lintDebug
+```
+
+The installable test APK is `launcher/build/outputs/apk/debug/launcher-debug.apk`.
+The release APK is unsigned unless `GRAPEFRUIT_KEYSTORE` and
+`GRAPEFRUIT_KEYSTORE_PASSWORD` are supplied, following the other apps' release-key
+convention. Debug uses Android's normal debug certificate. Release publication is
+not configured; CI uploads build artifacts only.
+
+Tests cover catalog search, launch intents, installation refresh, Home removal and
+ordering, dock capacity/replacement/persistence, theme persistence, teardrop rendering,
+portrait/landscape layout and startup on API 21 and API 35. Native rendering tests
+write previews under `work/launcher/previews/`. API 17 compatibility is checked by
+lint and the APK's minimum-SDK metadata; Robolectric 4.14 cannot run API 17. Device
+testing on Android 4.2.2 and Android 16 remains necessary before a production release,
+including Home-role setup, system gestures, keyboard and large text. No emulator or
+physical-device test is implied by the unit tests.
+
+Regenerate the launcher app's own raster/adaptive brand assets with:
+
+```sh
+python tools/launcher/brand.py
+```
+
+This script requires Pillow. The procedural icon packs do not need generated assets.

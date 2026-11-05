@@ -1,0 +1,58 @@
+plugins { id "com.android.application" }
+
+android {
+    namespace "com.grapefruitlauncher"
+    compileSdk 36
+    defaultConfig {
+        applicationId "io.github.hayliewordsman.grapefruitlauncher"
+        minSdk 17
+        targetSdk 36
+        versionCode 1
+        versionName "1.0"
+    }
+    signingConfigs {
+        permanent {
+            def key = System.getenv("GRAPEFRUIT_KEYSTORE")
+            if (key) {
+                storeFile file(key)
+                storeType "pkcs12"
+                storePassword System.getenv("GRAPEFRUIT_KEYSTORE_PASSWORD")
+                keyAlias "grapefruit"
+                keyPassword System.getenv("GRAPEFRUIT_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv("GRAPEFRUIT_KEYSTORE")) signingConfig signingConfigs.permanent
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    packaging { jniLibs { keepDebugSymbols += "**/libconscrypt_jni.so" } }
+    dependenciesInfo { includeInApk false; includeInBundle false }
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.all {
+            def testHome = layout.buildDirectory.dir("test-home").get().asFile
+            systemProperty "user.home", testHome.absolutePath
+            systemProperty "robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2"
+            // Robolectric downloads SDK jars in the test JVM; honor Gradle's configured proxy/trust.
+            ["http.proxyHost", "http.proxyPort", "https.proxyHost", "https.proxyPort",
+             "http.nonProxyHosts", "javax.net.ssl.trustStore"].each { key ->
+                if (System.getProperty(key)) systemProperty key, System.getProperty(key)
+            }
+            doFirst { testHome.mkdirs() }
+        }
+    }
+    lint { abortOnError true }
+}
+dependencies {
+    // Reuse the exact bundled Geist files and font weights used by Audio and TV.
+    implementation project(":grapefruit-ui")
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.14.1"
+}
