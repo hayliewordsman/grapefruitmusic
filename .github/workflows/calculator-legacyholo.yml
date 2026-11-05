@@ -1,0 +1,28 @@
+name: Grapefruit calculator LegacyHolo
+on:
+  push:
+    branches: [codex/grapefruit-calculator-legacyholo]
+    paths: ["calculator/**", "grapefruit-ui/**", "*.gradle", "gradle.properties", ".github/workflows/calculator-legacyholo.yml"]
+  pull_request:
+    paths: ["calculator/**", "grapefruit-ui/**", "*.gradle", "gradle.properties", ".github/workflows/calculator-legacyholo.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+      - name: Install compile platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Test, lint and build
+        run: ./gradlew :calculator:testDebugUnitTest :calculator:lintDebug :calculator:assembleDebug :calculator:assembleRelease --no-daemon --max-workers=3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Grapefruit-calculator-LegacyHolo-1.0-beta1-test-and-unsigned-release
+          path: calculator/build/outputs/apk/**/*.apk

@@ -1,0 +1,17 @@
+<resources>
+    <style name="GrapefruitLegacy" parent="android:Theme.Holo.NoActionBar">
+        <item name="android:windowBackground">#1C0A0E</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">#1C0A0E</item>
+    </style>
+    <style name="GrapefruitLegacyLight" parent="android:Theme.Holo.Light.NoActionBar">
+        <item name="android:windowBackground">#FCE4D9</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">#FCE4D9</item>
+    </style>
+    <string name="grapefruit_theme">Theme</string>
+    <dimen name="group_padding">8dp</dimen>
+    <dimen name="left_right_padding">8dp</dimen>
+    <dimen name="top_bottom_padding">8dp</dimen>
+    <string name="grapefruit_options">Calculator options</string>
+</resources>
