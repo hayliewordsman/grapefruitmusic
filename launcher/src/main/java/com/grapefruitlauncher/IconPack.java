@@ -2,15 +2,18 @@ package com.grapefruitlauncher;
 
 import android.content.Context;
 import android.graphics.*;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.LruCache;
 import android.widget.ImageView;
 import java.lang.ref.WeakReference;
+import java.lang.ref.ReferenceQueue;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -19,15 +22,20 @@ import java.util.concurrent.ThreadPoolExecutor;
 final class IconPack {
     private final Context context;
     private static final int MAX_PENDING=64;
+    private static final int MAX_LIVE_REFERENCES=256;
     private final ThreadPoolExecutor worker=MemoryPolicy.worker("launcher-icons");
     private final Handler main=new Handler(Looper.getMainLooper());
     private final Object lock=new Object();
     private final MemoryPolicy memory;
     private final LruCache<String,Bitmap> cache;
+    // A bitmap can outlive its LRU entry because an on-screen/recycled cell still displays it.
+    // Weak references find those existing images without keeping any extra bitmap memory alive.
+    private final Map<String,LiveBitmap> live=new LinkedHashMap<>(32,.75f,true);
+    private final ReferenceQueue<Bitmap> collected=new ReferenceQueue<>();
     private final Map<String,Request> pending=new HashMap<>();
     private final ArrayDeque<Request> queue=new ArrayDeque<>();
     private boolean draining,closed;
-    private int generation,themeId=-1;
+    private int generation,themeId=-1,contentVersion;
     IconPack(Context c) {
         context=c.getApplicationContext();memory=new MemoryPolicy(context);
         cache=new LruCache<String,Bitmap>(memory.cacheBytes) {
@@ -36,9 +44,26 @@ final class IconPack {
     }
     void bind(ImageView view,AppCatalog.App app,LauncherTheme theme) {
         int pixels=memory.iconPixels(theme);
-        String key=theme.id+":"+pixels+":"+app.id();
+        String key=contentVersion+":"+theme.id+":"+pixels+":"+app.id();
+        Drawable current=view.getDrawable();
+        if(key.equals(view.getTag()) && current instanceof BitmapDrawable) {
+            Bitmap displayed=((BitmapDrawable)current).getBitmap();
+            // GridView rebinds visible cells during scrolling and measurement. Keep their pixels.
+            if(displayed!=null && !displayed.isRecycled())return;
+        }
         view.setTag(key);
         Bitmap hit=cache.get(key);
+        if(hit!=null && hit.isRecycled()){cache.remove(key);hit=null;}
+        if(hit==null) {
+            synchronized(lock) {
+                pruneLiveReferences();LiveBitmap reference=live.get(key);
+                if(reference!=null) {
+                    hit=reference.get();
+                    if(hit==null || hit.isRecycled()){live.remove(key);hit=null;}
+                    else cache.put(key,hit);
+                }
+            }
+        }
         if(hit!=null){view.setImageBitmap(hit);return;}
         view.setImageDrawable(new Plate(theme,null,0));
         synchronized(lock) {
@@ -81,7 +106,7 @@ final class IconPack {
             synchronized(lock) {
                 if(pending.get(request.key)==request)pending.remove(request.key);
                 if(!closed && request.generation==generation && bitmap!=null) {
-                    cache.put(request.key,bitmap);final Bitmap ready=bitmap;
+                    cache.put(request.key,bitmap);rememberLive(request.key,bitmap);final Bitmap ready=bitmap;
                     main.post(()->{
                         if(closed || request.generation!=generation)return;
                         for(WeakReference<ImageView> weak:request.views) {
@@ -96,14 +121,30 @@ final class IconPack {
     void screenChanged(int selectedTheme) {
         synchronized(lock) {
             generation++;queue.clear();pending.clear();main.removeCallbacksAndMessages(null);
-            if(themeId!=selectedTheme){cache.evictAll();themeId=selectedTheme;}
+            if(themeId!=selectedTheme){cache.evictAll();live.clear();themeId=selectedTheme;}
         }
     }
-    void invalidate(){synchronized(lock){screenChanged(themeId);cache.evictAll();}}
-    void trim(){cache.evictAll();}
+    void invalidate(){synchronized(lock){contentVersion++;screenChanged(themeId);cache.evictAll();live.clear();pruneLiveReferences();}}
+    void trim(){synchronized(lock){cache.evictAll();live.clear();pruneLiveReferences();}}
     int cachedBytes(){return cache.size();}
     void close() {
         synchronized(lock){closed=true;invalidate();worker.shutdownNow();}
+    }
+    // Caller holds lock: only reference metadata is retained, bounded independently of the LRU.
+    private void rememberLive(String key,Bitmap bitmap) {
+        pruneLiveReferences();live.put(key,new LiveBitmap(key,bitmap,collected));
+        while(live.size()>MAX_LIVE_REFERENCES) {
+            java.util.Iterator<String> oldest=live.keySet().iterator();oldest.next();oldest.remove();
+        }
+    }
+    private void pruneLiveReferences() {
+        LiveBitmap reference;
+        while((reference=(LiveBitmap)collected.poll())!=null)
+            if(live.get(reference.key)==reference)live.remove(reference.key);
+    }
+    private static final class LiveBitmap extends WeakReference<Bitmap> {
+        final String key;
+        LiveBitmap(String key,Bitmap bitmap,ReferenceQueue<Bitmap> queue){super(bitmap,queue);this.key=key;}
     }
     private static final class Request {
         final String key;

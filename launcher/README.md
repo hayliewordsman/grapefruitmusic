@@ -4,6 +4,21 @@ A separate native Android Home app in the Grapefruit repository. Application ID:
 `io.github.hayliewordsman.grapefruitlauncher`. Minimum Android 4.2.2 (API 17), compile
 and target SDK 36 (Android 16). It installs alongside Audio and TV.
 
+## 1.0 beta 3
+
+- Fixes icon flashing/reloading when All Apps or Home rebinds cells while scrolling.
+  An icon already displayed for the same app stays in its cell even after its
+  entry leaves the small LRU cache. Recycled cells can also immediately reuse a
+  bitmap that another cell still displays.
+- The 256 KiB low-memory cache remains unchanged. A bounded registry of weak
+  references locates existing live bitmaps without retaining additional bitmap
+  allocations. Background cleanup and idle-worker shutdown remain in effect.
+- Package changes invalidate old image bindings, and theme switches still rebuild
+  icons with the selected palette. Previously unseen or garbage-collected icons
+  still load asynchronously; rebinding an already displayed icon no longer clears it.
+- Version code 3; the published APK uses the same debug certificate and app ID as
+  beta 2, so it installs over the existing launcher and keeps saved settings.
+
 ## 1.0 beta 2
 
 - Version code 2 updates over the first preview (code 1) when signed with its same
