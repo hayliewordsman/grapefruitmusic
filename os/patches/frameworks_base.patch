@@ -1,0 +1,320 @@
+--- a/packages/SystemUI/src/com/android/systemui/theme/ThemeOverlayController.java
++++ b/packages/SystemUI/src/com/android/systemui/theme/ThemeOverlayController.java
+@@ -34,6 +34,7 @@
+ import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_SOURCE;
+ import static com.android.systemui.theme.ThemeOverlayApplier.TIMESTAMP_FIELD;
+ 
++import com.grapefruit.os.theme.GrapefruitPalette;
+ import android.app.ActivityManager;
+ import android.app.UiModeManager;
+ import android.app.WallpaperColors;
+@@ -631,13 +632,7 @@
+     }
+ 
+     private void reevaluateSystemTheme(boolean forceReload) {
+-        final WallpaperColors currentColors = mCurrentColors.get(mUserTracker.getUserId());
+-        final int mainColor;
+-        if (currentColors == null) {
+-            mainColor = Color.TRANSPARENT;
+-        } else {
+-            mainColor = getNeutralColor(currentColors);
+-        }
++        final int mainColor = GrapefruitPalette.seed(grapefruitTheme());
+ 
+         if (mMainWallpaperColor == mainColor && !forceReload) {
+             return;
+@@ -685,7 +680,20 @@
+         return usercontext.getSystemService(UserManager.class).isPrivateProfile();
+     }
+ 
++    private int grapefruitTheme() {
++        int fallback = mResources.getInteger(com.android.internal.R.integer.config_grapefruitDefaultTheme);
++        String raw = mSecureSettings.getStringForUser(
++                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, mUserTracker.getUserId());
++        try {
++            return GrapefruitPalette.valid(raw == null ? fallback
++                    : new JSONObject(raw).optInt("grapefruit.theme", fallback));
++        } catch (JSONException invalid) { return GrapefruitPalette.valid(fallback); }
++    }
++
+     private void createOverlays(int color) {
++        // Grapefruit selection is authoritative; wallpaper extraction never changes the palette.
++        color = GrapefruitPalette.seed(grapefruitTheme());
++        mThemeStyle = ThemeStyle.TONAL_SPOT;
+         mDarkColorScheme = new ColorScheme(color, true /* isDark */, mThemeStyle, mContrast);
+         mLightColorScheme = new ColorScheme(color, false /* isDark */, mThemeStyle, mContrast);
+         mColorScheme = isNightMode() ? mDarkColorScheme : mLightColorScheme;
+@@ -711,9 +719,9 @@
+             String prefix = "android:color/system_" + p.first;
+ 
+             overlay.setResourceValue(prefix + "_light", TYPE_INT_COLOR_ARGB8,
+-                    p.second.getArgb(mLightColorScheme.getMaterialScheme()), null);
++                    GrapefruitPalette.role(grapefruitTheme(), p.first, false, mContrast, p.second.getArgb(mLightColorScheme.getMaterialScheme())), null);
+             overlay.setResourceValue(prefix + "_dark", TYPE_INT_COLOR_ARGB8,
+-                    p.second.getArgb(mDarkColorScheme.getMaterialScheme()), null);
++                    GrapefruitPalette.role(grapefruitTheme(), p.first, true, mContrast, p.second.getArgb(mDarkColorScheme.getMaterialScheme())), null);
+         });
+     }
+ 
+@@ -741,15 +749,15 @@
+                     && res.getColor(android.R.color.system_neutral2_500, theme)
+                     == mColorScheme.getNeutral2().getS500()
+                     && res.getColor(android.R.color.system_outline_variant_dark, theme)
+-                    == dynamicColors.outlineVariant().getArgb(mDarkColorScheme.getMaterialScheme())
++                    == GrapefruitPalette.role(grapefruitTheme(), "outline_variant", true, mContrast, dynamicColors.outlineVariant().getArgb(mDarkColorScheme.getMaterialScheme()))
+                     && res.getColor(android.R.color.system_outline_variant_light, theme)
+-                    == dynamicColors.outlineVariant().getArgb(mLightColorScheme.getMaterialScheme())
++                    == GrapefruitPalette.role(grapefruitTheme(), "outline_variant", false, mContrast, dynamicColors.outlineVariant().getArgb(mLightColorScheme.getMaterialScheme()))
+                     && res.getColor(android.R.color.system_primary_container_dark, theme)
+-                    == dynamicColors.primaryContainer().getArgb(
+-                    mDarkColorScheme.getMaterialScheme())
++                    == GrapefruitPalette.role(grapefruitTheme(), "primary_container", true, mContrast, dynamicColors.primaryContainer().getArgb(
++                    mDarkColorScheme.getMaterialScheme()))
+                     && res.getColor(android.R.color.system_primary_container_light, theme)
+-                    == dynamicColors.primaryContainer().getArgb(
+-                    mLightColorScheme.getMaterialScheme())
++                    == GrapefruitPalette.role(grapefruitTheme(), "primary_container", false, mContrast, dynamicColors.primaryContainer().getArgb(
++                    mLightColorScheme.getMaterialScheme()))
+                     && res.getColor(android.R.color.system_primary_fixed, theme)
+                     == dynamicColors.primaryFixed().getArgb(
+                     mLightColorScheme.getMaterialScheme()))) {
+--- /dev/null
++++ b/core/res/res/values/grapefruit_config.xml
+@@ -0,0 +1 @@
++<resources><integer name="config_grapefruitDefaultTheme">0</integer></resources>
+--- /dev/null
++++ b/packages/SystemUI/src/com/grapefruit/os/theme/GrapefruitPalette.java
+@@ -0,0 +1,42 @@
++// Generated by os/tools/generate.py. SPDX-License-Identifier: Apache-2.0
++package com.grapefruit.os.theme;
++
++public final class GrapefruitPalette {
++    private GrapefruitPalette() {}
++    public static int valid(int id) { return id >= 0 && id < 4 ? id : 0; }
++    public static boolean dark(int id) { return valid(id) != 1; }
++    private static final int[] SEED = {0xffff7f6b, 0xffe83850, 0xffff7f6b, 0xff67c7ff};
++    public static int seed(int id) { return SEED[valid(id)]; }
++    private static final int[] BACKGROUND = {0xff1c0a0e, 0xfffce4d9, 0xff000000, 0xff07162b};
++    public static int background(int id) { return BACKGROUND[valid(id)]; }
++    public static int role(int id, String role, boolean dark, double contrast, int fallback) {
++        id = valid(id);
++        // Leave opposite-mode and accessibility contrast generation to Android's HCT engine.
++        if (dark != dark(id) || Math.abs(contrast) > 0.0001) return fallback;
++        switch (role) {
++            case "background": return new int[]{0xff1c0a0e, 0xfffce4d9, 0xff000000, 0xff07162b}[id];
++            case "on_background": return new int[]{0xfffff1e8, 0xff4a1622, 0xfffff3ee, 0xffeaf4ff}[id];
++            case "surface": return new int[]{0xff1c0a0e, 0xfffce4d9, 0xff000000, 0xff07162b}[id];
++            case "surface_dim": return new int[]{0xff1c0a0e, 0xfffce4d9, 0xff000000, 0xff07162b}[id];
++            case "surface_bright": return new int[]{0xff421c24, 0xfffadccf, 0xff261116, 0xff1c3b60}[id];
++            case "surface_container_lowest": return new int[]{0xff1c0a0e, 0xfffce4d9, 0xff000000, 0xff07162b}[id];
++            case "surface_container_low": return new int[]{0xff250e13, 0xfffdeae1, 0xff12070a, 0xff0b1d35}[id];
++            case "surface_container": return new int[]{0xff2e1218, 0xfffffaf6, 0xff180a0e, 0xff102541}[id];
++            case "surface_container_high": return new int[]{0xff421c24, 0xfffadccf, 0xff261116, 0xff1c3b60}[id];
++            case "surface_container_highest": return new int[]{0xff522631, 0xfff3c5b3, 0xff36181f, 0xff284f78}[id];
++            case "surface_variant": return new int[]{0xff421c24, 0xfffadccf, 0xff261116, 0xff1c3b60}[id];
++            case "on_surface": return new int[]{0xfffff1e8, 0xff4a1622, 0xfffff3ee, 0xffeaf4ff}[id];
++            case "on_surface_variant": return new int[]{0xffb88a8f, 0xff9a5c63, 0xffb8949a, 0xffa2bad8}[id];
++            case "primary": return new int[]{0xffff7f6b, 0xffe83850, 0xffff7f6b, 0xff67c7ff}[id];
++            case "on_primary": return new int[]{0xff2a0a10, 0xffffffff, 0xff1a0a0d, 0xff06172c}[id];
++            case "primary_container": return new int[]{0xff421c24, 0xfffadccf, 0xff261116, 0xff1c3b60}[id];
++            case "on_primary_container": return new int[]{0xfffff1e8, 0xff4a1622, 0xfffff3ee, 0xffeaf4ff}[id];
++            case "surface_tint": return new int[]{0xffff7f6b, 0xffe83850, 0xffff7f6b, 0xff67c7ff}[id];
++            case "control_activated": return new int[]{0xffff7f6b, 0xffe83850, 0xffff7f6b, 0xff67c7ff}[id];
++            case "control_normal": return new int[]{0xffb88a8f, 0xff9a5c63, 0xffb8949a, 0xffa2bad8}[id];
++            case "outline": return new int[]{0xffb88a8f, 0xff9a5c63, 0xffb8949a, 0xffa2bad8}[id];
++            case "outline_variant": return new int[]{0xff46202a, 0xfff3cdbf, 0xff33181f, 0xff294665}[id];
++            default: return fallback;
++        }
++    }
++}
+--- a/data/fonts/Android.bp
++++ b/data/fonts/Android.bp
+@@ -79,7 +79,7 @@
+ 
+ genrule {
+     name: "generate_font_fallback",
+-    tools: [":generate_fonts_xml"],
++    tools: [":generate_fonts_xml", "grapefruit_font_config"],
+     tool_files: [
+         "alias.json",
+         "fallback_order.json",
+@@ -110,5 +110,5 @@
+         "--alias=$(location alias.json) " +
+         "--fallback=$(location fallback_order.json) " +
+         "$(in) " +
+-        "-o $(out)",
++        "-o $(out) && $(location grapefruit_font_config) $(out)",
+ }
+--- a/packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/CommonTile.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/CommonTile.kt
+@@ -413,12 +413,12 @@
+     val ActiveIconCornerRadius: Dp
+         @Composable
+         @ReadOnlyComposable
+-        get() = dimensionResource(id = R.dimen.common_tile_default_active_icon_corner_radius)
++        get() = ToggleTargetSize / 2
+ 
+     val ActiveTileCornerRadius: Dp
+         @Composable
+         @ReadOnlyComposable
+-        get() = dimensionResource(id = R.dimen.common_tile_default_active_tile_corner_radius)
++        get() = TileHeight / 2
+ 
+     val DualTargetEndPadding: Dp
+         @Composable
+@@ -428,12 +428,12 @@
+     val InactiveIconCornerRadius: Dp
+         @Composable
+         @ReadOnlyComposable
+-        get() = dimensionResource(id = R.dimen.common_tile_default_inactive_icon_corner_radius)
++        get() = ToggleTargetSize / 2
+ 
+     val InactiveTileCornerRadius: Dp
+         @Composable
+         @ReadOnlyComposable
+-        get() = dimensionResource(id = R.dimen.common_tile_default_inactive_tile_corner_radius)
++        get() = TileHeight / 2
+ 
+     /** Dimensions for focus rings with wide corners */
+     val TileDetailsEntryWideCornerRadius: Dp
+--- a/data/fonts/fonts.xml
++++ b/data/fonts/fonts.xml
+@@ -36,97 +36,56 @@
+ <familyset version="23">
+     <!-- first font is default -->
+     <family name="sans-serif">
+-        <font weight="100" style="normal">Roboto-Regular.ttf
+-          <axis tag="ital" stylevalue="0" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="100" />
+-        </font>
+-        <font weight="200" style="normal">Roboto-Regular.ttf
+-          <axis tag="ital" stylevalue="0" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="200" />
+-        </font>
+-        <font weight="300" style="normal">Roboto-Regular.ttf
+-          <axis tag="ital" stylevalue="0" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="300" />
+-        </font>
+-        <font weight="400" style="normal">Roboto-Regular.ttf
+-          <axis tag="ital" stylevalue="0" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="400" />
+-        </font>
+-        <font weight="500" style="normal">Roboto-Regular.ttf
+-          <axis tag="ital" stylevalue="0" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="500" />
+-        </font>
+-        <font weight="600" style="normal">Roboto-Regular.ttf
+-          <axis tag="ital" stylevalue="0" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="600" />
+-        </font>
+-        <font weight="700" style="normal">Roboto-Regular.ttf
+-          <axis tag="ital" stylevalue="0" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="700" />
+-        </font>
+-        <font weight="800" style="normal">Roboto-Regular.ttf
+-          <axis tag="ital" stylevalue="0" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="800" />
+-        </font>
+-        <font weight="900" style="normal">Roboto-Regular.ttf
+-          <axis tag="ital" stylevalue="0" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="900" />
+-        </font>
+-        <font weight="100" style="italic">Roboto-Regular.ttf
++    <font weight="400" style="normal">Geist-Regular.ttf</font>
++    <font weight="500" style="normal">Geist-Medium.ttf</font>
++    <font weight="600" style="normal">Geist-SemiBold.ttf</font>
++    <font weight="700" style="normal">Geist-Bold.ttf</font>
++    <font weight="100" style="italic">Roboto-Regular.ttf
+           <axis tag="ital" stylevalue="1" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="100" />
+-        </font>
+-        <font weight="200" style="italic">Roboto-Regular.ttf
++      <axis tag="wdth" stylevalue="100" />
++      <axis tag="wght" stylevalue="100" />
++    </font>
++    <font weight="200" style="italic">Roboto-Regular.ttf
+           <axis tag="ital" stylevalue="1" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="200" />
+-        </font>
+-        <font weight="300" style="italic">Roboto-Regular.ttf
++      <axis tag="wdth" stylevalue="100" />
++      <axis tag="wght" stylevalue="200" />
++    </font>
++    <font weight="300" style="italic">Roboto-Regular.ttf
+           <axis tag="ital" stylevalue="1" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="300" />
+-        </font>
+-        <font weight="400" style="italic">Roboto-Regular.ttf
++      <axis tag="wdth" stylevalue="100" />
++      <axis tag="wght" stylevalue="300" />
++    </font>
++    <font weight="400" style="italic">Roboto-Regular.ttf
+           <axis tag="ital" stylevalue="1" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="400" />
+-        </font>
+-        <font weight="500" style="italic">Roboto-Regular.ttf
++      <axis tag="wdth" stylevalue="100" />
++      <axis tag="wght" stylevalue="400" />
++    </font>
++    <font weight="500" style="italic">Roboto-Regular.ttf
+           <axis tag="ital" stylevalue="1" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="500" />
+-        </font>
+-        <font weight="600" style="italic">Roboto-Regular.ttf
++      <axis tag="wdth" stylevalue="100" />
++      <axis tag="wght" stylevalue="500" />
++    </font>
++    <font weight="600" style="italic">Roboto-Regular.ttf
+           <axis tag="ital" stylevalue="1" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="600" />
+-        </font>
+-        <font weight="700" style="italic">Roboto-Regular.ttf
++      <axis tag="wdth" stylevalue="100" />
++      <axis tag="wght" stylevalue="600" />
++    </font>
++    <font weight="700" style="italic">Roboto-Regular.ttf
+           <axis tag="ital" stylevalue="1" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="700" />
+-        </font>
+-        <font weight="800" style="italic">Roboto-Regular.ttf
++      <axis tag="wdth" stylevalue="100" />
++      <axis tag="wght" stylevalue="700" />
++    </font>
++    <font weight="800" style="italic">Roboto-Regular.ttf
+           <axis tag="ital" stylevalue="1" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="800" />
+-        </font>
+-        <font weight="900" style="italic">Roboto-Regular.ttf
++      <axis tag="wdth" stylevalue="100" />
++      <axis tag="wght" stylevalue="800" />
++    </font>
++    <font weight="900" style="italic">Roboto-Regular.ttf
+           <axis tag="ital" stylevalue="1" />
+-          <axis tag="wdth" stylevalue="100" />
+-          <axis tag="wght" stylevalue="900" />
+-        </font>
+-   </family>
++      <axis tag="wdth" stylevalue="100" />
++      <axis tag="wght" stylevalue="900" />
++    </font>
++  </family>
+ 
+ 
+     <!-- Note that aliases must come after the fonts they reference. -->

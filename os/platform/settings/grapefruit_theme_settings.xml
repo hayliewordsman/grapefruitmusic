@@ -1,0 +1,8 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/grapefruit_theme_title">
+    <ListPreference android:key="grapefruit_theme_choice"
+        android:title="@string/grapefruit_theme_title" android:persistent="false"
+        android:entries="@array/grapefruit_theme_names" android:entryValues="@array/grapefruit_theme_ids"/>
+    <Preference android:key="grapefruit_theme_help" android:selectable="false"
+        android:summary="@string/grapefruit_theme_help"/>
+</PreferenceScreen>

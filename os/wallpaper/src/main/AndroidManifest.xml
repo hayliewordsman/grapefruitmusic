@@ -1,0 +1,11 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-feature android:name="android.software.live_wallpaper" android:required="true"/>
+    <queries><provider android:authorities="io.github.hayliewordsman.grapefruitsettings.theme"/></queries>
+    <application android:label="Grapefruit theme" android:allowBackup="false">
+        <service android:name=".ThemeWallpaperService" android:exported="true"
+            android:permission="android.permission.BIND_WALLPAPER" android:directBootAware="true">
+            <intent-filter><action android:name="android.service.wallpaper.WallpaperService"/></intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/wallpaper"/>
+        </service>
+    </application>
+</manifest>

@@ -13,6 +13,15 @@ All four original native ABIs are retained. Stable releases are published on Git
 developer's F-Droid repository. Test downloads remain GitHub prereleases and stay out of F-Droid.
 The Blue download page is https://hayliewordsman.github.io/grapefruitmusic/blue/.
 
+## Grapefruit OS preinstall
+
+On the Grapefruit OS development branches, the shipping `osVictory` build
+preloads the owner's five tracks as **Bonus Bundled Content**. The album and
+track titles use that suffix; the old internal source IDs remain stable for
+updates. See [the OS build guide](../os/README.md) for the private asset import,
+unchanged-audio verification and OEM signing workflow. `osFoss` is a music-free
+CI alternative. Audio, artwork and bundle inputs are not committed to source.
+
 ## Private music inputs
 
 The public repository contains code and the owner-approved tag plan in

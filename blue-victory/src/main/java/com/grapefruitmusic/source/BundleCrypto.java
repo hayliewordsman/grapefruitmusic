@@ -20,7 +20,7 @@ public final class BundleCrypto {
     /** The caller must use a temporary output and publish it only after verification succeeds. */
     public static void decrypt(InputStream input, OutputStream output, long length, byte[] key) throws IOException {
         if (key.length != 48 || length < 68 || (length - 52) % 16 != 0)
-            throw new IOException("Invalid advance-copy bundle");
+            throw new IOException("Invalid Bonus Bundled Content bundle");
         byte[] header = new byte[20];
         readFully(input, header);
         if (!Arrays.equals(MAGIC, Arrays.copyOf(header, 4))) throw new IOException("Unknown EP bundle format");

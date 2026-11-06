@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-/** The advance EP, installed only in Blue Grapefruit and unpacked inside its internal sandbox. */
+/** The bonus EP, installed only in Blue Grapefruit and unpacked inside its internal sandbox. */
 public final class BundledSource implements MusicSource {
     public static final String ID = "blue_victory_advance";
     private final Context context;
@@ -31,7 +31,7 @@ public final class BundledSource implements MusicSource {
     BundledSource(Context context) { this.context = context.getApplicationContext(); }
     public static boolean owns(MediaItem item) { return item != null && ID.equals(item.sourceId); }
     @Override public String id() { return ID; }
-    @Override public String name() { return "Victory Lights (Advance Copy)"; }
+    @Override public String name() { return "Victory Lights (Bonus Bundled Content)"; }
     @Override public String typeLabel() { return "Included with Blue Grapefruit"; }
     @Override public boolean isRemote() { return false; }
     @Override public boolean canDownload() { return false; }
@@ -68,7 +68,7 @@ public final class BundledSource implements MusicSource {
             artist.count = 1;
             byte[] key = readAsset("bundle.key");
             JSONArray tracks = catalog.getJSONArray("tracks");
-            if (tracks.length() != 5) throw new IOException("The advance EP must have five tracks");
+            if (tracks.length() != 5) throw new IOException("The bonus EP must have five tracks");
             for (int i = 0; i < tracks.length(); i++) {
                 JSONObject track = tracks.getJSONObject(i);
                 String filename = track.getString("filename"), asset = track.getString("asset");
@@ -144,7 +144,7 @@ public final class BundledSource implements MusicSource {
     public File fileFor(MediaItem track) throws IOException {
         prepare();
         for (MediaItem song : songs) if (song.sameAs(track)) return new File(song.path);
-        throw new IOException("Unknown advance-copy track");
+        throw new IOException("Unknown Bonus Bundled Content track");
     }
     @Override public List<MediaItem> songs() throws IOException { prepare(); return new ArrayList<MediaItem>(songs); }
     @Override public List<MediaItem> albums() throws IOException { prepare(); return Collections.singletonList(album); }
@@ -179,5 +179,5 @@ public final class BundledSource implements MusicSource {
     @Override public void deletePlaylist(MediaItem playlist) throws IOException { throw readOnly(); }
     @Override public boolean editPlaylist(MediaItem playlist, String name, String description, List<MediaItem> removed)
             throws IOException { throw readOnly(); }
-    private static IOException readOnly() { return new IOException("The included advance EP is read-only"); }
+    private static IOException readOnly() { return new IOException("The included bonus EP is read-only"); }
 }

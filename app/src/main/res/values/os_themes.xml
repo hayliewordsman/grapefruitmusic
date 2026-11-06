@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="os_background_0">#1C0A0E</color>
+  <style name="Theme.Grapefruit.OS0" parent="Theme.Grapefruit.GrapefruitDark">
+    <item name="gfBackground">#1C0A0E</item>
+    <item name="gfGroupedBackground">#1C0A0E</item>
+    <item name="gfSurface">#2E1218</item>
+    <item name="gfBar">#250E13</item>
+    <item name="gfTextPrimary">#FFF1E8</item>
+    <item name="gfTextSecondary">#B88A8F</item>
+    <item name="gfSeparator">#4A2229</item>
+    <item name="gfDisclosure">#D4A5AC</item>
+    <item name="gfAccent">#FF7F6B</item>
+    <item name="gfFill">#2E1218</item>
+    <item name="gfScrim">#D91C0A0E</item>
+    <item name="gfControl">#421C24</item>
+    <item name="gfControlPressed">#522631</item>
+    <item name="gfToggleOff">#4A2229</item>
+    <item name="gfToggleOffSegments">#F2D0C6</item>
+    <item name="gfKnob">#F2D0C6</item>
+    <item name="gfAccentEnd">#F2546B</item>
+    <item name="gfOnAccent">#2A0A10</item>
+    <item name="gfOutline">#46202A</item>
+    <item name="android:windowBackground">#1C0A0E</item>
+    <item name="android:colorBackground">#1C0A0E</item>
+    <item name="android:textColorHighlight">#66FF7F6B</item>
+    <item name="gfSplash">@color/os_background_0</item>
+    <item name="gfFieldBackground">@drawable/os_field_0</item>
+    <item name="android:editTextStyle">@style/GrapefruitEditText.OS0</item>
+  </style>
+  <style name="GrapefruitEditText.OS0" parent="android:Widget.Holo.EditText">
+    <item name="android:background">@drawable/os_field_0</item>
+    <item name="android:textColor">#FFF1E8</item>
+    <item name="android:textColorHint">#B88A8F</item>
+    <item name="android:textCursorDrawable">@drawable/os_cursor_0</item>
+  </style>
+  <color name="os_background_1">#FCE4D9</color>
+  <style name="Theme.Grapefruit.OS1" parent="Theme.Grapefruit.GrapefruitLight">
+    <item name="gfBackground">#FCE4D9</item>
+    <item name="gfGroupedBackground">#FCE4D9</item>
+    <item name="gfSurface">#FFFAF6</item>
+    <item name="gfBar">#FDEAE1</item>
+    <item name="gfTextPrimary">#4A1622</item>
+    <item name="gfTextSecondary">#9A5C63</item>
+    <item name="gfSeparator">#F0C6B8</item>
+    <item name="gfDisclosure">#8D4B56</item>
+    <item name="gfAccent">#E83850</item>
+    <item name="gfFill">#FADCCF</item>
+    <item name="gfScrim">#E6FCE4D9</item>
+    <item name="gfControl">#FADCCF</item>
+    <item name="gfControlPressed">#F3C5B3</item>
+    <item name="gfToggleOff">#F7D6C9</item>
+    <item name="gfToggleOffSegments">#F1C8B9</item>
+    <item name="gfKnob">#FFFFFF</item>
+    <item name="gfAccentEnd">#D92B4B</item>
+    <item name="gfOnAccent">#FFFFFF</item>
+    <item name="gfOutline">#F3CDBF</item>
+    <item name="android:windowBackground">#FCE4D9</item>
+    <item name="android:colorBackground">#FCE4D9</item>
+    <item name="android:textColorHighlight">#66E83850</item>
+    <item name="gfSplash">@color/os_background_1</item>
+    <item name="gfFieldBackground">@drawable/os_field_1</item>
+    <item name="android:editTextStyle">@style/GrapefruitEditText.OS1</item>
+  </style>
+  <style name="GrapefruitEditText.OS1" parent="android:Widget.Holo.EditText">
+    <item name="android:background">@drawable/os_field_1</item>
+    <item name="android:textColor">#4A1622</item>
+    <item name="android:textColorHint">#9A5C63</item>
+    <item name="android:textCursorDrawable">@drawable/os_cursor_1</item>
+  </style>
+  <color name="os_background_2">#000000</color>
+  <style name="Theme.Grapefruit.OS2" parent="Theme.Grapefruit.GrapefruitDark">
+    <item name="gfBackground">#000000</item>
+    <item name="gfGroupedBackground">#000000</item>
+    <item name="gfSurface">#180A0E</item>
+    <item name="gfBar">#12070A</item>
+    <item name="gfTextPrimary">#FFF3EE</item>
+    <item name="gfTextSecondary">#B8949A</item>
+    <item name="gfSeparator">#2F161C</item>
+    <item name="gfDisclosure">#CBA6AC</item>
+    <item name="gfAccent">#FF7F6B</item>
+    <item name="gfFill">#1E0C11</item>
+    <item name="gfScrim">#D9000000</item>
+    <item name="gfControl">#261116</item>
+    <item name="gfControlPressed">#36181F</item>
+    <item name="gfToggleOff">#3A1D23</item>
+    <item name="gfToggleOffSegments">#F2D0C6</item>
+    <item name="gfKnob">#F2D0C6</item>
+    <item name="gfAccentEnd">#F2546B</item>
+    <item name="gfOnAccent">#1A0A0D</item>
+    <item name="gfOutline">#33181F</item>
+    <item name="android:windowBackground">#000000</item>
+    <item name="android:colorBackground">#000000</item>
+    <item name="android:textColorHighlight">#66FF7F6B</item>
+    <item name="gfSplash">@color/os_background_2</item>
+    <item name="gfFieldBackground">@drawable/os_field_2</item>
+    <item name="android:editTextStyle">@style/GrapefruitEditText.OS2</item>
+  </style>
+  <style name="GrapefruitEditText.OS2" parent="android:Widget.Holo.EditText">
+    <item name="android:background">@drawable/os_field_2</item>
+    <item name="android:textColor">#FFF3EE</item>
+    <item name="android:textColorHint">#B8949A</item>
+    <item name="android:textCursorDrawable">@drawable/os_cursor_2</item>
+  </style>
+  <color name="os_background_3">#07162B</color>
+  <style name="Theme.Grapefruit.OS3" parent="Theme.Grapefruit.GrapefruitDark">
+    <item name="gfBackground">#07162B</item>
+    <item name="gfGroupedBackground">#07162B</item>
+    <item name="gfSurface">#102541</item>
+    <item name="gfBar">#0B1D35</item>
+    <item name="gfTextPrimary">#EAF4FF</item>
+    <item name="gfTextSecondary">#A2BAD8</item>
+    <item name="gfSeparator">#294665</item>
+    <item name="gfDisclosure">#B2D5F5</item>
+    <item name="gfAccent">#67C7FF</item>
+    <item name="gfFill">#102541</item>
+    <item name="gfScrim">#D907162B</item>
+    <item name="gfControl">#1C3B60</item>
+    <item name="gfControlPressed">#284F78</item>
+    <item name="gfToggleOff">#294665</item>
+    <item name="gfToggleOffSegments">#BDDDF6</item>
+    <item name="gfKnob">#BDDDF6</item>
+    <item name="gfAccentEnd">#398BFF</item>
+    <item name="gfOnAccent">#06172C</item>
+    <item name="gfOutline">#294665</item>
+    <item name="android:windowBackground">#07162B</item>
+    <item name="android:colorBackground">#07162B</item>
+    <item name="android:textColorHighlight">#6667C7FF</item>
+    <item name="gfSplash">@color/os_background_3</item>
+    <item name="gfFieldBackground">@drawable/os_field_3</item>
+    <item name="android:editTextStyle">@style/GrapefruitEditText.OS3</item>
+  </style>
+  <style name="GrapefruitEditText.OS3" parent="android:Widget.Holo.EditText">
+    <item name="android:background">@drawable/os_field_3</item>
+    <item name="android:textColor">#EAF4FF</item>
+    <item name="android:textColorHint">#A2BAD8</item>
+    <item name="android:textCursorDrawable">@drawable/os_cursor_3</item>
+  </style>
+</resources>

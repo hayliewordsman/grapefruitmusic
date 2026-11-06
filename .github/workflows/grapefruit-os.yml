@@ -1,0 +1,35 @@
+name: Grapefruit OS foundation
+on:
+  push:
+    branches: [grapefruit-os, grapefruit-os-victory]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install app SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+      - name: Check generated themes and font policy
+        run: |
+          python3 os/tools/generate.py --check
+          python3 -m unittest discover -s os/tests -v
+          python3 os/tools/check_keyboard_resources.py --sdk-root "$ANDROID_HOME"
+      - name: Verify pinned platform patches
+        run: |
+          python3 os/tools/fetch_upstream.py --dest work/grapefruit-os/upstream
+          python3 os/tests/verify_aosp.py --upstream work/grapefruit-os/upstream
+      - name: Build and check apps
+        run: >-
+          ./gradlew --no-daemon :app:assembleDebug :tv:assembleDebug
+          :launcher:assembleDebug :os-wallpaper:assembleDebug :blue-victory:assembleOsFoss
+          :app:lintDebug :tv:lintDebug :launcher:lintDebug :os-wallpaper:lintDebug
+          :blue-victory:lintOsFoss :launcher:testDebugUnitTest

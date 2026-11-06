@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "edition": "standard",
+  "branch": "grapefruit-os",
+  "default_theme": 0,
+  "apps": [
+    "Launcher3QuickStep",
+    "GrapefruitAudio",
+    "GrapefruitTV"
+  ]
+}

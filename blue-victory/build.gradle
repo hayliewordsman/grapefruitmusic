@@ -22,6 +22,8 @@ android {
         applicationId "io.github.hayliewordsman.bluegrapefruit.victory"
         minSdk 17 // Android 4.2.2; do not add a maxSdkVersion.
         targetSdk 36
+        resValue "bool", "os_foss", "false"
+        resValue "bool", "os_victory", "false"
         versionCode 8
         versionName "1.0"
         ndk { abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64" }
@@ -76,6 +78,32 @@ android {
             matchingFallbacks = ["release"]
         }
     }
+    // FOSS OS preinstall: all app functionality, with no separately licensed EP assets.
+    buildTypes.create("osFoss") {
+        initWith buildTypes.getByName("release")
+        signingConfig null
+        versionNameSuffix "-os-foss"
+        matchingFallbacks = ["release"]
+        resValue "bool", "os_foss", "true"
+    }
+    // Shipping Victory OS edition includes the owner's approved bonus music bundle.
+    buildTypes.create("osVictory") {
+        initWith buildTypes.getByName("release")
+        signingConfig null
+        versionNameSuffix "-os"
+        matchingFallbacks = ["release"]
+        resValue "bool", "os_victory", "true"
+    }
+    sourceSets.osVictory {
+        res.srcDirs = ["src/main/res"]
+        assets.srcDir "src/main/assets"
+        manifest.srcFile "src/main/AndroidManifest.xml"
+    }
+    sourceSets.osFoss {
+        res.srcDirs = ["src/main/res"]
+        assets.srcDir "src/main/assets"
+        manifest.srcFile "src/main/AndroidManifest.xml"
+    }
     sourceSets.beta {
         res.srcDirs = ["src/main/res"]
         assets.srcDir "src/main/assets"
@@ -95,6 +123,10 @@ android {
             def testHome = layout.buildDirectory.dir("test-home").get().asFile
             systemProperty "user.home", testHome.absolutePath
             systemProperty "robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2"
+            ["http.proxyHost", "http.proxyPort", "https.proxyHost", "https.proxyPort",
+             "http.nonProxyHosts", "javax.net.ssl.trustStore"].each { key ->
+                if (System.getProperty(key)) systemProperty key, System.getProperty(key)
+            }
             doFirst { testHome.mkdirs() }
         }
     }
@@ -120,7 +152,7 @@ def verifyBundle = tasks.register("verifyVictoryBundle") {
     }
 }
 tasks.configureEach {
-    if (name == "packageDebug" || name == "packageRelease" || name == "packageBeta") dependsOn verifyBundle
+    if (name == "packageDebug" || name == "packageRelease" || name == "packageBeta" || name == "packageOsVictory") dependsOn verifyBundle
 }
 
 def localTestKey = rootProject.file("work/blue-grapefruit/debug.keystore")
@@ -156,3 +188,23 @@ dependencies {
 }
 
 tasks.named("preBuild").configure { dependsOn prepareBlueAudioSources }
+
+// Prevent an ambient private-bundle setting from leaking media into a FOSS OS APK.
+def verifyOsFossInputs = tasks.register("verifyOsFossInputs") {
+    doLast {
+        if (!privateBundle.get().isEmpty())
+            throw new GradleException("Unset BLUE_VICTORY_BUNDLE for the FOSS OS build.")
+    }
+}
+tasks.configureEach { if (name == "mergeOsFossAssets") dependsOn verifyOsFossInputs }
+
+def verifyOsVictoryLabels = tasks.register("verifyOsVictoryLabels") {
+    dependsOn verifyBundle
+    doLast {
+        def catalog = new groovy.json.JsonSlurper().parse(file(privateBundle.get() + "/victory/catalog.json"))
+        if (catalog.copyLabel != "Bonus Bundled Content" || !catalog.album.contains("Bonus Bundled Content")
+                || catalog.tracks.any { !it.title.endsWith(" (Bonus Bundled Content)") })
+            throw new GradleException("Prepare the OS music with the Bonus Bundled Content metadata.")
+    }
+}
+tasks.configureEach { if (name == "packageOsVictory") dependsOn verifyOsVictoryLabels }

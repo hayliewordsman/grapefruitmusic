@@ -1,5 +1,5 @@
 {
-  "album": "Victory Lights: Sounds of Resistance, Hope, and Change (Advance Copy)",
+  "album": "Victory Lights: Sounds of Resistance, Hope, and Change (Bonus Bundled Content)",
   "artist": "Poppy Peppers",
   "albumArtist": "Poppy Peppers",
   "lyricist": "Haylie Wordsman",
@@ -9,10 +9,31 @@
   "disc": "1/1",
   "lyrics": false,
   "tracks": [
-    {"track": 1, "name": "Blue Tsunami", "input": "Blue Tsunami 1.mp3"},
-    {"track": 2, "name": "Just Getting Started", "input": "Just Getting Started 1.mp3"},
-    {"track": 3, "name": "Love Thy Neighbor", "input": "Love Thy Neighbor 2.mp3"},
-    {"track": 4, "name": "New Religion", "input": "New Religion 1.mp3"},
-    {"track": 5, "name": "Eyes On The Prize", "input": "Eyes On The Prize 2.mp3"}
-  ]
+    {
+      "track": 1,
+      "name": "Blue Tsunami",
+      "input": "Blue Tsunami 1.mp3"
+    },
+    {
+      "track": 2,
+      "name": "Just Getting Started",
+      "input": "Just Getting Started 1.mp3"
+    },
+    {
+      "track": 3,
+      "name": "Love Thy Neighbor",
+      "input": "Love Thy Neighbor 2.mp3"
+    },
+    {
+      "track": 4,
+      "name": "New Religion",
+      "input": "New Religion 1.mp3"
+    },
+    {
+      "track": 5,
+      "name": "Eyes On The Prize",
+      "input": "Eyes On The Prize 2.mp3"
+    }
+  ],
+  "copyLabel": "Bonus Bundled Content"
 }

@@ -531,6 +531,7 @@ public final class MainActivity extends Activity {
         settingSection(page,"Appearance");
         settingValue(page,"Theme",LauncherTheme.NAMES[theme.id],this::themePicker);
         settingValue(page,"Universal theme","Grapefruit Settings",()->{
+            if (com.grapefruitmusic.ui.OsTheme.openSettings(this)) return;
             Intent intent=getPackageManager().getLaunchIntentForPackage("io.github.hayliewordsman.grapefruitsettings");
             if(intent!=null)external(intent);else notice("Install Grapefruit Settings to choose a universal theme.");
         });

@@ -1,0 +1,191 @@
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -6278,5 +6278,9 @@
+ 
+         <!-- This is the longest AndroidManifest.xml ever. -->
+ 
++        <!-- Read-only compatibility contract for the Grapefruit app family. -->
++        <provider android:name="com.android.settings.grapefruit.GrapefruitThemeProvider"
++            android:authorities="io.github.hayliewordsman.grapefruitsettings.theme"
++            android:exported="true" android:directBootAware="true" />
+     </application>
+ </manifest>
+--- a/res/xml/display_settings.xml
++++ b/res/xml/display_settings.xml
+@@ -20,6 +20,10 @@
+     android:key="display_settings_screen"
+     android:title="@string/display_settings"
+     settings:keywords="@string/keywords_display">
++
++    <Preference android:key="grapefruit_theme"
++        android:title="@string/grapefruit_theme_title" android:order="-210"
++        android:fragment="com.android.settings.grapefruit.GrapefruitThemeSettings" />
+ 
+     <PreferenceCategory
+         android:key="category_brightness"
+--- a/src/com/android/settings/core/gateway/SettingsGateway.java
++++ b/src/com/android/settings/core/gateway/SettingsGateway.java
+@@ -257,6 +257,7 @@
+             UserDictionaryList.class.getName(),
+             UserDictionarySettings.class.getName(),
+             DisplaySettings.class.getName(),
++            com.android.settings.grapefruit.GrapefruitThemeSettings.class.getName(),
+             MyDeviceInfoFragment.class.getName(),
+             ModuleLicensesDashboard.class.getName(),
+             ManageApplications.class.getName(),
+--- /dev/null
++++ b/src/com/android/settings/grapefruit/GrapefruitThemeProvider.java
+@@ -0,0 +1,47 @@
++// SPDX-License-Identifier: Apache-2.0
++package com.android.settings.grapefruit;
++
++import android.content.ContentProvider;
++import android.content.ContentValues;
++import android.database.Cursor;
++import android.database.MatrixCursor;
++import android.net.Uri;
++import java.util.Arrays;
++import java.util.List;
++
++/** Exposes only a theme ID and revision; never accepts writes or returns Settings data. */
++public final class GrapefruitThemeProvider extends ContentProvider {
++    private static final List<String> COLUMNS = Arrays.asList(
++            "theme", "revision", "media_theme", "media_revision", "os");
++    @Override public boolean onCreate() { return true; }
++    @Override public Cursor query(Uri uri, String[] projection, String selection,
++            String[] selectionArgs, String sortOrder) {
++        check(uri);
++        if (selection != null || selectionArgs != null || sortOrder != null)
++            throw new IllegalArgumentException("Only a single theme row is available");
++        String[] columns = projection == null ? COLUMNS.toArray(new String[0]) : projection;
++        GrapefruitThemeState.Snapshot state = GrapefruitThemeState.snapshot(getContext());
++        int theme = state.theme;
++        String revision = state.revision;
++        MatrixCursor cursor = new MatrixCursor(columns);
++        MatrixCursor.RowBuilder row = cursor.newRow();
++        for (String column : columns) {
++            if (!COLUMNS.contains(column)) throw new IllegalArgumentException("Unknown column: " + column);
++            switch (column) {
++                case "theme": case "media_theme": row.add(theme); break;
++                case "revision": case "media_revision": row.add(revision); break;
++                case "os": row.add(1); break;
++            }
++        }
++        cursor.setNotificationUri(getContext().getContentResolver(), GrapefruitThemeState.URI);
++        return cursor;
++    }
++    private static void check(Uri uri) {
++        if (!GrapefruitThemeState.URI.equals(uri)) throw new IllegalArgumentException("Unknown URI");
++    }
++    @Override public String getType(Uri uri) { check(uri); return "vnd.android.cursor.item/vnd.grapefruit.theme"; }
++    @Override public Uri insert(Uri uri, ContentValues values) { throw readOnly(); }
++    @Override public int update(Uri uri, ContentValues values, String s, String[] a) { throw readOnly(); }
++    @Override public int delete(Uri uri, String s, String[] a) { throw readOnly(); }
++    private static SecurityException readOnly() { return new SecurityException("Choose themes in system Settings"); }
++}
+--- /dev/null
++++ b/res/values/grapefruit_strings.xml
+@@ -0,0 +1,6 @@
++<resources>
++    <string name="grapefruit_theme_title">Grapefruit theme</string>
++    <string name="grapefruit_theme_help">Your theme colors Settings, system controls, compatible apps, Home and app icon plates. The default lock screen follows your theme. A lock screen photo you choose is preserved.</string>
++    <string-array name="grapefruit_theme_names"><item>Grapefruit Dark</item><item>Grapefruit Light</item><item>Pitch Black</item><item>Victory Blue</item></string-array>
++    <string-array name="grapefruit_theme_ids"><item>0</item><item>1</item><item>2</item><item>3</item></string-array>
++</resources>
+--- /dev/null
++++ b/src/com/android/settings/grapefruit/GrapefruitThemeState.java
+@@ -0,0 +1,56 @@
++// SPDX-License-Identifier: Apache-2.0
++package com.android.settings.grapefruit;
++
++import android.app.UiModeManager;
++import android.content.Context;
++import android.net.Uri;
++import android.provider.Settings;
++import org.json.JSONException;
++import org.json.JSONObject;
++import java.util.UUID;
++
++/** State belongs to the calling Android user. Updates preserve unrelated theme JSON fields. */
++final class GrapefruitThemeState {
++    static final Uri URI = Uri.parse("content://io.github.hayliewordsman.grapefruitsettings.theme/theme");
++    static final String ID = "grapefruit.theme", REVISION = "grapefruit.revision";
++    private static final String[] SEEDS = {"FF7F6B", "E83850", "FF7F6B", "67C7FF"};
++    static JSONObject read(Context context) {
++        String raw = Settings.Secure.getString(context.getContentResolver(),
++                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES);
++        try { return raw == null ? new JSONObject() : new JSONObject(raw); }
++        catch (JSONException invalid) { return new JSONObject(); }
++    }
++    static final class Snapshot {
++        final int theme;
++        final String revision;
++        Snapshot(int theme, String revision) { this.theme = theme; this.revision = revision; }
++    }
++    static Snapshot snapshot(Context context) {
++        JSONObject state = read(context);
++        int fallback = context.getResources().getInteger(com.android.internal.R.integer.config_grapefruitDefaultTheme);
++        int id = state.optInt(ID, fallback);
++        if (id < 0 || id >= 4) id = 0;
++        return new Snapshot(id, state.optString(REVISION, "default-" + id));
++    }
++    static int selected(Context context) { return snapshot(context).theme; }
++    static void select(Context context, int id) {
++        if (id < 0 || id >= 4) throw new IllegalArgumentException("Unknown Grapefruit theme");
++        JSONObject state = read(context);
++        try {
++            state.put(ID, id);
++            state.put(REVISION, UUID.randomUUID().toString());
++            state.put("android.theme.customization.system_palette", SEEDS[id]);
++            state.put("android.theme.customization.accent_color", SEEDS[id]);
++            state.put("android.theme.customization.color_source", "preset");
++            state.put("android.theme.customization.theme_style", "TONAL_SPOT");
++            state.remove("android.theme.customization.dynamic_color");
++        } catch (JSONException impossible) { throw new IllegalStateException(impossible); }
++        if (!Settings.Secure.putString(context.getContentResolver(),
++                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, state.toString())) {
++            throw new IllegalStateException("Could not save the theme");
++        }
++        context.getSystemService(UiModeManager.class).setNightMode(
++                id == 1 ? UiModeManager.MODE_NIGHT_NO : UiModeManager.MODE_NIGHT_YES);
++        context.getContentResolver().notifyChange(URI, null);
++    }
++}
+--- /dev/null
++++ b/src/com/android/settings/grapefruit/GrapefruitThemeSettings.java
+@@ -0,0 +1,24 @@
++// SPDX-License-Identifier: Apache-2.0
++package com.android.settings.grapefruit;
++
++import android.os.Bundle;
++import androidx.preference.ListPreference;
++import android.app.settings.SettingsEnums;
++import com.android.settings.R;
++import com.android.settings.SettingsPreferenceFragment;
++
++/** A page inside the stock Settings application, using its navigation and widgets. */
++public final class GrapefruitThemeSettings extends SettingsPreferenceFragment {
++    @Override public int getMetricsCategory() { return SettingsEnums.DISPLAY; }
++    @Override public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        addPreferencesFromResource(R.xml.grapefruit_theme_settings);
++        ListPreference theme = findPreference("grapefruit_theme_choice");
++        theme.setValue(Integer.toString(GrapefruitThemeState.selected(requireContext())));
++        theme.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
++        theme.setOnPreferenceChangeListener((preference, value) -> {
++            GrapefruitThemeState.select(requireContext(), Integer.parseInt((String) value));
++            return true;
++        });
++    }
++}
+--- /dev/null
++++ b/res/xml/grapefruit_theme_settings.xml
+@@ -0,0 +1,8 @@
++<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
++    android:title="@string/grapefruit_theme_title">
++    <ListPreference android:key="grapefruit_theme_choice"
++        android:title="@string/grapefruit_theme_title" android:persistent="false"
++        android:entries="@array/grapefruit_theme_names" android:entryValues="@array/grapefruit_theme_ids"/>
++    <Preference android:key="grapefruit_theme_help" android:selectable="false"
++        android:summary="@string/grapefruit_theme_help"/>
++</PreferenceScreen>

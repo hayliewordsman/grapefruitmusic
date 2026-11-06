@@ -41,6 +41,7 @@ public final class Sources {
         podcasts = new com.grapefruitmusic.podcast.PodcastSource(context);
         downloaded = new DownloadedSource(context);
         bundled = context.getResources().getBoolean(com.grapefruitmusic.R.bool.blue_victory)
+                && !context.getResources().getBoolean(com.grapefruitmusic.R.bool.os_foss)
                 ? new BundledSource(context) : null;
         device = bundled == null ? local : new OnDeviceSource(local, bundled);
         loadAccounts();

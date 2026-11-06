@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "aosp_branch": "android17-release",
+  "manifest_revision": "29ace668ae756c7b8917c57abb440f6518844b0c",
+  "projects": {
+    "frameworks/base": {
+      "revision": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+      "files": {
+        "ThemeOverlayController.java": {
+          "path": "packages/SystemUI/src/com/android/systemui/theme/ThemeOverlayController.java",
+          "sha256": "c3da63fde2abccf4c951114187575ef728605608405cb7d5733c40286addcf8b"
+        },
+        "base_Android.bp": {
+          "path": "data/fonts/Android.bp",
+          "sha256": "3deebf1e5518a0207a6d6320cbe203323add455532ff3591798737197cfc40f0"
+        },
+        "fonts.xml": {
+          "path": "data/fonts/fonts.xml",
+          "sha256": "e3ed2abe3236f0e9dbfcb7b7eac2d6e5b99e746b15e0d57d248de01ba62a4160"
+        },
+        "S_CommonTile.kt": {
+          "path": "packages/SystemUI/src/com/android/systemui/qs/panels/ui/compose/infinitegrid/CommonTile.kt",
+          "sha256": "faad1b350fa9341ea113ec70a0cff34abed2aeedf6f5ad50f173fddd131e5229"
+        }
+      }
+    },
+    "packages/apps/Settings": {
+      "revision": "213829fb67f5e070029e0513a088f31bc8f5c1ed",
+      "files": {
+        "settings_AndroidManifest.xml": {
+          "path": "AndroidManifest.xml",
+          "sha256": "04eae21c25f1b1525933d3b82b3e4643065d9f390cbc785971d61f1422aca998"
+        },
+        "settings_display.xml": {
+          "path": "res/xml/display_settings.xml",
+          "sha256": "231bda8a85236eafc9e3b78353997210a86cf32beec122624936a42d39115f07"
+        },
+        "SettingsGateway.java": {
+          "path": "src/com/android/settings/core/gateway/SettingsGateway.java",
+          "sha256": "cc09aad61521ddaf501f4e51f6149973924d9778162a7d5882dcee03d1435c03"
+        }
+      }
+    },
+    "packages/apps/Launcher3": {
+      "revision": "c612e6ece389f21c40f8cb9cd9a4b44239f00009",
+      "files": {
+        "L_QuickstepLauncher.java": {
+          "path": "quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java",
+          "sha256": "ce0e2e861eced434751957d84b59a808fa3217d5d2a04658c6bd89fc570fb5f1"
+        },
+        "L_BubbleTextView.java": {
+          "path": "src/com/android/launcher3/BubbleTextView.java",
+          "sha256": "c5ae21802d5e6ae8040e0ff8714ce8d97ee6259ab21327dc0436fe933d6e78ef"
+        },
+        "L_strings.xml": {
+          "path": "res/values/strings.xml",
+          "sha256": "e2839b16dce1b066ffd43dcc7bddb89fe9fb046875e7565ff266eeb52b2a18a1"
+        },
+        "L_quickstep_strings.xml": {
+          "path": "quickstep/res/values/strings.xml",
+          "sha256": "579186b406be994e7336c3ec6b92c45bece0ce96bf937d4a5c6ee3a544d7e444"
+        }
+      }
+    },
+    "packages/inputmethods/LatinIME": {
+      "revision": "afe0d5c261c3a0c88b38894981a7b332da93e7dd",
+      "files": {
+        "I_KeyboardTheme.java": {
+          "path": "java/src/com/android/inputmethod/keyboard/KeyboardTheme.java",
+          "sha256": "585d5233317385cd1a6b6ee8c89f9320dc9893a6c43a3567d9eb7139c54f2920"
+        },
+        "I_KeyboardSwitcher.java": {
+          "path": "java/src/com/android/inputmethod/keyboard/KeyboardSwitcher.java",
+          "sha256": "226e8499a544c0a4bddc449d801eacc2b0789310fb00f708d2c8df86ab9699c5"
+        },
+        "I_AppearanceSettingsFragment.java": {
+          "path": "java/src/com/android/inputmethod/latin/settings/AppearanceSettingsFragment.java",
+          "sha256": "2b76b6f2ccccdaeb38257af33dd4e7ffb1229ef87c76f89d764182c4863be9d6"
+        },
+        "I_prefs_appearance.xml": {
+          "path": "java/res/xml/prefs_screen_appearance.xml",
+          "sha256": "e08daa1516dc16c1d9103d49fb2c699e74e2c6bad8f457bb0e2dfdc5cccf933a"
+        },
+        "I_appname.xml": {
+          "path": "java/res/values/strings-appname.xml",
+          "sha256": "ca34bd0e283ad037fe951d2f410364fac2f571fd02149109a9c1a32b6206be89"
+        },
+        "I_colors.xml": {
+          "path": "java/res/values/colors.xml",
+          "sha256": "e7605caa1b13966e0f37b21ebc254df962f6fa79ec6acfdba3ef8812de63be25"
+        },
+        "I_themes_dark.xml": {
+          "path": "java/res/values/themes-lxx-dark.xml",
+          "sha256": "f6555be4ecb7a6a701994269d7885b2b1fb20dc6338a99a1327059ff63ca7dd1"
+        },
+        "I_themes_light.xml": {
+          "path": "java/res/values/themes-lxx-light.xml",
+          "sha256": "b6b8f5ede426f5b307d19198f23ba69736b04d962267eeb01b1cb64f0469a070"
+        }
+      }
+    }
+  }
+}

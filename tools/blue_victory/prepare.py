@@ -79,7 +79,7 @@ def main():
     (asset_dir / "bundle.key").write_bytes(key)
     catalog = {k: metadata[k] for k in ("album", "artist", "albumArtist", "year")}
     catalog.update(reviewStatus="approved" if args.approved else "draft", added=int(time.time() * 1000),
-                   coverFile=cover_file, tracks=[])
+                   coverFile=cover_file, copyLabel=metadata.get("copyLabel", "Bonus Bundled Content"), tracks=[])
     review = dict(metadata)
     review["cover"] = {"sha256": hashlib.sha256(cover).hexdigest(), "width": picture.width, "height": picture.height,
                        "sourceSha256": source_cover_hash, "mime": cover_mime, "type": "Front cover (3)", "file": cover_file}
@@ -89,7 +89,7 @@ def main():
         if len(paths) != 1:
             raise ValueError("Expected exactly one input: " + item["input"])
         source = paths[0]
-        title = item["name"] + " (Advance Copy)"
+        title = item["name"] + " (Bonus Bundled Content)"
         filename = "%02d %s.mp3" % (item["track"], title)
         destination = args.tagged / filename
         if destination.resolve() == source.resolve():

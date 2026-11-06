@@ -91,9 +91,10 @@ public final class SettingsFragment extends BaseFragment
 
         g.section("Appearance");
         final int showing = Ui.theme(c);
-        g.value("Theme", THEMES[themeIndex(showing)], new View.OnClickListener() {
+        g.value("Theme", showing == Prefs.THEME_VICTORY_BLUE ? "Victory Blue" : THEMES[themeIndex(showing)], new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (OsTheme.openSettings(c)) return;
                 choose("Theme", THEMES, themeIndex(showing), new Choice() {
                     @Override
                     public void chosen(int which) {

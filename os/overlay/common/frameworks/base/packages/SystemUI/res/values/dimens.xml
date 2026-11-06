@@ -1,0 +1,6 @@
+<resources>
+    <!-- Compact notifications form capsules; expanded content keeps a rounded card. -->
+    <dimen name="notification_corner_radius">40dp</dimen>
+    <dimen name="notification_corner_radius_small">24dp</dimen>
+    <dimen name="qs_corner_radius">40dp</dimen>
+</resources>

@@ -759,6 +759,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     @Override
     protected void onResume() {
         super.onResume();
+        if (Prefs.syncUniversal(this)) { recreate(); return; }
         com.grapefruitmusic.podcast.PodcastStore.get(this).resumeDownloads();
         Notice.setSink(this);
         com.grapefruitmusic.download.Downloads.get(this).startWorker();

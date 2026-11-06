@@ -1,0 +1,6 @@
+<resources>
+    <string name="grapefruit_theme_title">Grapefruit theme</string>
+    <string name="grapefruit_theme_help">Your theme colors Settings, system controls, compatible apps, Home and app icon plates. The default lock screen follows your theme. A lock screen photo you choose is preserved.</string>
+    <string-array name="grapefruit_theme_names"><item>Grapefruit Dark</item><item>Grapefruit Light</item><item>Pitch Black</item><item>Victory Blue</item></string-array>
+    <string-array name="grapefruit_theme_ids"><item>0</item><item>1</item><item>2</item><item>3</item></string-array>
+</resources>

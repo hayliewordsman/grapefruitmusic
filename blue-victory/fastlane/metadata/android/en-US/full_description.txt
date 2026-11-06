@@ -1,6 +1,6 @@
 Blue Grapefruit: Victory Edition brings your music, podcasts, audiobooks, radio and TV together in one blue-themed Android app.
 
-Includes Poppy Peppers' five-track advance-copy EP, Victory Lights: Sounds of Resistance, Hope, and Change. The included songs appear in On This Device, with separate Advance Copy titles and album tags. The music and artwork are separately copyrighted, distributed with the artist's permission, and are not covered by the app's software license.
+Includes Poppy Peppers' five-track Bonus Bundled Content EP, Victory Lights: Sounds of Resistance, Hope, and Change. The included songs appear in On This Device, with separate Bonus Bundled Content titles and album tags. The music and artwork are separately copyrighted, distributed with the artist's permission, and are not covered by the app's software license.
 
 Play your own files or connect Navidrome, Subsonic and Jellyfin. Find and download podcasts, listen to internet radio and supported FM hardware, and use the equalizer and playback controls.
 

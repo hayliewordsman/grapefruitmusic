@@ -5,7 +5,7 @@ import com.grapefruitmusic.lyrics.Lyrics;
 import java.io.IOException;
 import java.util.*;
 
-/** One device library combining MediaStore music and the private advance EP. Original source IDs
+/** One device library combining MediaStore music and the private bonus EP. Original source IDs
  * remain on every track/album, so browsing never exports private music or merges purchased copies. */
 public final class OnDeviceSource implements MusicSource {
     private final MusicSource local, included;
@@ -59,7 +59,7 @@ public final class OnDeviceSource implements MusicSource {
     public StreamRequest stream(MediaItem track,int quality){return BundledSource.owns(track)?included.stream(track,quality):local.stream(track,quality);}
     public StreamRequest download(MediaItem track,int quality){return null;}
     public Lyrics lyrics(MediaItem track) throws IOException {return BundledSource.owns(track)?null:local.lyrics(track);}
-    private static void sharedOnly(List<MediaItem> tracks) throws IOException {for(MediaItem t:tracks)if(BundledSource.owns(t))throw new IOException("Included advance tracks stay in Blue Grapefruit's private library.");}
+    private static void sharedOnly(List<MediaItem> tracks) throws IOException {for(MediaItem t:tracks)if(BundledSource.owns(t))throw new IOException("Included bonus tracks stay in Blue Grapefruit's private library.");}
     public void addToPlaylist(MediaItem p,List<MediaItem> t) throws IOException {sharedOnly(t);local.addToPlaylist(p,t);}
     public void createPlaylist(String n,List<MediaItem> t) throws IOException {sharedOnly(t);local.createPlaylist(n,t);}
     public void deletePlaylist(MediaItem p) throws IOException {local.deletePlaylist(p);}

@@ -33,6 +33,8 @@ public final class Ui {
      * was retired in 5.0 beta 9; anyone who had it gets Grapefruit Light, its nearest.
      */
     public static int theme(Context c) {
+        int os = OsTheme.selected(c);
+        if (os >= 0) return new int[]{4, 3, 2, 5}[os];
         if (c.getResources().getBoolean(R.bool.blue_victory)) return Prefs.THEME_GRAPEFRUIT_DARK;
         int t = Prefs.theme();
         if (t == Prefs.THEME_STARLIGHT) return Prefs.THEME_GRAPEFRUIT_LIGHT;
@@ -41,6 +43,12 @@ public final class Ui {
     }
 
     public static void applyTheme(Activity a) {
+        int os = OsTheme.selected(a);
+        if (os >= 0) {
+            a.setTheme(new int[]{R.style.Theme_Grapefruit_OS0, R.style.Theme_Grapefruit_OS1,
+                    R.style.Theme_Grapefruit_OS2, R.style.Theme_Grapefruit_OS3}[os]);
+            return;
+        }
         switch (theme(a)) {
             case Prefs.THEME_PITCH_BLACK:
                 a.setTheme(R.style.Theme_Grapefruit_Dark);

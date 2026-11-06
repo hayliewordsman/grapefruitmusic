@@ -1,0 +1,349 @@
+--- a/java/src/com/android/inputmethod/keyboard/KeyboardTheme.java
++++ b/java/src/com/android/inputmethod/keyboard/KeyboardTheme.java
+@@ -167,9 +167,12 @@
+     }
+ 
+     public static KeyboardTheme getKeyboardTheme(final Context context) {
+-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+-        final KeyboardTheme[] availableThemeArray = getAvailableThemeArray(context);
+-        return getKeyboardTheme(prefs, BuildCompatUtils.EFFECTIVE_SDK_INT, availableThemeArray);
++        // The OS theme controls keyboard appearance; keep AOSP's native light/dark icon sets.
++        final boolean night = (context.getResources().getConfiguration().uiMode
++                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
++                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
++        return searchKeyboardThemeById(night ? THEME_ID_LXX_DARK : THEME_ID_LXX_LIGHT,
++                KEYBOARD_THEMES);
+     }
+ 
+     /* package private for testing */
+--- a/java/src/com/android/inputmethod/keyboard/KeyboardSwitcher.java
++++ b/java/src/com/android/inputmethod/keyboard/KeyboardSwitcher.java
+@@ -66,6 +66,7 @@
+     private final KeyboardTextsSet mKeyboardTextsSet = new KeyboardTextsSet();
+ 
+     private KeyboardTheme mKeyboardTheme;
++    private int mGrapefruitPaletteFingerprint;
+     private Context mThemeContext;
+ 
+     private static final KeyboardSwitcher sInstance = new KeyboardSwitcher();
+@@ -101,8 +102,16 @@
+ 
+     private boolean updateKeyboardThemeAndContextThemeWrapper(final Context context,
+             final KeyboardTheme keyboardTheme) {
+-        if (mThemeContext == null || !keyboardTheme.equals(mKeyboardTheme)
++        final boolean night = (context.getResources().getConfiguration().uiMode
++                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
++                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
++        final int palette = 31 * context.getColor(night
++                ? android.R.color.system_background_dark : android.R.color.system_background_light)
++                + context.getColor(night
++                ? android.R.color.system_primary_dark : android.R.color.system_primary_light);
++        if (palette != mGrapefruitPaletteFingerprint || mThemeContext == null || !keyboardTheme.equals(mKeyboardTheme)
+                 || !mThemeContext.getResources().equals(context.getResources())) {
++            mGrapefruitPaletteFingerprint = palette;
+             mKeyboardTheme = keyboardTheme;
+             mThemeContext = new ContextThemeWrapper(context, keyboardTheme.mStyleId);
+             KeyboardLayoutSet.onKeyboardThemeChanged();
+--- a/java/src/com/android/inputmethod/latin/settings/AppearanceSettingsFragment.java
++++ b/java/src/com/android/inputmethod/latin/settings/AppearanceSettingsFragment.java
+@@ -41,6 +41,6 @@
+         super.onResume();
+         CustomInputStyleSettingsFragment.updateCustomInputStylesSummary(
+                 findPreference(Settings.PREF_CUSTOM_INPUT_STYLES));
+-        ThemeSettingsFragment.updateKeyboardThemeSummary(findPreference(Settings.SCREEN_THEME));
++        findPreference(Settings.SCREEN_THEME).setSummary(R.string.grapefruit_keyboard_follows_system);
+     }
+ }
+--- a/java/res/xml/prefs_screen_appearance.xml
++++ b/java/res/xml/prefs_screen_appearance.xml
+@@ -18,10 +18,11 @@
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     android:key="screen_appearance"
+     android:title="@string/settings_screen_appearance">
+-    <PreferenceScreen
+-        android:fragment="com.android.inputmethod.latin.settings.ThemeSettingsFragment"
+-        android:key="screen_theme"
+-        android:title="@string/settings_screen_theme" />
++    <Preference android:key="screen_theme"
++        android:title="@string/grapefruit_keyboard_theme"
++        android:summary="@string/grapefruit_keyboard_follows_system">
++        <intent android:action="android.settings.DISPLAY_SETTINGS" />
++    </Preference>
+     <PreferenceScreen
+         android:fragment="com.android.inputmethod.latin.settings.CustomInputStyleSettingsFragment"
+         android:key="custom_input_styles"
+--- a/java/res/values/strings-appname.xml
++++ b/java/res/values/strings-appname.xml
+@@ -21,7 +21,7 @@
+ <resources>
+     <!-- Application name for opensource Android keyboard. AOSP(Android Open Source Project) should not be translated.
+          This resource should be copied from msgid="8250992613616792321" -->
+-    <string name="english_ime_name">Android Keyboard (AOSP)</string>
++    <string name="english_ime_name">Grapefruit Keyboard</string>
+ 
+     <!-- Name of Android spell checker service. AOSP(Android Open Source Project) should not be translated.
+          This resource should be copied from msgid="511950477199948048" -->
+@@ -29,7 +29,7 @@
+ 
+     <!-- Title for Android Keyboard settings screen. AOSP(Android Open Source Project) should not be translated.
+          This resource should be copied from msgid="423615877174850267" -->
+-    <string name="english_ime_settings">Android Keyboard Settings (AOSP)</string>
++    <string name="english_ime_settings">Grapefruit Keyboard Settings</string>
+ 
+     <!-- Title for the spell checking service settings screen. AOSP(Android Open Source Project) should not be translated.
+          This resource should be copied from msgid="2970535894327288421" -->
+--- a/java/res/values/colors.xml
++++ b/java/res/values/colors.xml
+@@ -42,40 +42,40 @@
+     <color name="highlight_translucent_color_klp">#99E0E0E0</color>
+     <!-- Color resources for LXX_Light theme.
+          15%:0x26 70%:0xB3 75%:0xC0 80%:0xCC 85%:0xD9 90%:0xE6 -->
+-    <color name="key_text_color_lxx_light">#37474F</color>
+-    <color name="key_functional_text_color_lxx_light">#CC37474F</color>
+-    <color name="key_text_inactive_color_lxx_light">#B337474F</color>
+-    <color name="key_hint_letter_color_lxx_light">#B337474F</color>
+-    <color name="language_on_spacebar_text_color_lxx_light">#B337474F</color>
+-    <color name="highlight_color_lxx_light">#4DB6AC</color>
+-    <color name="auto_correct_color_lxx_light">#37474F</color>
+-    <color name="typed_word_color_lxx_light">#D937474F</color>
+-    <color name="suggested_word_color_lxx_light">#B337474F</color>
+-    <color name="gesture_trail_color_lxx_light">#4DB6AC</color>
+-    <color name="sliding_key_input_preview_color_lxx_light">#B34DB6AC</color>
+-    <color name="key_background_lxx_light">#ECEFF1</color>
+-    <color name="key_background_pressed_lxx_light">#2637474F</color>
+-    <color name="suggested_word_background_selected_lxx_light">#2637474F</color>
+-    <color name="gesture_floating_preview_color_lxx_light">#E6ECEFF1</color>
+-    <color name="emoji_tab_page_indicator_background_lxx_light">#E4E7E9</color>
++    <color name="key_text_color_lxx_light">@color/grapefruit_key_text</color>
++    <color name="key_functional_text_color_lxx_light">@color/grapefruit_key_text</color>
++    <color name="key_text_inactive_color_lxx_light">@color/grapefruit_key_secondary</color>
++    <color name="key_hint_letter_color_lxx_light">@color/grapefruit_key_secondary</color>
++    <color name="language_on_spacebar_text_color_lxx_light">@color/grapefruit_key_secondary</color>
++    <color name="highlight_color_lxx_light">@color/grapefruit_key_accent</color>
++    <color name="auto_correct_color_lxx_light">@color/grapefruit_key_text</color>
++    <color name="typed_word_color_lxx_light">@color/grapefruit_key_text</color>
++    <color name="suggested_word_color_lxx_light">@color/grapefruit_key_secondary</color>
++    <color name="gesture_trail_color_lxx_light">@color/grapefruit_key_accent</color>
++    <color name="sliding_key_input_preview_color_lxx_light">@color/grapefruit_key_accent</color>
++    <color name="key_background_lxx_light">@color/grapefruit_keyboard_surface</color>
++    <color name="key_background_pressed_lxx_light">@color/grapefruit_key_down</color>
++    <color name="suggested_word_background_selected_lxx_light">@color/grapefruit_key_down</color>
++    <color name="gesture_floating_preview_color_lxx_light">@color/grapefruit_keyboard_surface</color>
++    <color name="emoji_tab_page_indicator_background_lxx_light">@color/grapefruit_keyboard_surface</color>
+     <!-- Color resources for LXX_Dark theme.
+          10%:0x19 50%:0x80 70%:0xB3 75%:0xC0 80%:0xCC 85%:0xD9 90%:0xE6  -->
+-    <color name="key_text_color_lxx_dark">#CCFFFFFF</color>
+-    <color name="key_functional_text_color_lxx_dark">#CCFFFFFF</color>
+-    <color name="key_text_inactive_color_lxx_dark">#80FFFFFF</color>
+-    <color name="key_hint_letter_color_lxx_dark">#80FFFFFF</color>
+-    <color name="language_on_spacebar_text_color_lxx_dark">#B3FFFFFF</color>
+-    <color name="highlight_color_lxx_dark">#80CBC4</color>
+-    <color name="auto_correct_color_lxx_dark">#FFFFFF</color>
+-    <color name="typed_word_color_lxx_dark">#D9FFFFFF</color>
+-    <color name="suggested_word_color_lxx_dark">#B3FFFFFF</color>
+-    <color name="gesture_trail_color_lxx_dark">#80CBC4</color>
+-    <color name="sliding_key_input_preview_color_lxx_dark">#B380CBC4</color>
+-    <color name="key_background_lxx_dark">#263238</color>
+-    <color name="key_background_pressed_lxx_dark">#19FFFFFF</color>
+-    <color name="suggested_word_background_selected_lxx_dark">#19FFFFFF</color>
+-    <color name="gesture_floating_preview_color_lxx_dark">#E621272B</color>
+-    <color name="emoji_tab_page_indicator_background_lxx_dark">#21272B</color>
++    <color name="key_text_color_lxx_dark">@color/grapefruit_key_text</color>
++    <color name="key_functional_text_color_lxx_dark">@color/grapefruit_key_text</color>
++    <color name="key_text_inactive_color_lxx_dark">@color/grapefruit_key_secondary</color>
++    <color name="key_hint_letter_color_lxx_dark">@color/grapefruit_key_secondary</color>
++    <color name="language_on_spacebar_text_color_lxx_dark">@color/grapefruit_key_secondary</color>
++    <color name="highlight_color_lxx_dark">@color/grapefruit_key_accent</color>
++    <color name="auto_correct_color_lxx_dark">@color/grapefruit_key_text</color>
++    <color name="typed_word_color_lxx_dark">@color/grapefruit_key_text</color>
++    <color name="suggested_word_color_lxx_dark">@color/grapefruit_key_secondary</color>
++    <color name="gesture_trail_color_lxx_dark">@color/grapefruit_key_accent</color>
++    <color name="sliding_key_input_preview_color_lxx_dark">@color/grapefruit_key_accent</color>
++    <color name="key_background_lxx_dark">@color/grapefruit_keyboard_surface</color>
++    <color name="key_background_pressed_lxx_dark">@color/grapefruit_key_down</color>
++    <color name="suggested_word_background_selected_lxx_dark">@color/grapefruit_key_down</color>
++    <color name="gesture_floating_preview_color_lxx_dark">@color/grapefruit_keyboard_surface</color>
++    <color name="emoji_tab_page_indicator_background_lxx_dark">@color/grapefruit_keyboard_surface</color>
+     <!-- Color resources for setup wizard and tutorial -->
+     <color name="setup_background">#FFEBEBEB</color>
+     <color name="setup_text_dark">#FF707070</color>
+--- a/java/res/values/themes-lxx-dark.xml
++++ b/java/res/values/themes-lxx-dark.xml
+@@ -42,10 +42,10 @@
+         name="KeyboardView.LXX_Dark"
+         parent="KeyboardView.LXX"
+     >
+-        <item name="android:background">@drawable/keyboard_background_lxx_dark</item>
+-        <item name="keyBackground">@drawable/btn_keyboard_key_lxx_dark</item>
+-        <item name="functionalKeyBackground">@drawable/btn_keyboard_key_functional_lxx_dark</item>
+-        <item name="spacebarBackground">@drawable/btn_keyboard_spacebar_lxx_dark</item>
++        <item name="android:background">@color/grapefruit_keyboard_background</item>
++        <item name="keyBackground">@drawable/grapefruit_key</item>
++        <item name="functionalKeyBackground">@drawable/grapefruit_action_key</item>
++        <item name="spacebarBackground">@drawable/grapefruit_action_key</item>
+         <item name="keyTextColor">@color/key_text_color_lxx_dark</item>
+         <item name="keyTextInactivatedColor">@color/key_text_inactive_color_lxx_dark</item>
+         <item name="functionalTextColor">@color/key_functional_text_color_lxx_dark</item>
+@@ -60,7 +60,7 @@
+         parent="KeyboardView.LXX_Dark"
+     >
+         <item name="moreKeysKeyboardForActionLayout">@layout/more_keys_keyboard_for_action_lxx</item>
+-        <item name="keyPreviewBackground">@drawable/keyboard_key_feedback_lxx_dark</item>
++        <item name="keyPreviewBackground">@drawable/grapefruit_key_selected</item>
+         <item name="keyPreviewHeight">@dimen/config_key_preview_height_lxx</item>
+         <item name="keyPreviewOffset">@dimen/config_key_preview_offset_lxx</item>
+         <item name="keyPreviewShowUpAnimator">@anim/key_preview_show_up_lxx</item>
+@@ -115,8 +115,8 @@
+         name="MoreKeysKeyboardView.LXX_Dark"
+         parent="KeyboardView.LXX_Dark"
+     >
+-        <item name="android:background">@drawable/keyboard_popup_panel_background_lxx_dark</item>
+-        <item name="keyBackground">@drawable/btn_keyboard_key_popup_lxx_dark</item>
++        <item name="android:background">@color/grapefruit_keyboard_surface</item>
++        <item name="keyBackground">@drawable/grapefruit_key</item>
+         <item name="divider">@drawable/more_keys_divider</item>
+         <item name="keyTypeface">normal</item>
+         <item name="verticalCorrection">@dimen/config_more_keys_keyboard_vertical_correction_holo</item>
+@@ -126,7 +126,7 @@
+         parent="MoreKeysKeyboardView.LXX_Dark"
+     >
+         <item name="android:background">@android:color/transparent</item>
+-        <item name="keyBackground">@drawable/btn_keyboard_key_popup_action_lxx_dark</item>
++        <item name="keyBackground">@drawable/grapefruit_action_key</item>
+         <item name="divider">@null</item>
+         <item name="keyLabelFlags">keepBackgroundAspectRatio</item>
+     </style>
+@@ -138,7 +138,7 @@
+         <item name="centerSuggestionPercentile">@fraction/config_center_suggestion_percentile</item>
+         <item name="maxMoreSuggestionsRow">@integer/config_max_more_suggestions_row</item>
+         <item name="minMoreSuggestionsWidth">@fraction/config_min_more_suggestions_width</item>
+-        <item name="android:background">@drawable/keyboard_suggest_strip_lxx_dark</item>
++        <item name="android:background">@color/grapefruit_keyboard_surface</item>
+         <item name="android:src">@drawable/suggestions_strip_divider_lxx_dark</item>
+         <item name="suggestionStripOptions">autoCorrectBold|validTypedWordBold</item>
+         <item name="colorValidTypedWord">@color/typed_word_color_lxx_dark</item>
+@@ -151,7 +151,7 @@
+         name="SuggestionWord.LXX_Dark"
+         parent="SuggestionWord"
+     >
+-        <item name="android:background">@drawable/btn_suggestion_lxx_dark</item>
++        <item name="android:background">@drawable/grapefruit_key</item>
+         <item name="android:textColor">@color/highlight_color_lxx_dark</item>
+     </style>
+ </resources>
+--- a/java/res/values/themes-lxx-light.xml
++++ b/java/res/values/themes-lxx-light.xml
+@@ -42,10 +42,10 @@
+         name="KeyboardView.LXX_Light"
+         parent="KeyboardView.LXX"
+     >
+-        <item name="android:background">@drawable/keyboard_background_lxx_light</item>
+-        <item name="keyBackground">@drawable/btn_keyboard_key_lxx_light</item>
+-        <item name="functionalKeyBackground">@drawable/btn_keyboard_key_functional_lxx_light</item>
+-        <item name="spacebarBackground">@drawable/btn_keyboard_spacebar_lxx_light</item>
++        <item name="android:background">@color/grapefruit_keyboard_background</item>
++        <item name="keyBackground">@drawable/grapefruit_key</item>
++        <item name="functionalKeyBackground">@drawable/grapefruit_action_key</item>
++        <item name="spacebarBackground">@drawable/grapefruit_action_key</item>
+         <item name="keyTextColor">@color/key_text_color_lxx_light</item>
+         <item name="keyTextInactivatedColor">@color/key_text_inactive_color_lxx_light</item>
+         <item name="functionalTextColor">@color/key_functional_text_color_lxx_light</item>
+@@ -60,7 +60,7 @@
+         parent="KeyboardView.LXX_Light"
+     >
+         <item name="moreKeysKeyboardForActionLayout">@layout/more_keys_keyboard_for_action_lxx</item>
+-        <item name="keyPreviewBackground">@drawable/keyboard_key_feedback_lxx_light</item>
++        <item name="keyPreviewBackground">@drawable/grapefruit_key_selected</item>
+         <item name="keyPreviewHeight">@dimen/config_key_preview_height_lxx</item>
+         <item name="keyPreviewOffset">@dimen/config_key_preview_offset_lxx</item>
+         <item name="keyPreviewShowUpAnimator">@anim/key_preview_show_up_lxx</item>
+@@ -115,8 +115,8 @@
+         name="MoreKeysKeyboardView.LXX_Light"
+         parent="KeyboardView.LXX_Light"
+     >
+-        <item name="android:background">@drawable/keyboard_popup_panel_background_lxx_light</item>
+-        <item name="keyBackground">@drawable/btn_keyboard_key_popup_lxx_light</item>
++        <item name="android:background">@color/grapefruit_keyboard_surface</item>
++        <item name="keyBackground">@drawable/grapefruit_key</item>
+         <item name="divider">@drawable/more_keys_divider</item>
+         <item name="keyTypeface">normal</item>
+         <item name="verticalCorrection">@dimen/config_more_keys_keyboard_vertical_correction_holo</item>
+@@ -126,7 +126,7 @@
+         parent="MoreKeysKeyboardView.LXX_Light"
+     >
+         <item name="android:background">@android:color/transparent</item>
+-        <item name="keyBackground">@drawable/btn_keyboard_key_popup_action_lxx_light</item>
++        <item name="keyBackground">@drawable/grapefruit_action_key</item>
+         <item name="divider">@null</item>
+         <item name="keyLabelFlags">keepBackgroundAspectRatio</item>
+     </style>
+@@ -138,7 +138,7 @@
+         <item name="centerSuggestionPercentile">@fraction/config_center_suggestion_percentile</item>
+         <item name="maxMoreSuggestionsRow">@integer/config_max_more_suggestions_row</item>
+         <item name="minMoreSuggestionsWidth">@fraction/config_min_more_suggestions_width</item>
+-        <item name="android:background">@drawable/keyboard_suggest_strip_lxx_light</item>
++        <item name="android:background">@color/grapefruit_keyboard_surface</item>
+         <item name="android:src">@drawable/suggestions_strip_divider_lxx_light</item>
+         <item name="suggestionStripOptions">autoCorrectBold|validTypedWordBold</item>
+         <item name="colorValidTypedWord">@color/typed_word_color_lxx_light</item>
+@@ -151,7 +151,7 @@
+         name="SuggestionWord.LXX_Light"
+         parent="SuggestionWord"
+     >
+-        <item name="android:background">@drawable/btn_suggestion_lxx_light</item>
++        <item name="android:background">@drawable/grapefruit_key</item>
+         <item name="android:textColor">@color/highlight_color_lxx_light</item>
+     </style>
+ </resources>
+--- /dev/null
++++ b/java/res/values/grapefruit.xml
+@@ -0,0 +1,12 @@
++<resources>
++  <color name="grapefruit_keyboard_background">@android:color/system_background_light</color>
++  <color name="grapefruit_keyboard_surface">@android:color/system_surface_container_light</color>
++  <color name="grapefruit_key_fill">@android:color/system_surface_container_high_light</color>
++  <color name="grapefruit_key_down">@android:color/system_surface_container_highest_light</color>
++  <color name="grapefruit_key_outline">@android:color/system_outline_variant_light</color>
++  <color name="grapefruit_key_text">@android:color/system_on_surface_light</color>
++  <color name="grapefruit_key_secondary">@android:color/system_on_surface_variant_light</color>
++  <color name="grapefruit_key_accent">@android:color/system_primary_light</color>
++  <string name="grapefruit_keyboard_theme">Grapefruit theme</string>
++  <string name="grapefruit_keyboard_follows_system">Follows your system theme</string>
++</resources>
+--- /dev/null
++++ b/java/res/drawable/grapefruit_key_normal.xml
+@@ -0,0 +1 @@
++<inset xmlns:android="http://schemas.android.com/apk/res/android" android:insetLeft="2dp" android:insetTop="2dp" android:insetRight="2dp" android:insetBottom="2dp"><shape><solid android:color="@color/grapefruit_key_fill"/><stroke android:width="1dp" android:color="@color/grapefruit_key_outline"/><corners android:radius="24dp" android:bottomRightRadius="4dp"/></shape></inset>
+--- /dev/null
++++ b/java/res/drawable/grapefruit_key_selected.xml
+@@ -0,0 +1 @@
++<inset xmlns:android="http://schemas.android.com/apk/res/android" android:insetLeft="2dp" android:insetTop="2dp" android:insetRight="2dp" android:insetBottom="2dp"><shape><solid android:color="@color/grapefruit_key_down"/><stroke android:width="2dp" android:color="@color/grapefruit_key_accent"/><corners android:radius="24dp" android:bottomRightRadius="4dp"/></shape></inset>
+--- /dev/null
++++ b/java/res/drawable/grapefruit_key.xml
+@@ -0,0 +1 @@
++<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_empty="true" android:drawable="@android:color/transparent"/><item android:state_pressed="true" android:drawable="@drawable/grapefruit_key_pressed"/><item android:state_checked="true" android:drawable="@drawable/grapefruit_key_selected"/><item android:state_active="true" android:drawable="@drawable/grapefruit_key_selected"/><item android:state_focused="true" android:drawable="@drawable/grapefruit_key_selected"/><item android:drawable="@drawable/grapefruit_key_normal"/></selector>
+--- /dev/null
++++ b/java/res/drawable/grapefruit_key_action.xml
+@@ -0,0 +1 @@
++<inset xmlns:android="http://schemas.android.com/apk/res/android" android:insetLeft="2dp" android:insetTop="2dp" android:insetRight="2dp" android:insetBottom="2dp"><shape><solid android:color="@color/grapefruit_key_fill"/><stroke android:width="1dp" android:color="@color/grapefruit_key_accent"/><corners android:radius="24dp" android:bottomRightRadius="4dp"/></shape></inset>
+--- /dev/null
++++ b/java/res/drawable/grapefruit_key_pressed.xml
+@@ -0,0 +1 @@
++<inset xmlns:android="http://schemas.android.com/apk/res/android" android:insetLeft="2dp" android:insetTop="2dp" android:insetRight="2dp" android:insetBottom="2dp"><shape><solid android:color="@color/grapefruit_key_down"/><stroke android:width="1dp" android:color="@color/grapefruit_key_accent"/><corners android:radius="24dp" android:bottomRightRadius="4dp"/></shape></inset>
+--- /dev/null
++++ b/java/res/drawable/grapefruit_action_key.xml
+@@ -0,0 +1 @@
++<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_empty="true" android:drawable="@android:color/transparent"/><item android:state_pressed="true" android:drawable="@drawable/grapefruit_key_pressed"/><item android:state_checked="true" android:drawable="@drawable/grapefruit_key_selected"/><item android:state_active="true" android:drawable="@drawable/grapefruit_key_selected"/><item android:state_focused="true" android:drawable="@drawable/grapefruit_key_selected"/><item android:drawable="@drawable/grapefruit_key_action"/></selector>
+--- /dev/null
++++ b/java/res/values-night/grapefruit.xml
+@@ -0,0 +1,10 @@
++<resources>
++  <color name="grapefruit_keyboard_background">@android:color/system_background_dark</color>
++  <color name="grapefruit_keyboard_surface">@android:color/system_surface_container_dark</color>
++  <color name="grapefruit_key_fill">@android:color/system_surface_container_high_dark</color>
++  <color name="grapefruit_key_down">@android:color/system_surface_container_highest_dark</color>
++  <color name="grapefruit_key_outline">@android:color/system_outline_variant_dark</color>
++  <color name="grapefruit_key_text">@android:color/system_on_surface_dark</color>
++  <color name="grapefruit_key_secondary">@android:color/system_on_surface_variant_dark</color>
++  <color name="grapefruit_key_accent">@android:color/system_primary_dark</color>
++</resources>

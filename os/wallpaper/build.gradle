@@ -1,0 +1,18 @@
+plugins { id "com.android.application" }
+android {
+    namespace "io.github.hayliewordsman.grapefruitwallpaper"
+    compileSdk 36
+    defaultConfig {
+        applicationId "io.github.hayliewordsman.grapefruitwallpaper"
+        minSdk 31
+        targetSdk 36
+        versionCode 1
+        versionName "0.1-dev"
+    }
+    sourceSets.main.java.srcDir "../generated"
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    lint { abortOnError true }
+}

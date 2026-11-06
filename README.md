@@ -1,3 +1,10 @@
+# Grapefruit OS development branch
+
+See [the Android 17 OS integration and build guide](os/README.md),
+[validation and release gates](os/STATUS.md), and
+[Neway N-XR / MT6580 bring-up status](os/devices/neway_n_xr/README.md).
+The original app documentation follows below.
+
 <p align="center"><img src="docs/brand/logo-stacked.svg" width="240" alt="Grapefruit Audio: Music, Podcasts, and Audiobooks"></p>
 
 # Grapefruit Audio: Music, Podcasts, and Audiobooks

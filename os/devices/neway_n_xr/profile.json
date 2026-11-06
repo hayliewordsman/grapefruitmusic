@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "manufacturer": "Neway",
+  "marketing_model": "N-XR",
+  "source": "https://www.neway.mobi/n-xr.html",
+  "observed_on": "2026-11-06",
+  "status": "awaiting_verified_board_and_android17_bsp",
+  "shipping_product_enabled": false,
+  "published_claims": {
+    "soc": "MT6580",
+    "display": "6.1 inch, 1520 x 720",
+    "memory_verbatim": "2GB RAM + 16MB ROM (3GB + 32GB Optional)",
+    "network_heading": "4G",
+    "network_bands": "GSM + WCDMA (850/1900/2100 MHz)",
+    "os_verbatim": "IOS11",
+    "battery_table_mah": 2600,
+    "battery_other_text_mah": 2900
+  },
+  "board_codename": null,
+  "kernel_version": null,
+  "vendor_interface_level": null,
+  "android17_bsp": null,
+  "gms_status_for_final_build": "OEM verification required"
+}

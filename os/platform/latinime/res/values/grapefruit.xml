@@ -1,0 +1,12 @@
+<resources>
+  <color name="grapefruit_keyboard_background">@android:color/system_background_light</color>
+  <color name="grapefruit_keyboard_surface">@android:color/system_surface_container_light</color>
+  <color name="grapefruit_key_fill">@android:color/system_surface_container_high_light</color>
+  <color name="grapefruit_key_down">@android:color/system_surface_container_highest_light</color>
+  <color name="grapefruit_key_outline">@android:color/system_outline_variant_light</color>
+  <color name="grapefruit_key_text">@android:color/system_on_surface_light</color>
+  <color name="grapefruit_key_secondary">@android:color/system_on_surface_variant_light</color>
+  <color name="grapefruit_key_accent">@android:color/system_primary_light</color>
+  <string name="grapefruit_keyboard_theme">Grapefruit theme</string>
+  <string name="grapefruit_keyboard_follows_system">Follows your system theme</string>
+</resources>

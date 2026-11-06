@@ -30,8 +30,8 @@ public class BundledSourceTest {
     @Test public void browsesAndPlaysOnlyPrivateCopiesInAlbumOrder() throws Exception {
         List<MediaItem> songs = source.songs();
         assertEquals(5, songs.size());
-        assertEquals("Blue Tsunami (Advance Copy)", songs.get(0).title);
-        assertEquals("Eyes On The Prize (Advance Copy)", songs.get(4).title);
+        assertEquals("Blue Tsunami (Bonus Bundled Content)", songs.get(0).title);
+        assertEquals("Eyes On The Prize (Bonus Bundled Content)", songs.get(4).title);
         MediaItem album = source.albums().get(0);
         assertEquals(5, album.count);
         assertEquals(1, source.artistAlbums(source.artists().get(0)).size());

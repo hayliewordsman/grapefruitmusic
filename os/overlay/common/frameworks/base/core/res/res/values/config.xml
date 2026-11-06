@@ -1,0 +1,6 @@
+<resources>
+    <integer name="config_defaultNightMode">2</integer>
+    <integer name="config_navBarInteractionMode">2</integer>
+    <string name="default_wallpaper_component" translatable="false">io.github.hayliewordsman.grapefruitwallpaper/.ThemeWallpaperService</string>
+    <string name="config_icon_mask" translatable="false">M50,0 C77.61,0 100,22.39 100,50 L100,90 Q100,100 90,100 L50,100 C22.39,100 0,77.61 0,50 C0,22.39 22.39,0 50,0 Z</string>
+</resources>

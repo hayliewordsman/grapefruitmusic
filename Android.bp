@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: Apache-2.0
+package { default_applicable_licenses: ["grapefruit_os_license"] }
+license {
+    name: "grapefruit_os_license",
+    license_kinds: ["SPDX-license-identifier-Apache-2.0"],
+    license_text: ["os/LICENSE"],
+}
+android_app {
+    name: "GrapefruitThemeWallpaper",
+    product_specific: true,
+    manifest: "os/wallpaper/AndroidManifest.xml",
+    srcs: ["os/wallpaper/src/main/java/**/*.java", "os/generated/GrapefruitPalette.java"],
+    resource_dirs: ["os/wallpaper/src/main/res"],
+    sdk_version: "current",
+    min_sdk_version: "31",
+}
+python_binary_host {
+    name: "grapefruit_font_config",
+    main: "os/tools/font_config.py",
+    srcs: ["os/tools/font_config.py"],
+}
+prebuilt_font {
+    name: "Geist-Regular.ttf",
+    src: "grapefruit-ui/src/main/assets/fonts/Geist-Regular.ttf",
+    licenses: ["grapefruit_font_license"],
+}
+prebuilt_font {
+    name: "Geist-Medium.ttf",
+    src: "grapefruit-ui/src/main/assets/fonts/Geist-Medium.ttf",
+    licenses: ["grapefruit_font_license"],
+}
+prebuilt_font {
+    name: "Geist-SemiBold.ttf",
+    src: "grapefruit-ui/src/main/assets/fonts/Geist-SemiBold.ttf",
+    licenses: ["grapefruit_font_license"],
+}
+prebuilt_font {
+    name: "Geist-Bold.ttf",
+    src: "grapefruit-ui/src/main/assets/fonts/Geist-Bold.ttf",
+    licenses: ["grapefruit_font_license"],
+}
+license {
+    name: "grapefruit_font_license",
+    license_kinds: ["SPDX-license-identifier-OFL"],
+    license_text: ["grapefruit-ui/src/main/assets/fonts/Geist-OFL.txt"],
+}
+
+license {
+    name: "grapefruit_apps_license",
+    license_kinds: ["SPDX-license-identifier-GPL-3.0"],
+    license_text: ["LICENSE"],
+}

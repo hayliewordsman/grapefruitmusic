@@ -16,6 +16,7 @@ public final class Prefs {
     public static final int THEME_PITCH_BLACK = 2;
     public static final int THEME_GRAPEFRUIT_LIGHT = 3;
     public static final int THEME_GRAPEFRUIT_DARK = 4;
+    public static final int THEME_VICTORY_BLUE = 5;
 
     /** Quality 0 means "original file when this phone can play it"; otherwise MP3 at that kbps. */
     public static final int QUALITY_ORIGINAL = 0;
@@ -28,6 +29,12 @@ public final class Prefs {
 
     public static void init(Context context) {
         prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
+        syncUniversal(context);
+    }
+
+    public static boolean syncUniversal(Context context) {
+        return com.grapefruitmusic.ui.UniversalTheme.sync(context, prefs, true,
+                new int[]{THEME_GRAPEFRUIT_DARK,THEME_GRAPEFRUIT_LIGHT,THEME_PITCH_BLACK,THEME_VICTORY_BLUE});
     }
 
     public static SharedPreferences raw() {

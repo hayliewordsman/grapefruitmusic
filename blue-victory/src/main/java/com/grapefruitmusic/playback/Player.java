@@ -942,7 +942,7 @@ public final class Player implements AudioManager.OnAudioFocusChangeListener {
             MusicSource source = Sources.get(context).byId(item.sourceId);
             if (source instanceof com.grapefruitmusic.source.BundledSource)
                 return ((com.grapefruitmusic.source.BundledSource) source).fileFor(item);
-            throw new IOException("This advance copy requires Blue Grapefruit");
+            throw new IOException("This Bonus Bundled Content requires Blue Grapefruit");
         }
         if (com.grapefruitmusic.podcast.PodcastSource.ID.equals(item.sourceId))
             return com.grapefruitmusic.podcast.PodcastStore.get(context).localFile(item);

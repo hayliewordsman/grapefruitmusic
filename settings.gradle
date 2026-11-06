@@ -19,3 +19,6 @@ include ":app"
 include ":grapefruit-ui", ":tv"
 include ":blue-victory"
 include ":launcher"
+
+include ":os-wallpaper"
+project(":os-wallpaper").projectDir = file("os/wallpaper")
