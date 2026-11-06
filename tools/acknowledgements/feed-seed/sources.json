@@ -1,0 +1,1552 @@
+{
+  "schema": 1,
+  "states": {
+    "AL": "Alabama",
+    "AK": "Alaska",
+    "AZ": "Arizona",
+    "AR": "Arkansas",
+    "CA": "California",
+    "CO": "Colorado",
+    "CT": "Connecticut",
+    "DE": "Delaware",
+    "FL": "Florida",
+    "GA": "Georgia",
+    "HI": "Hawaii",
+    "ID": "Idaho",
+    "IL": "Illinois",
+    "IN": "Indiana",
+    "IA": "Iowa",
+    "KS": "Kansas",
+    "KY": "Kentucky",
+    "LA": "Louisiana",
+    "ME": "Maine",
+    "MD": "Maryland",
+    "MA": "Massachusetts",
+    "MI": "Michigan",
+    "MN": "Minnesota",
+    "MS": "Mississippi",
+    "MO": "Missouri",
+    "MT": "Montana",
+    "NE": "Nebraska",
+    "NV": "Nevada",
+    "NH": "New Hampshire",
+    "NJ": "New Jersey",
+    "NM": "New Mexico",
+    "NY": "New York",
+    "NC": "North Carolina",
+    "ND": "North Dakota",
+    "OH": "Ohio",
+    "OK": "Oklahoma",
+    "OR": "Oregon",
+    "PA": "Pennsylvania",
+    "RI": "Rhode Island",
+    "SC": "South Carolina",
+    "SD": "South Dakota",
+    "TN": "Tennessee",
+    "TX": "Texas",
+    "UT": "Utah",
+    "VT": "Vermont",
+    "VA": "Virginia",
+    "WA": "Washington",
+    "WV": "West Virginia",
+    "WI": "Wisconsin",
+    "WY": "Wyoming"
+  },
+  "sources": [
+    {
+      "file": "AK-current.csv",
+      "url": "https://data.openstates.org/people/current/ak.csv",
+      "state": "AK",
+      "kind": "current"
+    },
+    {
+      "file": "AK-state-lower.html",
+      "url": "https://ballotpedia.org/Alaska_House_of_Representatives_elections,_2026",
+      "state": "AK",
+      "kind": "state_house"
+    },
+    {
+      "file": "AK-state-upper.html",
+      "url": "https://ballotpedia.org/Alaska_State_Senate_elections,_2026",
+      "state": "AK",
+      "kind": "state_senate"
+    },
+    {
+      "file": "AK-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Alaska,_2026",
+      "state": "AK",
+      "kind": "us_house"
+    },
+    {
+      "file": "AK-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Alaska,_2026",
+      "state": "AK",
+      "kind": "us_senate"
+    },
+    {
+      "file": "AL-current.csv",
+      "url": "https://data.openstates.org/people/current/al.csv",
+      "state": "AL",
+      "kind": "current"
+    },
+    {
+      "file": "AL-state-lower.html",
+      "url": "https://ballotpedia.org/Alabama_House_of_Representatives_elections,_2026",
+      "state": "AL",
+      "kind": "state_house"
+    },
+    {
+      "file": "AL-state-upper.html",
+      "url": "https://ballotpedia.org/Alabama_State_Senate_elections,_2026",
+      "state": "AL",
+      "kind": "state_senate"
+    },
+    {
+      "file": "AL-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Alabama,_2026",
+      "state": "AL",
+      "kind": "us_house"
+    },
+    {
+      "file": "AL-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Alabama,_2026",
+      "state": "AL",
+      "kind": "us_senate"
+    },
+    {
+      "file": "AR-current.csv",
+      "url": "https://data.openstates.org/people/current/ar.csv",
+      "state": "AR",
+      "kind": "current"
+    },
+    {
+      "file": "AR-state-lower.html",
+      "url": "https://ballotpedia.org/Arkansas_House_of_Representatives_elections,_2026",
+      "state": "AR",
+      "kind": "state_house"
+    },
+    {
+      "file": "AR-state-upper.html",
+      "url": "https://ballotpedia.org/Arkansas_State_Senate_elections,_2026",
+      "state": "AR",
+      "kind": "state_senate"
+    },
+    {
+      "file": "AR-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Arkansas,_2026",
+      "state": "AR",
+      "kind": "us_house"
+    },
+    {
+      "file": "AR-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Arkansas,_2026",
+      "state": "AR",
+      "kind": "us_senate"
+    },
+    {
+      "file": "AZ-current.csv",
+      "url": "https://data.openstates.org/people/current/az.csv",
+      "state": "AZ",
+      "kind": "current"
+    },
+    {
+      "file": "AZ-state-lower.html",
+      "url": "https://ballotpedia.org/Arizona_House_of_Representatives_elections,_2026",
+      "state": "AZ",
+      "kind": "state_house"
+    },
+    {
+      "file": "AZ-state-upper.html",
+      "url": "https://ballotpedia.org/Arizona_State_Senate_elections,_2026",
+      "state": "AZ",
+      "kind": "state_senate"
+    },
+    {
+      "file": "AZ-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Arizona,_2026",
+      "state": "AZ",
+      "kind": "us_house"
+    },
+    {
+      "file": "CA-current.csv",
+      "url": "https://data.openstates.org/people/current/ca.csv",
+      "state": "CA",
+      "kind": "current"
+    },
+    {
+      "file": "CA-state-lower.html",
+      "url": "https://ballotpedia.org/California_State_Assembly_elections,_2026",
+      "state": "CA",
+      "kind": "state_house"
+    },
+    {
+      "file": "CA-state-upper.html",
+      "url": "https://ballotpedia.org/California_State_Senate_elections,_2026",
+      "state": "CA",
+      "kind": "state_senate"
+    },
+    {
+      "file": "CA-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_California,_2026",
+      "state": "CA",
+      "kind": "us_house"
+    },
+    {
+      "file": "CO-current.csv",
+      "url": "https://data.openstates.org/people/current/co.csv",
+      "state": "CO",
+      "kind": "current"
+    },
+    {
+      "file": "CO-state-lower.html",
+      "url": "https://ballotpedia.org/Colorado_House_of_Representatives_elections,_2026",
+      "state": "CO",
+      "kind": "state_house"
+    },
+    {
+      "file": "CO-state-upper.html",
+      "url": "https://ballotpedia.org/Colorado_State_Senate_elections,_2026",
+      "state": "CO",
+      "kind": "state_senate"
+    },
+    {
+      "file": "CO-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Colorado,_2026",
+      "state": "CO",
+      "kind": "us_house"
+    },
+    {
+      "file": "CO-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Colorado,_2026",
+      "state": "CO",
+      "kind": "us_senate"
+    },
+    {
+      "file": "CT-current.csv",
+      "url": "https://data.openstates.org/people/current/ct.csv",
+      "state": "CT",
+      "kind": "current"
+    },
+    {
+      "file": "CT-state-lower.html",
+      "url": "https://ballotpedia.org/Connecticut_House_of_Representatives_elections,_2026",
+      "state": "CT",
+      "kind": "state_house"
+    },
+    {
+      "file": "CT-state-upper.html",
+      "url": "https://ballotpedia.org/Connecticut_State_Senate_elections,_2026",
+      "state": "CT",
+      "kind": "state_senate"
+    },
+    {
+      "file": "CT-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Connecticut,_2026",
+      "state": "CT",
+      "kind": "us_house"
+    },
+    {
+      "file": "DE-current.csv",
+      "url": "https://data.openstates.org/people/current/de.csv",
+      "state": "DE",
+      "kind": "current"
+    },
+    {
+      "file": "DE-state-lower.html",
+      "url": "https://ballotpedia.org/Delaware_House_of_Representatives_elections,_2026",
+      "state": "DE",
+      "kind": "state_house"
+    },
+    {
+      "file": "DE-state-upper.html",
+      "url": "https://ballotpedia.org/Delaware_State_Senate_elections,_2026",
+      "state": "DE",
+      "kind": "state_senate"
+    },
+    {
+      "file": "DE-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Delaware,_2026",
+      "state": "DE",
+      "kind": "us_house"
+    },
+    {
+      "file": "DE-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Delaware,_2026",
+      "state": "DE",
+      "kind": "us_senate"
+    },
+    {
+      "file": "FL-current.csv",
+      "url": "https://data.openstates.org/people/current/fl.csv",
+      "state": "FL",
+      "kind": "current"
+    },
+    {
+      "file": "FL-state-lower.html",
+      "url": "https://ballotpedia.org/Florida_House_of_Representatives_elections,_2026",
+      "state": "FL",
+      "kind": "state_house"
+    },
+    {
+      "file": "FL-state-upper.html",
+      "url": "https://ballotpedia.org/Florida_State_Senate_elections,_2026",
+      "state": "FL",
+      "kind": "state_senate"
+    },
+    {
+      "file": "FL-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Florida,_2026",
+      "state": "FL",
+      "kind": "us_house"
+    },
+    {
+      "file": "FL-us-senate-special.html",
+      "url": "https://ballotpedia.org/United_States_Senate_special_election_in_Florida,_2026",
+      "state": "FL",
+      "kind": "us_senate"
+    },
+    {
+      "file": "GA-current.csv",
+      "url": "https://data.openstates.org/people/current/ga.csv",
+      "state": "GA",
+      "kind": "current"
+    },
+    {
+      "file": "GA-state-lower.html",
+      "url": "https://ballotpedia.org/Georgia_House_of_Representatives_elections,_2026",
+      "state": "GA",
+      "kind": "state_house"
+    },
+    {
+      "file": "GA-state-upper.html",
+      "url": "https://ballotpedia.org/Georgia_State_Senate_elections,_2026",
+      "state": "GA",
+      "kind": "state_senate"
+    },
+    {
+      "file": "GA-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Georgia,_2026",
+      "state": "GA",
+      "kind": "us_house"
+    },
+    {
+      "file": "GA-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Georgia,_2026",
+      "state": "GA",
+      "kind": "us_senate"
+    },
+    {
+      "file": "HI-current.csv",
+      "url": "https://data.openstates.org/people/current/hi.csv",
+      "state": "HI",
+      "kind": "current"
+    },
+    {
+      "file": "HI-state-lower.html",
+      "url": "https://ballotpedia.org/Hawaii_House_of_Representatives_elections,_2026",
+      "state": "HI",
+      "kind": "state_house"
+    },
+    {
+      "file": "HI-state-upper.html",
+      "url": "https://ballotpedia.org/Hawaii_State_Senate_elections,_2026",
+      "state": "HI",
+      "kind": "state_senate"
+    },
+    {
+      "file": "HI-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Hawaii,_2026",
+      "state": "HI",
+      "kind": "us_house"
+    },
+    {
+      "file": "IA-current.csv",
+      "url": "https://data.openstates.org/people/current/ia.csv",
+      "state": "IA",
+      "kind": "current"
+    },
+    {
+      "file": "IA-state-lower.html",
+      "url": "https://ballotpedia.org/Iowa_House_of_Representatives_elections,_2026",
+      "state": "IA",
+      "kind": "state_house"
+    },
+    {
+      "file": "IA-state-upper.html",
+      "url": "https://ballotpedia.org/Iowa_State_Senate_elections,_2026",
+      "state": "IA",
+      "kind": "state_senate"
+    },
+    {
+      "file": "IA-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Iowa,_2026",
+      "state": "IA",
+      "kind": "us_house"
+    },
+    {
+      "file": "IA-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Iowa,_2026",
+      "state": "IA",
+      "kind": "us_senate"
+    },
+    {
+      "file": "ID-current.csv",
+      "url": "https://data.openstates.org/people/current/id.csv",
+      "state": "ID",
+      "kind": "current"
+    },
+    {
+      "file": "ID-state-lower.html",
+      "url": "https://ballotpedia.org/Idaho_House_of_Representatives_elections,_2026",
+      "state": "ID",
+      "kind": "state_house"
+    },
+    {
+      "file": "ID-state-upper.html",
+      "url": "https://ballotpedia.org/Idaho_State_Senate_elections,_2026",
+      "state": "ID",
+      "kind": "state_senate"
+    },
+    {
+      "file": "ID-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Idaho,_2026",
+      "state": "ID",
+      "kind": "us_house"
+    },
+    {
+      "file": "ID-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Idaho,_2026",
+      "state": "ID",
+      "kind": "us_senate"
+    },
+    {
+      "file": "IL-current.csv",
+      "url": "https://data.openstates.org/people/current/il.csv",
+      "state": "IL",
+      "kind": "current"
+    },
+    {
+      "file": "IL-state-lower.html",
+      "url": "https://ballotpedia.org/Illinois_House_of_Representatives_elections,_2026",
+      "state": "IL",
+      "kind": "state_house"
+    },
+    {
+      "file": "IL-state-upper.html",
+      "url": "https://ballotpedia.org/Illinois_State_Senate_elections,_2026",
+      "state": "IL",
+      "kind": "state_senate"
+    },
+    {
+      "file": "IL-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Illinois,_2026",
+      "state": "IL",
+      "kind": "us_house"
+    },
+    {
+      "file": "IL-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Illinois,_2026",
+      "state": "IL",
+      "kind": "us_senate"
+    },
+    {
+      "file": "IN-current.csv",
+      "url": "https://data.openstates.org/people/current/in.csv",
+      "state": "IN",
+      "kind": "current"
+    },
+    {
+      "file": "IN-state-lower.html",
+      "url": "https://ballotpedia.org/Indiana_House_of_Representatives_elections,_2026",
+      "state": "IN",
+      "kind": "state_house"
+    },
+    {
+      "file": "IN-state-upper.html",
+      "url": "https://ballotpedia.org/Indiana_State_Senate_elections,_2026",
+      "state": "IN",
+      "kind": "state_senate"
+    },
+    {
+      "file": "IN-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Indiana,_2026",
+      "state": "IN",
+      "kind": "us_house"
+    },
+    {
+      "file": "KS-current.csv",
+      "url": "https://data.openstates.org/people/current/ks.csv",
+      "state": "KS",
+      "kind": "current"
+    },
+    {
+      "file": "KS-state-lower.html",
+      "url": "https://ballotpedia.org/Kansas_House_of_Representatives_elections,_2026",
+      "state": "KS",
+      "kind": "state_house"
+    },
+    {
+      "file": "KS-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Kansas,_2026",
+      "state": "KS",
+      "kind": "us_house"
+    },
+    {
+      "file": "KS-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Kansas,_2026",
+      "state": "KS",
+      "kind": "us_senate"
+    },
+    {
+      "file": "KY-current.csv",
+      "url": "https://data.openstates.org/people/current/ky.csv",
+      "state": "KY",
+      "kind": "current"
+    },
+    {
+      "file": "KY-state-lower.html",
+      "url": "https://ballotpedia.org/Kentucky_House_of_Representatives_elections,_2026",
+      "state": "KY",
+      "kind": "state_house"
+    },
+    {
+      "file": "KY-state-upper.html",
+      "url": "https://ballotpedia.org/Kentucky_State_Senate_elections,_2026",
+      "state": "KY",
+      "kind": "state_senate"
+    },
+    {
+      "file": "KY-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Kentucky,_2026",
+      "state": "KY",
+      "kind": "us_house"
+    },
+    {
+      "file": "KY-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Kentucky,_2026",
+      "state": "KY",
+      "kind": "us_senate"
+    },
+    {
+      "file": "LA-current.csv",
+      "url": "https://data.openstates.org/people/current/la.csv",
+      "state": "LA",
+      "kind": "current"
+    },
+    {
+      "file": "LA-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Louisiana,_2026",
+      "state": "LA",
+      "kind": "us_house"
+    },
+    {
+      "file": "LA-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Louisiana,_2026",
+      "state": "LA",
+      "kind": "us_senate"
+    },
+    {
+      "file": "MA-current.csv",
+      "url": "https://data.openstates.org/people/current/ma.csv",
+      "state": "MA",
+      "kind": "current"
+    },
+    {
+      "file": "MA-state-lower.html",
+      "url": "https://ballotpedia.org/Massachusetts_House_of_Representatives_elections,_2026",
+      "state": "MA",
+      "kind": "state_house"
+    },
+    {
+      "file": "MA-state-upper.html",
+      "url": "https://ballotpedia.org/Massachusetts_State_Senate_elections,_2026",
+      "state": "MA",
+      "kind": "state_senate"
+    },
+    {
+      "file": "MA-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Massachusetts,_2026",
+      "state": "MA",
+      "kind": "us_house"
+    },
+    {
+      "file": "MA-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Massachusetts,_2026",
+      "state": "MA",
+      "kind": "us_senate"
+    },
+    {
+      "file": "MD-current.csv",
+      "url": "https://data.openstates.org/people/current/md.csv",
+      "state": "MD",
+      "kind": "current"
+    },
+    {
+      "file": "MD-state-lower.html",
+      "url": "https://ballotpedia.org/Maryland_House_of_Delegates_elections,_2026",
+      "state": "MD",
+      "kind": "state_house"
+    },
+    {
+      "file": "MD-state-upper.html",
+      "url": "https://ballotpedia.org/Maryland_State_Senate_elections,_2026",
+      "state": "MD",
+      "kind": "state_senate"
+    },
+    {
+      "file": "MD-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Maryland,_2026",
+      "state": "MD",
+      "kind": "us_house"
+    },
+    {
+      "file": "ME-current.csv",
+      "url": "https://data.openstates.org/people/current/me.csv",
+      "state": "ME",
+      "kind": "current"
+    },
+    {
+      "file": "ME-state-lower.html",
+      "url": "https://ballotpedia.org/Maine_House_of_Representatives_elections,_2026",
+      "state": "ME",
+      "kind": "state_house"
+    },
+    {
+      "file": "ME-state-upper.html",
+      "url": "https://ballotpedia.org/Maine_State_Senate_elections,_2026",
+      "state": "ME",
+      "kind": "state_senate"
+    },
+    {
+      "file": "ME-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Maine,_2026",
+      "state": "ME",
+      "kind": "us_house"
+    },
+    {
+      "file": "ME-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Maine,_2026",
+      "state": "ME",
+      "kind": "us_senate"
+    },
+    {
+      "file": "MI-current.csv",
+      "url": "https://data.openstates.org/people/current/mi.csv",
+      "state": "MI",
+      "kind": "current"
+    },
+    {
+      "file": "MI-state-lower.html",
+      "url": "https://ballotpedia.org/Michigan_House_of_Representatives_elections,_2026",
+      "state": "MI",
+      "kind": "state_house"
+    },
+    {
+      "file": "MI-state-upper.html",
+      "url": "https://ballotpedia.org/Michigan_State_Senate_elections,_2026",
+      "state": "MI",
+      "kind": "state_senate"
+    },
+    {
+      "file": "MI-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Michigan,_2026",
+      "state": "MI",
+      "kind": "us_house"
+    },
+    {
+      "file": "MI-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Michigan,_2026",
+      "state": "MI",
+      "kind": "us_senate"
+    },
+    {
+      "file": "MN-current.csv",
+      "url": "https://data.openstates.org/people/current/mn.csv",
+      "state": "MN",
+      "kind": "current"
+    },
+    {
+      "file": "MN-state-lower.html",
+      "url": "https://ballotpedia.org/Minnesota_House_of_Representatives_elections,_2026",
+      "state": "MN",
+      "kind": "state_house"
+    },
+    {
+      "file": "MN-state-upper.html",
+      "url": "https://ballotpedia.org/Minnesota_State_Senate_elections,_2026",
+      "state": "MN",
+      "kind": "state_senate"
+    },
+    {
+      "file": "MN-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Minnesota,_2026",
+      "state": "MN",
+      "kind": "us_house"
+    },
+    {
+      "file": "MN-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Minnesota,_2026",
+      "state": "MN",
+      "kind": "us_senate"
+    },
+    {
+      "file": "MO-current.csv",
+      "url": "https://data.openstates.org/people/current/mo.csv",
+      "state": "MO",
+      "kind": "current"
+    },
+    {
+      "file": "MO-state-lower.html",
+      "url": "https://ballotpedia.org/Missouri_House_of_Representatives_elections,_2026",
+      "state": "MO",
+      "kind": "state_house"
+    },
+    {
+      "file": "MO-state-upper.html",
+      "url": "https://ballotpedia.org/Missouri_State_Senate_elections,_2026",
+      "state": "MO",
+      "kind": "state_senate"
+    },
+    {
+      "file": "MO-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Missouri,_2026",
+      "state": "MO",
+      "kind": "us_house"
+    },
+    {
+      "file": "MS-current.csv",
+      "url": "https://data.openstates.org/people/current/ms.csv",
+      "state": "MS",
+      "kind": "current"
+    },
+    {
+      "file": "MS-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Mississippi,_2026",
+      "state": "MS",
+      "kind": "us_house"
+    },
+    {
+      "file": "MS-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Mississippi,_2026",
+      "state": "MS",
+      "kind": "us_senate"
+    },
+    {
+      "file": "MT-current.csv",
+      "url": "https://data.openstates.org/people/current/mt.csv",
+      "state": "MT",
+      "kind": "current"
+    },
+    {
+      "file": "MT-state-lower.html",
+      "url": "https://ballotpedia.org/Montana_House_of_Representatives_elections,_2026",
+      "state": "MT",
+      "kind": "state_house"
+    },
+    {
+      "file": "MT-state-upper.html",
+      "url": "https://ballotpedia.org/Montana_State_Senate_elections,_2026",
+      "state": "MT",
+      "kind": "state_senate"
+    },
+    {
+      "file": "MT-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Montana,_2026",
+      "state": "MT",
+      "kind": "us_house"
+    },
+    {
+      "file": "MT-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Montana,_2026",
+      "state": "MT",
+      "kind": "us_senate"
+    },
+    {
+      "file": "NC-current.csv",
+      "url": "https://data.openstates.org/people/current/nc.csv",
+      "state": "NC",
+      "kind": "current"
+    },
+    {
+      "file": "NC-state-lower.html",
+      "url": "https://ballotpedia.org/North_Carolina_House_of_Representatives_elections,_2026",
+      "state": "NC",
+      "kind": "state_house"
+    },
+    {
+      "file": "NC-state-upper.html",
+      "url": "https://ballotpedia.org/North_Carolina_State_Senate_elections,_2026",
+      "state": "NC",
+      "kind": "state_senate"
+    },
+    {
+      "file": "NC-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_North_Carolina,_2026",
+      "state": "NC",
+      "kind": "us_house"
+    },
+    {
+      "file": "NC-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_North_Carolina,_2026",
+      "state": "NC",
+      "kind": "us_senate"
+    },
+    {
+      "file": "ND-current.csv",
+      "url": "https://data.openstates.org/people/current/nd.csv",
+      "state": "ND",
+      "kind": "current"
+    },
+    {
+      "file": "ND-state-lower.html",
+      "url": "https://ballotpedia.org/North_Dakota_House_of_Representatives_elections,_2026",
+      "state": "ND",
+      "kind": "state_house"
+    },
+    {
+      "file": "ND-state-upper.html",
+      "url": "https://ballotpedia.org/North_Dakota_State_Senate_elections,_2026",
+      "state": "ND",
+      "kind": "state_senate"
+    },
+    {
+      "file": "ND-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_North_Dakota,_2026",
+      "state": "ND",
+      "kind": "us_house"
+    },
+    {
+      "file": "NE-current.csv",
+      "url": "https://data.openstates.org/people/current/ne.csv",
+      "state": "NE",
+      "kind": "current"
+    },
+    {
+      "file": "NE-state-upper.html",
+      "url": "https://ballotpedia.org/Nebraska_State_Senate_elections,_2026",
+      "state": "NE",
+      "kind": "state_senate"
+    },
+    {
+      "file": "NE-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Nebraska,_2026",
+      "state": "NE",
+      "kind": "us_house"
+    },
+    {
+      "file": "NE-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Nebraska,_2026",
+      "state": "NE",
+      "kind": "us_senate"
+    },
+    {
+      "file": "NH-current.csv",
+      "url": "https://data.openstates.org/people/current/nh.csv",
+      "state": "NH",
+      "kind": "current"
+    },
+    {
+      "file": "NH-state-lower.html",
+      "url": "https://ballotpedia.org/New_Hampshire_House_of_Representatives_elections,_2026",
+      "state": "NH",
+      "kind": "state_house"
+    },
+    {
+      "file": "NH-state-upper.html",
+      "url": "https://ballotpedia.org/New_Hampshire_State_Senate_elections,_2026",
+      "state": "NH",
+      "kind": "state_senate"
+    },
+    {
+      "file": "NH-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_New_Hampshire,_2026",
+      "state": "NH",
+      "kind": "us_house"
+    },
+    {
+      "file": "NH-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_New_Hampshire,_2026",
+      "state": "NH",
+      "kind": "us_senate"
+    },
+    {
+      "file": "NJ-current.csv",
+      "url": "https://data.openstates.org/people/current/nj.csv",
+      "state": "NJ",
+      "kind": "current"
+    },
+    {
+      "file": "NJ-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_New_Jersey,_2026",
+      "state": "NJ",
+      "kind": "us_house"
+    },
+    {
+      "file": "NJ-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_New_Jersey,_2026",
+      "state": "NJ",
+      "kind": "us_senate"
+    },
+    {
+      "file": "NM-current.csv",
+      "url": "https://data.openstates.org/people/current/nm.csv",
+      "state": "NM",
+      "kind": "current"
+    },
+    {
+      "file": "NM-state-lower.html",
+      "url": "https://ballotpedia.org/New_Mexico_House_of_Representatives_elections,_2026",
+      "state": "NM",
+      "kind": "state_house"
+    },
+    {
+      "file": "NM-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_New_Mexico,_2026",
+      "state": "NM",
+      "kind": "us_house"
+    },
+    {
+      "file": "NM-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_New_Mexico,_2026",
+      "state": "NM",
+      "kind": "us_senate"
+    },
+    {
+      "file": "NV-current.csv",
+      "url": "https://data.openstates.org/people/current/nv.csv",
+      "state": "NV",
+      "kind": "current"
+    },
+    {
+      "file": "NV-state-lower.html",
+      "url": "https://ballotpedia.org/Nevada_State_Assembly_elections,_2026",
+      "state": "NV",
+      "kind": "state_house"
+    },
+    {
+      "file": "NV-state-upper.html",
+      "url": "https://ballotpedia.org/Nevada_State_Senate_elections,_2026",
+      "state": "NV",
+      "kind": "state_senate"
+    },
+    {
+      "file": "NV-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Nevada,_2026",
+      "state": "NV",
+      "kind": "us_house"
+    },
+    {
+      "file": "NY-current.csv",
+      "url": "https://data.openstates.org/people/current/ny.csv",
+      "state": "NY",
+      "kind": "current"
+    },
+    {
+      "file": "NY-state-lower.html",
+      "url": "https://ballotpedia.org/New_York_State_Assembly_elections,_2026",
+      "state": "NY",
+      "kind": "state_house"
+    },
+    {
+      "file": "NY-state-upper.html",
+      "url": "https://ballotpedia.org/New_York_State_Senate_elections,_2026",
+      "state": "NY",
+      "kind": "state_senate"
+    },
+    {
+      "file": "NY-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_New_York,_2026",
+      "state": "NY",
+      "kind": "us_house"
+    },
+    {
+      "file": "OH-current.csv",
+      "url": "https://data.openstates.org/people/current/oh.csv",
+      "state": "OH",
+      "kind": "current"
+    },
+    {
+      "file": "OH-state-lower.html",
+      "url": "https://ballotpedia.org/Ohio_House_of_Representatives_elections,_2026",
+      "state": "OH",
+      "kind": "state_house"
+    },
+    {
+      "file": "OH-state-upper.html",
+      "url": "https://ballotpedia.org/Ohio_State_Senate_elections,_2026",
+      "state": "OH",
+      "kind": "state_senate"
+    },
+    {
+      "file": "OH-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Ohio,_2026",
+      "state": "OH",
+      "kind": "us_house"
+    },
+    {
+      "file": "OH-us-senate-special.html",
+      "url": "https://ballotpedia.org/United_States_Senate_special_election_in_Ohio,_2026",
+      "state": "OH",
+      "kind": "us_senate"
+    },
+    {
+      "file": "OK-current.csv",
+      "url": "https://data.openstates.org/people/current/ok.csv",
+      "state": "OK",
+      "kind": "current"
+    },
+    {
+      "file": "OK-state-lower.html",
+      "url": "https://ballotpedia.org/Oklahoma_House_of_Representatives_elections,_2026",
+      "state": "OK",
+      "kind": "state_house"
+    },
+    {
+      "file": "OK-state-upper.html",
+      "url": "https://ballotpedia.org/Oklahoma_State_Senate_elections,_2026",
+      "state": "OK",
+      "kind": "state_senate"
+    },
+    {
+      "file": "OK-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Oklahoma,_2026",
+      "state": "OK",
+      "kind": "us_house"
+    },
+    {
+      "file": "OK-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Oklahoma,_2026",
+      "state": "OK",
+      "kind": "us_senate"
+    },
+    {
+      "file": "OR-current.csv",
+      "url": "https://data.openstates.org/people/current/or.csv",
+      "state": "OR",
+      "kind": "current"
+    },
+    {
+      "file": "OR-state-lower.html",
+      "url": "https://ballotpedia.org/Oregon_House_of_Representatives_elections,_2026",
+      "state": "OR",
+      "kind": "state_house"
+    },
+    {
+      "file": "OR-state-upper.html",
+      "url": "https://ballotpedia.org/Oregon_State_Senate_elections,_2026",
+      "state": "OR",
+      "kind": "state_senate"
+    },
+    {
+      "file": "OR-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Oregon,_2026",
+      "state": "OR",
+      "kind": "us_house"
+    },
+    {
+      "file": "OR-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Oregon,_2026",
+      "state": "OR",
+      "kind": "us_senate"
+    },
+    {
+      "file": "PA-current.csv",
+      "url": "https://data.openstates.org/people/current/pa.csv",
+      "state": "PA",
+      "kind": "current"
+    },
+    {
+      "file": "PA-state-lower.html",
+      "url": "https://ballotpedia.org/Pennsylvania_House_of_Representatives_elections,_2026",
+      "state": "PA",
+      "kind": "state_house"
+    },
+    {
+      "file": "PA-state-upper.html",
+      "url": "https://ballotpedia.org/Pennsylvania_State_Senate_elections,_2026",
+      "state": "PA",
+      "kind": "state_senate"
+    },
+    {
+      "file": "PA-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Pennsylvania,_2026",
+      "state": "PA",
+      "kind": "us_house"
+    },
+    {
+      "file": "RI-current.csv",
+      "url": "https://data.openstates.org/people/current/ri.csv",
+      "state": "RI",
+      "kind": "current"
+    },
+    {
+      "file": "RI-state-lower.html",
+      "url": "https://ballotpedia.org/Rhode_Island_House_of_Representatives_elections,_2026",
+      "state": "RI",
+      "kind": "state_house"
+    },
+    {
+      "file": "RI-state-upper.html",
+      "url": "https://ballotpedia.org/Rhode_Island_State_Senate_elections,_2026",
+      "state": "RI",
+      "kind": "state_senate"
+    },
+    {
+      "file": "RI-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Rhode_Island,_2026",
+      "state": "RI",
+      "kind": "us_house"
+    },
+    {
+      "file": "RI-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Rhode_Island,_2026",
+      "state": "RI",
+      "kind": "us_senate"
+    },
+    {
+      "file": "SC-current.csv",
+      "url": "https://data.openstates.org/people/current/sc.csv",
+      "state": "SC",
+      "kind": "current"
+    },
+    {
+      "file": "SC-state-lower.html",
+      "url": "https://ballotpedia.org/South_Carolina_House_of_Representatives_elections,_2026",
+      "state": "SC",
+      "kind": "state_house"
+    },
+    {
+      "file": "SC-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_South_Carolina,_2026",
+      "state": "SC",
+      "kind": "us_house"
+    },
+    {
+      "file": "SC-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_South_Carolina,_2026",
+      "state": "SC",
+      "kind": "us_senate"
+    },
+    {
+      "file": "SD-current.csv",
+      "url": "https://data.openstates.org/people/current/sd.csv",
+      "state": "SD",
+      "kind": "current"
+    },
+    {
+      "file": "SD-state-lower.html",
+      "url": "https://ballotpedia.org/South_Dakota_House_of_Representatives_elections,_2026",
+      "state": "SD",
+      "kind": "state_house"
+    },
+    {
+      "file": "SD-state-upper.html",
+      "url": "https://ballotpedia.org/South_Dakota_State_Senate_elections,_2026",
+      "state": "SD",
+      "kind": "state_senate"
+    },
+    {
+      "file": "SD-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_South_Dakota,_2026",
+      "state": "SD",
+      "kind": "us_house"
+    },
+    {
+      "file": "SD-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_South_Dakota,_2026",
+      "state": "SD",
+      "kind": "us_senate"
+    },
+    {
+      "file": "TN-current.csv",
+      "url": "https://data.openstates.org/people/current/tn.csv",
+      "state": "TN",
+      "kind": "current"
+    },
+    {
+      "file": "TN-state-lower.html",
+      "url": "https://ballotpedia.org/Tennessee_House_of_Representatives_elections,_2026",
+      "state": "TN",
+      "kind": "state_house"
+    },
+    {
+      "file": "TN-state-upper.html",
+      "url": "https://ballotpedia.org/Tennessee_State_Senate_elections,_2026",
+      "state": "TN",
+      "kind": "state_senate"
+    },
+    {
+      "file": "TN-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Tennessee,_2026",
+      "state": "TN",
+      "kind": "us_house"
+    },
+    {
+      "file": "TN-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Tennessee,_2026",
+      "state": "TN",
+      "kind": "us_senate"
+    },
+    {
+      "file": "TX-current.csv",
+      "url": "https://data.openstates.org/people/current/tx.csv",
+      "state": "TX",
+      "kind": "current"
+    },
+    {
+      "file": "TX-state-lower.html",
+      "url": "https://ballotpedia.org/Texas_House_of_Representatives_elections,_2026",
+      "state": "TX",
+      "kind": "state_house"
+    },
+    {
+      "file": "TX-state-upper.html",
+      "url": "https://ballotpedia.org/Texas_State_Senate_elections,_2026",
+      "state": "TX",
+      "kind": "state_senate"
+    },
+    {
+      "file": "TX-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Texas,_2026",
+      "state": "TX",
+      "kind": "us_house"
+    },
+    {
+      "file": "TX-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Texas,_2026",
+      "state": "TX",
+      "kind": "us_senate"
+    },
+    {
+      "file": "UT-current.csv",
+      "url": "https://data.openstates.org/people/current/ut.csv",
+      "state": "UT",
+      "kind": "current"
+    },
+    {
+      "file": "UT-state-lower.html",
+      "url": "https://ballotpedia.org/Utah_House_of_Representatives_elections,_2026",
+      "state": "UT",
+      "kind": "state_house"
+    },
+    {
+      "file": "UT-state-upper.html",
+      "url": "https://ballotpedia.org/Utah_State_Senate_elections,_2026",
+      "state": "UT",
+      "kind": "state_senate"
+    },
+    {
+      "file": "UT-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Utah,_2026",
+      "state": "UT",
+      "kind": "us_house"
+    },
+    {
+      "file": "VA-current.csv",
+      "url": "https://data.openstates.org/people/current/va.csv",
+      "state": "VA",
+      "kind": "current"
+    },
+    {
+      "file": "VA-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Virginia,_2026",
+      "state": "VA",
+      "kind": "us_house"
+    },
+    {
+      "file": "VA-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Virginia,_2026",
+      "state": "VA",
+      "kind": "us_senate"
+    },
+    {
+      "file": "VT-current.csv",
+      "url": "https://data.openstates.org/people/current/vt.csv",
+      "state": "VT",
+      "kind": "current"
+    },
+    {
+      "file": "VT-state-lower.html",
+      "url": "https://ballotpedia.org/Vermont_House_of_Representatives_elections,_2026",
+      "state": "VT",
+      "kind": "state_house"
+    },
+    {
+      "file": "VT-state-upper.html",
+      "url": "https://ballotpedia.org/Vermont_State_Senate_elections,_2026",
+      "state": "VT",
+      "kind": "state_senate"
+    },
+    {
+      "file": "VT-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Vermont,_2026",
+      "state": "VT",
+      "kind": "us_house"
+    },
+    {
+      "file": "WA-current.csv",
+      "url": "https://data.openstates.org/people/current/wa.csv",
+      "state": "WA",
+      "kind": "current"
+    },
+    {
+      "file": "WA-state-lower.html",
+      "url": "https://ballotpedia.org/Washington_House_of_Representatives_elections,_2026",
+      "state": "WA",
+      "kind": "state_house"
+    },
+    {
+      "file": "WA-state-upper.html",
+      "url": "https://ballotpedia.org/Washington_State_Senate_elections,_2026",
+      "state": "WA",
+      "kind": "state_senate"
+    },
+    {
+      "file": "WA-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Washington,_2026",
+      "state": "WA",
+      "kind": "us_house"
+    },
+    {
+      "file": "WI-current.csv",
+      "url": "https://data.openstates.org/people/current/wi.csv",
+      "state": "WI",
+      "kind": "current"
+    },
+    {
+      "file": "WI-state-lower.html",
+      "url": "https://ballotpedia.org/Wisconsin_State_Assembly_elections,_2026",
+      "state": "WI",
+      "kind": "state_house"
+    },
+    {
+      "file": "WI-state-upper.html",
+      "url": "https://ballotpedia.org/Wisconsin_State_Senate_elections,_2026",
+      "state": "WI",
+      "kind": "state_senate"
+    },
+    {
+      "file": "WI-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Wisconsin,_2026",
+      "state": "WI",
+      "kind": "us_house"
+    },
+    {
+      "file": "WV-current.csv",
+      "url": "https://data.openstates.org/people/current/wv.csv",
+      "state": "WV",
+      "kind": "current"
+    },
+    {
+      "file": "WV-state-lower.html",
+      "url": "https://ballotpedia.org/West_Virginia_House_of_Delegates_elections,_2026",
+      "state": "WV",
+      "kind": "state_house"
+    },
+    {
+      "file": "WV-state-upper.html",
+      "url": "https://ballotpedia.org/West_Virginia_State_Senate_elections,_2026",
+      "state": "WV",
+      "kind": "state_senate"
+    },
+    {
+      "file": "WV-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_West_Virginia,_2026",
+      "state": "WV",
+      "kind": "us_house"
+    },
+    {
+      "file": "WV-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_West_Virginia,_2026",
+      "state": "WV",
+      "kind": "us_senate"
+    },
+    {
+      "file": "WY-current.csv",
+      "url": "https://data.openstates.org/people/current/wy.csv",
+      "state": "WY",
+      "kind": "current"
+    },
+    {
+      "file": "WY-state-lower.html",
+      "url": "https://ballotpedia.org/Wyoming_House_of_Representatives_elections,_2026",
+      "state": "WY",
+      "kind": "state_house"
+    },
+    {
+      "file": "WY-state-upper.html",
+      "url": "https://ballotpedia.org/Wyoming_State_Senate_elections,_2026",
+      "state": "WY",
+      "kind": "state_senate"
+    },
+    {
+      "file": "WY-us-house.html",
+      "url": "https://ballotpedia.org/United_States_House_of_Representatives_elections_in_Wyoming,_2026",
+      "state": "WY",
+      "kind": "us_house"
+    },
+    {
+      "file": "WY-us-senate.html",
+      "url": "https://ballotpedia.org/United_States_Senate_election_in_Wyoming,_2026",
+      "state": "WY",
+      "kind": "us_senate"
+    },
+    {
+      "file": "gov-2026.html",
+      "url": "https://ballotpedia.org/Gubernatorial_elections,_2026",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "governor-healey.html",
+      "url": "https://www.mass.gov/news/governor-healey-touts-lgbtq-equality-economic-partnership-as-first-us-governor-to-address-irish-senate",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "governor-kotek.html",
+      "url": "https://www.oregon.gov/gov/Pages/meet-the-governor.aspx",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "liish-self-bio.html",
+      "url": "https://liishforduluth.com/about",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "nbc-ny-results.html",
+      "url": "https://www.nbcnewyork.com/elections/live-results-2026-ny-nj-ct-midterm-elections/6563336/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "ne-members.html",
+      "url": "https://en.wikipedia.org/wiki/Nebraska_Legislature",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "ne-party-barrydekay.html",
+      "url": "https://ballotpedia.org/Barry_DeKay",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "ne-party-danielleconrad.html",
+      "url": "https://ballotpedia.org/Danielle_Conrad",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "ne-party-dawsonbrunswick.html",
+      "url": "https://ballotpedia.org/Dawson_Brunswick",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "ne-party-erinfeichtinger.html",
+      "url": "https://ballotpedia.org/Erin_Feichtinger",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "ne-party-johnfredrickson.html",
+      "url": "https://ballotpedia.org/John_Fredrickson",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "ne-party-teresaibach.html",
+      "url": "https://ballotpedia.org/Teresa_Ibach",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "out-for-america.html",
+      "url": "https://outforamerica.org/",
+      "state": "",
+      "kind": "pride"
+    },
+    {
+      "file": "senate-current.yaml",
+      "url": "https://github.com/unitedstates/congress-legislators/blob/main/legislators-current.yaml",
+      "state": "",
+      "kind": "research",
+      "retrievalUrl": "https://raw.githubusercontent.com/unitedstates/congress-legislators/main/legislators-current.yaml"
+    },
+    {
+      "file": "vf-ford.html",
+      "url": "https://victoryfund.org/candidate/ford-j-d/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "vf-hudgins.html",
+      "url": "https://victoryfund.org/candidate/bentley-hudgins/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "vf-moss.html",
+      "url": "https://victoryfund.org/candidate/jeremy-moss/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "vf-profile-abi-boatman.html",
+      "url": "https://victoryfund.org/candidate/abi-boatman/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "vf-profile-alexis-hoffkling.html",
+      "url": "https://victoryfund.org/candidate/alexis-hoffkling/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "vf-profile-jaelynn-scott.html",
+      "url": "https://victoryfund.org/candidate/jaelynn-scott/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "vf-von-wilpert.html",
+      "url": "https://victoryfund.org/candidate/marni-von-wilpert/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "vf-whaley.html",
+      "url": "https://victoryfund.org/candidate/joanna-whaley/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "victory-candidates.html",
+      "url": "https://victoryfund.org/our-candidates/",
+      "state": "",
+      "kind": "pride"
+    },
+    {
+      "file": "mvp-state-results.html",
+      "url": "https://movement.vote/election-results/2026/races/state-legislatures/",
+      "state": "",
+      "kind": "called_state_results"
+    },
+    {
+      "file": "mvp-house-results.html",
+      "url": "https://movement.vote/election-results/2026/races/us-house/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "us-senate-2026.html",
+      "url": "https://ballotpedia.org/United_States_Senate_elections,_2026",
+      "kind": "research",
+      "state": ""
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+name: Refresh Blue Victory Roll Call
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: blue-roll-call-data
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install public-source parser dependencies
+        run: python -m pip install 'beautifulsoup4>=4.12,<5' 'PyYAML>=6,<7'
+      - name: Read the previous published snapshot
+        run: |
+          if git fetch origin blue-roll-call-data; then
+            git show FETCH_HEAD:roster.json > "$RUNNER_TEMP/previous-roster.json"
+          else
+            cp blue-victory/src/main/assets/acknowledgements/roster.json "$RUNNER_TEMP/previous-roster.json"
+          fi
+      - name: Refresh verified projections
+        run: |
+          python tools/acknowledgements/refresh_feed.py --cache "$RUNNER_TEMP/roll-call-sources" \
+            --previous "$RUNNER_TEMP/previous-roster.json" --output "$RUNNER_TEMP/roster.json"
+      - name: Publish only the results data
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          blob=$(git hash-object -w "$RUNNER_TEMP/roster.json")
+          tree=$(printf '100644 blob %s\troster.json\n' "$blob" | git mktree)
+          parents=()
+          if git fetch origin blue-roll-call-data; then parents=(-p FETCH_HEAD); fi
+          commit=$(git commit-tree "$tree" "${parents[@]}" -m 'Refresh verified Victory Roll Call projections')
+          git push origin "$commit:refs/heads/blue-roll-call-data"

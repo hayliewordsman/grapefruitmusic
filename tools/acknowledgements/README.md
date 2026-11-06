@@ -1,5 +1,26 @@
 # Provisional 2026 acknowledgements snapshot
 
+## Independently refreshed feed
+
+Blue 1.1 checks `https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/blue-roll-call-data/roster.json`
+whenever Victory Roll Call opens. It displays a validated private cached copy (or the included
+offline snapshot) while refreshing, saves valid results atomically, and keeps the last good copy
+if the service is unavailable or the response is invalid. Older responses cannot replace newer
+cached data. The closing paragraph remains app copy and appears only after list data has loaded.
+
+`.github/workflows/blue-roll-call.yml` checks the public result sources hourly and on manual
+dispatch. It publishes only `roster.json` on the separate `blue-roll-call-data` branch; no APK,
+app version, release tag, store listing or F-Droid repository is changed. The source manifest and
+minimal public identity references are under `feed-seed/`. Current-roster CSVs are reduced to the
+fields used for office/party/term matching. Raw research pages, contact fields and signing or music
+inputs are not published in the feed. The runtime payload excludes research-only fields.
+
+Run `refresh_feed.py --cache <private scratch> --output <roster.json>` with Beautiful Soup and
+PyYAML installed. A broad source outage or unexpected coverage loss refuses publication, leaving
+the existing public feed in place. Public identity evidence remains independently sourced and is
+applied only to a verified roster member. Its review date is carried separately from result checks.
+This feed is a provisional projected roster, not certification or an exact count of uncalled seats.
+
 `blue-victory/src/main/assets/acknowledgements/roster.json` is an offline, incomplete snapshot
 as of **November 5, 2026** (America/Toronto). It covers Democrats projected to serve after the
 2026 election: continuing and elected federal/state legislators, plus Democratic governors-elect
