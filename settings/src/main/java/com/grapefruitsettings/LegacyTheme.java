@@ -39,25 +39,30 @@ public final class LegacyTheme {
         fixed.add(d);Palette p=palette(d.getContext());
         View root=d.findViewById(android.R.id.content);if(root==null)return;
         decorate(root,p);List<EditText> fields=new ArrayList<>();fields(root,fields);
-        for(EditText f:fields)DialogEditing.prepare(f);
+        for(EditText f:fields){
+            DialogEditing.prepare(f);f.setMinimumHeight(p.dp(48));
+            f.setPadding(Math.max(f.getPaddingLeft(),p.dp(12)),Math.max(f.getPaddingTop(),p.dp(10)),Math.max(f.getPaddingRight(),p.dp(12)),Math.max(f.getPaddingBottom(),p.dp(10)));
+            ViewGroup.LayoutParams lp=f.getLayoutParams();if(lp!=null&&lp.height>0&&lp.height<p.dp(48)){lp.height=ViewGroup.LayoutParams.WRAP_CONTENT;f.setLayoutParams(lp);}
+        }
         if(fields.isEmpty()||Build.VERSION.SDK_INT>=23||!(root instanceof FrameLayout))return;
         FrameLayout frame=(FrameLayout)root;LinearLayout wrapper=new LinearLayout(d.getContext());wrapper.setOrientation(LinearLayout.VERTICAL);
         FrameLayout body=new FrameLayout(d.getContext());
         while(frame.getChildCount()>0){View child=frame.getChildAt(0);frame.removeViewAt(0);body.addView(child);}
-        wrapper.addView(body,new LinearLayout.LayoutParams(-1,-2));
-        LinearLayout tools=new LinearLayout(d.getContext());tools.setPadding(p.dp(4),p.dp(4),p.dp(4),p.dp(4));tools.setBackgroundColor(p.surface);
-        String[] labels={"Select all","Copy","Cut","Paste"};
-        for(int i=0;i<4;i++){
-            final int action=i;TextView button=p.text(labels[i],12,true);button.setGravity(Gravity.CENTER);button.setMinHeight(p.dp(48));button.setBackground(p.interactive(false));
-            button.setOnClickListener(v->{EditText f=fields.get(0);for(EditText field:fields)if(field.hasFocus()){f=field;break;}if(action==0)DialogEditing.selectAll(f);else if(action==3)DialogEditing.paste(f);else DialogEditing.copy(f,action==2);});
-            tools.addView(button,new LinearLayout.LayoutParams(0,-2,1));
-        }
-        wrapper.addView(tools);frame.addView(wrapper);
+        wrapper.addView(body,new LinearLayout.LayoutParams(-1,-2,1));
+        LinearLayout tools=new LinearLayout(d.getContext());tools.setPadding(p.dp(16),p.dp(12),p.dp(16),p.dp(12));tools.setBackgroundColor(p.surface);
+        tools.addView(new EditingToolbar(d.getContext(),p,action->{
+            EditText f=fields.get(0);for(EditText field:fields)if(field.hasFocus()){f=field;break;}
+            if(action==0)DialogEditing.selectAll(f);else if(action==3)DialogEditing.paste(f);else DialogEditing.copy(f,action==2);
+        }),new LinearLayout.LayoutParams(-1,-2));
+        wrapper.addView(tools,new LinearLayout.LayoutParams(-1,-2));frame.addView(wrapper);
     }
     private static void fields(View v,List<EditText> fields){if(v instanceof EditText)fields.add((EditText)v);if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)fields(g.getChildAt(i),fields);}}
     private static void decorate(View v,Palette p){
         if(v instanceof TextView){TextView t=(TextView)v;t.setTextColor(p.text);t.setTypeface(Fonts.of(t.getTextSize()/t.getResources().getDisplayMetrics().scaledDensity,false));}
-        if(v instanceof Button && !(v instanceof CompoundButton))v.setBackground(p.interactive(false));
+        if(v instanceof Button && !(v instanceof CompoundButton)){
+            int left=v.getPaddingLeft(),top=v.getPaddingTop(),right=v.getPaddingRight(),bottom=v.getPaddingBottom();
+            v.setBackground(p.interactive(false));v.setPadding(left,top,right,bottom);
+        }
         if(v instanceof EditText){((EditText)v).setHintTextColor(p.secondary);}
         if(v instanceof ImageView){android.graphics.drawable.Drawable icon=((ImageView)v).getDrawable();if(icon!=null)icon.mutate().setColorFilter(p.accent,PorterDuff.Mode.SRC_IN);}
         if(v instanceof ViewGroup){ViewGroup group=(ViewGroup)v;for(int i=0;i<group.getChildCount();i++)decorate(group.getChildAt(i),p);}

@@ -1,8 +1,14 @@
 # JP5S test line
 
-[**Download Grapefruit Settings 1.0 · JP5S beta 3**](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/jp5s-grapefruit-settings/downloads/jp5s/Grapefruit-Settings-1.0-jp5s-beta3.apk)
+[**Download Grapefruit Settings 1.0 · JP5S beta 4**](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/jp5s-grapefruit-settings/downloads/jp5s/Grapefruit-Settings-1.0-jp5s-beta4.apk)
 
-Beta 3 removes installed-stock-Settings handoffs. Device pages and their helper
+Beta 4 fixes spacing in Wi-Fi password and network dialogs, device rename and
+information dialogs. Editing buttons adapt to narrow widths and larger text;
+fields, toggles and actions have consistent padding and gaps. Card subtitles and
+theme labels also have clearer spacing. Long forms remain scrollable above the
+keyboard. It updates earlier Grapefruit Settings betas in place.
+
+Beta 3 removed installed-stock-Settings handoffs. Device pages and their helper
 components are bundled under Grapefruit's own namespace, including nested
 navigation, app details and password/lock confirmation. All 71 settings routes
 resolve inside this APK; no stock frontend fallback remains.
@@ -10,7 +16,7 @@ resolve inside this APK; no stock frontend fallback remains.
 It retains the in-app Wi-Fi selector, saved networks, password dialogs,
 disconnect/forget and connection details. Copy/Cut/Paste/Select all remain
 available in Jelly Bean dialogs. The Back button sits in the top-left corner
-beside the header. Beta 3 updates earlier Grapefruit Settings betas in place.
+beside the header.
 
 Install normally beside the existing Settings app. Keep stock Settings installed.
 This APK modifies the frontend only and is signed with the same public AOSP test
@@ -24,7 +30,7 @@ icon and switch changes. Device testing on the JP5S remains necessary.
 
 [Build, scope, universal themes and signing details](../../settings/README.md).
 [APK checksum](SHA256SUMS). [Signing verification](signature.txt).
-[Dependency audit](dependency-audit-beta3.json).
+[Dependency audit](dependency-audit-beta4.json).
 [Future system-role build profile](../../settings/SYSTEM_REPLACEMENT.md).
 
 The **JP5S theme companions** Actions job adds Audio, TV and Launcher universal

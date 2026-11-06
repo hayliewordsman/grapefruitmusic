@@ -234,8 +234,8 @@ def assemble(args):
         shutil.copyfile(ROOT / f"settings/src/main/res/mipmap-{density}/ic_launcher.png", icon)
     config = original / "apktool.yml"
     text = config.read_text()
-    text = re.sub(r"versionCode: .*", "versionCode: " + ("10003" if args.mode == "replacement" else "3"), text)
-    text = re.sub(r"versionName: .*", "versionName: 1.0-jp5s-beta3" + ("-replacement-experimental" if args.mode == "replacement" else ""), text)
+    text = re.sub(r"versionCode: .*", "versionCode: " + ("10004" if args.mode == "replacement" else "4"), text)
+    text = re.sub(r"versionName: .*", "versionName: 1.0-jp5s-beta4" + ("-replacement-experimental" if args.mode == "replacement" else ""), text)
     config.write_text(text)
     (out / "assembly-report.json").write_text(json.dumps(count, indent=2) + "\n")
     dependency_report = detach(original, input_manifest, PKG, args.mode)

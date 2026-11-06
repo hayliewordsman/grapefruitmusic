@@ -57,10 +57,8 @@ final class WifiUi {
         if(!networks.enabled()&&!savedOnly){label("Wi-Fi is off. Turn it on from the Wi-Fi page.");return;}
         if(rows.isEmpty()){label(savedOnly?"No saved networks yet.":networks.scanning?"Scanning…":"No nearby networks found. Rescan, or add a hidden network manually.");return;}
         for(WifiNetworks.Entry entry:rows){
-            LinearLayout row=a.horizontal();row.setPadding(p.dp(12),p.dp(12),p.dp(12),p.dp(12));row.setMinimumHeight(p.dp(72));row.setBackground(p.interactive(false));
-            row.addView(new SettingIcon(a,p,"wifi"),new LinearLayout.LayoutParams(p.dp(42),p.dp(42)));
-            LinearLayout names=a.column();names.setPadding(p.dp(12),0,0,0);names.addView(a.text(entry.ssid,16,true));TextView detail=a.text(entry.detail(),12,false);detail.setTextColor(p.secondary);names.addView(detail);row.addView(names,new LinearLayout.LayoutParams(0,-2,1));
-            row.setContentDescription(entry.ssid+", "+entry.detail());row.setFocusable(true);row.setOnClickListener(v->select(entry));
+            LinearLayout row=a.rowCard("wifi",entry.ssid,entry.detail(),v->select(entry));
+            row.setContentDescription(entry.ssid+", "+entry.detail());
             LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(-1,-2);params.topMargin=p.dp(8);list.addView(row,params);
         }
     }
@@ -68,13 +66,13 @@ final class WifiUi {
     private void select(WifiNetworks.Entry entry){
         if(!entry.saved()){
             if(entry.security==WifiNetworks.Security.OPEN){
-                LinearLayout body=a.column();body.addView(a.text("Open network · no password",14,false));Dialog d=a.dialog(entry.ssid,body);
+                LinearLayout body=a.dialogColumn();body.addView(a.text("Open network · no password",14,false));Dialog d=a.dialog(entry.ssid,body);
                 a.dialogButton(body,"Connect",v->{if(networks.save(entry.ssid,entry.security,"",null,false,true)){a.watchWifiConnection();d.dismiss();refresh();}else a.toast(networks.feedback);});a.dialogButton(body,"Cancel",v->d.dismiss());
             }else if(entry.security==WifiNetworks.Security.PSK||entry.security==WifiNetworks.Security.WEP)form(entry,false);
             else a.message(entry.ssid,entry.security==WifiNetworks.Security.EAP?"An enterprise network must already be provisioned on this JP5S. A saved enterprise profile can be selected under Saved networks.":"This network's security is not supported by Jelly Bean. Use an access point offering WPA2 Personal.");
             return;
         }
-        LinearLayout body=a.column();body.addView(a.text(entry.detail(),14,false));
+        LinearLayout body=a.dialogColumn();body.addView(a.text(entry.detail(),14,false));
         if(entry.scan!=null)body.addView(a.text(entry.scan.level+" dBm · "+entry.scan.frequency+" MHz",13,false));
         Dialog d=a.dialog(entry.ssid,body);
         if(entry.connected){a.dialogButton(body,"Connection details",v->{d.dismiss();a.navigate("wifi_advanced");});a.dialogButton(body,"Disconnect",v->{if(networks.disconnect()){d.dismiss();refresh();}else a.toast(networks.feedback);});}
@@ -83,38 +81,41 @@ final class WifiUi {
         a.dialogButton(body,"Forget network",v->{d.dismiss();forget(entry);});a.dialogButton(body,"Close",v->d.dismiss());
     }
     private void forget(WifiNetworks.Entry entry){
-        LinearLayout body=a.column();body.addView(a.text("Remove the saved connection to "+entry.ssid+"?",15,false));Dialog d=a.dialog("Forget network",body);
+        LinearLayout body=a.dialogColumn();body.addView(a.text("Remove the saved connection to "+entry.ssid+"?",15,false));Dialog d=a.dialog("Forget network",body);
         a.dialogButton(body,"Forget",v->{if(networks.forget(entry.config.networkId)){d.dismiss();refresh();}else a.toast(networks.feedback);});a.dialogButton(body,"Cancel",v->d.dismiss());
     }
     void form(WifiNetworks.Entry entry,boolean edit){
         final boolean manual=entry==null;
-        LinearLayout body=a.column();
+        LinearLayout body=a.dialogColumn();
         EditText ssid=new EditText(a);a.styleField(ssid,"Network name (SSID)",false);ssid.setText(manual?"":entry.ssid);
-        if(manual)a.editor(body,ssid);else body.addView(a.text(entry.ssid,18,true));
+        if(manual)a.editor(body,ssid);
         WifiNetworks.Security[] choices={WifiNetworks.Security.PSK,WifiNetworks.Security.OPEN,WifiNetworks.Security.WEP};
         WifiNetworks.Security[] security={manual?WifiNetworks.Security.PSK:entry.security};
         EditText password=new EditText(a);a.styleField(password,"Network password",true);password.setSaveEnabled(false);
-        LinearLayout passwordGroup=a.column();a.editor(passwordGroup,password);
+        LinearLayout passwordGroup=a.dialogColumn();a.editor(passwordGroup,password);
         TextView securityButton=p.chip("Security: "+security[0].label,false,v->{});
-        if(manual)body.addView(securityButton);else body.addView(a.text(security[0].label,14,false));
+        if(manual)body.addView(securityButton);else {
+            LinearLayout network=new SpacedColumn(a,p.dp(4));network.addView(a.text(entry.ssid,18,true));
+            TextView securityLabel=a.text(security[0].label,14,false);securityLabel.setTextColor(p.secondary);network.addView(securityLabel);body.addView(network);
+        }
         body.addView(passwordGroup);
         Toggle show=new Toggle(a);show.setPalette(p);show.setContentDescription("Show password");
-        LinearLayout showRow=a.horizontal();showRow.addView(a.text("Show password",14,false),new LinearLayout.LayoutParams(0,-2,1));showRow.addView(show,new LinearLayout.LayoutParams(p.dp(60),p.dp(48)));passwordGroup.addView(showRow);
+        LinearLayout showRow=a.horizontal();TextView showLabel=a.text("Show password",14,false);showLabel.setPadding(0,0,p.dp(12),0);showRow.addView(showLabel,new LinearLayout.LayoutParams(0,-2,1));showRow.addView(show,new LinearLayout.LayoutParams(p.dp(60),p.dp(48)));passwordGroup.addView(showRow);
         show.setListener((toggle,on)->{int from=password.getSelectionStart(),to=password.getSelectionEnd();password.setTransformationMethod(on?null:PasswordTransformationMethod.getInstance());if(from>=0&&to>=0)password.setSelection(Math.min(from,password.length()),Math.min(to,password.length()));});
         Toggle hidden=new Toggle(a);hidden.setPalette(p);hidden.setContentDescription("Hidden network");hidden.setChecked(entry!=null&&entry.config!=null&&entry.config.hiddenSSID);
-        if(manual){LinearLayout row=a.horizontal();row.addView(a.text("Hidden network",14,false),new LinearLayout.LayoutParams(0,-2,1));row.addView(hidden,new LinearLayout.LayoutParams(p.dp(60),p.dp(48)));body.addView(row);}
-        TextView error=a.text("",13,false);error.setTextColor(p.accent);body.addView(error);
-        if(edit)body.addView(a.text("Enter the new password. Cancel keeps the existing saved connection.",13,false));
+        if(manual){LinearLayout row=a.horizontal();TextView label=a.text("Hidden network",14,false);label.setPadding(0,0,p.dp(12),0);row.addView(label,new LinearLayout.LayoutParams(0,-2,1));row.addView(hidden,new LinearLayout.LayoutParams(p.dp(60),p.dp(48)));body.addView(row);}
+        TextView error=a.text("",13,false);error.setTextColor(p.accent);error.setLineSpacing(p.dp(3),1);error.setVisibility(View.GONE);body.addView(error);
+        if(edit){TextView help=a.text("Enter the new password. Cancel keeps the existing saved connection.",13,false);help.setTextColor(p.secondary);help.setLineSpacing(p.dp(3),1);body.addView(help);}
         Dialog d=a.dialog(edit?"Change password":manual?"Add a network":"Connect to Wi-Fi",body);
         securityButton.setOnClickListener(v->{
-            LinearLayout menu=a.column();Dialog choice=a.dialog("Network security",menu);
-            for(WifiNetworks.Security option:choices)a.dialogButton(menu,option.label,item->{security[0]=option;securityButton.setText("Security: "+option.label);passwordGroup.setVisibility(option==WifiNetworks.Security.OPEN?View.GONE:View.VISIBLE);error.setText("");choice.dismiss();});
+            LinearLayout menu=a.dialogColumn();Dialog choice=a.dialog("Network security",menu);
+            for(WifiNetworks.Security option:choices)a.dialogButton(menu,option.label,item->{security[0]=option;securityButton.setText("Security: "+option.label);passwordGroup.setVisibility(option==WifiNetworks.Security.OPEN?View.GONE:View.VISIBLE);error.setText("");error.setVisibility(View.GONE);choice.dismiss();});
             a.dialogButton(menu,"Cancel",item->choice.dismiss());
         });
         View.OnClickListener save=v->{
             String name=ssid.getText().toString(),secret=password.getText().toString();String invalid=WifiNetworks.validate(name,security[0],secret);
-            if(invalid!=null){error.setText(invalid);return;}
-            if(networks.save(name,security[0],secret,entry==null?null:entry.config,manual?hidden.isChecked():entry.config!=null&&entry.config.hiddenSSID,true)){a.watchWifiConnection();d.dismiss();refresh();}else error.setText(networks.feedback);
+            if(invalid!=null){error.setText(invalid);error.setVisibility(View.VISIBLE);return;}
+            if(networks.save(name,security[0],secret,entry==null?null:entry.config,manual?hidden.isChecked():entry.config!=null&&entry.config.hiddenSSID,true)){a.watchWifiConnection();d.dismiss();refresh();}else {error.setText(networks.feedback);error.setVisibility(View.VISIBLE);}
         };
         a.dialogButton(body,edit?"Save & reconnect":"Connect",save);a.dialogButton(body,"Cancel",v->d.dismiss());
     }

@@ -98,6 +98,40 @@ public class WifiTest {
             ((Toggle)described(view,"Show password")).performClick();assertEquals(5,f.getSelectionStart());assertNull(f.getTransformationMethod());click(find(view,"Select all"));assertEquals(0,f.getSelectionStart());assertEquals(6,f.getSelectionEnd());
         }
     }
+    @Test public void passwordDialogScrollsAboveKeyboardWithoutClippingEditingActions(){
+        radio.scans.add(scan("A long network name for testing","[WPA2-PSK-CCMP][ESS]",-45));networks.refresh();
+        try(ActivityController<MainActivity> c=launch()){
+            MainActivity a=c.get();click(find(root(a),"Wi-Fi"));click(find(root(a),"Networks & saved connections"));click(find(root(a),"A long network name for testing"));
+            View decor=ShadowDialog.getLatestDialog().getWindow().getDecorView();layout(decor,296,280);
+            EditingToolbar toolbar=(EditingToolbar)ofType(decor,EditingToolbar.class);assertNotNull(toolbar);
+            assertControlsFit(toolbar);assertTrue(toolbar.getChildAt(2).getTop()>toolbar.getChildAt(0).getBottom());
+            EditText field=edit(decor);assertTrue(field.getHeight()>=48);assertTrue(field.getPaddingLeft()>=12);
+            ScrollView scroll=(ScrollView)ofType(decor,ScrollView.class);assertNotNull(scroll);assertTrue(scroll.canScrollVertically(1));
+            scroll.setSmoothScrollingEnabled(false);scroll.fullScroll(View.FOCUS_DOWN);android.graphics.Rect cancel=new android.graphics.Rect();find(decor,"Cancel").getDrawingRect(cancel);scroll.offsetDescendantRectToMyCoords(find(decor,"Cancel"),cancel);cancel.offset(0,-scroll.getScrollY());
+            assertTrue(cancel.toString(),cancel.top>=0);assertTrue(cancel.toString(),cancel.bottom<=scroll.getHeight());
+        }
+    }
+    @Test public void manualNetworkFormAndValidationRemainReachableAtLargeFontSize(){
+        RuntimeEnvironment.setFontScale(1.3f);
+        try(ActivityController<MainActivity> c=launch()){
+            MainActivity a=c.get();click(find(root(a),"Wi-Fi"));click(find(root(a),"Add a network"));
+            View decor=ShadowDialog.getLatestDialog().getWindow().getDecorView();click(find(decor,"Connect"));layout(decor,296,300);
+            TextView error=(TextView)find(decor,"Enter a network name of 1–32 UTF-8 bytes.");assertNotNull(error);assertEquals(View.VISIBLE,error.getVisibility());assertTextFits(error);
+            assertControlsFit((EditingToolbar)ofType(decor,EditingToolbar.class));
+            ScrollView scroll=(ScrollView)ofType(decor,ScrollView.class);scroll.fullScroll(View.FOCUS_DOWN);assertFalse(scroll.canScrollVertically(1));assertTrue(find(decor,"Cancel").getHeight()>=48);
+            click(find(decor,"Security: WPA/WPA2 Personal"));View choice=ShadowDialog.getLatestDialog().getWindow().getDecorView();click(find(choice,"Open"));layout(decor,296,300);assertEquals(View.GONE,error.getVisibility());
+            View passwordSection=(View)editByDescription(decor,"Network password").getParent().getParent();assertEquals(View.GONE,passwordSection.getVisibility());
+        }finally{RuntimeEnvironment.setFontScale(1f);}
+    }
+    @Test @Config(sdk=28) @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void editingToolbarAdaptsToWidthAndLargeLabels(){
+        Palette palette=new Palette(RuntimeEnvironment.getApplication(),0);
+        EditingToolbar toolbar=new EditingToolbar(RuntimeEnvironment.getApplication(),palette,id->{});
+        layout(toolbar,256,400);assertControlsFit(toolbar);assertTrue(toolbar.getChildAt(2).getTop()>toolbar.getChildAt(0).getBottom());
+        layout(toolbar,420,400);assertControlsFit(toolbar);assertEquals(toolbar.getChildAt(0).getTop(),toolbar.getChildAt(3).getTop());
+        for(int i=0;i<toolbar.getChildCount();i++)((TextView)toolbar.getChildAt(i)).setTextSize(22);
+        layout(toolbar,256,400);assertControlsFit(toolbar);
+    }
     @Test @Config(sdk=28,qualifiers="w360dp-h640dp-mdpi") @GraphicsMode(GraphicsMode.Mode.NATIVE)
     public void renderWifiAndPasswordDialogInEveryTheme() throws Exception {
         java.io.File folder=new java.io.File("build/wifi-previews");folder.mkdirs();
@@ -107,9 +141,25 @@ public class WifiTest {
             try(ActivityController<MainActivity> c=launch()){
                 MainActivity a=c.get();click(find(root(a),"Wi-Fi"));click(find(root(a),"Networks & saved connections"));capture(root(a),new java.io.File(folder,"networks-"+id+".png"),360,640);
                 click(find(root(a),"Studio"));capture(ShadowDialog.getLatestDialog().getWindow().getDecorView(),new java.io.File(folder,"password-"+id+".png"),336,510);
+                // Native rasterization needs API 26+. Recreate the same toolbar added by
+                // API 17/21's editor, whose actual layout and actions are tested above.
+                View decor=ShadowDialog.getLatestDialog().getWindow().getDecorView();EditText field=edit(decor);
+                LinearLayout editor=(LinearLayout)field.getParent();editor.addView(new EditingToolbar(a,new Palette(a,id),action->{}),new LinearLayout.LayoutParams(-1,-2));
+                capture(decor,new java.io.File(folder,"password-editing-"+id+".png"),296,550);
             }
         }
     }
+    private static void layout(View view,int width,int maxHeight){view.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(maxHeight,View.MeasureSpec.AT_MOST));view.layout(0,0,view.getMeasuredWidth(),view.getMeasuredHeight());}
+    private static void assertControlsFit(EditingToolbar toolbar){
+        assertNotNull(toolbar);
+        for(int i=0;i<toolbar.getChildCount();i++){
+            TextView button=(TextView)toolbar.getChildAt(i);assertTrue(button.getHeight()>=48);assertTrue(button.getLeft()>=0);assertTrue(button.getRight()<=toolbar.getWidth());assertTrue(button.getBottom()<=toolbar.getHeight());assertTextFits(button);
+            for(int j=0;j<i;j++){View other=toolbar.getChildAt(j);assertFalse(android.graphics.Rect.intersects(new android.graphics.Rect(button.getLeft(),button.getTop(),button.getRight(),button.getBottom()),new android.graphics.Rect(other.getLeft(),other.getTop(),other.getRight(),other.getBottom())));}
+        }
+    }
+    private static void assertTextFits(TextView text){assertNotNull(text.getLayout());assertTrue(text.getLayout().getHeight()<=text.getHeight()-text.getPaddingTop()-text.getPaddingBottom());for(int line=0;line<text.getLineCount();line++)assertEquals(0,text.getLayout().getEllipsisCount(line));}
+    private static View ofType(View v,Class<?> type){if(type.isInstance(v))return v;if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++){View found=ofType(((ViewGroup)v).getChildAt(i),type);if(found!=null)return found;}return null;}
+    private static EditText editByDescription(View root,String description){return (EditText)described(root,description);}
     private static void capture(View view,java.io.File file,int width,int height)throws Exception{view.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(height,View.MeasureSpec.EXACTLY));view.layout(0,0,width,height);android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(width,height,android.graphics.Bitmap.Config.ARGB_8888);view.draw(new android.graphics.Canvas(bitmap));try(java.io.FileOutputStream out=new java.io.FileOutputStream(file)){bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();}
     @Test public void iconAndHardwareBackReturnToParentsAndSurviveRecreation(){
         try(ActivityController<MainActivity> c=launch()){

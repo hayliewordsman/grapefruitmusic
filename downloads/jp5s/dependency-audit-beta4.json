@@ -1,0 +1,30 @@
+{
+  "mode": "test",
+  "application_id": "io.github.hayliewordsman.grapefruitsettings",
+  "stock_frontend_launch_targets": [],
+  "unrelocated_device_classes": [],
+  "bundled_activity_count": 93,
+  "bundled_alias_count": 19,
+  "bundled_services": 1,
+  "bundled_receivers": 11,
+  "owned_route_count": 71,
+  "provider_authorities": [
+    "io.github.hayliewordsman.grapefruitsettings.theme"
+  ],
+  "settings_provider_unchanged": true,
+  "preserved_vendor_extension_actions": [
+    "com.android.settings.OEM_RADIO_INFO",
+    "com.android.settings.OPERATOR_APPLICATION_SETTING",
+    "com.android.settings.MANUFACTURER_APPLICATION_SETTING"
+  ],
+  "compatibility_input_guard": "DeviceSettings accepts legacy intents and retargets them to this APK",
+  "device_validation": "not performed; do not remove stock Settings during side-by-side testing",
+  "hardened_navigation_calls": 24,
+  "scoped_bluetooth_receivers": 3,
+  "fragment_hosts_repaired": [
+    "com.grapefruitsettings.device.Settings$UsbSettingsActivity"
+  ],
+  "orphan_missing_declarations_removed": [
+    "com.grapefruitsettings.device.DeviceInfo$StatsReportReceiver"
+  ]
+}

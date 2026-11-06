@@ -1,6 +1,22 @@
 # Grapefruit Settings · JP5S test branch
 
-[Download Settings beta 3](../downloads/jp5s/Grapefruit-Settings-1.0-jp5s-beta3.apk?raw=true).
+[Download Settings beta 4](../downloads/jp5s/Grapefruit-Settings-1.0-jp5s-beta4.apk?raw=true).
+
+## Beta 4: dialog and card spacing
+
+Wi-Fi password, add-network, security, saved-network and confirmation dialogs now
+use consistent outer padding and gaps between sections. Password fields have
+balanced internal padding and a minimum 52dp height. Validation feedback takes
+space only while visible. Device rename and information dialogs use the same
+spacing, and card subtitles and theme labels have explicit gaps.
+
+On Jelly Bean, Select all, Copy, Cut and Paste adapt to the available width and
+text size, using two rows on narrow dialogs instead of squeezing four controls
+into a fixed-height strip. The same toolbar is used in retained OEM text dialogs,
+with proper insets. Long forms scroll when space above the keyboard is limited;
+actions retain at least 48dp touch targets. Text editing and the corner Back
+button remain intact. Beta 4 updates previous Grapefruit Settings betas in place
+with version code 4 and the same JP5S certificate.
 
 ## Beta 3: owned frontend and device helpers
 
@@ -53,8 +69,8 @@ All new-page Back buttons use a drawn 48dp icon, matching Maps' fix, and share t
 hardware Back route. Dialogs dismiss first; nested pages return to their parent,
 with page history and scroll positions saved across recreation. Legacy switches
 now use the platform's own constructor defaults instead of a newer public style
-attribute. Beta 3 has version code 3 and the same OEM certificate as the earlier
-betas, so it updates the Grapefruit test app without replacing stock Settings.
+attribute. The current beta updates the Grapefruit test app without replacing
+stock Settings.
 
 This is a frontend mod of the supplied JP5S Android 4.2.2 Settings.apk. It installs
 as **Grapefruit Settings**, package `io.github.hayliewordsman.grapefruitsettings`,
@@ -128,8 +144,8 @@ zipalign -f 4 work/jp5s/jp5s-unsigned.apk work/jp5s/jp5s-aligned.apk
 apksigner sign --key /path/to/aosp/testkey.pk8 \
   --cert /path/to/aosp/testkey.x509.pem --min-sdk-version 17 \
   --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled false \
-  --out Grapefruit-Settings-1.0-jp5s-beta3.apk work/jp5s/jp5s-aligned.apk
-apksigner verify --min-sdk-version 17 --verbose Grapefruit-Settings-1.0-jp5s-beta3.apk
+  --out Grapefruit-Settings-1.0-jp5s-beta4.apk work/jp5s/jp5s-aligned.apk
+apksigner verify --min-sdk-version 17 --verbose Grapefruit-Settings-1.0-jp5s-beta4.apk
 ```
 
 Public test certificate/key: AOSP `platform/build`,
@@ -141,9 +157,10 @@ are owned, and no stock frontend targets remain. It never accepts or
 builds SettingsProvider. The branch has no F-Droid metadata or publishing path
 for Settings, and creates no release/tag for it.
 
-Validation: 39 Robolectric checks on API 21/28, including routing with no stock
-Settings installed in the fixture; API 17 lint; actual test/replacement assembly
-and dependency audits; original resource-ID checks; APK identity and v1 signing
+Validation: 42 Robolectric checks on API 21/28, including routing with no stock
+Settings installed in the fixture, narrow password/keyboard layouts and enlarged
+text; API 17 lint; actual device assembly and dependency audits; original
+resource-ID checks; APK identity and v1 signing
 verification. Earlier UI checks rendered at 320/360dp.
 The test framework does not emulate API 17 or JP5S hardware.
 

@@ -17,7 +17,7 @@ python3 tools/settings/assemble_jp5s.py \
 
 The output is `work/jp5s-replacement/jp5s-unsigned.apk`. The dependency audit is
 written beside it. This profile uses `com.android.settings`, shared system UID,
-version code 10003 and the original public system intent/receiver contracts.
+version code 10004 and the original public system intent/receiver contracts.
 Canonical Activity aliases retain legacy explicit component entry points and
 forward to bundled implementations. Common Settings actions open Grapefruit's
 pages; device-specific actions use the relocated JP5S pages. It is a firmware
