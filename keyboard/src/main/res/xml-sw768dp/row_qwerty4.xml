@@ -38,12 +38,8 @@
             latin:keyboardLayout="@xml/key_f1" />
         <include
             latin:keyXPos="29.923%p"
-            latin:keyboardLayout="@xml/key_space"
+            latin:keyboardLayout="@xml/key_space_letters"
             latin:backgroundType="normal" />
-        <include
-            latin:keyboardLayout="@xml/key_apostrophe" />
-        <include
-            latin:keyboardLayout="@xml/key_dash" />
         <include
             latin:keyboardLayout="@xml/key_f2" />
         <!-- Note: This Spacer prevents the above key from being marked as a right edge key. -->

@@ -1,4 +1,4 @@
-/*
+/* Modified for Grapefruit LegacyHolo: resolve the installed resource identity.
  * Copyright (C) 2011 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -31,9 +31,6 @@ import java.util.Locale;
  */
 public final class DictionaryFactory {
     private static final String TAG = DictionaryFactory.class.getSimpleName();
-    // This class must be located in the same package as LatinIME.java.
-    private static final String RESOURCE_PACKAGE_NAME =
-            DictionaryFactory.class.getPackage().getName();
 
     /**
      * Initializes a main dictionary collection from a dictionary pack, with explicit flags.
@@ -159,7 +156,6 @@ public final class DictionaryFactory {
         return 0 != getMainDictionaryResourceIdIfAvailableForLocale(res, locale);
     }
 
-    private static final String DEFAULT_MAIN_DICT = "main";
     private static final String MAIN_DICT_PREFIX = "main_";
 
     /**
@@ -169,19 +165,21 @@ public final class DictionaryFactory {
      */
     private static int getMainDictionaryResourceIdIfAvailableForLocale(final Resources res,
             final Locale locale) {
+        // The installed application ID differs from AOSP's Java namespace.
+        final String resourcePackageName = res.getResourcePackageName(R.raw.main);
         int resId;
         // Try to find main_language_country dictionary.
         if (!locale.getCountry().isEmpty()) {
             final String dictLanguageCountry = MAIN_DICT_PREFIX + locale.toString().toLowerCase();
             if ((resId = res.getIdentifier(
-                    dictLanguageCountry, "raw", RESOURCE_PACKAGE_NAME)) != 0) {
+                    dictLanguageCountry, "raw", resourcePackageName)) != 0) {
                 return resId;
             }
         }
 
         // Try to find main_language dictionary.
         final String dictLanguage = MAIN_DICT_PREFIX + locale.getLanguage();
-        if ((resId = res.getIdentifier(dictLanguage, "raw", RESOURCE_PACKAGE_NAME)) != 0) {
+        if ((resId = res.getIdentifier(dictLanguage, "raw", resourcePackageName)) != 0) {
             return resId;
         }
 
@@ -197,6 +195,6 @@ public final class DictionaryFactory {
     public static int getMainDictionaryResourceId(final Resources res, final Locale locale) {
         int resourceId = getMainDictionaryResourceIdIfAvailableForLocale(res, locale);
         if (0 != resourceId) return resourceId;
-        return res.getIdentifier(DEFAULT_MAIN_DICT, "raw", RESOURCE_PACKAGE_NAME);
+        return R.raw.main;
     }
 }

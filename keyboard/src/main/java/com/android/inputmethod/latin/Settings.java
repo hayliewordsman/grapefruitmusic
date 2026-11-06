@@ -51,6 +51,7 @@ public final class Settings extends InputMethodSettingsFragment
         com.grapefruit.legacy.GrapefruitTheme t=new com.grapefruit.legacy.GrapefruitTheme(getActivity());
         view.setBackgroundColor(t.bg);
         android.widget.ListView list=(android.widget.ListView)view.findViewById(android.R.id.list);
+        list.setItemsCanFocus(true);
         android.widget.EditText trial=new android.widget.EditText(getActivity());
         trial.setHint(R.string.grapefruit_try);
         trial.setTextColor(t.text);trial.setHintTextColor(t.secondary);
@@ -58,7 +59,48 @@ public final class Settings extends InputMethodSettingsFragment
         trial.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         trial.setMinLines(2);
         list.addFooterView(trial);
+        list.setOnHierarchyChangeListener(new android.view.ViewGroup.OnHierarchyChangeListener() {
+            @Override public void onChildViewAdded(View parent,View child) {
+                if (getActivity()!=null) colorSettings(child,
+                        new com.grapefruit.legacy.GrapefruitTheme(getActivity()));
+            }
+            @Override public void onChildViewRemoved(View parent,View child) {}
+        });
         return view;
+    }
+
+    /** Recolor the existing screen; relaunching a PreferenceActivity from its dialog's
+     * preference callback can tear down the active editor/IME on Jelly Bean devices. */
+    private void applyAppearance() {
+        android.app.Activity activity=getActivity();
+        if(activity==null) return;
+        com.grapefruit.legacy.GrapefruitTheme t=new com.grapefruit.legacy.GrapefruitTheme(activity);
+        activity.setTheme(t.id==1?R.style.GrapefruitLegacyLight:R.style.GrapefruitLegacy);
+        activity.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(t.bg));
+        View root=getView();
+        if(root==null) return;
+        root.setBackgroundColor(t.bg);
+        android.widget.ListView list=(android.widget.ListView)root.findViewById(android.R.id.list);
+        list.setBackgroundColor(t.bg);
+        list.setDivider(new android.graphics.drawable.ColorDrawable(t.outline));
+        list.setDividerHeight(t.dp(1));
+        colorSettings(root,t);
+        list.invalidateViews();
+    }
+
+    private static void colorSettings(View view,com.grapefruit.legacy.GrapefruitTheme t) {
+        if(view instanceof TextView) {
+            TextView text=(TextView)view;
+            text.setTextColor(view.getId()==android.R.id.summary?t.secondary:t.text);
+            if(text instanceof android.widget.EditText) {
+                text.setHintTextColor(t.secondary);
+                text.setBackgroundColor(t.surface);
+            }
+        }
+        if(view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group=(android.view.ViewGroup)view;
+            for(int i=0;i<group.getChildCount();i++) colorSettings(group.getChildAt(i),t);
+        }
     }
 
     // In the same order as xml/prefs.xml
@@ -147,7 +189,6 @@ public final class Settings extends InputMethodSettingsFragment
         mShowCorrectionSuggestionsPreference =
                 (ListPreference) findPreference(PREF_SHOW_SUGGESTIONS_SETTING);
         SharedPreferences prefs = getPreferenceManager().getSharedPreferences();
-        prefs.registerOnSharedPreferenceChangeListener(this);
 
         mAutoCorrectionThresholdPreference =
                 (ListPreference) findPreference(PREF_AUTO_CORRECTION_THRESHOLD);
@@ -269,6 +310,9 @@ public final class Settings extends InputMethodSettingsFragment
             updateKeypressSoundVolumeSummary(prefs, res);
         }
         refreshEnablingsOfKeypressSoundAndVibrationSettings(prefs, res);
+        // Register after every preference is initialized: platform defaults can persist
+        // values during onCreate, before the summary fields are ready.
+        prefs.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -283,6 +327,7 @@ public final class Settings extends InputMethodSettingsFragment
         updateShowCorrectionSuggestionsSummary();
         updateKeyPreviewPopupDelaySummary();
         updateCustomInputStylesSummary();
+        applyAppearance();
     }
 
     @Override
@@ -294,8 +339,12 @@ public final class Settings extends InputMethodSettingsFragment
 
     @Override
     public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
+        if(com.grapefruit.legacy.UniversalTheme.PREF_REVISION.equals(key)) return;
         if (com.grapefruit.legacy.GrapefruitTheme.PREF_THEME.equals(key)) {
-            getActivity().recreate();
+            applyAppearance();
+            return;
+        }
+        if (com.grapefruit.legacy.KeyHeight.PREF.equals(key)) {
             return;
         }
         (new BackupManager(getActivity())).dataChanged();

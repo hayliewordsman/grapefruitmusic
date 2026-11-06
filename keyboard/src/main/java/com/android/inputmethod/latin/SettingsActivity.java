@@ -26,11 +26,19 @@ public final class SettingsActivity extends PreferenceActivity {
         return DEFAULT_FRAGMENT.equals(fragmentName);
     }
     @Override public void onCreate(android.os.Bundle state) {
+        com.grapefruit.legacy.AppearancePreferences.repair(this);
+        com.grapefruit.legacy.UniversalTheme.sync(this);
         com.grapefruit.legacy.GrapefruitTheme t=new com.grapefruit.legacy.GrapefruitTheme(this);
         setTheme(t.id==1?R.style.GrapefruitLegacyLight:R.style.GrapefruitLegacy);
         com.grapefruitmusic.ui.Fonts.init(this);
         super.onCreate(state);
+        setTitle(R.string.grapefruit_keyboard_name);
         getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(t.bg));
+    }
+
+    @Override public void onResume() {
+        super.onResume();
+        com.grapefruit.legacy.UniversalTheme.sync(this);
     }
 
 

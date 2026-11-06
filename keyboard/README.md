@@ -1,15 +1,29 @@
 # Grapefruit Keyboard LegacyHolo
 
-[Download the 1.0 beta 1 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-keyboard-legacyholo/downloads/Grapefruit-Keyboard-LegacyHolo-1.0-beta1.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
+[Download the 1.0 beta 2 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-keyboard-legacyholo/downloads/Grapefruit-Keyboard-LegacyHolo-1.0-beta2.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
 
 A standalone Grapefruit redesign of **AOSP LatinIME from Android 4.2.2**, for
 **Android 4.2.2–4.4.4 (API 17–19)**. Application ID:
 `io.github.hayliewordsman.grapefruitkeyboard.legacyholo`.
 
-Install the APK, open Grapefruit Keyboard LegacyHolo, then use **Enable Grapefruit
+Install the APK, open Grapefruit Keyboard, then use **Enable Grapefruit
 Keyboard** and **Choose Grapefruit Keyboard**. A text field at the bottom of
 Settings lets you try it. The original language selector and AOSP typing settings
 remain available.
+
+## Beta 2
+
+The app now has its own Grapefruit keyboard icon. Its launcher, recent-apps and
+keyboard-picker label is **Grapefruit Keyboard**; the project remains LegacyHolo.
+Theme selection updates the settings screen in place rather than recreating the
+activity from the preference dialog. Appearance preferences are checked before
+platform preferences load, so invalid values/types cannot prevent settings from
+opening; a valid saved Victory Blue choice is kept. The reproduced API 17
+crash in `InitializeBinaryDictionary` is fixed: dictionary and subtype resource
+lookups now use the installed resource package instead of the old AOSP Java
+namespace, and the fallback resource is a real `R.raw` ID. Preference change listeners
+start only after initialization. Version code 2 installs over beta 1 using the same
+signing key, preserving the selected theme, height and other settings.
 
 ## Appearance
 
@@ -25,6 +39,26 @@ the AOSP layout before row positions, key bounds and proximity grids are built,
 so touch targets match the keys. Height is bounded on short screens to leave room
 for the app and suggestion strip. Theme and height persist; the IME rebuilds its
 view and clears cached layouts when either changes, on its next appearance.
+
+## Universal Grapefruit Apps Theme
+
+This build reads the existing Grapefruit Settings contract from
+`content://io.github.hayliewordsman.grapefruitsettings.theme/theme`, using the
+canonical `theme` and `revision` columns (Dark 0, Light 1, Black 2, Blue 3).
+It checks when settings opens/resumes and when the keyboard starts an input view.
+All four universal themes, including Victory Blue, are supported. A local choice
+is kept until a **new** universal selection/revision. Without a compatible Settings
+provider, the local theme continues to work. No provider writes or new permission
+are required. Contract source: `codex/jp5s-grapefruit-settings`, commit `df11694`.
+
+## Punctuation on tablets
+
+In the QWERTY tablet layout, comma and period stay on the letters screen.
+Apostrophe and hyphen/dash replace their duplicates on the primary symbols screen;
+dash also offers underscore, en dash and em dash on long press. The old apostrophe
+and dash keys beside the letters-screen spacebar are removed, and space expands
+into their space. Phone and specialized layouts retain their existing layout.
+Both 600dp and 768dp tablet configurations are covered by regression tests.
 
 ## AOSP behavior
 

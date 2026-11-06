@@ -1,4 +1,5 @@
 <resources>
+    <string name="grapefruit_keyboard_name" translatable="false">Grapefruit Keyboard</string>
     <style name="GrapefruitLegacy" parent="android:Theme.Holo.NoActionBar">
         <item name="android:windowBackground">#1C0A0E</item>
         <item name="android:fontFamily">sans-serif</item>

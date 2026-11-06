@@ -407,6 +407,8 @@ public final class LatinIME extends InputMethodService implements KeyboardAction
 
     @Override
     public void onCreate() {
+        com.grapefruit.legacy.AppearancePreferences.repair(this);
+        com.grapefruit.legacy.UniversalTheme.sync(this);
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPrefs = prefs;
         LatinImeLogger.init(this, prefs);
@@ -660,6 +662,7 @@ public final class LatinIME extends InputMethodService implements KeyboardAction
     @SuppressWarnings("deprecation")
     private void onStartInputViewInternal(final EditorInfo editorInfo, final boolean restarting) {
         super.onStartInputView(editorInfo, restarting);
+        com.grapefruit.legacy.UniversalTheme.sync(this);
         final KeyboardSwitcher switcher = mKeyboardSwitcher;
         final boolean appearanceChanged = switcher.refreshGrapefruit();
         final MainKeyboardView mainKeyboardView = switcher.getMainKeyboardView();

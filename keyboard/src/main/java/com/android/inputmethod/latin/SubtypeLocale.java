@@ -1,4 +1,4 @@
-/*
+/* Modified for Grapefruit LegacyHolo: resolve the installed resource identity.
  * Copyright (C) 2011 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,9 +32,6 @@ import java.util.Locale;
 
 public final class SubtypeLocale {
     static final String TAG = SubtypeLocale.class.getSimpleName();
-    // This class must be located in the same package as LatinIME.java.
-    private static final String RESOURCE_PACKAGE_NAME =
-            DictionaryFactory.class.getPackage().getName();
 
     // Special language code to represent "no language".
     public static final String NO_LANGUAGE = "zz";
@@ -75,6 +72,7 @@ public final class SubtypeLocale {
         if (sInitialized) return;
 
         final Resources res = context.getResources();
+        final String resourcePackageName = res.getResourcePackageName(R.string.subtype_generic);
 
         final String[] predefinedLayoutSet = res.getStringArray(R.array.predefined_layouts);
         sPredefinedKeyboardLayoutSet = predefinedLayoutSet;
@@ -84,12 +82,12 @@ public final class SubtypeLocale {
             final String layoutName = predefinedLayoutSet[i];
             sKeyboardLayoutToDisplayNameMap.put(layoutName, layoutDisplayNames[i]);
             final String resourceName = SUBTYPE_NAME_RESOURCE_GENERIC_PREFIX + layoutName;
-            final int resId = res.getIdentifier(resourceName, null, RESOURCE_PACKAGE_NAME);
+            final int resId = res.getIdentifier(resourceName, null, resourcePackageName);
             sKeyboardLayoutToNameIdsMap.put(layoutName, resId);
             // Register subtype name resource id of "No language" with key "zz_<layout>"
             final String noLanguageResName = SUBTYPE_NAME_RESOURCE_NO_LANGUAGE_PREFIX + layoutName;
             final int noLanguageResId = res.getIdentifier(
-                    noLanguageResName, null, RESOURCE_PACKAGE_NAME);
+                    noLanguageResName, null, resourcePackageName);
             final String key = getNoLanguageLayoutKey(layoutName);
             sKeyboardLayoutToNameIdsMap.put(key, noLanguageResId);
         }
@@ -102,7 +100,7 @@ public final class SubtypeLocale {
             final String localeString = exceptionalLocales[i];
             sExceptionalDisplayNamesMap.put(localeString, exceptionalDisplayNames[i]);
             final String resourceName = SUBTYPE_NAME_RESOURCE_WITH_LAYOUT_PREFIX + localeString;
-            final int resId = res.getIdentifier(resourceName, null, RESOURCE_PACKAGE_NAME);
+            final int resId = res.getIdentifier(resourceName, null, resourcePackageName);
             sExceptionalLocaleToWithLayoutNameIdsMap.put(localeString, resId);
         }
 

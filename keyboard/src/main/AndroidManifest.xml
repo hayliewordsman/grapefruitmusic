@@ -24,14 +24,14 @@
     <uses-permission android:name="android.permission.READ_USER_DICTIONARY" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
-    <application android:theme="@style/GrapefruitLegacy" android:allowBackup="false" android:label="@string/aosp_android_keyboard_ime_name"
+    <application android:theme="@style/GrapefruitLegacy" android:allowBackup="false" android:label="@string/grapefruit_keyboard_name"
             android:icon="@mipmap/ic_ime_settings"
             
             android:killAfterRestore="false"
             android:supportsRtl="true">
 
         <service android:name="com.android.inputmethod.latin.LatinIME" android:exported="true"
-                android:label="@string/aosp_android_keyboard_ime_name"
+                android:label="@string/grapefruit_keyboard_name"
                 android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
@@ -48,7 +48,7 @@
             <meta-data android:name="android.view.textservice.scs" android:resource="@xml/spellchecker" />
         </service>
 
-        <activity android:name="com.android.inputmethod.latin.SettingsActivity" android:exported="true" android:label="@string/english_ime_settings"
+        <activity android:name="com.android.inputmethod.latin.SettingsActivity" android:exported="true" android:label="@string/grapefruit_keyboard_name"
                   android:uiOptions="splitActionBarWhenNarrow">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/>

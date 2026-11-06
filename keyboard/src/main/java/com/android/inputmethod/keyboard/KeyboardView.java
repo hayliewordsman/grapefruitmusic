@@ -404,8 +404,8 @@ public class KeyboardView extends View implements PointerTracker.DrawingProxy {
     }
 
     private void onDrawKeyboard(final Canvas canvas) {
-        final int savedCanvas = canvas.save();
         if (mKeyboard == null) return;
+        final int savedCanvas = canvas.save();
 
         final int width = getWidth();
         final int height = getHeight();
