@@ -1,36 +1,58 @@
 # Grapefruit Launcher downloads
 
-## 1.0 beta 6 — release icons on drop
+## 1.0 beta 7 — Launcher2 base and universal themes
 
-Download `Grapefruit-Launcher-1.0-beta6.apk` and install it over your existing
-preview/beta. Version code 6 uses the same application ID and signing certificate;
-Home shortcuts, dock choices, prepared icon cache and settings are preserved.
-No uninstall is needed. Android 4.2.2 (API 17) and later. Debug-signed test build.
+Download `Grapefruit-Launcher-1.0-beta7.apk` and install it over beta 6 (or an earlier
+launcher beta). Version code 7 retains the same package and signing certificate;
+your Home shortcuts, dock choices, icon cache and settings remain. No uninstall
+is needed. Android 4.2.2 (API 17) and newer; target SDK 36 (Android 16).
+This is a debug-signed test build. The same APK works on older tablets and newer
+phones, with ordinary local themes even without Grapefruit Settings installed.
 
-- Adds an 8 dp gap between Home's Edit/Done and Settings buttons.
-- Finishes the drag UI on drop, after saving the placement, without waiting for
-  Android's final drag-ended notification. The icon returns to full opacity;
-  temporary drop controls/placement views close, and Home drag guides and edge
-  scrolling stop. The normal header returns.
-- Rejected drops restore the prior screen, including the All Apps search. Successful
-  drawer drops show the placed shortcut on Home. Cancellation still restores the
-  original UI, and a delayed callback from an old drag cannot finish the next drag.
+Beta 7 replaces the old custom/native-system drag path with an adapted **AOSP
+Launcher2** workspace and drag core, pinned to the Android 4.2.2 release:
 
-The beta 5 features remain: sparse Home placement, optional half-cell subgrid,
-configurable dock, separate portrait/landscape arrangements and a tall right-side
-landscape dock. Settings includes the own Geist Pixel Triangle wordmark, public
-source links, GPL-3.0-or-later declarations and complete offline GPL/OFL notices.
-The persistent icon cache, visible-area Home cells and low-RAM bitmap budget remain.
+- Horizontal Home pages, a compact header and page indicators. Saved gaps and
+  optional half-cell placement remain; hold at a side edge to change page while
+  dragging. A spare page appears while arranging.
+- Launcher2 handles the finger's down/move/up/cancel stream inside the app. Home,
+  dock and action-strip targets use the same controller. Release completes the
+  drop and removes the drag image without waiting for an Android drag-service
+  callback. Includes layout locking to prevent accidental movement.
+- Retains wallpaper-free theme backgrounds, all four palettes, Geist fonts,
+  three-line chip labels, themed teardrop plates for every app and the persistent
+  all-theme icon cache. The same floating pill dock has four configurable apps
+  around fixed All Apps, and stands at the physical right in landscape.
+- Grapefruit Settings design: scrolling grouped pages, round back controls,
+  rounded rows, accent sections, themed grapefruit-slice switches and custom
+  dialogs. About retains its own Geist Pixel Triangle wordmark and now includes
+  the AOSP source, Apache licence and complete offline GPL/Apache/OFL notices.
 
-Debug/release builds, all 43 automated tests and lint passed. New regression checks
-first reproduced stuck drag UI, then verified drops without a final drag-ended
-event: Home placement, drawer placement, rejected drawer drops, shortcut removal,
-header/search restoration and consecutive/cancelled drags. Android's window-manager
-handshake is simulated; actual view dispatch and drop handlers run in the tests.
-Physical JP5S/Android 4.2.2 gesture testing is still needed.
+Universal themes use the exact read-only contract established by Grapefruit
+Settings. New universal Dark/Light/Pitch Black/Victory Blue selections apply on
+resume and while the launcher is visible. A local choice remains until the next
+universal revision. Missing or incompatible Settings preserves the local choice;
+no system-setting write permission is required. Settings → Universal theme opens
+Grapefruit Settings when installed.
 
-Source for this exact beta (GPL-3.0-or-later, build instructions included):
-https://github.com/hayliewordsman/grapefruitmusic/tree/7e3ce2dcfdf693652f212cf5970ed9f1845c613f
+Only nearby pages retain icon views. The low-RAM bitmap cache remains 256 KiB,
+background cleanup releases images, and each drag owns one small temporary bitmap.
+No new runtime library, native library, tracking SDK or Internet permission.
 
-Geist fonts are SIL OFL 1.1; notices are bundled in the APK and source.
-Checksums are in `SHA256SUMS.txt`. Previous preview/beta APKs remain available.
+Both builds, all **54 automated tests** and lint (no errors) passed. Checks run on
+API 21/28/35 and include actual MotionEvent long press/move/up/cancel, release
+without moving, Home/dock transfers, rejected drops, consecutive drags, edge
+paging, normal swipes, separate orientation layouts, fine-cell occupancy, icon
+caching and universal-theme revision/observer/resume behavior. Physical JP5S and
+modern-phone testing is still needed; automated checks do not establish total
+process RAM or device-specific performance.
+
+Source for this exact beta, with build instructions and original upstream snapshots:
+https://github.com/hayliewordsman/grapefruitmusic/tree/61dba8530aefa0d5055d0ce731f416389487b9e3
+
+Launcher2 upstream (Apache 2.0):
+https://android.googlesource.com/platform/packages/apps/Launcher2/+/002c25eede2a33a5378c16c5bb9165179783e729
+
+Original Grapefruit code is GPL-3.0-or-later; adapted AOSP files retain Apache 2.0;
+Geist fonts are SIL OFL 1.1. The combined app retains all notices. Checksums are in
+`SHA256SUMS.txt`; previous beta APKs remain available.
