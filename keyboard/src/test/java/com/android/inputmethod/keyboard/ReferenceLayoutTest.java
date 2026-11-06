@@ -114,6 +114,25 @@ public class ReferenceLayoutTest {
         Keyboard numeric=LegacyKeyboardTest.build(c,InputType.TYPE_CLASS_NUMBER,KeyboardId.ELEMENT_ALPHABET);
         assertNull(numeric.getKey(Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA));
     }
+    @Test public void messagingFieldsKeepEnterAndEditorSendBesideTheHomeRow() {
+        Context c=context();
+        for(int action:new int[]{android.view.inputmethod.EditorInfo.IME_ACTION_NONE,
+                android.view.inputmethod.EditorInfo.IME_ACTION_SEND}) {
+            android.view.inputmethod.EditorInfo info=new android.view.inputmethod.EditorInfo();
+            info.inputType=InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE;
+            info.imeOptions=action;
+            android.view.inputmethod.InputMethodSubtype subtype=new android.view.inputmethod.InputMethodSubtype(
+                    0,0,"en_US","keyboard","KeyboardLayoutSet=qwerty,AsciiCapable",false,false);
+            KeyboardLayoutSet.clearKeyboardCache();
+            Keyboard k=new KeyboardLayoutSet.Builder(c,info).setScreenGeometry(0,
+                    c.getResources().getConfiguration().orientation,c.getResources().getDisplayMetrics().widthPixels)
+                    .setSubtype(subtype).setOptions(false,false,false).build().getKeyboard(KeyboardId.ELEMENT_ALPHABET);
+            int code=action==android.view.inputmethod.EditorInfo.IME_ACTION_SEND?Keyboard.CODE_ACTION_ENTER:10;
+            assertNotNull(k.getKey(code));
+            assertEquals(k.getKey('a').mY,k.getKey(code).mY);
+            assertEquals(k.getKey(32).mY,k.getKey(Keyboard.CODE_OUTPUT_TEXT).mY);
+        }
+    }
     @Test public void transparentPreviewBackingNeverBecomesAnOpaqueSuggestionsBar() {
         Context c=context();
         for(int theme=0;theme<4;theme++) {

@@ -1,7 +1,7 @@
 # LegacyHolo beta 3 validation — 2026-11-06
 
 - Debug and release builds, debug lint and release vital lint pass.
-- 58 unit checks pass across Robolectric API 17 and 19 framework models.
+- 60 unit checks pass across Robolectric API 17 and 19 framework models.
 - Debug APK v1/JAR signing verifies with minimum SDK 17; its certificate matches beta 1.
 - Minimum SDK remains 17 and target SDK remains 19; version code is 3.
 - All five launcher bitmap densities use the new app-specific artwork.
@@ -22,7 +22,8 @@ Reference-layout checks cover phone, 600dp tablet and 768dp tablet configuration
 with the number row on and off. They verify key positions, both Shift keys,
 all keys within keyboard bounds, centered spacebars, non-touchable gutters,
 primary/secondary symbols, numeric-pane accessibility descriptions, and unchanged
-numeric editors.
+numeric editors. Messaging fields keep Enter or the editor’s Send action beside
+the home row, with the dedicated smiley key on the bottom row.
 Number-row tests cover persistence, invalid preference types, height scaling,
 shifted letters and maximum-height landscape bounds.
 
