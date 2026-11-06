@@ -1,11 +1,10 @@
 {
   "schema": 1,
-  "edition": "standard",
-  "branch": "grapefruit-os",
-  "default_theme": 0,
+  "edition": "victory",
+  "branch": "grapefruit-os-victory",
+  "default_theme": 3,
   "apps": [
     "Launcher3QuickStep",
-    "GrapefruitAudio",
-    "GrapefruitTV"
+    "BlueGrapefruitVictory"
   ]
 }

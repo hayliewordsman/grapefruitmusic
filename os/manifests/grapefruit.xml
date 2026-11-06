@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <manifest>
   <remote name="grapefruit" fetch="https://github.com/" />
-  <project name="hayliewordsman/grapefruitmusic" path="vendor/grapefruit" remote="grapefruit" revision="refs/heads/grapefruit-os" />
+  <project name="hayliewordsman/grapefruitmusic" path="vendor/grapefruit" remote="grapefruit" revision="refs/heads/grapefruit-os-victory" />
   <extend-project name="platform/frameworks/base" revision="94b4c163b7dfe5ce3607f7bb8456f9573f7de57d" />
   <extend-project name="platform/packages/apps/Settings" revision="213829fb67f5e070029e0513a088f31bc8f5c1ed" />
   <extend-project name="platform/packages/apps/Launcher3" revision="c612e6ece389f21c40f8cb9cd9a4b44239f00009" />
