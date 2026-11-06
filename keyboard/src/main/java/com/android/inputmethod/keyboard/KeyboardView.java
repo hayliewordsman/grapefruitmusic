@@ -253,6 +253,7 @@ public class KeyboardView extends View implements PointerTracker.DrawingProxy {
         mGrapefruitActionKey = mGrapefruit.key(true);
         mGrapefruitSpacebar = mGrapefruit.spacebar();
         setBackgroundColor(mGrapefruit.bg);
+        setSoundEffectsEnabled(false);
         mKeyBackground.getPadding(mKeyBackgroundPadding);
         mPreviewOffset = keyboardViewAttr.getDimensionPixelOffset(
                 R.styleable.KeyboardView_keyPreviewOffset, 0);

@@ -1,4 +1,5 @@
-/**
+/* Modified for Grapefruit LegacyHolo: Audio-style rows and subtype forms.
+ *
  * Copyright (C) 2012 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -55,7 +56,8 @@ public final class AdditionalSubtypeSettings extends PreferenceFragment {
     private KeyboardLayoutSetAdapter mKeyboardLayoutSetAdapter;
 
     private boolean mIsAddingNewSubtype;
-    private AlertDialog mSubtypeEnablerNotificationDialog;
+    private Dialog mSubtypeEnablerNotificationDialog;
+    private com.grapefruit.legacy.ui.GrapefruitPreferences mGrapefruitSettings;
     private String mSubtypePreferenceKeyForSubtypeEnabler;
 
     private static final int MENU_ADD_SUBTYPE = Menu.FIRST;
@@ -167,6 +169,8 @@ public final class AdditionalSubtypeSettings extends PreferenceFragment {
         private final SubtypeDialogProxy mProxy;
         private Spinner mSubtypeLocaleSpinner;
         private Spinner mKeyboardLayoutSetSpinner;
+        private Dialog mGrapefruitDialog,mChoiceDialog;
+        private android.widget.TextView mLocaleButton,mLayoutButton;
 
         public static SubtypePreference newIncompleteSubtypePreference(final Context context,
                 final SubtypeDialogProxy proxy) {
@@ -180,10 +184,55 @@ public final class AdditionalSubtypeSettings extends PreferenceFragment {
             setPersistent(false);
             mProxy = proxy;
             setSubtype(subtype);
+            setOnPreferenceClickListener(pref->{show();return true;});
         }
 
-        public void show() {
-            showDialog(null);
+        public void show() {showDialog(null);}
+        @Override public Dialog getDialog() {return mGrapefruitDialog;}
+        public void closeGrapefruitDialogs() {
+            if(mChoiceDialog!=null)mChoiceDialog.dismiss();
+            if(mGrapefruitDialog!=null)mGrapefruitDialog.dismiss();
+        }
+        private void updateButtons() {
+            if(mLocaleButton!=null)mLocaleButton.setText(getContext().getString(R.string.subtype_locale)
+                    +"  ·  "+mSubtypeLocaleSpinner.getSelectedItem());
+            if(mLayoutButton!=null)mLayoutButton.setText(getContext().getString(R.string.keyboard_layout_set)
+                    +"  ·  "+mKeyboardLayoutSetSpinner.getSelectedItem());
+        }
+        private void choose(Spinner data,CharSequence title) {
+            CharSequence[] choices=new CharSequence[data.getAdapter().getCount()];
+            for(int i=0;i<choices.length;i++)choices[i]=data.getItemAtPosition(i).toString();
+            mChoiceDialog=com.grapefruit.legacy.ui.SettingsDialog.choices(getContext(),title,choices,
+                    data.getSelectedItemPosition(),which->{data.setSelection(which);updateButtons();});
+        }
+        @Override protected void showDialog(Bundle state) {
+            if(mGrapefruitDialog!=null && mGrapefruitDialog.isShowing())return;
+            // The existing adapters and selection model are retained. Native spinner widgets
+            // are never added to a window; Audio-style rows open Grapefruit choice sheets.
+            onCreateDialogView();
+            if(mSubtype!=null) {
+                setSpinnerPosition(mSubtypeLocaleSpinner,SubtypeLocaleAdapter.createItem(getContext(),mSubtype.getLocale()));
+                setSpinnerPosition(mKeyboardLayoutSetSpinner,new KeyboardLayoutSetItem(mSubtype));
+            }
+            Context c=getContext();com.grapefruit.legacy.GrapefruitTheme t=new com.grapefruit.legacy.GrapefruitTheme(c);
+            android.widget.LinearLayout body=com.grapefruit.legacy.ui.SettingsUi.vertical(c);
+            mLocaleButton=com.grapefruit.legacy.ui.SettingsUi.button(c,"",false,
+                    v->choose(mSubtypeLocaleSpinner,c.getText(R.string.subtype_locale)));
+            mLayoutButton=com.grapefruit.legacy.ui.SettingsUi.button(c,"",false,
+                    v->choose(mKeyboardLayoutSetSpinner,c.getText(R.string.keyboard_layout_set)));
+            body.addView(mLocaleButton,com.grapefruit.legacy.ui.SettingsUi.match());
+            android.widget.LinearLayout.LayoutParams lp=com.grapefruit.legacy.ui.SettingsUi.match();lp.topMargin=t.dp(10);
+            body.addView(mLayoutButton,lp);updateButtons();
+            mGrapefruitDialog=com.grapefruit.legacy.ui.SettingsDialog.form(c,getDialogTitle(),body,
+                    c.getText(isIncomplete()?R.string.add:R.string.save),()->onClick(null,DialogInterface.BUTTON_POSITIVE),
+                    c.getText(isIncomplete()?android.R.string.cancel:R.string.remove),()->onClick(null,DialogInterface.BUTTON_NEGATIVE));
+            mGrapefruitDialog.setOnCancelListener(this);
+            if(!isIncomplete()) {
+                android.widget.LinearLayout.LayoutParams cancel=com.grapefruit.legacy.ui.SettingsUi.match();
+                cancel.topMargin=t.dp(10);
+                body.addView(com.grapefruit.legacy.ui.SettingsUi.button(c,c.getText(android.R.string.cancel),false,
+                        v->mGrapefruitDialog.dismiss()),cancel);
+            }
         }
 
         public final boolean isIncomplete() {
@@ -221,10 +270,10 @@ public final class AdditionalSubtypeSettings extends PreferenceFragment {
 
         @Override
         protected View onCreateDialogView() {
-            final View v = super.onCreateDialogView();
-            mSubtypeLocaleSpinner = (Spinner) v.findViewById(R.id.subtype_locale_spinner);
+            final View v = new View(getContext());
+            mSubtypeLocaleSpinner = new Spinner(getContext());
             mSubtypeLocaleSpinner.setAdapter(mProxy.getSubtypeLocaleAdapter());
-            mKeyboardLayoutSetSpinner = (Spinner) v.findViewById(R.id.keyboard_layout_set_spinner);
+            mKeyboardLayoutSetSpinner = new Spinner(getContext());
             mKeyboardLayoutSetSpinner.setAdapter(mProxy.getKeyboardLayoutSetAdapter());
             return v;
         }
@@ -330,9 +379,11 @@ public final class AdditionalSubtypeSettings extends PreferenceFragment {
 
             final SavedState myState = (SavedState) state;
             super.onRestoreInstanceState(myState.getSuperState());
+            setSubtype(myState.mSubtype);
+            showDialog(null);
             setSpinnerPosition(mSubtypeLocaleSpinner, myState.mSubtypeLocaleSelectedPos);
             setSpinnerPosition(mKeyboardLayoutSetSpinner, myState.mKeyboardLayoutSetSelectedPos);
-            setSubtype(myState.mSubtype);
+            updateButtons();
         }
 
         static final class SavedState extends Preference.BaseSavedState {
@@ -379,12 +430,30 @@ public final class AdditionalSubtypeSettings extends PreferenceFragment {
         // Empty constructor for fragment generation.
     }
 
+    @Override public View onCreateView(android.view.LayoutInflater inflater,android.view.ViewGroup parent,Bundle state) {
+        mGrapefruitSettings=new com.grapefruit.legacy.ui.GrapefruitPreferences(this);
+        mGrapefruitSettings.setRootTitle(getText(R.string.custom_input_styles_title));
+        mGrapefruitSettings.setHeaderAction(getText(R.string.add_style),()->addSubtype());
+        return mGrapefruitSettings.createView(false);
+    }
+    @Override public void onDestroyView() {
+        if(mGrapefruitSettings!=null)mGrapefruitSettings.close();mGrapefruitSettings=null;
+        if(mSubtypeEnablerNotificationDialog!=null)mSubtypeEnablerNotificationDialog.dismiss();
+        PreferenceGroup group=getPreferenceScreen();
+        for(int i=0;i<group.getPreferenceCount();i++) {
+            Preference pref=group.getPreference(i);
+            if(pref instanceof SubtypePreference)((SubtypePreference)pref).closeGrapefruitDialogs();
+        }
+        super.onDestroyView();
+    }
+
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SubtypeLocale.init(getActivity());
 
         addPreferencesFromResource(R.xml.additional_subtype_settings);
-        setHasOptionsMenu(true);
+        setHasOptionsMenu(false);
 
         mPrefs = getPreferenceManager().getSharedPreferences();
     }
@@ -407,6 +476,7 @@ public final class AdditionalSubtypeSettings extends PreferenceFragment {
         }
 
         super.onActivityCreated(savedInstanceState);
+        mGrapefruitSettings.bind(savedInstanceState);
 
         if (savedInstanceState != null && savedInstanceState.containsKey(
                 KEY_IS_SUBTYPE_ENABLER_NOTIFICATION_DIALOG_OPEN)) {
@@ -505,28 +575,16 @@ public final class AdditionalSubtypeSettings extends PreferenceFragment {
                 getActivity(), localeString, keyboardLayoutSetName);
     }
 
-    private AlertDialog createDialog(
-            @SuppressWarnings("unused") final SubtypePreference subtypePref) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.custom_input_styles_title)
-                .setMessage(R.string.custom_input_style_note_message)
-                .setNegativeButton(R.string.not_now, null)
-                .setPositiveButton(R.string.enable, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        final Intent intent = CompatUtils.getInputLanguageSelectionIntent(
-                                ImfUtils.getInputMethodIdOfThisIme(getActivity()),
-                                Intent.FLAG_ACTIVITY_NEW_TASK
-                                | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                                | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        // TODO: Add newly adding subtype to extra value of the intent as a hint
-                        // for the input language selection activity.
-                        // intent.putExtra("newlyAddedSubtype", subtypePref.getSubtype());
-                        startActivity(intent);
-                    }
-                });
-
-        return builder.create();
+    private Dialog createDialog(final SubtypePreference subtypePref) {
+        final Context c=getActivity();com.grapefruit.legacy.GrapefruitTheme t=new com.grapefruit.legacy.GrapefruitTheme(c);
+        android.widget.TextView message=com.grapefruit.legacy.ui.SettingsUi.text(c,
+                getText(R.string.custom_input_style_note_message),15,t.secondary,false);
+        return com.grapefruit.legacy.ui.SettingsDialog.form(c,getText(R.string.custom_input_styles_title),message,
+                getText(R.string.enable),()->{
+                    final Intent intent=CompatUtils.getInputLanguageSelectionIntent(ImfUtils.getInputMethodIdOfThisIme(c),
+                            Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                },getText(R.string.not_now),null);
     }
 
     private void setPrefSubtypes(final String prefSubtypes, final Context context) {
@@ -582,15 +640,15 @@ public final class AdditionalSubtypeSettings extends PreferenceFragment {
         addSubtypeMenu.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
     }
 
+    private void addSubtype() {
+        final SubtypePreference pref=SubtypePreference.newIncompleteSubtypePreference(getActivity(),mSubtypeProxy);
+        getPreferenceScreen().addPreference(pref);mIsAddingNewSubtype=true;pref.show();
+    }
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         final int itemId = item.getItemId();
         if (itemId == MENU_ADD_SUBTYPE) {
-            final SubtypePreference newSubtype =
-                    SubtypePreference.newIncompleteSubtypePreference(getActivity(), mSubtypeProxy);
-            getPreferenceScreen().addPreference(newSubtype);
-            newSubtype.show();
-            mIsAddingNewSubtype = true;
+            addSubtype();
             return true;
         }
         return super.onOptionsItemSelected(item);

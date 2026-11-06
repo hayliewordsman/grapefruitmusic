@@ -1,4 +1,4 @@
-/*
+/* Modified for Grapefruit LegacyHolo: keep padded popup panels inside the keyboard.
  * Copyright (C) 2011 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -159,7 +159,8 @@ public final class MoreKeysKeyboardView extends KeyboardView implements MoreKeys
         final MoreKeysKeyboard pane = (MoreKeysKeyboard)getKeyboard();
         final int defaultCoordX = pane.getDefaultCoordX();
         // The coordinates of panel's left-top corner in parentView's coordinate system.
-        final int x = pointX - defaultCoordX - container.getPaddingLeft();
+        final int x = clampPanelX(pointX - defaultCoordX - container.getPaddingLeft(),
+                parentView.getWidth(),container.getMeasuredWidth());
         final int y = pointY - container.getMeasuredHeight() + container.getPaddingBottom();
 
         window.setContentView(container);
@@ -171,6 +172,10 @@ public final class MoreKeysKeyboardView extends KeyboardView implements MoreKeys
 
         mOriginX = x + container.getPaddingLeft();
         mOriginY = y + container.getPaddingTop();
+    }
+
+    static int clampPanelX(int desired,int parentWidth,int panelWidth) {
+        return Math.max(0,Math.min(desired,Math.max(0,parentWidth-panelWidth)));
     }
 
     private boolean mIsDismissing;

@@ -1,4 +1,4 @@
-/*
+/* Modified for Grapefruit LegacyHolo: account for popup border padding.
  * Copyright (C) 2011 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -300,8 +300,9 @@ public final class MoreKeysKeyboard extends Keyboard {
                 dividerWidth = 0;
             }
             mParams.setParameters(parentKey.mMoreKeys.length, parentKey.getMoreKeysColumn(),
-                    width, height, parentKey.mX + parentKey.mWidth / 2,
-                    parentKeyboardView.getMeasuredWidth(), parentKey.isFixedColumnOrderMoreKeys(),
+                    width, height, parentKey.mX + parentKey.mWidth / 2 - containerView.getPaddingLeft(),
+                    parentKeyboardView.getMeasuredWidth() - containerView.getPaddingLeft()
+                            - containerView.getPaddingRight(), parentKey.isFixedColumnOrderMoreKeys(),
                     dividerWidth);
         }
 

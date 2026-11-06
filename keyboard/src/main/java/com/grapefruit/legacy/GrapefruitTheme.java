@@ -33,19 +33,26 @@ public final class GrapefruitTheme {
         catch (RuntimeException invalid) { return 0; }
     }
     public int dp(float n) { return Math.round(n*density); }
+    private static int blend(int a,int b,float amount) {
+        return Color.rgb(Math.round(Color.red(a)*(1-amount)+Color.red(b)*amount),
+                Math.round(Color.green(a)*(1-amount)+Color.green(b)*amount),
+                Math.round(Color.blue(a)*(1-amount)+Color.blue(b)*amount));
+    }
     public StateListDrawable key(boolean action) {
         StateListDrawable states=new StateListDrawable();
-        states.addState(new int[]{android.R.attr.state_pressed},new Drop(action?end:pressed,action?accent:control,accent));
-        states.addState(new int[]{android.R.attr.state_focused},new Drop(control,surface,accent));
-        states.addState(new int[]{},new Drop(action?accent:control,action?end:surface,outline));
+        states.addState(new int[]{android.R.attr.state_pressed},new Drop(
+                action?blend(accent,bg,.15f):blend(pressed,accent,.28f),
+                action?blend(end,bg,.15f):blend(control,accent,.18f),false,true));
+        states.addState(new int[]{android.R.attr.state_focused},new Drop(pressed,control,false,false));
+        states.addState(new int[]{},new Drop(action?accent:control,action?end:surface,false,false));
         return states;
     }
     public StateListDrawable spacebar() {
         StateListDrawable states=new StateListDrawable();
-        states.addState(new int[]{android.R.attr.state_pressed},new Drop(pressed,control,accent,true));
-        states.addState(new int[]{android.R.attr.state_focused},new Drop(control,surface,accent,true));
-        states.addState(new int[]{},new Drop(control,surface,outline,true));
-        return states;
+        states.addState(new int[]{android.R.attr.state_pressed},new Drop(
+                blend(pressed,accent,.28f),blend(control,accent,.18f),true,true));
+        states.addState(new int[]{android.R.attr.state_focused},new Drop(pressed,control,true,false));
+        states.addState(new int[]{},new Drop(control,surface,true,false));return states;
     }
     /** Normalize Launcher's exact path to allow space/enter and calculator keys to stretch. */
     public static Path teardrop(float left,float top,float width,float height) {
@@ -57,15 +64,14 @@ public final class GrapefruitTheme {
     }
     private final class Drop extends Drawable {
         private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final int start,finish,border;
+        private final int start,finish;
         private int alpha=255;
-        private final boolean pill;
+        private final boolean pill,down;
         private Path path;
         private Shader shader;
-        Drop(int a,int b,int edge){this(a,b,edge,false);}
-        Drop(int a,int b,int edge,boolean rounded){start=a;finish=b;border=edge;pill=rounded;}
+        Drop(int a,int b,boolean rounded,boolean pressed){start=a;finish=b;pill=rounded;down=pressed;}
         @Override protected void onBoundsChange(Rect r) {
-            float gap=Math.max(1,dp(2));
+            float gap=Math.max(1,dp(down?3.5f:2));
             float w=Math.max(0,r.width()-gap*2), h=Math.max(0,r.height()-gap*2);
             if(pill) {
                 path=new Path();
@@ -77,8 +83,7 @@ public final class GrapefruitTheme {
         @Override public void draw(Canvas c) {
             if(path==null)onBoundsChange(getBounds());
             paint.setStyle(Paint.Style.FILL);paint.setShader(shader);paint.setAlpha(alpha);c.drawPath(path,paint);
-            paint.setShader(null);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(1,dp(1)));
-            paint.setColor(border);paint.setAlpha(alpha);c.drawPath(path,paint);
+            paint.setShader(null);
         }
         @Override public void setAlpha(int a){alpha=a;invalidateSelf();}
         @Override public void setColorFilter(ColorFilter f){paint.setColorFilter(f);invalidateSelf();}

@@ -598,6 +598,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     public SuggestionStripView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
+        com.grapefruitmusic.ui.Fonts.init(context);
         final LayoutInflater inflater = LayoutInflater.from(context);
         inflater.inflate(R.layout.suggestions_strip, this);
         com.grapefruit.legacy.GrapefruitTheme theme = new com.grapefruit.legacy.GrapefruitTheme(context);
@@ -605,6 +606,10 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
 
         mPreviewPopup = new PopupWindow(context);
         mPreviewText = (TextView) inflater.inflate(R.layout.suggestion_preview, null);
+        mPreviewText.setBackground(com.grapefruit.legacy.ui.SettingsUi.shape(theme.surface,theme.dp(16)));
+        mPreviewText.setTextColor(theme.text);
+        mPreviewText.setTypeface(com.grapefruitmusic.ui.Fonts.medium());
+        mPreviewText.setPadding(theme.dp(12),theme.dp(8),theme.dp(12),theme.dp(8));
         mPreviewPopup.setWindowLayoutMode(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         mPreviewPopup.setContentView(mPreviewText);
@@ -614,12 +619,16 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         for (int pos = 0; pos < MAX_SUGGESTIONS; pos++) {
             final TextView word = (TextView)inflater.inflate(R.layout.suggestion_word, null);
             word.setTypeface(com.grapefruitmusic.ui.Fonts.medium());
+            word.setBackground(com.grapefruit.legacy.ui.SettingsUi.pressed(theme,
+                    android.graphics.Color.TRANSPARENT,theme.dp(16)));
+            word.setSoundEffectsEnabled(false);
             word.setTag(pos);
             word.setOnClickListener(this);
             word.setOnLongClickListener(this);
             mWords.add(word);
             final View divider = inflater.inflate(R.layout.suggestion_divider, null);
             divider.setTag(pos);
+            divider.setBackgroundColor(theme.outline);divider.setSoundEffectsEnabled(false);
             divider.setOnClickListener(this);
             mDividers.add(divider);
             mInfos.add((TextView)inflater.inflate(R.layout.suggestion_info, null));
@@ -629,8 +638,10 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
                 context, attrs, defStyle, mWords, mDividers, mInfos);
 
         mMoreSuggestionsContainer = inflater.inflate(R.layout.more_suggestions, null);
+        com.grapefruit.legacy.ui.PopupAppearance.apply(mMoreSuggestionsContainer);
         mMoreSuggestionsView = (MoreSuggestionsView)mMoreSuggestionsContainer
                 .findViewById(R.id.more_suggestions_view);
+        mMoreSuggestionsView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         mMoreSuggestionsBuilder = new MoreSuggestions.Builder(mMoreSuggestionsView);
 
         final PopupWindow moreWindow = new PopupWindow(context);

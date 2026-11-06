@@ -1,4 +1,5 @@
-/**
+/* Modified for Grapefruit LegacyHolo: Audio-style spell-check preferences.
+ *
  * Copyright (C) 2011 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -25,6 +26,17 @@ import com.android.inputmethod.latin.R;
  * Preference screen.
  */
 public final class SpellCheckerSettingsFragment extends PreferenceFragment {
+    private com.grapefruit.legacy.ui.GrapefruitPreferences mGrapefruitSettings;
+    @Override public android.view.View onCreateView(android.view.LayoutInflater inflater,
+            android.view.ViewGroup parent,Bundle state) {
+        com.grapefruitmusic.ui.Fonts.init(getActivity());
+        mGrapefruitSettings=new com.grapefruit.legacy.ui.GrapefruitPreferences(this);
+        mGrapefruitSettings.setRootTitle(getText(R.string.android_spell_checker_settings));
+        return mGrapefruitSettings.createView(false);
+    }
+    @Override public void onDestroyView() {
+        if(mGrapefruitSettings!=null)mGrapefruitSettings.close();mGrapefruitSettings=null;super.onDestroyView();
+    }
     /**
      * Empty constructor for fragment generation.
      */
@@ -35,5 +47,6 @@ public final class SpellCheckerSettingsFragment extends PreferenceFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         addPreferencesFromResource(R.xml.spell_checker_settings);
+        mGrapefruitSettings.bind(savedInstanceState);
     }
 }

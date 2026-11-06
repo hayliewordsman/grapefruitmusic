@@ -23,7 +23,7 @@ import android.preference.PreferenceActivity;
 public final class SettingsActivity extends PreferenceActivity {
     private static final String DEFAULT_FRAGMENT = Settings.class.getName();
     @Override protected boolean isValidFragment(String fragmentName) {
-        return DEFAULT_FRAGMENT.equals(fragmentName);
+        return DEFAULT_FRAGMENT.equals(fragmentName) || AdditionalSubtypeSettings.class.getName().equals(fragmentName);
     }
     @Override public void onCreate(android.os.Bundle state) {
         com.grapefruit.legacy.AppearancePreferences.repair(this);
@@ -36,6 +36,12 @@ public final class SettingsActivity extends PreferenceActivity {
         getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(t.bg));
     }
 
+    @Override public void onBackPressed() {
+        int id=getResources().getIdentifier("prefs","id","android");
+        android.app.Fragment f=getFragmentManager().findFragmentById(id);
+        if(f instanceof Settings && ((Settings)f).navigateBack())return;
+        super.onBackPressed();
+    }
     @Override public void onResume() {
         super.onResume();
         com.grapefruit.legacy.UniversalTheme.sync(this);
@@ -46,7 +52,8 @@ public final class SettingsActivity extends PreferenceActivity {
     public Intent getIntent() {
         final Intent intent = new Intent(super.getIntent());
         // Android 4.2 predates PreferenceActivity's fragment-validation hook.
-        intent.putExtra(EXTRA_SHOW_FRAGMENT, DEFAULT_FRAGMENT);
+        String requested=intent.getStringExtra(EXTRA_SHOW_FRAGMENT);
+        intent.putExtra(EXTRA_SHOW_FRAGMENT,isValidFragment(requested)?requested:DEFAULT_FRAGMENT);
         intent.putExtra(EXTRA_NO_HEADERS, true);
         return intent;
     }

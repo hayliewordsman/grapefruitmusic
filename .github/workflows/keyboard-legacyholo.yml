@@ -24,5 +24,5 @@ jobs:
         run: ./gradlew :keyboard:testDebugUnitTest :keyboard:lintDebug :keyboard:assembleDebug :keyboard:assembleRelease --no-daemon --max-workers=3
       - uses: actions/upload-artifact@v4
         with:
-          name: Grapefruit-keyboard-LegacyHolo-1.0-beta3-test-and-unsigned-release
+          name: Grapefruit-keyboard-LegacyHolo-1.0-beta4-test-and-unsigned-release
           path: keyboard/build/outputs/apk/**/*.apk

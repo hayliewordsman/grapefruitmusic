@@ -569,8 +569,10 @@ public final class MainKeyboardView extends KeyboardView implements PointerTrack
         if (container == null)
             throw new NullPointerException();
 
+        com.grapefruit.legacy.ui.PopupAppearance.apply(container);
         final MoreKeysKeyboardView moreKeysKeyboardView =
                 (MoreKeysKeyboardView)container.findViewById(R.id.more_keys_keyboard_view);
+        moreKeysKeyboardView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         final Keyboard moreKeysKeyboard = new MoreKeysKeyboard.Builder(container, parentKey, this)
                 .build();
         moreKeysKeyboardView.setKeyboard(moreKeysKeyboard);

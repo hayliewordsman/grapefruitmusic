@@ -17,10 +17,8 @@
 
 package com.android.inputmethod.latin;
 
-import android.app.AlertDialog;
 import android.app.backup.BackupManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -35,9 +33,6 @@ import android.preference.PreferenceScreen;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodSubtype;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.TextView;
 
 import com.android.inputmethod.latin.define.ProductionFlag;
 import com.android.inputmethodcommon.InputMethodSettingsFragment;
@@ -45,62 +40,31 @@ import com.android.inputmethodcommon.InputMethodSettingsFragment;
 public final class Settings extends InputMethodSettingsFragment
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    @Override public View onCreateView(android.view.LayoutInflater inflater,
-            android.view.ViewGroup container, Bundle state) {
-        View view=super.onCreateView(inflater,container,state);
-        com.grapefruit.legacy.GrapefruitTheme t=new com.grapefruit.legacy.GrapefruitTheme(getActivity());
-        view.setBackgroundColor(t.bg);
-        android.widget.ListView list=(android.widget.ListView)view.findViewById(android.R.id.list);
-        list.setItemsCanFocus(true);
-        android.widget.EditText trial=new android.widget.EditText(getActivity());
-        trial.setHint(R.string.grapefruit_try);
-        trial.setTextColor(t.text);trial.setHintTextColor(t.secondary);
-        trial.setTypeface(com.grapefruitmusic.ui.Fonts.regular());
-        trial.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-        trial.setMinLines(2);
-        list.addFooterView(trial);
-        list.setOnHierarchyChangeListener(new android.view.ViewGroup.OnHierarchyChangeListener() {
-            @Override public void onChildViewAdded(View parent,View child) {
-                if (getActivity()!=null) colorSettings(child,
-                        new com.grapefruit.legacy.GrapefruitTheme(getActivity()));
-            }
-            @Override public void onChildViewRemoved(View parent,View child) {}
-        });
-        return view;
-    }
+    private com.grapefruit.legacy.ui.GrapefruitPreferences mGrapefruitSettings;
+    private android.app.Dialog mGrapefruitDialog;
 
-    /** Recolor the existing screen; relaunching a PreferenceActivity from its dialog's
-     * preference callback can tear down the active editor/IME on Jelly Bean devices. */
+    @Override public View onCreateView(LayoutInflater inflater,android.view.ViewGroup container,Bundle state) {
+        mGrapefruitSettings=new com.grapefruit.legacy.ui.GrapefruitPreferences(this);
+        return mGrapefruitSettings.createView(true);
+    }
+    @Override public void onActivityCreated(Bundle state) {
+        super.onActivityCreated(state);mGrapefruitSettings.bind(state);
+    }
+    @Override public void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        if(mGrapefruitSettings!=null)mGrapefruitSettings.save(state);
+    }
+    @Override public void onDestroyView() {
+        if(mGrapefruitSettings!=null)mGrapefruitSettings.close();
+        if(mGrapefruitDialog!=null)mGrapefruitDialog.dismiss();
+        mGrapefruitSettings=null;mGrapefruitDialog=null;super.onDestroyView();
+    }
+    public boolean navigateBack() {return mGrapefruitSettings!=null && mGrapefruitSettings.back();}
     private void applyAppearance() {
-        android.app.Activity activity=getActivity();
-        if(activity==null) return;
-        com.grapefruit.legacy.GrapefruitTheme t=new com.grapefruit.legacy.GrapefruitTheme(activity);
-        activity.setTheme(t.id==1?R.style.GrapefruitLegacyLight:R.style.GrapefruitLegacy);
-        activity.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(t.bg));
-        View root=getView();
-        if(root==null) return;
-        root.setBackgroundColor(t.bg);
-        android.widget.ListView list=(android.widget.ListView)root.findViewById(android.R.id.list);
-        list.setBackgroundColor(t.bg);
-        list.setDivider(new android.graphics.drawable.ColorDrawable(t.outline));
-        list.setDividerHeight(t.dp(1));
-        colorSettings(root,t);
-        list.invalidateViews();
-    }
-
-    private static void colorSettings(View view,com.grapefruit.legacy.GrapefruitTheme t) {
-        if(view instanceof TextView) {
-            TextView text=(TextView)view;
-            text.setTextColor(view.getId()==android.R.id.summary?t.secondary:t.text);
-            if(text instanceof android.widget.EditText) {
-                text.setHintTextColor(t.secondary);
-                text.setBackgroundColor(t.surface);
-            }
-        }
-        if(view instanceof android.view.ViewGroup) {
-            android.view.ViewGroup group=(android.view.ViewGroup)view;
-            for(int i=0;i<group.getChildCount();i++) colorSettings(group.getChildAt(i),t);
-        }
+        if(getActivity()==null)return;
+        com.grapefruit.legacy.GrapefruitTheme t=new com.grapefruit.legacy.GrapefruitTheme(getActivity());
+        getActivity().getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(t.bg));
+        if(mGrapefruitSettings!=null)mGrapefruitSettings.refresh();
     }
 
     // In the same order as xml/prefs.xml
@@ -150,8 +114,6 @@ public final class Settings extends InputMethodSettingsFragment
     private CheckBoxPreference mBigramPrediction;
     private Preference mDebugSettingsPreference;
 
-    private TextView mKeypressVibrationDurationSettingsTextView;
-    private TextView mKeypressSoundVolumeSettingsTextView;
 
     private static void setPreferenceEnabled(final Preference preference, final boolean enabled) {
         if (preference != null) {
@@ -223,7 +185,7 @@ public final class Settings extends InputMethodSettingsFragment
         final PreferenceGroup advancedSettings =
                 (PreferenceGroup) findPreference(PREF_ADVANCED_SETTINGS);
         if (!VibratorUtils.getInstance(context).hasVibrator()) {
-            generalSettings.removePreference(findPreference(PREF_VIBRATE_ON));
+            ((PreferenceGroup)findPreference("grapefruit_feedback")).removePreference(findPreference(PREF_VIBRATE_ON));
             if (null != advancedSettings) { // Theoretically advancedSettings cannot be null
                 advancedSettings.removePreference(findPreference(PREF_VIBRATION_DURATION_SETTINGS));
             }
@@ -346,7 +308,7 @@ public final class Settings extends InputMethodSettingsFragment
         }
         if (com.grapefruit.legacy.KeyHeight.PREF.equals(key)
                 || com.grapefruit.legacy.KeyboardLayout.PREF_NUMBER_ROW.equals(key)) {
-            return;
+            applyAppearance();return;
         }
         (new BackupManager(getActivity())).dataChanged();
         if (key.equals(PREF_POPUP_ON)) {
@@ -372,6 +334,7 @@ public final class Settings extends InputMethodSettingsFragment
         updateShowCorrectionSuggestionsSummary();
         updateKeyPreviewPopupDelaySummary();
         refreshEnablingsOfKeypressSoundAndVibrationSettings(prefs, getResources());
+        applyAppearance();
     }
 
     private void updateShowCorrectionSuggestionsSummary() {
@@ -428,122 +391,42 @@ public final class Settings extends InputMethodSettingsFragment
         }
     }
 
-    private void updateKeypressVibrationDurationSettingsSummary(
-            final SharedPreferences sp, final Resources res) {
-        if (mKeypressVibrationDurationSettingsPref != null) {
-            mKeypressVibrationDurationSettingsPref.setSummary(
-                    SettingsValues.getCurrentVibrationDuration(sp, res)
-                            + res.getString(R.string.settings_ms));
+    private void updateKeypressVibrationDurationSettingsSummary(final SharedPreferences sp, final Resources res) {
+        if(mKeypressVibrationDurationSettingsPref!=null) {
+            int value=SettingsValues.getCurrentVibrationDuration(sp,res);
+            mKeypressVibrationDurationSettingsPref.setSummary(value<0?getString(R.string.grapefruit_system_default):value+" ms");
         }
     }
 
     private void showKeypressVibrationDurationSettingsDialog() {
-        final SharedPreferences sp = getPreferenceManager().getSharedPreferences();
-        final Context context = getActivity();
-        final Resources res = context.getResources();
-        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(R.string.prefs_keypress_vibration_duration_settings);
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int whichButton) {
-                final int ms = Integer.valueOf(
-                        mKeypressVibrationDurationSettingsTextView.getText().toString());
-                sp.edit().putInt(Settings.PREF_VIBRATION_DURATION_SETTINGS, ms).apply();
-                updateKeypressVibrationDurationSettingsSummary(sp, res);
-            }
-        });
-        builder.setNegativeButton(android.R.string.cancel,  new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int whichButton) {
-                dialog.dismiss();
-            }
-        });
-        final View v = LayoutInflater.from(context).inflate(
-                R.layout.vibration_settings_dialog, null);
-        final int currentMs = SettingsValues.getCurrentVibrationDuration(
-                getPreferenceManager().getSharedPreferences(), getResources());
-        mKeypressVibrationDurationSettingsTextView = (TextView)v.findViewById(R.id.vibration_value);
-        final SeekBar sb = (SeekBar)v.findViewById(R.id.vibration_settings);
-        sb.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
-                final int tempMs = arg1;
-                mKeypressVibrationDurationSettingsTextView.setText(String.valueOf(tempMs));
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar arg0) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar arg0) {
-                final int tempMs = arg0.getProgress();
-                VibratorUtils.getInstance(context).vibrate(tempMs);
-            }
-        });
-        sb.setProgress(currentMs);
-        mKeypressVibrationDurationSettingsTextView.setText(String.valueOf(currentMs));
-        builder.setView(v);
-        builder.create().show();
+        final SharedPreferences sp=getPreferenceManager().getSharedPreferences();
+        mGrapefruitDialog=com.grapefruit.legacy.ui.SettingsDialog.slider(getActivity(),
+                getString(R.string.grapefruit_vibration_duration),
+                SettingsValues.getCurrentVibrationDuration(sp,getResources()),250," ms",-1,
+                value->{sp.edit().putInt(PREF_VIBRATION_DURATION_SETTINGS,value).apply();
+                    updateKeypressVibrationDurationSettingsSummary(sp,getResources());applyAppearance();},
+                value->VibratorUtils.getInstance(getActivity()).vibrate(value));
     }
 
     private void updateKeypressSoundVolumeSummary(final SharedPreferences sp, final Resources res) {
         if (mKeypressSoundVolumeSettingsPref != null) {
-            mKeypressSoundVolumeSettingsPref.setSummary(String.valueOf(
-                    (int)(SettingsValues.getCurrentKeypressSoundVolume(sp, res) * 100)));
+            mKeypressSoundVolumeSettingsPref.setSummary(SettingsValues.getCurrentKeypressSoundVolume(sp,res)<0?getString(R.string.grapefruit_system_default)
+                    : Math.round(SettingsValues.getCurrentKeypressSoundVolume(sp,res)*100)+"%");
         }
     }
 
     private void showKeypressSoundVolumeSettingDialog() {
-        final Context context = getActivity();
-        final AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        final SharedPreferences sp = getPreferenceManager().getSharedPreferences();
-        final Resources res = context.getResources();
-        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(R.string.prefs_keypress_sound_volume_settings);
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int whichButton) {
-                final float volume =
-                        ((float)Integer.valueOf(
-                                mKeypressSoundVolumeSettingsTextView.getText().toString())) / 100;
-                sp.edit().putFloat(Settings.PREF_KEYPRESS_SOUND_VOLUME, volume).apply();
-                updateKeypressSoundVolumeSummary(sp, res);
-            }
-        });
-        builder.setNegativeButton(android.R.string.cancel,  new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int whichButton) {
-                dialog.dismiss();
-            }
-        });
-        final View v = LayoutInflater.from(context).inflate(
-                R.layout.sound_effect_volume_dialog, null);
-        final int currentVolumeInt =
-                (int)(SettingsValues.getCurrentKeypressSoundVolume(sp, res) * 100);
-        mKeypressSoundVolumeSettingsTextView =
-                (TextView)v.findViewById(R.id.sound_effect_volume_value);
-        final SeekBar sb = (SeekBar)v.findViewById(R.id.sound_effect_volume_bar);
-        sb.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
-                final int tempVolume = arg1;
-                mKeypressSoundVolumeSettingsTextView.setText(String.valueOf(tempVolume));
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar arg0) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar arg0) {
-                final float tempVolume = ((float)arg0.getProgress()) / 100;
-                am.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD, tempVolume);
-            }
-        });
-        sb.setProgress(currentVolumeInt);
-        mKeypressSoundVolumeSettingsTextView.setText(String.valueOf(currentVolumeInt));
-        builder.setView(v);
-        builder.create().show();
+        final SharedPreferences sp=getPreferenceManager().getSharedPreferences();
+        mGrapefruitDialog=com.grapefruit.legacy.ui.SettingsDialog.slider(getActivity(),
+                getString(R.string.grapefruit_sound_volume),
+                (int)(SettingsValues.getCurrentKeypressSoundVolume(sp,getResources())*100),100,"%",-100,
+                value->{sp.edit().putFloat(PREF_KEYPRESS_SOUND_VOLUME,value/100f).apply();
+                    updateKeypressSoundVolumeSummary(sp,getResources());applyAppearance();},
+                value->{
+                    if(sp.getBoolean(PREF_SOUND_ON,getResources().getBoolean(R.bool.config_default_sound_enabled))) {
+                        AudioManager audio=(AudioManager)getActivity().getSystemService(Context.AUDIO_SERVICE);
+                        if(audio!=null)audio.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD,value/100f);
+                    }
+                });
     }
 }

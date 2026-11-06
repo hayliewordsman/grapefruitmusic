@@ -43,7 +43,7 @@
         <View
             android:layout_width="@dimen/suggestions_strip_padding"
             android:layout_height="@dimen/suggestions_strip_height"
-            style="?attr/suggestionsStripBackgroundStyle" />
+            android:background="@android:color/transparent" />
         <com.android.inputmethod.latin.suggestions.SuggestionStripView
             android:id="@+id/suggestion_strip_view"
             android:layout_weight="1.0"
@@ -54,7 +54,7 @@
         <View
             android:layout_width="@dimen/suggestions_strip_padding"
             android:layout_height="@dimen/suggestions_strip_height"
-            style="?attr/suggestionsStripBackgroundStyle" />
+            android:background="@android:color/transparent" />
     </LinearLayout>
 
     <com.android.inputmethod.keyboard.MainKeyboardView

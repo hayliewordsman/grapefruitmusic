@@ -1,14 +1,36 @@
-# LegacyHolo beta 3 validation — 2026-11-06
+# LegacyHolo beta 4 validation — 2026-11-06
 
 - Debug and release builds, debug lint and release vital lint pass.
-- 60 unit checks pass across Robolectric API 17 and 19 framework models.
+- 74 unit checks pass across Robolectric API 17 and 19 framework models.
 - Debug APK v1/JAR signing verifies with minimum SDK 17; its certificate matches beta 1.
-- Minimum SDK remains 17 and target SDK remains 19; version code is 3.
+- Minimum SDK remains 17 and target SDK remains 19; version code is 4.
 - All five launcher bitmap densities use the new app-specific artwork.
 - Universal-theme tests cover all four canonical IDs, revision-based local overrides,
   malformed or unavailable providers, and preservation of unrelated settings.
 - In an Android 4.2.2 x86 emulator, both apps received Light and Victory Blue from
   the actual Grapefruit Settings UI preview/provider built from commit `df11694`.
+
+Beta 4 checks exercise the Audio-style renderer through its actual controls:
+sound toggling and persistence, choosing Victory Blue without activity recreation,
+advanced-page navigation and Back, retained trial text, volume-card Save/Cancel,
+system-default restoration, and the input-style Add/Cancel form on API 17 and 19.
+The input-style regression covers a Jelly Bean `DialogPreference` builder dependency
+that was removed from the Grapefruit form path. A recording AudioManager verifies
+that switching off mutes an existing feedback manager, and that silent ringer mode
+prevents sound. The existing sound preference and its saved value are retained.
+
+Popup tests cover 8dp padding, transparent child backgrounds, bounds at both
+keyboard edges, and unchanged selection of the default alternate after clamping.
+Wide-tablet tests exercise nonzero suggestion-side padding in all four themes,
+with transparent side fills over the correct strip background. The transparent
+key-preview backing regression remains covered.
+
+In the Android 4.2.2 x86 emulator, beta 3 → beta 4 installation retained Victory
+Blue, key height, number row and other saved choices. The grouped Settings screen,
+sound switch, theme sheet (Pitch Black and Victory Blue), Advanced page and
+input-style Add/Cancel form opened without a fatal exception. Real key taps entered
+`q`; holding the leftmost Q key opened a padded popup at screen x=0 (64×84px),
+fully inside the keyboard, and releasing selected `1`, producing `q1`.
 
 The beta 1 crash was reproduced with the IME enabled: `Resources.NotFoundException:
 Resource ID #0x0` in `InitializeBinaryDictionary` / `BinaryDictionaryGetter`.

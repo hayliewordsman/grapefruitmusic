@@ -1,6 +1,6 @@
 # Grapefruit Keyboard LegacyHolo
 
-[Download the 1.0 beta 3 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-keyboard-legacyholo/downloads/Grapefruit-Keyboard-LegacyHolo-1.0-beta3.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
+[Download the 1.0 beta 4 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-keyboard-legacyholo/downloads/Grapefruit-Keyboard-LegacyHolo-1.0-beta4.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
 
 A standalone Grapefruit redesign of **AOSP LatinIME from Android 4.2.2**, for
 **Android 4.2.2–4.4.4 (API 17–19)**. Application ID:
@@ -11,7 +11,33 @@ Keyboard** and **Choose Grapefruit Keyboard**. A text field at the bottom of
 Settings lets you try it. The original language selector and AOSP typing settings
 remain available.
 
-## Beta 3
+## Beta 4
+
+Keyboard Settings now uses Grapefruit Audio’s design: large Geist headings,
+56dp pill rows, grapefruit-slice toggles, rounded choice sheets and form cards.
+The main page, Advanced settings, input-style editor and spell-check preferences
+use the same controls. Theme choices, key height, number row and AOSP typing
+preferences keep their existing storage and behavior. The renderer adapts
+Audio’s `Grouped`, `Ui` and `Toggle` implementation from commit `76c8c96`.
+
+**Feedback → Key press sounds** turns typing sounds on or off. A saved choice is
+preserved, and switching off mutes the active keyboard immediately. The keyboard
+and suggestion views suppress the platform’s separate click effect. Sound and
+vibration controls use Grapefruit sliders; **System default** preserves or restores
+Android’s default without displaying AOSP’s negative sentinel values. Android’s
+IME picker and language-enabling screens still belong to the OS.
+
+Keys signal presses with a brighter fill and a small inset, with no key outline.
+The spacebar retains its pill shape and the other keys their teardrop shape.
+The suggestion strip’s side fills are transparent over the same palette background
+as its centre. Long-press character and expanded-suggestion panels have rounded
+Grapefruit surfaces, borders and 8dp internal padding. Character panels are clamped
+inside the keyboard edges; touch coordinates account for the new padding.
+
+Version code 4 installs over previous betas with the same signing key and keeps
+existing settings. Android 4.2.2–4.4.4 remains the supported range.
+
+## Reference keyboard layout
 
 The oversized colored area above the keys is fixed. AOSP reserves transparent
 space there for key previews and expanded suggestions; only the actual suggestion
@@ -33,8 +59,7 @@ The spacebar is a centered pill in every Grapefruit theme, with non-touchable
 empty gutters on both sides. The language-switch key uses its reserved slot
 without shifting the pill. Other keys retain the Grapefruit teardrop design.
 
-Version code 3 installs over beta 1 or beta 2 with the same signing key and keeps
-existing settings. Other language arrangements retain their AOSP geometry.
+Other language arrangements retain their AOSP geometry.
 
 ## Earlier fixes retained
 
@@ -55,7 +80,7 @@ Settings offers Grapefruit Dark (default), Grapefruit Light, Pitch Black and
 Victory Blue. Colors and the lower-right teardrop path match Grapefruit Launcher
 commit `70302e6759e2a7e0fdb6fc511a6f91b22e13d4ed`. Letter, number, symbol and
 long-press popup keys use the same geometry. Wide keys stretch it; the spacebar
-uses a rounded pill with the same palette, gradient, border and pressed colors.
+uses a rounded pill with the same palette, gradient and pressed colors.
 The Enter key uses the accent gradient. Key previews, hints, icons, spacebar
 language labels and suggestions follow the chosen palette, with static Geist fonts.
 

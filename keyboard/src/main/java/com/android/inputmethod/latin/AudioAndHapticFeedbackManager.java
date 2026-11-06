@@ -1,4 +1,4 @@
-/*
+/* Modified for Grapefruit LegacyHolo: apply the sound switch to the active keyboard.
  * Copyright (C) 2012 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -35,10 +35,12 @@ public final class AudioAndHapticFeedbackManager {
     final private AudioManager mAudioManager;
     final private VibratorUtils mVibratorUtils;
     private boolean mSoundOn;
+    private final android.content.SharedPreferences mPrefs;
 
     public AudioAndHapticFeedbackManager(final LatinIME latinIme,
             final SettingsValues settingsValues) {
         mSettingsValues = settingsValues;
+        mPrefs=android.preference.PreferenceManager.getDefaultSharedPreferences(latinIme);
         mVibratorUtils = VibratorUtils.getInstance(latinIme);
         mAudioManager = (AudioManager) latinIme.getSystemService(Context.AUDIO_SERVICE);
         mSoundOn = reevaluateIfSoundIsOn();
@@ -51,7 +53,8 @@ public final class AudioAndHapticFeedbackManager {
     }
 
     private boolean reevaluateIfSoundIsOn() {
-        if (!mSettingsValues.mSoundOn || mAudioManager == null) {
+        boolean enabled=mPrefs.getBoolean(Settings.PREF_SOUND_ON,mSettingsValues.mSoundOn);
+        if (!enabled || mAudioManager == null) {
             return false;
         } else {
             return mAudioManager.getRingerMode() == AudioManager.RINGER_MODE_NORMAL;
@@ -61,6 +64,7 @@ public final class AudioAndHapticFeedbackManager {
     private void playKeyClick(int primaryCode) {
         // if mAudioManager is null, we can't play a sound anyway, so return
         if (mAudioManager == null) return;
+        mSoundOn=reevaluateIfSoundIsOn();
         if (mSoundOn) {
             final int sound;
             switch (primaryCode) {

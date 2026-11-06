@@ -1,16 +1,35 @@
 <resources>
     <string name="grapefruit_keyboard_name" translatable="false">Grapefruit Keyboard</string>
-    <style name="GrapefruitLegacy" parent="android:Theme.Holo.NoActionBar">
+    <style name="GrapefruitLegacy" parent="android:Theme.NoTitleBar">
         <item name="android:windowBackground">#1C0A0E</item>
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:colorBackground">#1C0A0E</item>
     </style>
-    <style name="GrapefruitLegacyLight" parent="android:Theme.Holo.Light.NoActionBar">
+    <style name="GrapefruitLegacyLight" parent="android:Theme.Light.NoTitleBar">
         <item name="android:windowBackground">#FCE4D9</item>
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:colorBackground">#FCE4D9</item>
     </style>
-    <string name="grapefruit_appearance">Grapefruit</string>
+    <style name="GrapefruitDialogWindow" parent="android:Theme.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+    <item name="grapefruit_trial" type="id" />
+    <item name="grapefruit_settings_title" type="id" />
+    <string name="grapefruit_settings_title">Settings</string>
+    <string name="grapefruit_back">Back to Settings</string>
+    <string name="grapefruit_selected">, selected</string>
+    <string name="grapefruit_setup">Keyboard</string>
+    <string name="grapefruit_feedback">Feedback</string>
+    <string name="grapefruit_system_default">System default</string>
+    <string name="grapefruit_vibration_duration">Vibration duration</string>
+    <string name="grapefruit_sound_volume">Key press volume</string>
+    <string name="grapefruit_key_sounds">Key press sounds</string>
+    <string name="grapefruit_key_sounds_summary">Turn off to type silently</string>
+    <string name="grapefruit_appearance">Appearance</string>
     <string name="grapefruit_theme">Theme</string>
     <string name="grapefruit_number_row">Number row</string>
     <string name="grapefruit_number_row_summary">Show 1–0 above English QWERTY letters</string>

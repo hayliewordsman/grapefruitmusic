@@ -1,3 +1,4 @@
 89135ce5dc8259029a8f39af526d22a968e77656b1a86038a6f35c1889ffa23c  Grapefruit-Keyboard-LegacyHolo-1.0-beta1.apk
 84a1b745d3bd785b57d57deffab4f9c36334ba50a6811cec7e66b7fa9d1eaded  Grapefruit-Keyboard-LegacyHolo-1.0-beta2.apk
 3bd822704e78672932625e509f666b10a49d5f2bf600d7818bc9a7fddf8ad98e  Grapefruit-Keyboard-LegacyHolo-1.0-beta3.apk
+7b8ac42269ea4e8d0f9394bc26e08fa9a2db0814642eb9fcb9cdcb9daf50eba7  Grapefruit-Keyboard-LegacyHolo-1.0-beta4.apk
