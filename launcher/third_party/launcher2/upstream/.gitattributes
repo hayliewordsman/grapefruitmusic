@@ -1,0 +1,3 @@
+# Preserve original AOSP source whitespace for provenance.
+*.java -whitespace
+NOTICE -whitespace

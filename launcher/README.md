@@ -4,6 +4,59 @@ A separate native Android Home app in the Grapefruit repository. Application ID:
 `io.github.hayliewordsman.grapefruitlauncher`. Minimum Android 4.2.2 (API 17), compile
 and target SDK 36 (Android 16). It installs alongside Audio and TV.
 
+## 1.0 beta 7
+
+Beta 7 rebuilds the workspace on **AOSP Launcher2**, the launcher shipped with
+Android 4.2.2. The integrated core is pinned to upstream commit
+`002c25eede2a33a5378c16c5bb9165179783e729`. The original files, Apache 2.0
+notices and a precise list of adaptations are in [third_party/launcher2](third_party/launcher2/README.md).
+This uses the Launcher2 workspace/drag core with a Grapefruit shell; it does not
+ship the entire stock launcher or its private platform dependencies.
+
+- Home is a horizontal paged workspace with a compact header and page indicators.
+  Existing shortcuts, saved gaps, half-cell coordinates, separate orientation
+  layouts, dock customizations and icon cache migrate in place. Hold near either
+  side while dragging to change pages; a spare page appears while arranging.
+- Launcher2 owns the whole in-window pointer lifecycle: press, move, drop on
+  finger-up, cancel, source completion and drag-image removal. It no longer uses
+  Android's cross-window `startDrag`/`DragEvent` handshake. Home, the dock and the
+  top action strip share the same target search and completion logic.
+- Keeps all four themes, wallpaper-free backgrounds, Geist label chips wrapping
+  to three lines, themed teardrop plates for every app, the persistent all-theme
+  icon cache, suggested dock apps, fixed middle All Apps, and the same floating
+  pill dock that becomes vertical at the physical right in landscape.
+- Settings now follows Audio/TV's scrolling grouped pages, round back controls,
+  56 dp rounded rows, accent section titles, gray values, footers, custom choice
+  dialogs and the same rolling grapefruit-slice switches. Includes optional
+  half-cell placement and layout locking. About keeps the own Triangle wordmark
+  and adds the AOSP source, licence and complete offline Apache/GPL/OFL notices.
+- Nearby pages retain icon views; distant pages release their images into a
+  bounded recycling pool. A drag allocates one small icon bitmap and releases it
+  on completion. The existing 256 KiB low-RAM cache/background cleanup remain.
+- Version code 7; the published APK retains the earlier beta signing certificate
+  and package ID. Install over beta 6, with no uninstall or settings reset.
+
+### Universal Grapefruit theme
+
+Uses the exact optional, read-only `UniversalTheme` contract introduced by
+[Grapefruit Settings](https://github.com/hayliewordsman/grapefruitmusic/tree/df116946820c4f47accc9803419ab36650d8306e/settings).
+The shared helper is included in `grapefruit-ui` without adding runtime libraries.
+
+- Reads `theme` and `revision` from
+  `content://io.github.hayliewordsman.grapefruitsettings.theme/theme`.
+  Canonical IDs map directly: Dark 0, Light 1, Pitch Black 2, Victory Blue 3.
+- Adopts a new universal selection on launch/resume and observes changes while
+  visible. The observer is removed in the background. Icons already prepared in
+  each theme are reused immediately.
+- A manual launcher theme remains until a **new revision** is selected universally;
+  rereading the same revision does not undo it. The launcher uses the universal
+  revision, not the separate media revision used by standard Audio/TV for Blue.
+- Missing/inaccessible/uninitialized or invalid providers preserve the local
+  choice. The launcher works independently on older and newer Android phones.
+- Settings → Universal theme opens Grapefruit Settings if available. This client
+  does not write into that provider or Android's system settings. Queries are
+  scoped to the companion's authority/package; no new permission is required.
+
 ## 1.0 beta 6
 
 - Adds an 8 dp gap between Home's Edit/Done and Settings buttons.
@@ -155,10 +208,11 @@ pack to other launchers. Icons are loaded in a worker and held in a bounded cach
 2. Choose **Settings → Set as default launcher**, or press Home and choose it.
    On Android 4.2, choose **Always** in the Home resolver. If another Home app is
    already the default, clear that app's defaults in Android settings first.
-3. The initial Home page contains up to twelve apps. Hold and drag an icon to a
+3. Home initially contains up to twelve apps. Swipe left/right between pages. Hold and drag an icon to a
    free cell, swap it with another Home icon, or move it to the dock. Drag from
    All Apps to add a shortcut. Drop on the top strip for removal or app options.
-   Tap **Edit**, then an icon, for options including directional movement controls.
+   Hold near the left or right edge to change page while dragging. Tap **Edit**,
+   then an icon, for options including directional movement controls.
 4. The dock has **four app positions plus All Apps fixed in the center**. Touch an
    empty position to pick an app. Drag occupied positions to swap them; use Edit
    then tap an occupied position to replace/remove it. All four positions remain
@@ -166,7 +220,7 @@ pack to other launchers. Icons are loaded in a worker and held in a bounded cach
 5. Open **All Apps** for a searchable alphabetical list. Search matches labels and
    package names. Home and Back return to Home and close the keyboard/search.
 6. Settings changes all surfaces, labels and icon plates immediately. Choose
-   **Icon placement → Half-cell subgrid** for finer placement. Home coordinates,
+   **Half-cell subgrid** for finer placement, or **Lock layout** to prevent dragging. Home coordinates,
    dock choices and theme survive restarts. Unavailable apps are omitted; saved
    shortcuts can return after reinstalling. Empty Home spaces stay empty.
 
@@ -211,9 +265,21 @@ python tools/launcher/brand.py
 
 This script requires Pillow. The procedural icon packs do not need generated assets.
 
+Beta 7 validation: **54 automated checks** pass across API 21, 28 and 35, including
+real MotionEvent long-press/move/release/cancel routing, drops without a preceding
+move, Home/dock transfers, rejected drawer drops, consecutive drags, edge paging,
+page swipes, sparse/fine layouts, background image release and universal-theme
+read/observe/resume/revision behavior. The earlier icon-cache tests remain. No
+system drag service handshake is mocked: Launcher2 processes the pointer stream
+inside the app. Debug/release builds and API-compatibility lint pass (no errors).
+Physical Android 4.2.2/JP5S and modern-phone testing is still required; automated
+checks do not establish device-specific gesture performance or process RAM.
+
 ## Free and open-source software
 
-Launcher code, original branding and icon plates are **GPL-3.0-or-later**. See the
+Original Grapefruit launcher code, branding and icon plates are **GPL-3.0-or-later**.
+Adapted AOSP Launcher2 files retain their **Apache-2.0** headers and notices; the
+combined app is distributed under GPL-3.0-or-later with those notices retained. See the
 repository [LICENSE](../LICENSE) and the bundled [notice](src/main/assets/NOTICE.txt).
 The full GPL, source link, no-warranty declaration and acknowledgements are in
 **Settings → About Grapefruit Launcher** and work without a network connection.

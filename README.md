@@ -13,7 +13,7 @@ The repository also contains **Grapefruit TV 2.0** (formerly Grapefruit FAST), a
 
 ## Grapefruit Launcher
 
-The `launcher/` module adds a separate Home app for **Android 4.2.2 and later**, using the same bundled Geist fonts, Grapefruit palettes, label chips and floating navigation pill. It includes Grapefruit Light, Grapefruit Dark, Pitch Black and **Victory Blue** (the Blue Grapefruit palette), four built-in teardrop icon packs, and four configurable dock apps around a fixed, centered All Apps button. See [launcher/README.md](launcher/README.md) for building, installation, controls and compatibility checks.
+The `launcher/` module adds a separate Home app for **Android 4.2.2 and later**, using the same bundled Geist fonts, Grapefruit palettes, label chips and floating navigation pill. It includes Grapefruit Light, Grapefruit Dark, Pitch Black and **Victory Blue** (the Blue Grapefruit palette), four built-in teardrop icon packs, and four configurable dock apps around a fixed, centered All Apps button. Beta 7 uses an adapted AOSP Launcher2 workspace/drag core, paged Home screens, Grapefruit grouped settings and the optional Grapefruit Settings universal-theme contract. See [launcher/README.md](launcher/README.md) for building, installation, controls and compatibility checks.
 
 ## Features
 

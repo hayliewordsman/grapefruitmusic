@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 final class LauncherBrand {
     static final String SOURCE="https://github.com/hayliewordsman/grapefruitmusic/tree/codex/grapefruit-launcher-preview/launcher";
+    static final String UPSTREAM="https://android.googlesource.com/platform/packages/apps/Launcher2/+/002c25eede2a33a5378c16c5bb9165179783e729";
     private static Typeface pixel;
     static synchronized Typeface pixel(Context context) {
         if(pixel==null)pixel=Typeface.createFromAsset(context.getAssets(),"fonts/GeistPixel-Triangle-Launcher.ttf");

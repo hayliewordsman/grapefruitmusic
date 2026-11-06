@@ -3,180 +3,145 @@ package com.grapefruitlauncher;
 
 import android.content.Context;
 import android.graphics.*;
-import android.os.Handler;
 import android.view.*;
-import android.widget.*;
+import android.widget.ImageView;
 import com.grapefruitmusic.ui.Fonts;
+import com.grapefruitlauncher.launcher2.*;
 import java.util.*;
 
-/** A sparse, scrollable Home workspace. Only visible cells and a small view pool occupy RAM. */
-final class HomeSurface extends ScrollView {
-    interface Callbacks {
-        View cell(AppCatalog.App app,View recycled);
-        void dropped(LauncherDrag drag);
-    }
+/** Launcher2 paged workspace with sparse coordinates and a bounded pool of icon views. */
+final class HomeSurface extends PagedView implements DropTarget,DragScroller {
+    interface Callbacks {View cell(AppCatalog.App app,View recycled);void dropped(LauncherDrag drag);}
     private final LauncherStore store;
     private final LauncherTheme theme;
     private final String profile;
     private final Callbacks callbacks;
-    private final Board board;
-    private final Handler handler=new Handler();
+    private final DragLayer layer;
+    private final int iconHeight;
     private final Map<String,AppCatalog.App> apps=new LinkedHashMap<>();
-    private boolean editing,suspended;
+    private final Map<String,View> cells=new LinkedHashMap<>();
+    private final ArrayDeque<View> pool=new ArrayDeque<>();
+    private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Map<String,HomeLayout.Cell> positions=new LinkedHashMap<>();
+    private int columns=1,rows=1,usedPages=1;
+    private boolean editing,suspended,dirty=true,building;
     private LauncherDrag drag;
-    private float pointerX,pointerY;
-    private int direction;
-    private final Runnable autoScroll=new Runnable(){
-        @Override public void run(){
-            if(drag==null || direction==0)return;
-            if(direction>0 && getScrollY()+getHeight()>=board.getHeight()-theme.dp(100))board.extraRows++;
-            scrollBy(0,direction*theme.dp(10));board.preview(pointerX,pointerY+getScrollY());board.requestLayout();
-            handler.postDelayed(this,24);
-        }
-    };
-    HomeSurface(Context context,LauncherStore store,LauncherTheme theme,String profile,Callbacks callbacks) {
-        super(context);this.store=store;this.theme=theme;this.profile=profile;this.callbacks=callbacks;
-        setFillViewport(true);setVerticalScrollBarEnabled(false);setClipToPadding(false);
-        setPadding(theme.dp(12),theme.dp(14),theme.dp(12),theme.dp(18));
-        board=new Board(context);addView(board,new ScrollView.LayoutParams(-1,-2));
-        board.setOnDragListener((view,event)->dragEvent(event));
+    HomeSurface(Context context,LauncherStore store,LauncherTheme theme,String profile,DragLayer layer,Callbacks callbacks){
+        super(context);this.store=store;this.theme=theme;this.profile=profile;this.layer=layer;this.callbacks=callbacks;
+        Paint font=new Paint();font.setTypeface(Fonts.medium());font.setTextSize(12*getResources().getDisplayMetrics().scaledDensity);
+        iconHeight=theme.dp(58+9+12+16)+(int)Math.ceil(font.getFontSpacing()*3);
+        setContentDescription("Home workspace. Swipe left or right to change page.");
     }
     int appCount(){return apps.size();}
     boolean contains(String id){return apps.containsKey(id);}
-    void reload(List<AppCatalog.App> installed,boolean edit) {
-        suspended=false;editing=edit;apps.clear();
-        for(String id:store.home()){AppCatalog.App app=AppCatalog.find(installed,id);if(app!=null)apps.put(id,app);}
-        board.dirty=true;board.requestLayout();board.invalidate();
+    int columns(){return columns;}
+    int rows(){return rows;}
+    String profile(){return profile;}
+    Map<String,HomeLayout.Cell> coordinates(){return new LinkedHashMap<>(positions);}
+    void reload(List<AppCatalog.App> installed,boolean edit){
+        suspended=false;editing=edit;apps.clear();for(String id:store.home()){AppCatalog.App app=AppCatalog.find(installed,id);if(app!=null)apps.put(id,app);}
+        dirty=true;requestLayout();
     }
-    void editing(boolean value){editing=value;board.invalidate();}
-    void endDrag(){cancelDrag();}
-    void releaseImages(){suspended=true;cancelDrag();board.release();}
-    void dispose(){releaseImages();handler.removeCallbacksAndMessages(null);}
-    boolean nudge(String id,int dx,int dy) {
-        HomeLayout.Cell from=board.positions.get(id);if(from==null)return false;
-        HomeLayout.Cell target=HomeLayout.snap(from.x+dx,from.y+dy,board.columns,store.subgrid());
-        if(from.equals(target))return false;
-        Map<String,HomeLayout.Cell> changed=HomeLayout.drop(id,target,board.positions);if(changed==null)return false;
-        store.positions(profile,changed);board.dirty=true;board.requestLayout();return true;
+    void editing(boolean value){editing=value;dirty=true;requestLayout();refreshGuides();}
+    void startDrag(LauncherDrag session){drag=session;dirty=true;requestLayout();refreshGuides();}
+    void endDrag(){drag=null;onExitScrollArea();dirty=true;requestLayout();refreshGuides();}
+    void releaseImages(){suspended=true;endDrag();releaseTouch();for(View cell:cells.values())clearImage(cell);cells.clear();pool.clear();for(int i=0;i<getChildCount();i++)((CellLayout)getChildAt(i)).removeAllViews();}
+    void dispose(){releaseImages();}
+    boolean nudge(String id,int dx,int dy){
+        HomeLayout.Cell from=positions.get(id);if(from==null)return false;
+        HomeLayout.Cell local=HomeLayout.snap(from.x+dx,from.y%(rows*2)+dy,columns,store.subgrid());
+        local=new HomeLayout.Cell(local.x,Math.min(rows*2-2,local.y));
+        HomeLayout.Cell target=new HomeLayout.Cell(local.x,from.y/(rows*2)*(rows*2)+local.y);
+        if(from.equals(target))return false;Map<String,HomeLayout.Cell> changed=HomeLayout.drop(id,target,positions);if(changed==null)return false;
+        positions.putAll(changed);store.positions(profile,positions);dirty=true;requestLayout();return true;
     }
-    private boolean dragEvent(DragEvent event) {
-        if(!(event.getLocalState() instanceof LauncherDrag))return false;
-        LauncherDrag session=(LauncherDrag)event.getLocalState();
-        if(event.getAction()!=DragEvent.ACTION_DRAG_STARTED && session!=drag)return false;
-        switch(event.getAction()) {
-            case DragEvent.ACTION_DRAG_STARTED:drag=session;board.invalidate();return true;
-            case DragEvent.ACTION_DRAG_ENTERED:return true;
-            case DragEvent.ACTION_DRAG_LOCATION:
-                pointerX=event.getX();pointerY=event.getY()-getScrollY();board.preview(event.getX(),event.getY());
-                int next=pointerY<theme.dp(52)?-1:pointerY>getHeight()-theme.dp(52)?1:0;
-                if(next!=direction){handler.removeCallbacks(autoScroll);direction=next;if(next!=0)handler.post(autoScroll);}
-                return true;
-            case DragEvent.ACTION_DRAG_EXITED:direction=0;handler.removeCallbacks(autoScroll);board.target=null;board.invalidate();return true;
-            case DragEvent.ACTION_DROP:
-                HomeLayout.Cell target=board.point(event.getX(),event.getY());
-                Map<String,HomeLayout.Cell> changed=HomeLayout.drop(session.app.id(),target,board.positions);
-                if(changed==null)return false;
-                store.add(session.app.id());store.positions(profile,changed);session.accepted=true;
-                callbacks.dropped(session);board.dirty=true;board.requestLayout();return true;
-            case DragEvent.ACTION_DRAG_ENDED:cancelDrag();return true;
-            default:return false;
+    @Override protected void onMeasure(int w,int h){
+        int width=MeasureSpec.getSize(w),height=MeasureSpec.getSize(h);
+        int nextColumns=Math.max(2,Math.min(8,(int)((width-theme.dp(24))/getResources().getDisplayMetrics().density/Math.max(88,80*getResources().getConfiguration().fontScale))));
+        int nextRows=Math.max(1,(height-theme.dp(44))/Math.max(1,iconHeight));
+        if(nextColumns!=columns || nextRows!=rows){columns=nextColumns;rows=nextRows;dirty=true;}
+        building=true;
+        if(dirty){
+            Map<String,HomeLayout.Cell> saved=store.positions(profile,new ArrayList<>(apps.keySet()));
+            positions=WorkspaceModel.resolve(new ArrayList<>(apps.keySet()),saved,columns,rows,store.subgrid());
+            Map<String,HomeLayout.Cell> defaults=new LinkedHashMap<>();
+            for(String id:positions.keySet())if(!saved.containsKey(id))defaults.put(id,positions.get(id));
+            if(!defaults.isEmpty())store.positions(profile,defaults);
+            usedPages=WorkspaceModel.pages(positions,rows);int pages=usedPages+(editing || drag!=null?1:0);
+            while(getChildCount()>pages){CellLayout page=(CellLayout)getChildAt(getChildCount()-1);for(int i=page.getChildCount()-1;i>=0;i--)recycle(page.getChildAt(i));removeView(page);}
+            while(getChildCount()<pages){CellLayout page=new CellLayout(getContext());page.setPadding(theme.dp(12),theme.dp(12),theme.dp(12),theme.dp(32));addView(page,new ViewGroup.LayoutParams(-1,-1));}
+            for(int i=0;i<getChildCount();i++)((CellLayout)getChildAt(i)).setGridSize(columns*2,rows*2);
+            dirty=false;refreshGuides();
         }
+        virtualize(width);super.onMeasure(w,h);building=false;
+        if(getCurrentPage()>=getChildCount())setCurrentPage(getChildCount()-1);
     }
-    private void cancelDrag(){drag=null;direction=0;handler.removeCallbacks(autoScroll);board.target=null;board.extraRows=2;board.invalidate();}
-    @Override protected void onScrollChanged(int l,int t,int oldl,int oldt){super.onScrollChanged(l,t,oldl,oldt);if(board!=null)board.requestLayout();}
-    private final class Board extends ViewGroup {
-        private final Map<String,View> cells=new LinkedHashMap<>();
-        private final ArrayDeque<View> pool=new ArrayDeque<>();
-        private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
-        private Map<String,HomeLayout.Cell> positions=new LinkedHashMap<>();
-        private boolean dirty=true,valid;
-        private int columns=1,extraRows=2;
-        private final int cellHeight;
-        private final RectF targetBounds=new RectF();
-        private float cellWidth;
-        private HomeLayout.Cell target;
-        Board(Context context){
-            super(context);setWillNotDraw(false);
-            Paint font=new Paint();font.setTypeface(Fonts.medium());font.setTextSize(12*getResources().getDisplayMetrics().scaledDensity);
-            cellHeight=theme.dp(58+9+12+16)+(int)Math.ceil(font.getFontSpacing()*3);
+    private void virtualize(int width){
+        if(suspended || width<=0)return;
+        int visible=Math.max(0,getScrollX()/width),left=Math.min(visible,getCurrentPage()),right=Math.max(visible,getCurrentPage())+1;
+        Set<String> wanted=new LinkedHashSet<>();
+        for(Map.Entry<String,HomeLayout.Cell> entry:positions.entrySet()){
+            int page=entry.getValue().y/(rows*2);if(page>=left-1 && page<=right)wanted.add(entry.getKey());
         }
-        HomeLayout.Cell point(float x,float y) {
-            if(cellWidth<=0 || cellHeight<=0)return new HomeLayout.Cell(0,0);
-            return HomeLayout.snap((x-cellWidth/2)/(cellWidth/2),(y-theme.dp(35))/(cellHeight/2f),columns,store.subgrid());
-        }
-        void preview(float x,float y){target=point(x,y);valid=drag!=null && HomeLayout.drop(drag.app.id(),target,positions)!=null;invalidate();}
-        @Override protected void onMeasure(int widthSpec,int heightSpec) {
-            int width=Math.max(1,MeasureSpec.getSize(widthSpec));
-            float density=getResources().getDisplayMetrics().density;
-            int desired=Math.max(2,Math.min(8,(int)(width/density/Math.max(88,80*getResources().getConfiguration().fontScale))));
-            if(columns!=desired){columns=desired;dirty=true;}
-            cellWidth=width/(float)columns;
-            if(dirty) {
-                List<String> ids=new ArrayList<>(apps.keySet());Map<String,HomeLayout.Cell> saved=store.positions(profile,ids);
-                positions=HomeLayout.resolve(ids,saved,columns,store.subgrid());
-                Map<String,HomeLayout.Cell> defaults=new LinkedHashMap<>();
-                for(String id:ids)if(!saved.containsKey(id) && positions.containsKey(id))defaults.put(id,positions.get(id));
-                if(!defaults.isEmpty())store.positions(profile,defaults);
-                dirty=false;
-            }
-            int bottom=2;for(HomeLayout.Cell cell:positions.values())bottom=Math.max(bottom,cell.y+2);
-            int height=Math.max(MeasureSpec.getSize(heightSpec),Math.round((bottom/2f+extraRows)*cellHeight));
-            setMeasuredDimension(width,height);virtualize();
-            for(View cell:cells.values())cell.measure(MeasureSpec.makeMeasureSpec(Math.round(cellWidth),MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(cellHeight,MeasureSpec.EXACTLY));
-        }
-        private void virtualize() {
-            if(suspended)return;
-            int viewport=HomeSurface.this.getHeight();if(viewport<=0)viewport=getResources().getDisplayMetrics().heightPixels;
-            int top=Math.max(0,HomeSurface.this.getScrollY()-cellHeight),bottom=HomeSurface.this.getScrollY()+viewport+cellHeight;
-            Set<String> wanted=new LinkedHashSet<>();
-            for(Map.Entry<String,HomeLayout.Cell> entry:positions.entrySet()) {
-                int y=Math.round(entry.getValue().y*cellHeight/2f);
-                if(y+cellHeight>=top && y<=bottom)wanted.add(entry.getKey());
-            }
-            java.util.Iterator<Map.Entry<String,View>> iterator=cells.entrySet().iterator();
-            while(iterator.hasNext()) {
-                Map.Entry<String,View> entry=iterator.next();if(wanted.contains(entry.getKey()))continue;
-                View cell=entry.getValue();removeViewInLayout(cell);clearImage(cell);iterator.remove();
-                if(pool.size()<columns*2)pool.addLast(cell);
-            }
-            for(String id:wanted) {
-                AppCatalog.App app=apps.get(id);if(app==null)continue;
-                View cell=cells.get(id);
-                if(cell==null) {
-                    cell=callbacks.cell(app,pool.pollFirst());cells.put(id,cell);
-                    addViewInLayout(cell,-1,new ViewGroup.LayoutParams(Math.round(cellWidth),cellHeight),true);
-                } else if(cell.getTag()!=app)callbacks.cell(app,cell);
-            }
-        }
-        @Override protected void onLayout(boolean changed,int l,int t,int r,int b) {
-            for(Map.Entry<String,View> entry:cells.entrySet()) {
-                HomeLayout.Cell position=positions.get(entry.getKey());if(position==null)continue;
-                int x=Math.round(position.x*cellWidth/2),y=Math.round(position.y*cellHeight/2f);
-                entry.getValue().layout(x,y,x+Math.round(cellWidth),y+cellHeight);
-            }
-        }
-        @Override protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            if(!editing && drag==null)return;
-            paint.setColor(theme.outline);paint.setAlpha(180);
-            int step=store.subgrid()?1:2;
-            int first=Math.max(0,HomeSurface.this.getScrollY()/Math.max(1,cellHeight)-1)*2;
-            int last=Math.min(HomeLayout.MAX_Y,first+(HomeSurface.this.getHeight()/Math.max(1,cellHeight)+4)*2);
-            for(int y=first;y<=last;y+=step)for(int x=0;x<=2*(columns-1);x+=step)
-                canvas.drawCircle((x+1)*cellWidth/2,y*cellHeight/2f+theme.dp(35),theme.dp(2),paint);
-            if(target!=null) {
-                paint.setColor(valid?theme.accent:theme.secondary);paint.setAlpha(65);
-                float x=target.x*cellWidth/2,y=target.y*cellHeight/2f;
-                targetBounds.set(x+2,y+2,x+cellWidth-2,y+cellHeight-2);
-                canvas.drawRoundRect(targetBounds,theme.dp(22),theme.dp(22),paint);
-            }
-        }
-        void release(){for(View cell:cells.values())clearImage(cell);cells.clear();pool.clear();removeAllViews();}
-        private void clearImage(View cell) {
-            cell.setAlpha(1);cell.setTag(null);
-            if(cell instanceof ViewGroup && ((ViewGroup)cell).getChildAt(0) instanceof ImageView) {
-                ImageView image=(ImageView)((ViewGroup)cell).getChildAt(0);image.setTag(null);image.setImageDrawable(null);
+        for(String id:new ArrayList<>(cells.keySet()))if(!wanted.contains(id)){View cell=cells.remove(id);recycle(cell);}
+        for(String id:wanted){
+            AppCatalog.App app=apps.get(id);HomeLayout.Cell cell=positions.get(id);int index=cell.y/(rows*2);if(app==null || index>=getChildCount())continue;
+            CellLayout page=(CellLayout)getChildAt(index);View view=cells.get(id);
+            if(view==null){view=callbacks.cell(app,pool.pollFirst());cells.put(id,view);}
+            else if(view.getTag()!=app)callbacks.cell(app,view);
+            int localY=cell.y%(rows*2);
+            if(view.getParent()!=page){
+                if(view.getParent() instanceof ViewGroup)((ViewGroup)view.getParent()).removeView(view);
+                page.addView(view,new CellLayout.LayoutParams(cell.x,localY,2,2));
+            }else {
+                CellLayout.LayoutParams lp=(CellLayout.LayoutParams)view.getLayoutParams();
+                if(lp.cellX!=cell.x || lp.cellY!=localY){lp.cellX=cell.x;lp.cellY=localY;view.setLayoutParams(lp);}
             }
         }
     }
+    private void recycle(View view){
+        Object tag=view.getTag();if(tag instanceof AppCatalog.App)cells.remove(((AppCatalog.App)tag).id());
+        if(view.getParent() instanceof ViewGroup)((ViewGroup)view.getParent()).removeView(view);
+        clearImage(view);if(pool.size()<columns*2)pool.addLast(view);
+    }
+    private void clearImage(View view){view.setAlpha(1);view.setTag(null);if(view instanceof ViewGroup && ((ViewGroup)view).getChildAt(0) instanceof ImageView){ImageView image=(ImageView)((ViewGroup)view).getChildAt(0);image.setTag(null);image.setImageDrawable(null);}}
+    private void refreshGuides(){for(int i=0;i<getChildCount();i++)((CellLayout)getChildAt(i)).guides(editing || drag!=null,store.subgrid(),theme.accent,theme.outline);invalidate();}
+    @Override protected void onPageSwitched(int page){if(!building){virtualize(getWidth());requestLayout();}announceForAccessibility("Home page "+(page+1)+" of "+Math.max(1,getChildCount()));}
+    @Override protected void onPageProgress(){if(!building && getWidth()>0){virtualize(getWidth());requestLayout();}}
+    @Override protected void dispatchDraw(Canvas canvas){
+        super.dispatchDraw(canvas);int count=getChildCount();if(count<=1)return;
+        float step=theme.dp(14),start=getScrollX()+getWidth()/2f-(count-1)*step/2;
+        int shown=Math.min(count,9),first=Math.max(0,Math.min(count-shown,getCurrentPage()-4));
+        start=getScrollX()+getWidth()/2f-(shown-1)*step/2;
+        for(int i=first;i<first+shown;i++){paint.setColor(i==getCurrentPage()?theme.accent:theme.outline);canvas.drawCircle(start+(i-first)*step,getHeight()-theme.dp(14),theme.dp(i==getCurrentPage()?3.5f:2.5f),paint);}
+    }
+    private HomeLayout.Cell point(int x,int y){
+        int width=Math.max(1,getWidth());int globalX=x+getScrollX(),pageIndex=Math.max(0,Math.min(getChildCount()-1,globalX/width));
+        CellLayout page=(CellLayout)getChildAt(pageIndex);
+        float cw=Math.max(1,page.unitWidth()),ch=Math.max(1,page.unitHeight());
+        HomeLayout.Cell local=HomeLayout.snap((globalX-pageIndex*width-page.getPaddingLeft()-cw)/cw,(y-page.getPaddingTop()-theme.dp(35))/ch,columns,store.subgrid());
+        return new HomeLayout.Cell(local.x,pageIndex*rows*2+Math.min(rows*2-2,local.y));
+    }
+    public boolean isDropEnabled(){return !suspended && isShown() && getChildCount()>0;}
+    public void getLocationInDragLayer(int[] loc){layer.getLocationInDragLayer(this,loc);}
+    public DropTarget getDropTargetDelegate(DragObject object){return null;}
+    public boolean acceptDrop(DragObject object){return object.dragInfo instanceof LauncherDrag && getChildCount()>0 && HomeLayout.drop(((LauncherDrag)object.dragInfo).app.id(),point(object.x,object.y),positions)!=null;}
+    public void onDrop(DragObject object){
+        LauncherDrag session=(LauncherDrag)object.dragInfo;Map<String,HomeLayout.Cell> changed=HomeLayout.drop(session.app.id(),point(object.x,object.y),positions);if(changed==null)return;
+        positions.putAll(changed);store.add(session.app.id());store.positions(profile,positions);apps.put(session.app.id(),session.app);session.accepted=true;callbacks.dropped(session);dirty=true;requestLayout();
+    }
+    public void onDragEnter(DragObject object){onDragOver(object);}
+    public void onDragOver(DragObject object){
+        HomeLayout.Cell target=point(object.x,object.y);int page=target.y/(rows*2);boolean valid=acceptDrop(object);
+        for(int i=0;i<getChildCount();i++)((CellLayout)getChildAt(i)).preview(i==page?target.x:-1,target.y%(rows*2),valid);
+    }
+    public void onDragExit(DragObject object){onExitScrollArea();}
+    public void onFlingToDelete(DragObject object,int x,int y,PointF velocity){}
+    public void scrollLeft(){if(drag!=null)setCurrentPage(getCurrentPage()-1);}
+    public void scrollRight(){if(drag!=null)setCurrentPage(getCurrentPage()+1);}
+    public boolean onEnterScrollArea(int x,int y,int direction){
+        int[] loc=new int[2];getLocationInDragLayer(loc);
+        return drag!=null && y>=loc[1] && y<loc[1]+getHeight() && x>=loc[0] && x<loc[0]+getWidth() && (direction==0?getCurrentPage()>0:getCurrentPage()<getChildCount()-1);
+    }
+    public boolean onExitScrollArea(){for(int i=0;i<getChildCount();i++)((CellLayout)getChildAt(i)).preview(-1,-1,false);return true;}
 }

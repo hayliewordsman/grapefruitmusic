@@ -14,6 +14,11 @@ import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import com.grapefruitmusic.ui.Fonts;
+import com.grapefruitmusic.ui.UniversalTheme;
+import android.database.ContentObserver;
+import com.grapefruitlauncher.launcher2.*;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -31,7 +36,9 @@ public final class MainActivity extends Activity {
     private boolean destroyed, loading=true, registered, resumed, uiReleased, catalogDirty=true, refreshRunning;
     private static boolean fontsReady;
     private String query="";
-    private LauncherDrag.Root root;
+    private DragLayer root;
+    private FrameLayout headerSlot;
+    private final List<DropTarget> dockTargets=new ArrayList<>();
     private GridView grid;
     private HomeSurface home,dragHome;
     private FrameLayout body;
@@ -43,6 +50,21 @@ public final class MainActivity extends Activity {
     private AppAdapter adapter;
     private TextView subtitle, empty,titleView,editControl;
     private Dialog dialog;
+    private boolean observingTheme;
+    private final ContentObserver universalChanges=new ContentObserver(main){
+        @Override public void onChange(boolean selfChange){if(resumed)syncUniversalTheme();}
+    };
+    private void syncUniversalTheme(){
+        if(UniversalTheme.sync(this,getSharedPreferences("launcher",MODE_PRIVATE),false,new int[]{0,1,2,3}) && root!=null){
+            if(activeDrag!=null)finishDrag(false);dismissDialog();build();
+        }
+    }
+    private void observeUniversalTheme(){
+        if(observingTheme)return;
+        try{getContentResolver().registerContentObserver(UniversalTheme.URI,false,universalChanges);observingTheme=true;}catch(RuntimeException unavailable){}
+    }
+    private void stopObservingTheme(){if(observingTheme){getContentResolver().unregisterContentObserver(universalChanges);observingTheme=false;}}
+
     private final BroadcastReceiver packageChanges=new BroadcastReceiver() {
         @Override public void onReceive(Context c,Intent i) {
             String pkg=i.getData()==null?null:i.getData().getSchemeSpecificPart();
@@ -60,6 +82,7 @@ public final class MainActivity extends Activity {
         if(!fontsReady){Fonts.init(getApplicationContext());fontsReady=true;}
         store=new LauncherStore(getSharedPreferences("launcher",MODE_PRIVATE));
         icons=new IconPack(this);
+        UniversalTheme.sync(this,getSharedPreferences("launcher",MODE_PRIVATE),false,new int[]{0,1,2,3});
         if(state!=null) {
             screen=state.getInt("screen",HOME);dockSlot=state.getInt("slot",-1);query=state.getString("query","");
             settingsPage=state.getString("settingsPage","");editing=state.getBoolean("editing",false);
@@ -79,7 +102,7 @@ public final class MainActivity extends Activity {
         build();
     }
     @Override protected void onResume() {
-        super.onResume();resumed=true;
+        super.onResume();resumed=true;observeUniversalTheme();syncUniversalTheme();
         if(uiReleased) {
             uiReleased=false;
             if(grid!=null){
@@ -92,7 +115,7 @@ public final class MainActivity extends Activity {
         }
         refresh();
     }
-    @Override protected void onStop() {finishDrag(false);resumed=false;releaseBackgroundUi();super.onStop();}
+    @Override protected void onStop() {stopObservingTheme();finishDrag(false);if(root!=null)root.getDragController().cancelDrag();resumed=false;releaseBackgroundUi();super.onStop();}
     @Override public void onTrimMemory(int level) {
         super.onTrimMemory(level);
         if(icons!=null){icons.trim();if(!resumed)releaseBackgroundUi();}
@@ -119,7 +142,7 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onNewIntent(Intent intent) {super.onNewIntent(intent);setIntent(intent);go(HOME);}
     @Override protected void onDestroy() {
-        destroyed=true;if(registered)unregisterReceiver(packageChanges);
+        destroyed=true;stopObservingTheme();if(registered)unregisterReceiver(packageChanges);
         if(home!=null)home.dispose();
         dismissDialog();loader.shutdownNow();icons.close();main.removeCallbacksAndMessages(null);super.onDestroy();
     }
@@ -144,14 +167,14 @@ public final class MainActivity extends Activity {
                 if(catalogDirty){refresh();return;}
                 apps=result;loading=false;store.seed(apps);
                 store.suggestedDock(AppCatalog.suggestedDock(getApplicationContext(),apps));
-                if(screen!=SETTINGS && resumed){updateApps();updateDock();}
+                if(screen!=SETTINGS && resumed){if(activeDrag!=null)finishDrag(false);updateApps();updateDock();}
                 if(failed>0 && resumed)notice("Some app icons could not be saved. Check available storage.");
             });
         });
     }
     private void go(int next) {
-        hideKeyboard();dismissDialog();
-        if(screen==HOME && next==HOME){savedPosition=0;savedTop=0;if(home!=null)home.scrollTo(0,0);updateApps();return;}
+        if(activeDrag!=null)finishDrag(false);hideKeyboard();dismissDialog();
+        if(screen==HOME && next==HOME){savedPosition=0;savedTop=0;if(home!=null)home.setCurrentPage(0);updateApps();return;}
         screen=next;query="";settingsPage="";if(next!=PICK_DOCK)dockSlot=-1;build();
         if(next==APPS)refresh();
     }
@@ -167,15 +190,17 @@ public final class MainActivity extends Activity {
     }
 
     private void build() {
-        // Drop references to the previous hierarchy, including Settings' hidden app grid.
+        // Each screen shares the Launcher2 drag layer and Grapefruit visual roles.
         if(home!=null)home.dispose();
         grid=null;adapter=null;home=null;body=null;empty=null;dockContainer=null;subtitle=null;titleView=null;searchRow=null;editControl=null;uiReleased=false;
         savedPosition=0;savedTop=0;
         theme=new LauncherTheme(this,store.theme());
         icons.screenChanged(theme.id);
-        root=new LauncherDrag.Root(this,session->main.post(()->{
-            if(!destroyed && activeDrag==session)finishDrag(true);
-        }));root.setBackgroundColor(theme.bg);root.setFocusableInTouchMode(true);
+        root=new DragLayer(this);root.setBackgroundColor(theme.bg);root.setFocusableInTouchMode(true);
+        root.getDragController().addDragListener(new DragController.DragListener(){
+            public void onDragStart(DragSource source,Object info,int action){}
+            public void onDragEnd(){LauncherDrag session=activeDrag;if(session!=null)main.post(()->{if(!destroyed && activeDrag==session)finishDrag(true);});}
+        });
         if(Build.VERSION.SDK_INT>=30) {
             root.setOnApplyWindowInsetsListener((v,insets)->{
                 android.graphics.Insets i=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout()|WindowInsets.Type.ime());
@@ -186,7 +211,7 @@ public final class MainActivity extends Activity {
         if(wide)shell.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
         root.addView(shell,new FrameLayout.LayoutParams(-1,-1));
         LinearLayout page=column();shell.addView(page,wide?new LinearLayout.LayoutParams(0,-1,1):new LinearLayout.LayoutParams(-1,0,1));
-        header(page);
+        if(screen!=SETTINGS)header(page);
         if(screen==SETTINGS)settings(page);
         else {
             if(screen==APPS || screen==PICK_DOCK)search(page);
@@ -214,10 +239,6 @@ public final class MainActivity extends Activity {
             updateApps();
             dockContainer=new DockBox();shell.addView(dockContainer,wide?new LinearLayout.LayoutParams(dp(92),-1):new LinearLayout.LayoutParams(-1,-2));updateDock();
         }
-        root.setOnDragListener((v,event)->{
-            if(event.getLocalState()!=activeDrag || activeDrag==null)return false;
-            return event.getAction()==DragEvent.ACTION_DRAG_STARTED;
-        });
         setContentView(root);windowColours();
     }
     private boolean landscape(){android.content.res.Configuration c=getResources().getConfiguration();return c.screenWidthDp>c.screenHeightDp;}
@@ -227,26 +248,19 @@ public final class MainActivity extends Activity {
         return Math.max(2,Math.min(8,(int)(width/Math.max(88,80*fontScale))));
     }
     private void header(LinearLayout parent) {
-        LinearLayout head=column();head.setPadding(dp(22),dp(18),dp(22),dp(6));parent.addView(head);
-        LinearLayout tools=row();
-        if(screen!=HOME)tools.addView(theme.chip(screen==SETTINGS&&!settingsPage.isEmpty()?"‹  Settings":"‹  Home",false,v->{if(screen==SETTINGS&&!settingsPage.isEmpty()){settingsPage="";build();}else go(HOME);}));
-        else {
-            TextView brand=theme.text("Grapefruit Launcher",14,true);brand.setTextColor(theme.accent);
-            tools.addView(brand,new LinearLayout.LayoutParams(0,-2,1));
-            editControl=theme.chip(editing?"Done":"Edit",editing,v->{editing=!editing;updateEditing();});tools.addView(editControl);
-        }
-        if(screen!=SETTINGS) {
-            if(screen!=HOME)tools.addView(new View(this),new LinearLayout.LayoutParams(0,1,1));
-            TextView settings=theme.chip("Settings",false,v->go(SETTINGS));settings.setContentDescription("Launcher settings");
-            LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-2,-2);if(screen==HOME)sp.setMarginStart(dp(8));tools.addView(settings,sp);
-        }
-        head.addView(tools,new LinearLayout.LayoutParams(-1,-2));
-        if(screen==SETTINGS && settingsPage.equals("about"))return;
-        TextView title=theme.text(screen==HOME?"Home":screen==SETTINGS?"Settings":screen==PICK_DOCK?"Choose a dock app":"All Apps",32,true);
-        titleView=title;title.setPadding(0,dp(20),0,dp(8));head.addView(title);
-        subtitle=theme.text(screen==HOME?DateFormat.getDateInstance(DateFormat.FULL).format(new Date()):"",14,false);
-        subtitle.setTextColor(theme.secondary);subtitle.setPadding(0,0,0,dp(8));head.addView(subtitle);
-        if(screen==SETTINGS)subtitle.setText(R.string.settings_tagline);
+        headerSlot=new FrameLayout(this);headerSlot.setPadding(dp(16),dp(8),dp(16),dp(6));parent.addView(headerSlot,new LinearLayout.LayoutParams(-1,dp(80)));
+        LinearLayout tools=row();headerSlot.addView(tools,new FrameLayout.LayoutParams(-1,-1));
+        if(screen!=HOME){View back=glyph(LauncherGlyph.BACK,"Back to Home",()->go(HOME));LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(dp(44),dp(44));bp.rightMargin=dp(12);tools.addView(back,bp);}
+        LinearLayout titles=column();titles.setGravity(Gravity.CENTER_VERTICAL);
+        titleView=theme.text(screen==HOME?"Home":screen==PICK_DOCK?"Choose an app":"All Apps",screen==HOME?26:28,true);titles.addView(titleView);
+        subtitle=theme.text(screen==HOME?DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date()):"",12,false);subtitle.setTextColor(theme.secondary);subtitle.setPadding(0,dp(4),0,0);titles.addView(subtitle);
+        tools.addView(titles,new LinearLayout.LayoutParams(0,-2,1));
+        if(screen==HOME){editControl=theme.chip(editing?"Done":"Edit",editing,v->{editing=!editing;updateEditing();});tools.addView(editControl,new LinearLayout.LayoutParams(-2,dp(44)));}
+        View settings=glyph(LauncherGlyph.SETTINGS,"Launcher settings",()->go(SETTINGS));LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(dp(44),dp(44));sp.setMarginStart(dp(8));tools.addView(settings,sp);
+        updateEditing();
+    }
+    private View glyph(int type,String description,Runnable click){
+        LauncherGlyph icon=new LauncherGlyph(this,type,theme);icon.setContentDescription(description);icon.setBackground(theme.rowBackground());icon.setFocusable(true);icon.setClickable(true);icon.setOnClickListener(v->click.run());return icon;
     }
     private void search(LinearLayout parent) {
         LinearLayout row=row();row.setPadding(dp(18),dp(4),dp(18),dp(4));
@@ -311,7 +325,11 @@ public final class MainActivity extends Activity {
             cell.setFocusable(true);
             cell.setOnClickListener(v->{AppCatalog.App selected=(AppCatalog.App)v.getTag();if(editing)appMenu(selected,-1);else open(selected);});
             cell.setOnLongClickListener(v->{AppCatalog.App selected=(AppCatalog.App)v.getTag();if(!beginDrag(selected,LauncherDrag.HOME,-1,v))appMenu(selected,-1);return true;});
-        } else {cell.setOnClickListener(null);cell.setOnLongClickListener(null);cell.setClickable(false);cell.setLongClickable(false);cell.setFocusable(false);}
+        } else {
+            cell.setFocusable(false);
+            cell.setOnClickListener(v->{AppCatalog.App selected=(AppCatalog.App)v.getTag();if(screen==PICK_DOCK){store.dock(dockSlot,selected.id());go(HOME);}else if(editing)appMenu(selected,-1);else open(selected);});
+            cell.setOnLongClickListener(v->{AppCatalog.App selected=(AppCatalog.App)v.getTag();if(!beginDrag(selected,LauncherDrag.DRAWER,-1,v))appMenu(selected,-1);return true;});
+        }
         return cell;
     }
     private final class AppAdapter extends BaseAdapter {
@@ -322,7 +340,7 @@ public final class MainActivity extends Activity {
         @Override public View getView(int p,View recycled,ViewGroup parent){return appCell(visible.get(p),recycled,false);}
     }
     private HomeSurface homeSurface() {
-        HomeSurface surface=new HomeSurface(this,store,theme,landscape()?"landscape":"portrait",new HomeSurface.Callbacks(){
+        HomeSurface surface=new HomeSurface(this,store,theme,landscape()?"landscape":"portrait",root,new HomeSurface.Callbacks(){
             public View cell(AppCatalog.App app,View recycled){return appCell(app,recycled,true);}
             public void dropped(LauncherDrag drag){if(drag.origin==LauncherDrag.DOCK)store.dock(drag.slot,"");}
         });
@@ -331,7 +349,7 @@ public final class MainActivity extends Activity {
     private void updateEditing() {
         if(editControl!=null){editControl.setText(editing?"Done":"Edit");editControl.setSelected(editing);editControl.setBackground(theme.interactive(editing));editControl.setTextColor(editing?theme.onAccent:theme.text);}
         if(home!=null)home.editing(editing);
-        if(screen==HOME && subtitle!=null)subtitle.setText(editing?"Hold and drag to move. Tap an app for options.":DateFormat.getDateInstance(DateFormat.FULL).format(new Date()));
+        if(screen==HOME && subtitle!=null)subtitle.setText(editing?"Tap an app for options":DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date()));
     }
     private LinearLayout dockContainer;
     private final class DockBox extends LinearLayout {
@@ -350,7 +368,7 @@ public final class MainActivity extends Activity {
     }
     private void updateDock() {
         if(dockContainer==null || screen==SETTINGS)return;
-        boolean wide=landscape();dockContainer.removeAllViews();dockContainer.setGravity(Gravity.CENTER);
+        dockTargets.clear();boolean wide=landscape();dockContainer.removeAllViews();dockContainer.setGravity(Gravity.CENTER);
         dockContainer.setPadding(dp(wide?6:16),dp(wide?12:18),dp(wide?12:16),dp(12));
         int clear=theme.bg&0x00ffffff;
         dockContainer.setBackground(new GradientDrawable(wide?GradientDrawable.Orientation.LEFT_RIGHT:GradientDrawable.Orientation.TOP_BOTTOM,new int[]{clear,theme.bg}));
@@ -375,13 +393,9 @@ public final class MainActivity extends Activity {
                     touch.setOnClickListener(v->{if(editing)appMenu(app,slot);else open(app);});
                 }
                 touch.setOnLongClickListener(v->{if(app==null)pickDock(slot);else if(!beginDrag(app,LauncherDrag.DOCK,slot,v))appMenu(app,slot);return true;});
-                touch.setOnDragListener((v,event)->{
-                    if(!(event.getLocalState() instanceof LauncherDrag) || event.getLocalState()!=activeDrag)return false;
-                    if(event.getAction()==DragEvent.ACTION_DRAG_STARTED)return true;
-                    if(event.getAction()==DragEvent.ACTION_DRAG_ENTERED){v.setAlpha(.65f);return true;}
-                    if(event.getAction()==DragEvent.ACTION_DRAG_EXITED || event.getAction()==DragEvent.ACTION_DRAG_ENDED){v.setAlpha(1);return true;}
-                    if(event.getAction()==DragEvent.ACTION_DROP){dropDock(activeDrag,slot);v.setAlpha(1);return true;}
-                    return true;
+                dockTargets.add(new ViewDropTarget(root,touch){
+                    public boolean acceptDrop(DropTarget.DragObject object){return object.dragInfo==activeDrag;}
+                    public void onDrop(DropTarget.DragObject object){dropDock((LauncherDrag)object.dragInfo,slot);}
                 });
             }
         }
@@ -394,42 +408,43 @@ public final class MainActivity extends Activity {
     }
     private boolean beginDrag(AppCatalog.App app,int origin,int slot,View source) {
         if(activeDrag!=null || body==null)return false;
+        if(store.locked()){notice("Home layout is locked. Unlock it in Settings to arrange apps.");return true;}
         hideKeyboard();dismissDialog();LauncherDrag session=new LauncherDrag(app,origin,slot,source);activeDrag=session;
         android.graphics.drawable.Drawable image=null;
         if(source instanceof ViewGroup && ((ViewGroup)source).getChildAt(0) instanceof ImageView)image=((ImageView)((ViewGroup)source).getChildAt(0)).getDrawable();
-        final android.graphics.drawable.Drawable shadow=image==null?new IconPack.Plate(theme,null,0):image;
-        if(screen!=HOME) {
+        if(image==null)image=new IconPack.Plate(theme,null,0);
+        if(screen!=HOME){
             dragHome=homeSurface();body.addView(dragHome,new FrameLayout.LayoutParams(-1,-1));
             if(grid!=null)grid.setVisibility(View.INVISIBLE);if(empty!=null)empty.setVisibility(View.GONE);if(searchRow!=null)searchRow.setVisibility(View.GONE);
-            if(titleView!=null)titleView.setText("Place on Home");
-            if(body.getWidth()>0 && body.getHeight()>0){dragHome.measure(View.MeasureSpec.makeMeasureSpec(body.getWidth(),View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(body.getHeight(),View.MeasureSpec.EXACTLY));dragHome.layout(0,0,body.getWidth(),body.getHeight());}
         }
-        LinearLayout strip=row();strip.setPadding(dp(14),dp(4),dp(14),dp(4));dragStrip=strip;
-        for(int action=0;action<2;action++) {
-            final boolean options=action==1;String label=options?"App options":origin==LauncherDrag.DRAWER?"Cancel":"Remove shortcut";
-            TextView target=theme.chip(label,false,v->{});target.setContentDescription("Drop: "+label);
-            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(48),1);lp.leftMargin=dp(4);strip.addView(target,lp);
-            target.setOnDragListener((v,event)->{
-                if(event.getLocalState()!=activeDrag || activeDrag==null)return false;
-                if(event.getAction()==DragEvent.ACTION_DRAG_STARTED)return true;
-                if(event.getAction()==DragEvent.ACTION_DRAG_ENTERED){v.setAlpha(.65f);return true;}
-                if(event.getAction()==DragEvent.ACTION_DRAG_EXITED || event.getAction()==DragEvent.ACTION_DRAG_ENDED){v.setAlpha(1);return true;}
-                if(event.getAction()==DragEvent.ACTION_DROP) {
-                    if(options)activeDrag.options=true;
-                    else if(activeDrag.origin==LauncherDrag.HOME){store.remove(activeDrag.app.id());activeDrag.accepted=true;}
-                    else if(activeDrag.origin==LauncherDrag.DOCK){store.dock(activeDrag.slot,"");activeDrag.accepted=true;}
-                    return true;
+        HomeSurface destination=screen==HOME?home:dragHome;destination.startDrag(session);
+        DragController controller=root.getDragController();controller.clearDropTargets();controller.addDropTarget(destination);
+        for(DropTarget target:dockTargets)controller.addDropTarget(target);
+        controller.setDragScoller(destination);controller.setScrollView(destination);controller.setWindowToken(root.getWindowToken());
+        LinearLayout strip=row();strip.setPadding(0,0,0,0);strip.setBackgroundColor(theme.bg);dragStrip=strip;
+        for(int action=0;action<2;action++){
+            final boolean options=action==1;String label=options?"App options":origin==LauncherDrag.DRAWER?"Cancel":"Remove";
+            TextView target=theme.chip(label,false,v->{});target.setContentDescription("Drop: "+(options?"App options":origin==LauncherDrag.DRAWER?"Cancel":"Remove shortcut"));
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(48),1);if(action>0)lp.setMarginStart(dp(8));strip.addView(target,lp);
+            controller.addDropTarget(new ViewDropTarget(root,target){
+                public boolean acceptDrop(DropTarget.DragObject object){return object.dragInfo==activeDrag;}
+                public void onDrop(DropTarget.DragObject object){
+                    if(options)session.options=true;
+                    else if(origin==LauncherDrag.HOME){store.remove(app.id());session.accepted=true;}
+                    else if(origin==LauncherDrag.DOCK){store.dock(slot,"");session.accepted=true;}
                 }
-                return true;
             });
         }
-        root.addView(strip,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));source.setAlpha(.35f);
-        View.DragShadowBuilder builder=new View.DragShadowBuilder(source){
-            @Override public void onProvideShadowMetrics(android.graphics.Point size,android.graphics.Point touch){size.set(dp(72),dp(72));touch.set(dp(36),dp(36));}
-            @Override public void onDrawShadow(android.graphics.Canvas canvas){android.graphics.Rect old=new android.graphics.Rect(shadow.getBounds());shadow.setBounds(dp(4),dp(4),dp(68),dp(68));shadow.draw(canvas);shadow.setBounds(old);}
-        };
-        boolean started=root.startAppDrag(session,builder);
-        if(!started)finishDrag(false);return started;
+        headerSlot.addView(strip,new FrameLayout.LayoutParams(-1,-1));
+        if(root.getWidth()>0 && root.getHeight()>0){root.measure(View.MeasureSpec.makeMeasureSpec(root.getWidth(),View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(root.getHeight(),View.MeasureSpec.EXACTLY));root.layout(root.getLeft(),root.getTop(),root.getRight(),root.getBottom());}
+        int pixels=new MemoryPolicy(this).iconPixels(theme);Bitmap bitmap=Bitmap.createBitmap(pixels,pixels,Bitmap.Config.ARGB_8888);
+        android.graphics.Rect old=new android.graphics.Rect(image.getBounds());image.setBounds(0,0,pixels,pixels);image.draw(new Canvas(bitmap));image.setBounds(old);source.setAlpha(.25f);
+        controller.startIconDrag(bitmap,new DragSource(){
+            public boolean supportsFlingToDelete(){return false;}
+            public void onFlingToDeleteCompleted(){}
+            public void onDropCompleted(DropTarget target,DropTarget.DragObject object,boolean fling,boolean success){}
+        },session);
+        return true;
     }
     private void dropDock(LauncherDrag drag,int target) {
         if(drag.origin==LauncherDrag.DOCK)store.swapDock(drag.slot,target);else store.dock(target,drag.app.id());
@@ -437,9 +452,10 @@ public final class MainActivity extends Activity {
     }
     private void finishDrag(boolean navigate) {
         LauncherDrag session=activeDrag;if(session==null)return;activeDrag=null;
+        root.getDragController().cancelDrag();root.getDragController().clearDropTargets();
         if(home!=null)home.endDrag();
         View source=session.source.get();if(source!=null)source.setAlpha(1);
-        if(dragStrip!=null){root.removeView(dragStrip);dragStrip=null;}
+        if(dragStrip!=null){if(dragStrip.getParent() instanceof ViewGroup)((ViewGroup)dragStrip.getParent()).removeView(dragStrip);dragStrip=null;}
         if(dragHome!=null){dragHome.dispose();if(dragHome.getParent() instanceof ViewGroup)((ViewGroup)dragHome.getParent()).removeView(dragHome);dragHome=null;}
         if(grid!=null)grid.setVisibility(View.VISIBLE);if(searchRow!=null)searchRow.setVisibility(View.VISIBLE);
         if(titleView!=null && screen!=HOME)titleView.setText(screen==PICK_DOCK?"Choose a dock app":"All Apps");
@@ -511,32 +527,52 @@ public final class MainActivity extends Activity {
         };
         page.setOrientation(LinearLayout.VERTICAL);scroll.addView(page);parent.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
         if(settingsPage.equals("about")){about(page);return;}
+        settingHeader(page,"Settings",false);
         settingSection(page,"Appearance");
         settingValue(page,"Theme",LauncherTheme.NAMES[theme.id],this::themePicker);
-        settingFooter(page,"Your theme colors the background, icon plates, label chips and floating dock. No wallpaper is displayed.");
-        settingSection(page,"Home screen");
-        settingValue(page,"Icon placement",store.subgrid()?"Half-cell subgrid":"Grid",()->{
-            List<String> names=Arrays.asList("Grid","Half-cell subgrid");
-            actions("Icon placement",names,Arrays.asList(()->{store.subgrid(false);build();},()->{store.subgrid(true);build();}),store.subgrid()?1:0);
+        settingValue(page,"Universal theme","Grapefruit Settings",()->{
+            Intent intent=getPackageManager().getLaunchIntentForPackage("io.github.hayliewordsman.grapefruitsettings");
+            if(intent!=null)external(intent);else notice("Install Grapefruit Settings to choose a universal theme.");
         });
+        settingValue(page,"Background","Theme color",null);
+        settingValue(page,"App icons","Themed teardrop plates",null);
+        settingFooter(page,"A new universal selection in Grapefruit Settings updates this launcher, including Victory Blue. A local theme stays until the next universal selection. Wallpaper is never shown; labels wrap to three lines.");
+        settingSection(page,"Home screen");
+        settingToggle(page,"Half-cell subgrid",store.subgrid(),on->store.subgrid(on));
+        settingToggle(page,"Lock layout",store.locked(),on->store.locked(on));
         settingValue(page,"Landscape dock","Right side",null);
-        settingValue(page,"Reset dock to suggested apps",null,()->{store.resetDock(AppCatalog.suggestedDock(getApplicationContext(),apps));notice("Dock reset to available Phone, Messages, Chrome and Grapefruit Audio apps.");});
-        settingFooter(page,"Hold and drag an app to any free Home space or dock slot. A single occupied Home space swaps with the icon you move. Half-cell subgrid allows finer placement. Portrait and landscape arrangements are saved separately.");
+        settingValue(page,"Reset dock to suggested apps",null,()->actions("Reset dock?",Arrays.asList("Reset dock"),Arrays.asList(()->{store.resetDock(AppCatalog.suggestedDock(getApplicationContext(),apps));notice("Dock reset to available Phone, Messages, Chrome and Grapefruit Audio apps.");})));
+        settingFooter(page,"Swipe between Home pages. Hold an app to move it; keep your finger near the left or right edge to change pages. Empty spaces stay empty. Subgrid enables half-cell placement. Portrait and landscape layouts are saved separately.");
         settingSection(page,"Using your launcher");
         settingValue(page,"Set as default launcher",null,this::defaultHome);
-        settingValue(page,"Arranging apps","How to",()->showText("Arranging apps","Hold an app to drag it. Drag from All Apps to add a Home shortcut. Move Home and dock shortcuts between those areas, or swap dock positions. All Apps stays fixed in the middle.\n\nDrop on App options for app info or uninstall. Drop on Remove shortcut to remove a Home or dock shortcut. An uninstall always opens Android’s confirmation.\n\nTap Edit on Home, then tap an app for options and directional movement controls. Tap Done to finish. Drag near the top or bottom edge to scroll Home. Empty spaces stay empty.\n\nGrid uses full cells; Half-cell subgrid adds half-cell snapping without overlapping icons. Switching off subgrid temporarily projects half-cell positions onto the normal grid. Your saved fine positions return when you turn it back on."));
-        settingFooter(page,"Icons are cached on this device in all four themes. The small RAM cache and visible-area-only Home cells keep background memory use down.");
+        settingValue(page,"Arranging apps","How to",()->showText("Arranging apps","Hold an app, move your finger, then release to place it. Drag from All Apps to add a Home shortcut. Move shortcuts between Home and the dock, or swap occupied Home cells and dock positions. All Apps stays fixed in the middle.\n\nA spare page appears while arranging. Hold near the left or right edge to move between pages. Drop on Remove to remove a shortcut, or App options for app info and uninstall. Android confirms uninstalls.\n\nTap Edit, then an icon, for options and directional movement controls. Tap Done to finish. Enable Lock layout in Settings to prevent accidental dragging.\n\nHalf-cell subgrid enables finer placement without overlapping icons. Turning it off projects your positions onto the normal grid. Your saved fine positions return if you re-enable it before rearranging."));
+        settingValue(page,"Privacy","On this device",()->showText("Privacy","Grapefruit Launcher has no Internet permission, accounts, advertisements, analytics, telemetry or tracking SDKs. It does not send your installed-app list anywhere.\n\nYour Home layouts, dock choices, theme and prepared icon PNGs stay in this app's private storage. Removing the app or clearing its storage removes them.\n\nSource and support links open your browser only when you choose them."));
+        settingFooter(page,"Prepared icons stay on disk in all four themes. Only nearby Home pages retain icon views; the small RAM cache is released in the background.");
         settingSection(page,"About");
         settingValue(page,"About Grapefruit Launcher","Version "+versionName(),()->{settingsPage="about";build();});
-        settingValue(page,"Privacy","On this device",()->showText("Privacy","Grapefruit Launcher has no Internet permission, accounts, advertisements, analytics, telemetry or tracking SDKs. It does not send the installed-app list anywhere.\n\nHome positions, dock choices, theme settings and prepared icon PNGs stay in this app’s private internal storage. Removing the app or clearing its storage removes them.\n\nSource and support links open your browser only when you choose them. App launching and uninstall confirmations are handled by Android."));
-        settingFooter(page,"Free and open-source software · GNU GPL version 3 or later.");
+        settingFooter(page,"Free and open-source software · GNU GPL version 3 or later. Built on AOSP Launcher2, licensed under Apache 2.0.");
     }
+    private void settingHeader(LinearLayout page,String title,boolean about){
+        LinearLayout header=column();header.setPadding(dp(16),dp(8),dp(16),dp(8));
+        View back=glyph(LauncherGlyph.BACK,about?"Back to Settings":"Back to Home",()->{if(about){settingsPage="";build();}else go(HOME);});
+        LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(dp(40),dp(40));bp.bottomMargin=dp(14);header.addView(back,bp);
+        if(title!=null)header.addView(theme.text(title,30,true));page.addView(header);
+    }
+    private void settingToggle(LinearLayout page,String label,boolean checked,ToggleChange change){
+        Toggle toggle=new Toggle(this);toggle.setOffColors(theme.toggleOff,theme.toggleSegments);toggle.setOnColors(theme.accent,theme.end);toggle.setChecked(checked);toggle.setContentDescription(label);
+        LinearLayout row=row();row.setMinimumHeight(dp(56));row.setPadding(dp(22),dp(8),dp(16),dp(8));row.setBackground(theme.rowBackground());
+        TextView text=theme.text(label,16,false);row.addView(text,new LinearLayout.LayoutParams(0,-2,1));row.addView(toggle,new LinearLayout.LayoutParams(-2,-2));
+        row.setFocusable(true);row.setOnClickListener(v->toggle.performClick());toggle.setListener((view,on)->change.changed(on));
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(12),dp(4),dp(12),dp(4));page.addView(row,lp);
+    }
+    private interface ToggleChange {void changed(boolean on);}
     private void themePicker() {
         List<Runnable> choices=new ArrayList<>();
         for(int i=0;i<LauncherTheme.NAMES.length;i++){final int selected=i;choices.add(()->{store.theme(selected);build();});}
         actions("Theme",Arrays.asList(LauncherTheme.NAMES),choices,theme.id);
     }
     private void about(LinearLayout page) {
+        settingHeader(page,null,true);
         LinearLayout hero=column();hero.setGravity(Gravity.CENTER_HORIZONTAL);hero.setPadding(dp(16),dp(8),dp(16),dp(12));
         ImageView icon=new ImageView(this);icon.setImageResource(R.mipmap.ic_launcher_foreground);icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
         hero.addView(icon,new LinearLayout.LayoutParams(dp(88),dp(88)));
@@ -552,19 +588,23 @@ public final class MainActivity extends Activity {
         settingValue(page,"Developer","Haylie",null);
         settingLink(page,"Report an issue","GitHub","https://github.com/hayliewordsman/grapefruitmusic/issues");
         settingFooter(page,"Tap links to open them, or touch and hold to copy.");
+        settingSection(page,"Launcher base");
+        settingLink(page,"AOSP Launcher2","Android 4.2.2",LauncherBrand.UPSTREAM);
+        settingValue(page,"Launcher2 licence","Apache License 2.0",()->assetText("Apache License 2.0","Apache-2.0.txt"));
+        settingFooter(page,"Launcher2's in-window drag controller, drop contracts, page navigation and cell geometry are adapted for Grapefruit. Original source and modification notes are published with the app.");
         settingSection(page,"Acknowledgements");
         settingValue(page,"Typeface and wordmark","SIL OFL 1.1",()->assetText("Geist font licence","fonts/Geist-OFL.txt"));
         settingFooter(page,"Geist and Geist Pixel Triangle are by Vercel. This app has its own Triangle wordmark subset for Grapefruit Launcher. Its original branding, teardrop plates and launcher code are provided in the GPL source. Installed app icons and names belong to their respective authors and are displayed locally.");
-        settingValue(page,"Open Source Licences",null,()->assetText("Open Source Licences","NOTICE.txt","fonts/Geist-OFL.txt","GPL-3.0.txt"));
+        settingValue(page,"Open Source Licences",null,()->assetText("Open Source Licences","NOTICE.txt","Apache-2.0.txt","fonts/Geist-OFL.txt","GPL-3.0.txt"));
         settingFooter(page,"The runtime uses the Android framework and bundled open-source fonts. No proprietary SDK or online service is required.");
     }
-    private String versionName(){try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return "1.0-beta6";}}
+    private String versionName(){try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return "1.0-beta7";}}
     private void settingSection(LinearLayout page,String title){TextView text=theme.text(title,15,true);text.setTextColor(theme.accent);text.setPadding(dp(18),dp(24),dp(16),dp(6));page.addView(text);}
     private void settingFooter(LinearLayout page,String value){TextView text=theme.text(value,13,false);text.setTextColor(theme.secondary);text.setLineSpacing(dp(2),1);text.setPadding(dp(18),dp(6),dp(18),0);page.addView(text);}
     private View settingValue(LinearLayout page,String label,String value,Runnable click) {
-        LinearLayout row=row();row.setMinimumHeight(dp(56));row.setPadding(dp(22),dp(8),dp(16),dp(8));row.setBackground(theme.interactive(false));
+        LinearLayout row=row();row.setMinimumHeight(dp(56));row.setPadding(dp(22),dp(8),dp(16),dp(8));row.setBackground(theme.rowBackground());
         TextView name=theme.text(label,16,false);name.setMaxLines(3);row.addView(name,new LinearLayout.LayoutParams(0,-2,1));
-        if(value!=null){TextView detail=theme.text(value,15,false);detail.setTextColor(theme.secondary);detail.setPadding(dp(8),0,0,0);detail.setMaxLines(2);row.addView(detail);}
+        if(value!=null){TextView detail=theme.text(value,15,false);detail.setTextColor(theme.secondary);detail.setPadding(dp(8),0,0,0);detail.setMaxLines(2);detail.setMaxWidth(dp(180));detail.setGravity(Gravity.END);row.addView(detail);}
         if(click!=null){TextView arrow=theme.text("›",22,false);arrow.setTextColor(theme.secondary);arrow.setPadding(dp(8),0,0,0);row.addView(arrow);row.setFocusable(true);row.setOnClickListener(v->click.run());}
         row.setContentDescription(label+(value==null?"":", "+value));
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(12),dp(4),dp(12),dp(4));page.addView(row,lp);return row;

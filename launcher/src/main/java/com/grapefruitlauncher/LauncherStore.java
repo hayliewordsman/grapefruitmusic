@@ -13,6 +13,8 @@ final class LauncherStore {
     LauncherStore(SharedPreferences p) { prefs=p; }
     int theme() { return prefs.getInt("theme",0); }
     void theme(int id) { prefs.edit().putInt("theme",id).apply(); }
+    boolean locked(){return prefs.getBoolean("layout_locked",false);}
+    void locked(boolean value){prefs.edit().putBoolean("layout_locked",value).apply();}
     boolean subgrid(){return prefs.getBoolean("subgrid",false);}
     void subgrid(boolean value){prefs.edit().putBoolean("subgrid",value).apply();}
     java.util.Map<String,HomeLayout.Cell> positions(String profile,List<String> ids) {

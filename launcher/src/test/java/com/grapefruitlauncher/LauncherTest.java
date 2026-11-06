@@ -143,7 +143,7 @@ public class LauncherTest {
                 described(content(a),"Launcher settings").performClick();
                 ((View)text(content(a),"Theme").getParent()).performClick();
                 String label=LauncherTheme.NAMES[id]+(id==new LauncherStore(context.getSharedPreferences("launcher",0)).theme()?", selected":"");
-                described(ShadowDialog.getLatestDialog().getWindow().getDecorView(),label).performClick();text(content(a),"‹  Home").performClick();
+                described(ShadowDialog.getLatestDialog().getWindow().getDecorView(),label).performClick();described(content(a),"Back to Home").performClick();
                 View root=content(a);measure(root,411,820);waitForImages(root);
                 Bitmap b=Bitmap.createBitmap(411,820,Bitmap.Config.ARGB_8888);root.draw(new Canvas(b));
                 assertEquals(new LauncherTheme(context,id).bg,b.getPixel(0,400));

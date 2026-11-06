@@ -1,0 +1,20 @@
+{
+  "commit": "002c25eede2a33a5378c16c5bb9165179783e729",
+  "tree": "63f5fd378c80fc9f7c33353cc9b128617229bae8",
+  "parents": [
+    "7819abd2d191a170cbc9d4bd190001c465187a9d",
+    "2f22e71d3a7a8a500b2499ca63286dc7d50c28b7"
+  ],
+  "author": {
+    "name": "The Android Automerger",
+    "email": "android-build@android.com",
+    "time": "Mon Dec 03 06:07:07 2012 -0800"
+  },
+  "committer": {
+    "name": "The Android Automerger",
+    "email": "android-build@android.com",
+    "time": "Mon Dec 03 06:07:07 2012 -0800"
+  },
+  "message": "merge in jb-mr1.1-release history after reset to jb-mr1.1-dev\n",
+  "tree_diff": []
+}

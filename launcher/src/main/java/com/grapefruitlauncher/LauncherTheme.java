@@ -13,12 +13,15 @@ final class LauncherTheme {
     static final String[] NAMES = {"Grapefruit Dark", "Grapefruit Light", "Pitch Black", "Victory Blue"};
     final int id, bg, surface, control, pressed, text, secondary, accent, end, outline, onAccent;
     final boolean light;
+    final int toggleOff,toggleSegments;
     private final Context context;
 
     LauncherTheme(Context c, int choice) {
         context = c.getApplicationContext();
         id = choice >= 0 && choice < NAMES.length ? choice : 0;
         light = id == 1;
+        toggleOff=new int[]{0xff4a2229,0xfff7d6c9,0xff3a1d23,0xff284f78}[id];
+        toggleSegments=light?0xfff1c8b9:id==3?0xffa2bad8:0xfff2d0c6;
         // Columns: background, surface, control, pressed, text, secondary, accent, accent end,
         // outline, on-accent. Values match Audio's colors.xml and Blue Victory f066424.
         int[][] palettes = {
@@ -51,6 +54,12 @@ final class LauncherTheme {
         d.addState(new int[]{android.R.attr.state_pressed},shape(pressed,100000,true));
         d.addState(new int[]{},selected ? gradient() : shape(control,100000,true));
         return d;
+    }
+    StateListDrawable rowBackground(){
+        StateListDrawable states=new StateListDrawable();GradientDrawable focus=shape(control,100000,false);focus.setStroke(dp(2),accent);
+        states.addState(new int[]{android.R.attr.state_focused},focus);
+        states.addState(new int[]{android.R.attr.state_pressed},shape(pressed,100000,false));
+        states.addState(new int[]{},shape(control,100000,false));return states;
     }
     TextView text(String value, int sp, boolean bold) {
         TextView t = new TextView(context); t.setText(value); t.setTextSize(sp); t.setTextColor(text);
