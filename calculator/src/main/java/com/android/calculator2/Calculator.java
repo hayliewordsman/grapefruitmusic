@@ -59,6 +59,7 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
 
     @Override
     public void onCreate(Bundle state) {
+        com.grapefruit.legacy.UniversalTheme.sync(this);
         com.grapefruit.legacy.GrapefruitTheme theme = new com.grapefruit.legacy.GrapefruitTheme(this);
         setTheme(theme.id == 1 ? R.style.GrapefruitLegacyLight : R.style.GrapefruitLegacy);
         com.grapefruitmusic.ui.Fonts.init(this);
@@ -229,6 +230,22 @@ public class Calculator extends Activity implements PanelSwitcher.Listener, Logi
         super.onSaveInstanceState(state);
         if (mPager != null) {
             state.putInt(STATE_CURRENT_VIEW, mPager.getCurrentItem());
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(com.grapefruit.legacy.UniversalTheme.sync(this)) {
+            com.grapefruit.legacy.GrapefruitTheme theme=new com.grapefruit.legacy.GrapefruitTheme(this);
+            setTheme(theme.id==1?R.style.GrapefruitLegacyLight:R.style.GrapefruitLegacy);
+            CalculatorAppearance.apply(findViewById(android.R.id.content));
+            if(mPager!=null && mPager.getAdapter() instanceof PageAdapter) {
+                PageAdapter pages=(PageAdapter)mPager.getAdapter();
+                CalculatorAppearance.apply(pages.mSimplePage);
+                CalculatorAppearance.apply(pages.mAdvancedPage);
+            }
+            getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(theme.bg));
         }
     }
 

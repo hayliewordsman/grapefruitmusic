@@ -1,6 +1,6 @@
 # Grapefruit Calculator LegacyHolo
 
-[Download the 1.0 beta 1 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-calculator-legacyholo/downloads/Grapefruit-Calculator-LegacyHolo-1.0-beta1.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
+[Download the 1.0 beta 2 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-calculator-legacyholo/downloads/Grapefruit-Calculator-LegacyHolo-1.0-beta2.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
 
 A standalone Grapefruit redesign of the AOSP **Android 4.2.2** calculator for
 **Android 4.2.2–4.4.4 (API 17–19)**. Application ID:
@@ -20,6 +20,11 @@ theme accent gradient. Display, keys and scientific panel update together, and
 the choice survives restarts. Geist is reused from `grapefruit-ui` as static fonts
 without adding its TLS dependency.
 
+## Beta 2
+
+The launcher now uses a dedicated Grapefruit calculator icon instead of Audio’s
+headphones artwork. Version code 2 installs over beta 1 with the same signing key.
+
 ## Build
 
 From the repository root, with JDK 17 or 21 and Android SDK platform 35 installed:
@@ -35,6 +40,17 @@ The debug build is signed; the release build is unsigned unless
 repository's PKCS12 key alias `grapefruit`. Minimum SDK 17 preserves v1/JAR signing
 for Jelly Bean. The application targets SDK 19 deliberately; the compile SDK does
 not raise its minimum version. It installs alongside the stock calculator.
+
+## Universal Grapefruit Apps Theme
+
+This build reads Grapefruit Settings’ existing read-only provider at
+`content://io.github.hayliewordsman.grapefruitsettings.theme/theme` on launch and
+resume. All four canonical `theme` values, including Victory Blue, are supported.
+Revision tokens prevent repeated foreground checks from undoing an app-local
+choice; the next universal selection reapplies the global theme. A missing or
+incompatible provider preserves the calculator’s local theme. A foreground
+update recolors the existing calculator without clearing its expression/history.
+The contract matches `codex/jp5s-grapefruit-settings`, commit `df11694`.
 
 ## Source and verification
 
