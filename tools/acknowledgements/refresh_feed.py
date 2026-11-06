@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Refresh public election projections independently of app releases."""
-import argparse,csv,datetime,hashlib,io,json,shutil,sys,urllib.request
+import argparse,csv,datetime,hashlib,io,json,shutil,subprocess,sys,tempfile,urllib.request
 from concurrent.futures import ThreadPoolExecutor,as_completed
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -26,7 +26,12 @@ def download_source(url):
             if len(data)<64:raise ValueError('Empty or truncated source response')
             return data
         except Exception as error:errors.append(str(error))
-    raise ValueError('; '.join(errors))
+    # curl handles CDN transfer/compression quirks that urllib can encounter on hosted runners.
+    with tempfile.TemporaryFile() as output:
+        result=subprocess.run(['curl','--fail','--silent','--show-error','--location','--compressed','--max-time','25','--max-filesize',str(MAX_SOURCE_BYTES),'--user-agent','Mozilla/5.0',url],stdout=output,stderr=subprocess.PIPE)
+        output.seek(0);data=output.read(MAX_SOURCE_BYTES+1)
+    if result.returncode==0 and 64<=len(data)<=MAX_SOURCE_BYTES:return data
+    raise ValueError('; '.join(errors)+ '; curl: '+str(result.returncode)+' / '+str(len(data))+' bytes')
 
 def fetch_source(source,cache):
     source=dict(source);file=cache/source['file']
@@ -76,7 +81,6 @@ def main():
         for n,future in enumerate(as_completed([pool.submit(fetch_source,s,cache) for s in manifest['sources'] if s['file'] not in checked]),1):
             results.append(future.result())
             if n%40==0:print('Checked',n,'of',len(manifest['sources']),'sources',flush=True)
-    if sum(s.get('fresh',False) for s in results)<len(results)*.9:raise ValueError('Too many sources unavailable; preserve the last published feed')
     manifest.update(sources=results,retrievedAt=datetime.datetime.now(datetime.timezone.utc).isoformat());(cache/'source-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     shapes=[]
     for source in results:
@@ -85,6 +89,7 @@ def main():
         page=BeautifulSoup(path.read_text(),'html.parser')
         shapes.append({'file':source['file'],'bytes':path.stat().st_size,'title':page.title.get_text(' ',strip=True) if page.title else '', 'candidateTables':len(page.select('table.candidateListTablePartisan,table.candidateListTableNonPartisan')),'winnerRows':len(page.select('tr.results_row.winner')),'sample':page.get_text(' ',strip=True)[:240]})
     (cache/'source-shapes.json').write_text(json.dumps(shapes,indent=2)+'\n')
+    if sum(s.get('fresh',False) for s in results)<len(results)*.9:raise ValueError('Too many sources unavailable; preserve the last published feed')
     b=Builder(cache);b.parse_states();b.hawaii_outright();b.federal_widgets('us-senate-2026.html','us_senate')
     for source in results:
         if source['kind']=='us_house':b.federal_house_bullets(source);b.federal_voteboxes(source)
