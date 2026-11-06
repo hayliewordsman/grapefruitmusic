@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!-- Grapefruit LegacyHolo reference arrangement; original Grapefruit additions. -->
+<Keyboard xmlns:latin="http://schemas.android.com/apk/res-auto">
+    <include latin:keyboardLayout="@xml/key_styles_grapefruit"/>
+    <Row latin:keyWidth="25%p">
+        <Key latin:keyLabel="1"/>
+        <Key latin:keyLabel="2"/>
+        <Key latin:keyLabel="3"/>
+        <Key latin:keyStyle="deleteKeyStyle"/>
+    </Row>
+    <Row latin:keyWidth="25%p">
+        <Key latin:keyLabel="4"/>
+        <Key latin:keyLabel="5"/>
+        <Key latin:keyLabel="6"/>
+        <Key latin:keyLabel="-"/>
+    </Row>
+    <Row latin:keyWidth="25%p">
+        <Key latin:keyLabel="7"/>
+        <Key latin:keyLabel="8"/>
+        <Key latin:keyLabel="9"/>
+        <Key latin:keyStyle="enterKeyStyle"/>
+    </Row>
+    <Row latin:keyWidth="25%p">
+        <Key latin:keyLabel="ABC" latin:code="!code/key_grapefruit_return_alpha" latin:keyActionFlags="noKeyPreview"/>
+        <Key latin:keyLabel="0"/>
+        <Key latin:keyLabel="."/>
+        <Key latin:keyLabel="+"/>
+    </Row>
+</Keyboard>

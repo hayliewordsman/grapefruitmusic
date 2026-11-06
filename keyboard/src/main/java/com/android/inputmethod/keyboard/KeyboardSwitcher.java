@@ -134,7 +134,13 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         }
     }
 
+    private boolean mGrapefruitNumberPad;
+    private static boolean isGrapefruitPaneKey(int code) {
+        return code==Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD || code==Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA;
+    }
+
     public void loadKeyboard(EditorInfo editorInfo, SettingsValues settingsValues) {
+        mGrapefruitNumberPad=false;
         final KeyboardLayoutSet.Builder builder = new KeyboardLayoutSet.Builder(
                 mThemeContext, editorInfo);
         final Resources res = mThemeContext.getResources();
@@ -198,12 +204,14 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
      * Update keyboard shift state triggered by connected EditText status change.
      */
     public void updateShiftState() {
+        if(mGrapefruitNumberPad) return;
         mState.onUpdateShiftState(mLatinIME.getCurrentAutoCapsState());
     }
 
     // TODO: Remove this method. Come up with a more comprehensive way to reset the keyboard layout
     // when a keyboard layout set doesn't get reloaded in LatinIME.onStartInputViewInternal().
     public void resetKeyboardStateToAlphabet() {
+        mGrapefruitNumberPad=false;
         mState.onResetKeyboardStateToAlphabet();
     }
 
@@ -211,15 +219,17 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         if (isVibrateAndSoundFeedbackRequired()) {
             mLatinIME.hapticAndAudioFeedback(code);
         }
+        if(mGrapefruitNumberPad || isGrapefruitPaneKey(code)) return;
         mState.onPressKey(code, isSinglePointer(), mLatinIME.getCurrentAutoCapsState());
     }
 
     public void onReleaseKey(int code, boolean withSliding) {
+        if(mGrapefruitNumberPad || isGrapefruitPaneKey(code)) return;
         mState.onReleaseKey(code, withSliding);
     }
 
     public void onCancelInput() {
-        mState.onCancelInput(isSinglePointer());
+        if(!mGrapefruitNumberPad) mState.onCancelInput(isSinglePointer());
     }
 
     // Implements {@link KeyboardState.SwitchActions}.
@@ -348,6 +358,16 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
      * Updates state machine to figure out when to automatically switch back to the previous mode.
      */
     public void onCodeInput(int code) {
+        if(code==Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD) {
+            mGrapefruitNumberPad=true;
+            setKeyboard(mKeyboardLayoutSet.getKeyboard(KeyboardId.ELEMENT_NUMBER));
+            return;
+        }
+        if(code==Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA) {
+            resetKeyboardStateToAlphabet();
+            return;
+        }
+        if(mGrapefruitNumberPad) return;
         mState.onCodeInput(code, isSinglePointer(), mLatinIME.getCurrentAutoCapsState());
     }
 
@@ -358,7 +378,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private String mGrapefruitAppearance;
     private String appearance() {
         return new com.grapefruit.legacy.GrapefruitTheme(mLatinIME).id + ":"
-                + com.grapefruit.legacy.KeyHeight.percent(mLatinIME);
+                + com.grapefruit.legacy.KeyHeight.percent(mLatinIME) + ":"
+                + com.grapefruit.legacy.KeyboardLayout.numberRow(mLatinIME);
     }
     public boolean refreshGrapefruit() {
         if (appearance().equals(mGrapefruitAppearance)) return false;
@@ -390,9 +411,6 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         // potentially change without the input view being re-created.
         AccessibleKeyboardViewProxy.getInstance().setView(mKeyboardView);
 
-        mCurrentInputView.setBackgroundColor(new com.grapefruit.legacy.GrapefruitTheme(mLatinIME).bg);
-        mCurrentInputView.findViewById(R.id.suggestions_container).setBackgroundColor(
-                new com.grapefruit.legacy.GrapefruitTheme(mLatinIME).bg);
         return mCurrentInputView;
     }
 

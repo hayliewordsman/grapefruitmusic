@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<!-- Grapefruit LegacyHolo reference arrangement; original Grapefruit additions. -->
+<Keyboard xmlns:latin="http://schemas.android.com/apk/res-auto" latin:rowHeight="20%p">
+    <include latin:keyboardLayout="@xml/key_styles_grapefruit"/>
+    <Row latin:keyWidth="10%p">
+        <include latin:keyboardLayout="@xml/rowkeys_symbols1"/>
+    </Row>
+    <include latin:keyboardLayout="@xml/rows_grapefruit_qwerty"/>
+</Keyboard>

@@ -1,9 +1,9 @@
-# LegacyHolo beta 2 validation — 2026-11-06
+# LegacyHolo beta 3 validation — 2026-11-06
 
 - Debug and release builds, debug lint and release vital lint pass.
-- 42 unit checks pass across Robolectric API 17 and 19 framework models.
+- 58 unit checks pass across Robolectric API 17 and 19 framework models.
 - Debug APK v1/JAR signing verifies with minimum SDK 17; its certificate matches beta 1.
-- Minimum SDK remains 17 and target SDK remains 19; version code is 2.
+- Minimum SDK remains 17 and target SDK remains 19; version code is 3.
 - All five launcher bitmap densities use the new app-specific artwork.
 - Universal-theme tests cover all four canonical IDs, revision-based local overrides,
   malformed or unavailable providers, and preservation of unrelated settings.
@@ -18,8 +18,29 @@ Regression tests failed before the fix and pass afterward. An in-place upgrade
 from beta 1 opened successfully with Victory Blue preserved and no AndroidRuntime
 fatal exception. The launcher and activity labels both read **Grapefruit Keyboard**.
 
-Tablet tests at 600dp and 768dp verify apostrophe/dash on symbols, comma/period
-on letters, expanded spacebar bounds, and both language-switch-key states.
+Reference-layout checks cover phone, 600dp tablet and 768dp tablet configurations,
+with the number row on and off. They verify key positions, both Shift keys,
+all keys within keyboard bounds, centered spacebars, non-touchable gutters,
+primary/secondary symbols, numeric-pane accessibility descriptions, and unchanged
+numeric editors.
+Number-row tests cover persistence, invalid preference types, height scaling,
+shifted letters and maximum-height landscape bounds.
+
+Input-view regression checks exercise all four themes with a 270px preview
+backing: its background remains transparent, the suggestion strip measures to
+its resource-defined height, and the keyboard begins immediately below the strip.
+This catches the opaque-root background that made the preview area look like a
+large suggestion bar. Preview/expanded-suggestion backing remains available.
+
+In the Android 4.2.2 x86 emulator, an in-place beta 2 → beta 3 update preserved
+settings. Real key taps typed `q -'12q`: the gutters produced no input, the pill
+produced one space, symbols produced dash/apostrophe, and `1234` opened the numeric
+pad and returned through ABC. Turning on **Number row** through Settings while
+the IME was running added working 1–0 keys; further taps appended `12q`. No
+AndroidRuntime fatal exception occurred. The legacy emulator image returns blank
+screen captures, so visual regression checks use view/background/layout geometry;
+physical JP5s appearance testing remains pending.
+
 Appearance tests cover all saved themes, activity reopening, invalid preference
 types/values and switching Victory Blue without recreating Settings.
 The APK includes ARMv7/x86 JNI libraries and eight uncompressed dictionaries.

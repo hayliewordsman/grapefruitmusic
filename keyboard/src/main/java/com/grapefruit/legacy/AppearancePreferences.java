@@ -12,6 +12,10 @@ public final class AppearancePreferences {
     public static void repair(Context context) {
         SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
         Map<String,?> values=prefs.getAll();
+        Object numberRow=values.get(KeyboardLayout.PREF_NUMBER_ROW);
+        if(numberRow!=null && !(numberRow instanceof Boolean)) {
+            prefs.edit().putBoolean(KeyboardLayout.PREF_NUMBER_ROW,false).apply();
+        }
         normalize(prefs,values,GrapefruitTheme.PREF_THEME,"0",true);
         normalize(prefs,values,KeyHeight.PREF,"100",false);
     }

@@ -139,6 +139,8 @@ public class KeyboardBuilder<KP extends KeyboardParams> {
     protected final Resources mResources;
     private final DisplayMetrics mDisplayMetrics;
 
+    private int mAdditionalRows;
+    public void setAdditionalRows(int rows) { mAdditionalRows=rows; }
     private int mCurrentY = 0;
     private KeyboardRow mCurrentRow = null;
     private boolean mLeftEdge;
@@ -264,12 +266,17 @@ public class KeyboardBuilder<KP extends KeyboardParams> {
             // minKeyboardHeight.
             params.mOccupiedHeight = (int)Math.max(
                     Math.min(keyboardHeight, maxKeyboardHeight), minKeyboardHeight);
-            params.mOccupiedHeight = com.grapefruit.legacy.KeyHeight.pixels(mContext, params.mOccupiedHeight);
+            params.mOccupiedHeight = com.grapefruit.legacy.KeyHeight.pixels(mContext,
+                    Math.round(params.mOccupiedHeight*(DEFAULT_KEYBOARD_ROWS+mAdditionalRows)
+                            /(float)DEFAULT_KEYBOARD_ROWS));
             params.mOccupiedWidth = params.mId.mWidth;
+            // An extra row adds keys, not larger gaps or larger top/bottom margins.
+            final int paddingHeight=Math.round(params.mOccupiedHeight*DEFAULT_KEYBOARD_ROWS
+                    /(float)(DEFAULT_KEYBOARD_ROWS+mAdditionalRows));
             params.mTopPadding = (int)ResourceUtils.getDimensionOrFraction(keyboardAttr,
-                    R.styleable.Keyboard_keyboardTopPadding, params.mOccupiedHeight, 0);
+                    R.styleable.Keyboard_keyboardTopPadding, paddingHeight, 0);
             params.mBottomPadding = (int)ResourceUtils.getDimensionOrFraction(keyboardAttr,
-                    R.styleable.Keyboard_keyboardBottomPadding, params.mOccupiedHeight, 0);
+                    R.styleable.Keyboard_keyboardBottomPadding, paddingHeight, 0);
             params.mHorizontalEdgesPadding = (int)ResourceUtils.getDimensionOrFraction(
                     keyboardAttr,
                     R.styleable.Keyboard_keyboardHorizontalEdgesPadding,
@@ -283,7 +290,7 @@ public class KeyboardBuilder<KP extends KeyboardParams> {
             params.mHorizontalGap = (int)ResourceUtils.getDimensionOrFraction(keyboardAttr,
                     R.styleable.Keyboard_horizontalGap, params.mBaseWidth, 0);
             params.mVerticalGap = (int)ResourceUtils.getDimensionOrFraction(keyboardAttr,
-                    R.styleable.Keyboard_verticalGap, params.mOccupiedHeight, 0);
+                    R.styleable.Keyboard_verticalGap, paddingHeight, 0);
             params.mBaseHeight = params.mOccupiedHeight - params.mTopPadding
                     - params.mBottomPadding + params.mVerticalGap;
             params.mDefaultRowHeight = (int)ResourceUtils.getDimensionOrFraction(keyboardAttr,

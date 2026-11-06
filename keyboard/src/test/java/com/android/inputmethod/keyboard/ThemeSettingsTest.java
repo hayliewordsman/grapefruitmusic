@@ -65,10 +65,12 @@ public class ThemeSettingsTest {
     @Test public void oldAppearanceTypesAndInvalidValuesDoNotTrapSettingsOnStartup() {
         android.content.SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(
                 RuntimeEnvironment.getApplication());
-        prefs.edit().putInt(GrapefruitTheme.PREF_THEME,3).putBoolean("grapefruit_key_height",true).commit();
+        prefs.edit().putInt(GrapefruitTheme.PREF_THEME,3).putBoolean("grapefruit_key_height",true)
+                .putString(com.grapefruit.legacy.KeyboardLayout.PREF_NUMBER_ROW,"bad").commit();
         ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup().visible();
         assertEquals("3",prefs.getString(GrapefruitTheme.PREF_THEME,null));
         assertEquals("100",prefs.getString("grapefruit_key_height",null));
+        assertFalse(prefs.getBoolean(com.grapefruit.legacy.KeyboardLayout.PREF_NUMBER_ROW,true));
         assertEquals(3,new GrapefruitTheme(controller.get()).id);
         controller.pause().stop().destroy();
         prefs.edit().putString(GrapefruitTheme.PREF_THEME,"broken").commit();

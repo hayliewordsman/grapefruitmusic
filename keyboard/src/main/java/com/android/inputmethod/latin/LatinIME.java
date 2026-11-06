@@ -1372,6 +1372,10 @@ public final class LatinIME extends InputMethodService implements KeyboardAction
             mExpectingUpdateSelection = true;
             LatinImeLogger.logOnDelete(x, y);
             break;
+        case Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD:
+        case Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA:
+            commitTyped(LastComposedWord.NOT_A_SEPARATOR);
+            break;
         case Keyboard.CODE_SHIFT:
         case Keyboard.CODE_SWITCH_ALPHA_SYMBOL:
             // Shift and symbol key is handled in onPressKey() and onReleaseKey().

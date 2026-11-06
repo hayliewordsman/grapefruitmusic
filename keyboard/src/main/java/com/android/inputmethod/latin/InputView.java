@@ -47,6 +47,10 @@ public final class InputView extends LinearLayout {
         super.onFinishInflate();
         mSuggestionStripContainer = findViewById(R.id.suggestions_container);
         mKeyboardView = findViewById(R.id.keyboard_view);
+        // The preview backing above the suggestions is not keyboard content. A colored
+        // root makes that transparent overlay look like a screen-sized suggestions bar.
+        setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        mSuggestionStripContainer.setBackgroundColor(new com.grapefruit.legacy.GrapefruitTheme(getContext()).bg);
     }
 
     @Override

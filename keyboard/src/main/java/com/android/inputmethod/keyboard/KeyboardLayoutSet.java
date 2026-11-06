@@ -1,4 +1,4 @@
-/*
+/* Modified for Grapefruit LegacyHolo: reference layout and optional number row.
  * Copyright (C) 2011 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -166,6 +166,7 @@ public final class KeyboardLayoutSet {
                 builder.setAutoGenerate(sKeysCache);
             }
             final int keyboardXmlId = elementParams.mKeyboardXmlId;
+            if(keyboardXmlId==R.xml.kbd_grapefruit_qwerty_numbers) builder.setAdditionalRows(1);
             builder.load(keyboardXmlId, id);
             if (mParams.mDisableTouchPositionCorrectionDataForTest) {
                 builder.disableTouchPositionCorrectionDataForTest();
@@ -284,6 +285,20 @@ public final class KeyboardLayoutSet {
                 parseKeyboardLayoutSet(mResources, xmlId);
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage() + " in " + keyboardLayoutSetName);
+            }
+            if(com.grapefruit.legacy.KeyboardLayout.usesReferenceLayout(mParams.mSubtype)) {
+                mParams.mKeyboardLayoutSetElementIdToParamsMap.get(KeyboardId.ELEMENT_ALPHABET)
+                        .mKeyboardXmlId=com.grapefruit.legacy.KeyboardLayout.numberRow(mContext)
+                                ? R.xml.kbd_grapefruit_qwerty_numbers : R.xml.kbd_grapefruit_qwerty;
+                mParams.mKeyboardLayoutSetElementIdToParamsMap.get(KeyboardId.ELEMENT_SYMBOLS)
+                        .mKeyboardXmlId=R.xml.kbd_grapefruit_symbols;
+                mParams.mKeyboardLayoutSetElementIdToParamsMap.get(KeyboardId.ELEMENT_SYMBOLS_SHIFTED)
+                        .mKeyboardXmlId=R.xml.kbd_grapefruit_symbols_shift;
+                if(mParams.mMode!=KeyboardId.MODE_NUMBER && mParams.mMode!=KeyboardId.MODE_DATE
+                        && mParams.mMode!=KeyboardId.MODE_TIME && mParams.mMode!=KeyboardId.MODE_DATETIME) {
+                    mParams.mKeyboardLayoutSetElementIdToParamsMap.get(KeyboardId.ELEMENT_NUMBER)
+                            .mKeyboardXmlId=R.xml.kbd_grapefruit_number;
+                }
             }
             return new KeyboardLayoutSet(mContext, mParams);
         }

@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!-- Grapefruit LegacyHolo reference arrangement; original Grapefruit additions. -->
+<merge xmlns:latin="http://schemas.android.com/apk/res-auto">
+    <Row latin:keyWidth="9.0909%p">
+        <include latin:keyboardLayout="@xml/rowkeys_qwerty1" latin:keyLabelFlags="disableKeyHintLabel"/>
+        <Key latin:keyStyle="deleteKeyStyle" latin:keyWidth="fillRight"/>
+    </Row>
+    <Row latin:keyWidth="9.0909%p">
+        <Spacer latin:keyWidth="4.54545%p"/>
+        <include latin:keyboardLayout="@xml/rowkeys_qwerty2"/>
+        <Key latin:keyStyle="enterKeyStyle" latin:keyWidth="fillRight"/>
+    </Row>
+    <Row latin:keyWidth="9.0909%p">
+        <Key latin:keyStyle="shiftKeyStyle"/>
+        <include latin:keyboardLayout="@xml/rowkeys_qwerty3"/>
+        <Key latin:keyLabel="!" latin:moreKeys="!text/more_keys_for_symbols_exclamation"/>
+        <Key latin:keyLabel="?" latin:moreKeys="!text/more_keys_for_symbols_question"/>
+        <Key latin:keyStyle="shiftKeyStyle" latin:keyWidth="fillRight"/>
+    </Row>
+    <include latin:keyboardLayout="@xml/row_grapefruit_bottom"/>
+</merge>

@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<!-- Grapefruit additions shared across phone and tablet reference layouts. -->
+<merge xmlns:latin="http://schemas.android.com/apk/res-auto">
+    <include latin:keyboardLayout="@xml/key_styles_common"/>
+    <key-style latin:styleName="punctuationKeyStyle" latin:keyLabel="." latin:keyLabelFlags="hasPopupHint" latin:moreKeys="!text/more_keys_for_punctuation" latin:backgroundType="functional"/>
+    <key-style latin:styleName="nonSpecialBackgroundTabKeyStyle" latin:code="!code/key_tab" latin:keyIcon="!icon/tab_key" latin:keyIconPreview="!icon/tab_key_preview"/>
+</merge>

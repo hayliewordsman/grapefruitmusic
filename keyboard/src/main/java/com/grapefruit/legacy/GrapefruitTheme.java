@@ -40,6 +40,13 @@ public final class GrapefruitTheme {
         states.addState(new int[]{},new Drop(action?accent:control,action?end:surface,outline));
         return states;
     }
+    public StateListDrawable spacebar() {
+        StateListDrawable states=new StateListDrawable();
+        states.addState(new int[]{android.R.attr.state_pressed},new Drop(pressed,control,accent,true));
+        states.addState(new int[]{android.R.attr.state_focused},new Drop(control,surface,accent,true));
+        states.addState(new int[]{},new Drop(control,surface,outline,true));
+        return states;
+    }
     /** Normalize Launcher's exact path to allow space/enter and calculator keys to stretch. */
     public static Path teardrop(float left,float top,float width,float height) {
         Path p=new Path(); p.moveTo(.5f,0);
@@ -52,13 +59,19 @@ public final class GrapefruitTheme {
         private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
         private final int start,finish,border;
         private int alpha=255;
+        private final boolean pill;
         private Path path;
         private Shader shader;
-        Drop(int a,int b,int edge){start=a;finish=b;border=edge;}
+        Drop(int a,int b,int edge){this(a,b,edge,false);}
+        Drop(int a,int b,int edge,boolean rounded){start=a;finish=b;border=edge;pill=rounded;}
         @Override protected void onBoundsChange(Rect r) {
             float gap=Math.max(1,dp(2));
             float w=Math.max(0,r.width()-gap*2), h=Math.max(0,r.height()-gap*2);
-            path=teardrop(r.left+gap,r.top+gap,w,h);
+            if(pill) {
+                path=new Path();
+                path.addRoundRect(new RectF(r.left+gap,r.top+gap,r.right-gap,r.bottom-gap),
+                        h/2,h/2,Path.Direction.CW);
+            } else path=teardrop(r.left+gap,r.top+gap,w,h);
             shader=new LinearGradient(r.left,r.top,r.right,r.bottom,start,finish,Shader.TileMode.CLAMP);
         }
         @Override public void draw(Canvas c) {

@@ -1,6 +1,6 @@
 # Grapefruit Keyboard LegacyHolo
 
-[Download the 1.0 beta 2 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-keyboard-legacyholo/downloads/Grapefruit-Keyboard-LegacyHolo-1.0-beta2.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
+[Download the 1.0 beta 3 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-keyboard-legacyholo/downloads/Grapefruit-Keyboard-LegacyHolo-1.0-beta3.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
 
 A standalone Grapefruit redesign of **AOSP LatinIME from Android 4.2.2**, for
 **Android 4.2.2–4.4.4 (API 17–19)**. Application ID:
@@ -11,7 +11,32 @@ Keyboard** and **Choose Grapefruit Keyboard**. A text field at the bottom of
 Settings lets you try it. The original language selector and AOSP typing settings
 remain available.
 
-## Beta 2
+## Beta 3
+
+The oversized colored area above the keys is fixed. AOSP reserves transparent
+space there for key previews and expanded suggestions; only the actual suggestion
+strip and keyboard now receive the Grapefruit background.
+
+English and no-language QWERTY use the supplied reference arrangement on phones
+and tablets: backspace beside Q–P, Enter beside A–L, Shift at both ends of the
+Z–M / ! / ? row, and mode keys at both ends of the bottom row. The symbols page
+places digits and backspace on its first row; apostrophe, dash and the other
+symbols follow the reference. Comma and period are on the bottom row of both pages.
+The `1234` button opens a numeric pad with an **ABC** return key.
+
+**Number row**, in the Grapefruit section of keyboard Settings, defaults off.
+Enable it for a dedicated 1–0 row above QWERTY. It adds a row while retaining the
+chosen key height, bounded by the available screen space. Changes take effect
+when the keyboard next appears.
+
+The spacebar is a centered pill in every Grapefruit theme, with non-touchable
+empty gutters on both sides. The language-switch key uses its reserved slot
+without shifting the pill. Other keys retain the Grapefruit teardrop design.
+
+Version code 3 installs over beta 1 or beta 2 with the same signing key and keeps
+existing settings. Other language arrangements retain their AOSP geometry.
+
+## Earlier fixes retained
 
 The app now has its own Grapefruit keyboard icon. Its launcher, recent-apps and
 keyboard-picker label is **Grapefruit Keyboard**; the project remains LegacyHolo.
@@ -22,23 +47,23 @@ opening; a valid saved Victory Blue choice is kept. The reproduced API 17
 crash in `InitializeBinaryDictionary` is fixed: dictionary and subtype resource
 lookups now use the installed resource package instead of the old AOSP Java
 namespace, and the fallback resource is a real `R.raw` ID. Preference change listeners
-start only after initialization. Version code 2 installs over beta 1 using the same
-signing key, preserving the selected theme, height and other settings.
+start only after initialization.
 
 ## Appearance
 
 Settings offers Grapefruit Dark (default), Grapefruit Light, Pitch Black and
 Victory Blue. Colors and the lower-right teardrop path match Grapefruit Launcher
 commit `70302e6759e2a7e0fdb6fc511a6f91b22e13d4ed`. Letter, number, symbol and
-long-press popup keys use the same geometry; space and other wide keys stretch it.
+long-press popup keys use the same geometry. Wide keys stretch it; the spacebar
+uses a rounded pill with the same palette, gradient, border and pressed colors.
 The Enter key uses the accent gradient. Key previews, hints, icons, spacebar
 language labels and suggestions follow the chosen palette, with static Geist fonts.
 
 **Key height** offers 70%–150% in 10% steps, with 100% as the default. It scales
 the AOSP layout before row positions, key bounds and proximity grids are built,
 so touch targets match the keys. Height is bounded on short screens to leave room
-for the app and suggestion strip. Theme and height persist; the IME rebuilds its
-view and clears cached layouts when either changes, on its next appearance.
+for the app and suggestion strip. Theme, height and the number-row choice persist; the IME rebuilds its
+view and clears cached layouts when one changes, on its next appearance.
 
 ## Universal Grapefruit Apps Theme
 
@@ -51,18 +76,9 @@ is kept until a **new** universal selection/revision. Without a compatible Setti
 provider, the local theme continues to work. No provider writes or new permission
 are required. Contract source: `codex/jp5s-grapefruit-settings`, commit `df11694`.
 
-## Punctuation on tablets
-
-In the QWERTY tablet layout, comma and period stay on the letters screen.
-Apostrophe and hyphen/dash replace their duplicates on the primary symbols screen;
-dash also offers underscore, en dash and em dash on long press. The old apostrophe
-and dash keys beside the letters-screen spacebar are removed, and space expands
-into their space. Phone and specialized layouts retain their existing layout.
-Both 600dp and 768dp tablet configurations are covered by regression tests.
-
 ## AOSP behavior
 
-The original language layouts, alternate characters, suggestions, autocorrection,
+The AOSP language layouts, alternate characters, suggestions, autocorrection,
 personal dictionary, password/numeric/phone layouts, shift/symbol states,
 sound/vibration controls and spell-check service remain. The original bundled
 dictionaries and native dictionary/proximity engine are included for ARMv7 and

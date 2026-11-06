@@ -344,7 +344,8 @@ public final class Settings extends InputMethodSettingsFragment
             applyAppearance();
             return;
         }
-        if (com.grapefruit.legacy.KeyHeight.PREF.equals(key)) {
+        if (com.grapefruit.legacy.KeyHeight.PREF.equals(key)
+                || com.grapefruit.legacy.KeyboardLayout.PREF_NUMBER_ROW.equals(key)) {
             return;
         }
         (new BackupManager(getActivity())).dataChanged();

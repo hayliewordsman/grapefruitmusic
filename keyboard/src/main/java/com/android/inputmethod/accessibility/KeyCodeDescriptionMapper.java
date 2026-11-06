@@ -1,4 +1,4 @@
-/*
+/* Modified for Grapefruit LegacyHolo: describe numeric-pane controls.
  * Copyright (C) 2011 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,6 +68,8 @@ public final class KeyCodeDescriptionMapper {
         mKeyCodeMap.put(Keyboard.CODE_SHIFT, R.string.spoken_description_shift);
         mKeyCodeMap.put(Keyboard.CODE_SHORTCUT, R.string.spoken_description_mic);
         mKeyCodeMap.put(Keyboard.CODE_SWITCH_ALPHA_SYMBOL, R.string.spoken_description_to_symbol);
+        mKeyCodeMap.put(Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD, R.string.spoken_description_to_numeric);
+        mKeyCodeMap.put(Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA, R.string.spoken_description_to_alpha);
         mKeyCodeMap.put(Keyboard.CODE_TAB, R.string.spoken_description_tab);
         mKeyCodeMap.put(Keyboard.CODE_LANGUAGE_SWITCH, R.string.spoken_description_language_switch);
         mKeyCodeMap.put(Keyboard.CODE_ACTION_NEXT, R.string.spoken_description_action_next);

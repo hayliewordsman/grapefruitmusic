@@ -31,6 +31,10 @@
         <ListPreference android:key="grapefruit_key_height" android:title="@string/grapefruit_key_height"
             android:entries="@array/grapefruit_heights" android:entryValues="@array/grapefruit_height_values"
             android:defaultValue="100" android:summary="%s" />
+        <CheckBoxPreference android:key="grapefruit_number_row"
+            android:title="@string/grapefruit_number_row"
+            android:summary="@string/grapefruit_number_row_summary"
+            android:defaultValue="false" />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="@string/general_category"

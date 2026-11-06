@@ -1,4 +1,4 @@
-/*
+/* Modified for Grapefruit LegacyHolo: named numeric-pane controls.
  * Copyright (C) 2012 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -62,6 +62,8 @@ public final class KeyboardCodesSet {
         "key_right_square_bracket",
         "key_left_curly_bracket",
         "key_right_curly_bracket",
+        "key_grapefruit_number_pad",
+        "key_grapefruit_return_alpha",
     };
 
     private static final int CODE_LEFT_PARENTHESIS = '(';
@@ -97,6 +99,8 @@ public final class KeyboardCodesSet {
         CODE_RIGHT_SQUARE_BRACKET,
         CODE_LEFT_CURLY_BRACKET,
         CODE_RIGHT_CURLY_BRACKET,
+        Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD,
+        Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA,
     };
 
     private static final int[] RTL = {
@@ -123,6 +127,8 @@ public final class KeyboardCodesSet {
         CODE_LEFT_SQUARE_BRACKET,
         CODE_RIGHT_CURLY_BRACKET,
         CODE_LEFT_CURLY_BRACKET,
+        Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD,
+        Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA,
     };
 
     private static final String LANGUAGE_DEFAULT = "DEFAULT";

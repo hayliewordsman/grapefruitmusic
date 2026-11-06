@@ -1,4 +1,4 @@
-/*
+/* Modified for Grapefruit LegacyHolo: reference layout and optional number row.
  * Copyright (C) 2010 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -84,6 +84,8 @@ public class Keyboard {
     public static final int CODE_RESEARCH = -11;
     // Code value representing the code is not specified.
     public static final int CODE_UNSPECIFIED = -12;
+    public static final int CODE_GRAPEFRUIT_NUMBER_PAD = -13;
+    public static final int CODE_GRAPEFRUIT_RETURN_ALPHA = -14;
 
     public final KeyboardId mId;
     public final int mThemeId;
@@ -232,6 +234,8 @@ public class Keyboard {
         case CODE_ACTION_NEXT: return "actionNext";
         case CODE_ACTION_PREVIOUS: return "actionPrevious";
         case CODE_LANGUAGE_SWITCH: return "languageSwitch";
+        case CODE_GRAPEFRUIT_NUMBER_PAD: return "numberPad";
+        case CODE_GRAPEFRUIT_RETURN_ALPHA: return "alphabet";
         case CODE_UNSPECIFIED: return "unspec";
         case CODE_TAB: return "tab";
         case CODE_ENTER: return "enter";

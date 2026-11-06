@@ -117,6 +117,7 @@ public class KeyboardView extends View implements PointerTracker.DrawingProxy {
     protected final Drawable mKeyBackground;
     protected final com.grapefruit.legacy.GrapefruitTheme mGrapefruit;
     private final Drawable mGrapefruitActionKey;
+    private final Drawable mGrapefruitSpacebar;
     protected final Rect mKeyBackgroundPadding = new Rect();
     private final int mBackgroundDimAlpha;
 
@@ -250,6 +251,7 @@ public class KeyboardView extends View implements PointerTracker.DrawingProxy {
         com.grapefruitmusic.ui.Fonts.init(context);
         mKeyBackground = mGrapefruit.key(false);
         mGrapefruitActionKey = mGrapefruit.key(true);
+        mGrapefruitSpacebar = mGrapefruit.spacebar();
         setBackgroundColor(mGrapefruit.bg);
         mKeyBackground.getPadding(mKeyBackgroundPadding);
         mPreviewOffset = keyboardViewAttr.getDimensionPixelOffset(
@@ -515,7 +517,8 @@ public class KeyboardView extends View implements PointerTracker.DrawingProxy {
         final int bgX = -padding.left;
         final int bgY = -padding.top;
         final int[] drawableState = key.getCurrentDrawableState();
-        final Drawable background = key.mCode == 10 ? mGrapefruitActionKey : mKeyBackground;
+        final Drawable background = key.mCode == Keyboard.CODE_SPACE ? mGrapefruitSpacebar
+                : key.mCode == 10 ? mGrapefruitActionKey : mKeyBackground;
         background.setState(drawableState);
         final Rect bounds = background.getBounds();
         if (bgWidth != bounds.right || bgHeight != bounds.bottom) {

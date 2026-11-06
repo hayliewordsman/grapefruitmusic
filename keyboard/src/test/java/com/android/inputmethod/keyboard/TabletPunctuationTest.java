@@ -35,7 +35,8 @@ public class TabletPunctuationTest {
             for(Key key:letters.mKeys) assertTrue(key.toString(),key.mX+key.mWidth<=letters.mOccupiedWidth+1);
             Keyboard symbols=set.getKeyboard(KeyboardId.ELEMENT_SYMBOLS);
             assertNotNull(symbols.getKey('\''));assertNotNull(symbols.getKey('-'));
-            assertNull(symbols.getKey(','));assertNull(symbols.getKey('.'));
+            assertEquals(symbols.getKey(32).mY,symbols.getKey(',').mY);
+            assertEquals(symbols.getKey(32).mY,symbols.getKey('.').mY);
             assertTrue(symbols.getKey('-').mMoreKeys.length>=2);
         }
     }
