@@ -40,3 +40,13 @@ jobs:
           if git fetch origin blue-roll-call-data; then parents=(-p FETCH_HEAD); fi
           commit=$(git commit-tree "$tree" "${parents[@]}" -m 'Refresh verified Victory Roll Call projections')
           git push origin "$commit:refs/heads/blue-roll-call-data"
+      - name: Preserve public-source diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roll-call-source-diagnostics
+          path: |
+            ${{ runner.temp }}/roll-call-sources/source-manifest.json
+            ${{ runner.temp }}/roll-call-sources/research-roster.json
+            ${{ runner.temp }}/roll-call-sources/source-shapes.json
+          retention-days: 7

@@ -4,6 +4,7 @@ import argparse,csv,datetime,hashlib,io,json,shutil,sys,urllib.request
 from concurrent.futures import ThreadPoolExecutor,as_completed
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from bs4 import BeautifulSoup
 from build_snapshot import Builder
 
 HERE=Path(__file__).resolve().parent
@@ -62,6 +63,13 @@ def main():
             if n%40==0:print('Checked',n,'of',len(manifest['sources']),'sources',flush=True)
     if sum(s.get('fresh',False) for s in results)<len(results)*.9:raise ValueError('Too many sources unavailable; preserve the last published feed')
     manifest.update(sources=results,retrievedAt=datetime.datetime.now(datetime.timezone.utc).isoformat());(cache/'source-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    shapes=[]
+    for source in results:
+        path=cache/source['file']
+        if not path.exists() or not source['file'].endswith('.html'):continue
+        page=BeautifulSoup(path.read_text(),'html.parser')
+        shapes.append({'file':source['file'],'bytes':path.stat().st_size,'title':page.title.get_text(' ',strip=True) if page.title else '', 'candidateTables':len(page.select('table.candidateListTablePartisan,table.candidateListTableNonPartisan')),'winnerRows':len(page.select('tr.results_row.winner')),'sample':page.get_text(' ',strip=True)[:240]})
+    (cache/'source-shapes.json').write_text(json.dumps(shapes,indent=2)+'\n')
     b=Builder(cache);b.parse_states();b.hawaii_outright();b.federal_widgets('us-senate-2026.html','us_senate')
     for source in results:
         if source['kind']=='us_house':b.federal_house_bullets(source);b.federal_voteboxes(source)
