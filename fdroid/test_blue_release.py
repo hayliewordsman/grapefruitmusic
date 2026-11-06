@@ -5,7 +5,7 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
-from blue_release import extract_blue, verify_originals, ORIGINAL_IDS
+from blue_release import extract_blue, verify_originals, verify_existing, ORIGINAL_IDS
 
 
 class BlueReleaseTest(unittest.TestCase):
@@ -56,6 +56,22 @@ class BlueReleaseTest(unittest.TestCase):
         after = {'packages': {ORIGINAL_IDS[0]: {'versions': {}}}}
         with self.assertRaises(ValueError):
             verify_originals(empty, after, allow_absent=True)
+
+    def test_maps_addition_preserves_every_existing_app(self):
+        before = {'packages': {app: {'versions': {'sha': {'code': 1}}}
+                               for app in (*ORIGINAL_IDS, 'blue')}}
+        after = copy.deepcopy(before)
+        after['packages']['maps'] = {'versions': {'maps-sha': {'code': 7}}}
+        verify_existing(before, after)
+        for app in before['packages']:
+            changed = copy.deepcopy(after)
+            changed['packages'][app]['versions']['sha']['code'] = 2
+            with self.assertRaises(ValueError):
+                verify_existing(before, changed)
+            del changed['packages'][app]
+            with self.assertRaises(ValueError):
+                verify_existing(before, changed)
+        verify_existing({'packages': {}}, {'packages': {}})
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ import org.mapsforge.core.model.LatLong;
 
 final class Net {
     static final String SEARCH="https://nominatim.openstreetmap.org", ROUTING="https://router.project-osrm.org";
-    static final String AGENT = "GrapefruitMaps/1.0-beta1 (https://github.com/hayliewordsman/grapefruitmusic)";
+    static final String AGENT = "GrapefruitMapsLegacy/1.0 (https://github.com/hayliewordsman/grapefruitmusic)";
     static HttpURLConnection open(String url) throws IOException {
         URL u = new URL(url);
         if (!"https".equals(u.getProtocol())) throw new IOException("HTTPS required");

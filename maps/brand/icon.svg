@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><title>Grapefruit Maps</title><desc>A folded map and a grapefruit location pin. Original GPL-3.0-or-later artwork.</desc><defs><linearGradient id="background" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FF8C6B"/><stop offset="1" stop-color="#EC485C"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#background)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><title>Grapefruit Maps Legacy</title><desc>A folded map and a grapefruit location pin. Original GPL-3.0-or-later artwork.</desc><defs><linearGradient id="background" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FF8C6B"/><stop offset="1" stop-color="#EC485C"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#background)"/>
   <defs>
     <clipPath id="map"><path d="M72 214 L194 176 L318 212 L440 174 L440 382 L318 420 L194 384 L72 422 Z"/></clipPath>
     <linearGradient id="pin" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#D63250"/><stop offset="1" stop-color="#A71E40"/></linearGradient>

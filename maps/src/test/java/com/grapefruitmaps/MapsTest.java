@@ -37,7 +37,7 @@ public class MapsTest {
     }
     @Test public void countryCatalogueAndAllSettingsAreUsableOffline() {
         try(ActivityController<MainActivity> c=activity(0)){
-            MainActivity a=c.get();a.show("settings");assertNotNull(find(a,"Theme"));assertNotNull(find(a,"Offline mode"));assertNotNull(find(a,"About Grapefruit Maps"));
+            MainActivity a=c.get();a.show("settings");assertNotNull(find(a,"Theme"));assertNotNull(find(a,"Offline mode"));assertNotNull(find(a,"About Grapefruit Maps Legacy"));
             a.show("offline");MapDownloads d=a.downloads;assertTrue(d.entries.size()>400);Set<String> countries=new HashSet<>();for(MapDownloads.Entry e:d.entries){countries.add(e.country);assertTrue(e.path.endsWith(".map"));}assertTrue(countries.contains("United States"));assertTrue(countries.contains("Canada"));assertTrue(countries.size()>=190);
             a.show("directions");assertNotNull(find(a,"Get driving directions"));a.show("map");assertNotNull(find(a,"You're offline"));
         }

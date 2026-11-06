@@ -1,41 +1,20 @@
-# Grapefruit Maps 1.0 beta 2
+# Grapefruit Maps Legacy 1.0
 
-Beta 2 updates Victory Break with a side-profile Trump caricature in the red
-cap. Tapping the head shoots the drawn poop emojis out of his mouth onto the
-map, with a bounded, local animation. Back clears the drops. The generated
-source PNG, prompt and offline packaging recipe are in `brand/victory/` and
-`tools/maps/victory_assets.py`. The APK uses a 384px bundled sprite, and the
-poop/map art remains drawn with Canvas; old devices do not need emoji fonts.
+Stable release for Android 4.2.2 and later.
 
-It also adds the universal theme client from the Grapefruit Settings branch.
-See Universal themes below.
+- [Download the APK](https://github.com/hayliewordsman/grapefruitmusic/releases/download/maps-v1.0/grapefruit-maps-legacy-1.0.apk)
+- [Add the Grapefruit F-Droid repository](https://hayliewordsman.github.io/grapefruitmusic/maps/)
 
-Beta 1.4 uses the Settings back-button/header layout across the app, including
-place search and country downloads. Every back icon and title share one header
-row with the same size and spacing, with subtitles beneath the title.
-
-Beta 1.3 gives About the media apps' spacious, centered branding layout: the Maps
-icon, a large Maps-specific Geist Pixel Triangle wordmark and the version below
-the compact navigation row. Its static, bundled TTF works on Android 4.2.2;
-SVG masters for all four themes and the font subset generator
-(`tools/maps/wordmark.py`) are included.
-Map-view dropdown arrows and compact back icons are drawn as paths, so devices
-with missing arrow glyphs (including the JP5S) can display them.
-
-Beta 1.2 uses a compact top-left back icon beside the heading on Settings
-subpages (About, Licenses and the Victory Blue Easter egg).
-
-Beta 1.1 replaces the accidentally reused Audio icon with an original folded map
-and grapefruit location pin. Legacy PNG and adaptive launcher assets are generated
-from the GPL SVG masters in `brand/` by `python3 tools/maps/icon.py` (CairoSVG).
-It installs over beta 1 with the same package and signing certificate.
+The package ID and permanent signing certificate are unchanged, so this updates
+existing Maps betas in place. Official f-droid.org inclusion requires a separate
+review; the recipe and submission notes are in `fdroid/official/`.
 
 A separate, native GPL-3.0-or-later Android app in the Grapefruit repository.
 Android **4.2.2 (API 17) and later**, targeting API 36. No Google Maps SDK,
 Play services, WebView, advertising or analytics. The universal APK includes
 ARMv7, ARM64, x86 and x86_64 TLS support and is under 5 MB.
 
-## Beta 1
+## Features
 
 - Pan, pinch/zoom, location on request, place search and long-press pins.
 - Standard 2D OpenStreetMap tiles and **NASA Blue Marble satellite composite**.
@@ -58,11 +37,11 @@ ARMv7, ARM64, x86 and x86_64 TLS support and is under 5 MB.
 - Select an installed map to open it. Settings can switch back to the online
   map. Offline mode prevents new map/search/route requests; coordinate lookup
   and the last saved driving route still work. Country maps include 2D data;
-  satellite downloads and offline route calculation are outside beta 1.
+  satellite downloads and offline route calculation are outside this release.
 - Driving directions through OSRM: distance, estimated duration, route line
   and a written route overview. The last route stays on-device and can be
   cleared. **No turn-by-turn navigation**, voice guidance or background GPS.
-  Walking, cycling, transit and real-time traffic are not offered in beta 1.
+  Walking, cycling, transit and real-time traffic are not offered in this release.
 - Grapefruit Dark, Grapefruit Light, Pitch Black and **Victory Blue**, using
   the media apps' palettes, Geist fonts, grouped pill rows, custom dialogs,
   tabs and grapefruit-slice switches. Settings uses the media apps' design.
@@ -93,40 +72,44 @@ The Settings/OEM frontend itself is not imported into Maps.
 Use JDK 21 and Android SDK platform 36. The existing Gradle wrapper is used:
 
 ```sh
-./gradlew :maps:assembleBeta
+./gradlew :maps:assembleRelease
 ```
 
-APK: `maps/build/outputs/apk/beta/maps-beta.apk`. Beta builds are non-debuggable.
-With `GRAPEFRUIT_KEYSTORE` and `GRAPEFRUIT_KEYSTORE_PASSWORD`, they use the
-existing permanent Grapefruit certificate. Otherwise they use a local test
-key in ignored `work/maps-beta/debug.keystore`. Never distribute that test
-key or try to update a permanent-key installation with a test-key APK.
-Unsigned FOSS release build: `./gradlew :maps:assembleRelease` without those
-variables. All source and build dependencies are publicly available.
+APK: `maps/build/outputs/apk/release/maps-release-unsigned.apk`. With
+`GRAPEFRUIT_KEYSTORE` and `GRAPEFRUIT_KEYSTORE_PASSWORD`, the release is signed
+with the existing permanent Grapefruit certificate. Without them, the FOSS
+release build remains unsigned. All build dependencies are publicly available.
 
 ```sh
 mkdir -p work/maps-beta
 curl --fail --location https://download.mapsforge.org/maps/v5/europe/andorra.map -o work/maps-beta/andorra.map
-./gradlew :maps:testBetaUnitTest :maps:lintBeta
+./gradlew :maps:testReleaseUnitTest :maps:lintRelease
 ```
 
-The sample map is test data only, not shipped in the APK. Tests cover download
-validation/resume/failures, coordinates, country catalogue, theme-exclusive
-unlocking, game reset, native screenshots and offline Mapsforge rendering.
-Functional tests run on API 23, 28 and 35; graphics tests run on API 28. Beta 2
-also checks mouth-origin flight paths, map landings, bounded drops, head-only
-taps, universal theme revisions, local overrides and clearing the game after
-switching away from Blue. The suite currently runs 32 checks.
-API 17 compatibility is checked by minSdk/API lint and APK v1 signature
-verification. An actual Android 4.2.2 device has **not** been tested here.
+The sample map is test data only. Tests cover download validation/resume/failures,
+coordinates, country catalogue, theme-exclusive unlocking, game reset, native
+screenshots and offline rendering, mouth-origin flight paths, bounded drops,
+universal theme revisions and local overrides. Functional tests run on API 23,
+28 and 35; graphics tests run on API 28. The suite runs 32 checks. API 17
+compatibility is checked by minSdk/API lint and APK v1 signature verification.
+An actual Android 4.2.2 device has not been tested here.
 
-`.github/workflows/maps.yml` builds, tests and lints Maps separately and
-uploads a verified APK, signature, checksum and reports. It does not publish
-other apps or modify the F-Droid repository. Refresh the bundled country
-catalogue with `python3 tools/maps/catalogue.py`; it reads provider directory
-indexes only, without downloading map files or raster tiles.
-Successful pushes to `maps-beta-1` also publish the versioned prerelease using
-the workflow's repository token. Existing releases are preserved.
+`.github/workflows/maps.yml` builds, tests and lints Maps separately. Stable
+releases publish from the default branch, with a verified APK, signature,
+checksum and reports, then refresh the signed Grapefruit F-Droid repository.
+Prerelease versions can also publish from `maps-beta-1`. Existing releases are
+preserved. Refresh the country catalogue with `python3 tools/maps/catalogue.py`;
+it reads provider directory indexes without downloading maps or raster tiles.
+
+The launcher icon is an original folded map and grapefruit pin, generated from
+`brand/` SVGs by `tools/maps/icon.py`. The About wordmark uses a bundled static
+Geist Pixel Triangle subset from `brand/fonts/`, generated by
+`tools/maps/wordmark.py`; this works without system emoji or modern font support.
+Back icons and dropdown chevrons are drawn as paths for older devices.
+
+Victory Break's cartoon head is bundled as a 384px sprite. Its source, prompt
+and packaging recipe are in `brand/victory/` and `tools/maps/victory_assets.py`.
+Poop faces and the map are drawn with Canvas; Back clears all drops.
 
 ## Licenses, privacy and providers
 

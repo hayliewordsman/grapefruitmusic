@@ -43,24 +43,24 @@ public final class Brand {
         return pixel;
     }
     /**
-     * The Maps wordmark: Geist Pixel Triangle, "Grapefruit" in the accent and "Maps" in the text
-     * colour. On one line it shrinks to fit (up to sp); stacked, the words go one over the other.
+     * The Maps wordmark: Geist Pixel Triangle, "Grapefruit" in the accent and "Maps Legacy" in the text
+     * colour. On one line it shrinks to fit (up to sp); stacked, Legacy goes on the second line.
      */
     public TextView wordmark(float sp, boolean stacked) {
         final TextView t=new TextView(context);t.setTypeface(pixel());t.setTextSize(sp);t.setTextColor(text);
-        t.setIncludeFontPadding(false);t.setGravity(Gravity.CENTER);t.setContentDescription("Grapefruit Maps");
-        android.text.SpannableString mark=new android.text.SpannableString(stacked?"Grapefruit\nMaps":"Grapefruit Maps");
+        t.setIncludeFontPadding(false);t.setGravity(Gravity.CENTER);t.setContentDescription("Grapefruit Maps Legacy");
+        android.text.SpannableString mark=new android.text.SpannableString(stacked?"Grapefruit Maps\nLegacy":"Grapefruit Maps Legacy");
         mark.setSpan(new android.text.style.ForegroundColorSpan(accent),0,"Grapefruit".length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         t.setText(mark);
-        if(stacked){t.setLineSpacing(dp(4),1);return t;}
+        if(stacked)t.setLineSpacing(dp(4),1);
         final float max=sp*context.getResources().getDisplayMetrics().scaledDensity;
         // One line by fitting, not setSingleLine(): that lays text out a million pixels wide and centres it there.
-        t.setMaxLines(1);
+        t.setMaxLines(stacked?2:1);
         t.addOnLayoutChangeListener((v,l,top,r,btm,ol,ot,or,ob)->{
             int room=(r-l)-t.getPaddingLeft()-t.getPaddingRight();
             if(room<=0||(r-l)==(or-ol))return;
             android.graphics.Paint p=new android.graphics.Paint(t.getPaint());p.setTextSize(max);
-            float width=p.measureText(t.getText().toString());
+            float width=0;for(String line:t.getText().toString().split("\n"))width=Math.max(width,p.measureText(line));
             final float size=width>room?max*room/width*0.98f:max;
             if(Math.abs(size-t.getTextSize())>0.5f)t.post(()->t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,size));
         });

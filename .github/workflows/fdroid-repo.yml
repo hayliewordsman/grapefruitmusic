@@ -24,6 +24,7 @@ on:
       - app/build.gradle
       - fastlane/**
       - tv/fastlane/**
+      - maps/fastlane/**
       - fdroid/**
       - .github/workflows/fdroid-repo.yml
   workflow_dispatch:
@@ -47,6 +48,7 @@ env:
   # application ID keeps the name it had as Grapefruit FAST, so updates install over 1.0.)
   TV_ID: io.github.hayliewordsman.grapefruitfast
   BLUE_ID: io.github.hayliewordsman.bluegrapefruit.victory
+  MAPS_ID: io.github.hayliewordsman.grapefruitmaps
   # Blue retains its own certificate, including when updating its test builds to stable.
   BLUE_CERT_SHA256: 1b8ccaa8d7dbdcf6327eb5473f7adc73a531eadb399c8e080a605b35b722ef34
   REPO_CERT_SHA256: 33AAF333079D68BD79F59463B59E33585E4EF7CB4E9F6722CE1F1281F93940F4
@@ -219,7 +221,7 @@ jobs:
         run: |
           mkdir -p fdroid/repo "$RUNNER_TEMP/apks"
           gh release list --exclude-drafts --exclude-pre-releases --limit 1000 \
-            --json tagName,publishedAt --jq '.[] | select((.tagName | startswith("v")) or (.tagName | startswith("tv-v")) or (.tagName | startswith("fast-v")) or (.tagName | startswith("blue-v"))) | "\(.tagName) \(.publishedAt)"' > "$RUNNER_TEMP/releases.txt"
+            --json tagName,publishedAt --jq '.[] | select((.tagName | startswith("v")) or (.tagName | startswith("tv-v")) or (.tagName | startswith("fast-v")) or (.tagName | startswith("blue-v")) or (.tagName | startswith("maps-v"))) | "\(.tagName) \(.publishedAt)"' > "$RUNNER_TEMP/releases.txt"
           tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
           while read -r tag published; do
             dir="$RUNNER_TEMP/apks/$tag"
@@ -235,6 +237,13 @@ jobs:
             for apk in "$dir"/*.apk; do
               digests=$("$tools/apksigner" verify --print-certs "$apk" | sed -n 's/^.*certificate SHA-256 digest: *//p' | sort -u)
               expected_cert="$APP_CERT_SHA256"
+              if [[ "$tag" == maps-v* ]]; then
+                badging=$("$tools/aapt2" dump badging "$apk" | head -n 1)
+                if [[ "$badging" != "package: name='$MAPS_ID' "* ]]; then
+                  echo "::error::$tag must contain only the Grapefruit Maps Legacy package."
+                  exit 1
+                fi
+              fi
               if [[ "$tag" == blue-v* ]]; then
                 expected_cert="$BLUE_CERT_SHA256"
                 badging=$("$tools/aapt2" dump badging "$apk" | head -n 1)
@@ -263,7 +272,7 @@ jobs:
           # Each app's listing (f-droid.org reads Music's too): name, summary, description, icon and changelogs.
           # Clients suggest each app's newest version, and its changelogs/<versionCode>.txt is the "What's new".
           # The newest is counted per app: Grapefruit TV's version codes never count towards Music's, or the reverse.
-          for entry in "$APP_ID:fastlane" "$TV_ID:tv/fastlane" "$BLUE_ID:blue-victory/fastlane"; do
+          for entry in "$APP_ID:fastlane" "$TV_ID:tv/fastlane" "$BLUE_ID:blue-victory/fastlane" "$MAPS_ID:maps/fastlane"; do
             app=${entry%%:*}; listing=${entry#*:}
             mkdir -p "fdroid/metadata/$app"
             cp -r "$listing/metadata/android/." "fdroid/metadata/$app/"
@@ -317,6 +326,8 @@ jobs:
         run: |
           python fdroid/blue_release.py verify-originals "$RUNNER_TEMP/original-index-v2.json" fdroid/repo/index-v2.json
           python fdroid/blue_release.py verify-originals-archive "$RUNNER_TEMP/original-archive-index-v2.json" fdroid/archive/index-v2.json
+          python fdroid/blue_release.py verify-existing "$RUNNER_TEMP/original-index-v2.json" fdroid/repo/index-v2.json
+          python fdroid/blue_release.py verify-existing "$RUNNER_TEMP/original-archive-index-v2.json" fdroid/archive/index-v2.json
 
       - name: Remove the repo signing key
         if: always()
@@ -341,6 +352,16 @@ jobs:
           cp blue-victory/brand/logo-stacked.svg blue-victory/brand/logo-stacked-dark.svg "$site/blue/"
           python fdroid/site/render.py blue-victory/site/index.html fdroid/repo/index-v2.json "$BLUE_ID" \
             "$FINGERPRINT" https://hayliewordsman.github.io/grapefruitmusic/blue/ "$site/blue"
+          # A stable Maps release dispatches a repository-only update after its APK is published.
+          # During the first merge, this workflow may run before that APK exists.
+          if python -c 'import json,sys; sys.exit(0 if sys.argv[1] in json.load(open(sys.argv[2]))["packages"] else 1)' "$MAPS_ID" fdroid/repo/index-v2.json; then
+            mkdir -p "$site/maps"
+            cp maps/fastlane/metadata/android/en-US/images/icon.png "$site/maps/icon.png"
+            cp maps/brand/wordmark-light.svg "$site/maps/wordmark.svg"
+            cp maps/brand/wordmark-dark.svg "$site/maps/wordmark-dark.svg"
+            python fdroid/site/render.py maps/site/index.html fdroid/repo/index-v2.json "$MAPS_ID" \
+              "$FINGERPRINT" https://hayliewordsman.github.io/grapefruitmusic/maps/ "$site/maps"
+          fi
 
       - uses: actions/upload-pages-artifact@v5
         with:

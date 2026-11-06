@@ -1,0 +1,1 @@
+First stable release, now named Grapefruit Maps Legacy. Updates existing betas in place. Includes 2D and satellite maps, country downloads, driving directions, four local/universal themes, the centered Geist Pixel Triangle wordmark, consistent drawn back/dropdown icons and Victory Break's bundled caricature and mouth-origin animation. Android 4.2.2 support is retained.

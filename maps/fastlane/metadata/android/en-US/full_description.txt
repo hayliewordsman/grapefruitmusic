@@ -1,0 +1,14 @@
+Grapefruit Maps Legacy is a lightweight, native, free-software maps app for Android 4.2.2 and later.
+
+• Explore a 2D map built from OpenStreetMap data, or NASA Blue Marble satellite imagery.
+• Download maps by country or region for offline use. The catalogue includes 418 maps under 200 country and territory groups, with resumable downloads and local Mapsforge rendering.
+• Find places, drop pins and request driving directions. View the route, distance, estimated duration and written overview. Your last route stays available offline.
+• Choose Grapefruit Dark, Grapefruit Light, Pitch Black or Victory Blue. The optional Grapefruit Settings companion can apply universal theme selections.
+• Enjoy consistent native controls, a Maps-specific icon, Geist typography and a Geist Pixel Triangle wordmark. Drawn arrows and bundled game assets work without device emoji fonts.
+• An optional Victory Blue Easter egg is available in About after five taps on Developer / Haylie. It includes a satirical Trump caricature and locally animated poop faces.
+
+Satellite imagery is a static regional composite, up to zoom 8. It is not live or high-resolution street-level aerial imagery. New place searches and driving directions require a connection; downloaded 2D maps and the last saved route work offline. Turn-by-turn navigation, walking/cycling/transit routing and offline route calculation are not included in 1.0.
+
+The app uses OpenStreetMap, Nominatim, OSRM and NASA EOSDIS GIBS services, with attribution in the map and About. Search/routing servers are configurable. Location is optional and requested only when you tap Locate. No account, advertising, analytics SDK or Google Play services is required.
+
+GPL-3.0-or-later, with dependency licenses and artwork provenance in source. The package ID and signing key are unchanged from the Grapefruit Maps betas, so this release updates them in place and keeps downloaded maps and preferences.

@@ -52,7 +52,7 @@ def svg(foreground=False):
     if foreground:
         # Leave the adaptive launcher's central safe zone clear of mask clipping.
         art = '<g transform="translate(256 256) scale(.66) translate(-256 -256)">' + art + '</g>'
-    return '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><title>Grapefruit Maps</title><desc>A folded map and a grapefruit location pin. Original GPL-3.0-or-later artwork.</desc>' + background + art + '</svg>\n'
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><title>Grapefruit Maps Legacy</title><desc>A folded map and a grapefruit location pin. Original GPL-3.0-or-later artwork.</desc>' + background + art + '</svg>\n'
 
 
 def main():

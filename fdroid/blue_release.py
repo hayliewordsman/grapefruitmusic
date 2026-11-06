@@ -66,6 +66,14 @@ def verify_originals(before, after, allow_absent=False):
     print('Original Audio and TV catalog entries, versions and APK hashes are unchanged.')
 
 
+def verify_existing(before, after):
+    """Adding an app must not mutate or remove any already-published app record."""
+    for app_id, package in before['packages'].items():
+        if after['packages'].get(app_id) != package:
+            raise ValueError('Existing app catalog changed: ' + app_id)
+    print('All preexisting app records, versions and APK hashes are unchanged.')
+
+
 if __name__ == '__main__':
     if len(sys.argv) == 4 and sys.argv[1] == 'fetch':
         print(fetch_blue(sys.argv[2], sys.argv[3]))
@@ -73,5 +81,7 @@ if __name__ == '__main__':
         verify_originals(json.loads(Path(sys.argv[2]).read_text()),
                          json.loads(Path(sys.argv[3]).read_text()),
                          allow_absent=sys.argv[1].endswith('-archive'))
+    elif len(sys.argv) == 4 and sys.argv[1] == 'verify-existing':
+        verify_existing(json.loads(Path(sys.argv[2]).read_text()),json.loads(Path(sys.argv[3]).read_text()))
     else:
         sys.exit('Usage: blue_release.py fetch <stable tag> <directory> | verify-originals <before.json> <after.json>')

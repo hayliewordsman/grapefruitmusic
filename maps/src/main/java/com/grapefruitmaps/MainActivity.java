@@ -264,7 +264,7 @@ public final class MainActivity extends Activity {
                 } catch(Exception e) {main.post(()->{if(!dead&&ticket==request){status.setText("Directions unavailable: "+e.getMessage());v.setEnabled(true);}});}
             });
         }),0,10);col.addView(status);
-        note(col,"Beta 1 supports driving directions. Check road conditions and restrictions before travel. Turn-by-turn navigation is planned for a later version.");
+        note(col,"Supports driving directions. Check road conditions and restrictions before travel. Turn-by-turn navigation is planned for a later version.");
         if(lastRoute!=null) {
             section(col,"Last route · saved on this device");
             row(col,String.format(Locale.US,"%.1f km",lastRoute.optDouble("distance")/1000),Math.round(lastRoute.optDouble("duration")/60)+" min",null);
@@ -304,8 +304,8 @@ public final class MainActivity extends Activity {
         row(col,"Driving routes","OSRM ›",v->server("Driving routes","route_url",Net.ROUTING));
         note(col,"You can use your own compatible HTTPS search and routing servers. Community services have usage limits.");
         section(col,"About");
-        row(col,"About Grapefruit Maps",versionName()+" ›",v->show("about"));
-        note(col,"Grapefruit Maps is free software. No ads, tracking SDKs, accounts or Google Play services.");
+        row(col,"About Grapefruit Maps Legacy",versionName()+" ›",v->show("about"));
+        note(col,"Grapefruit Maps Legacy is free software. No ads, tracking SDKs, accounts or Google Play services.");
     }
     private void about() {
         LinearLayout col=scrollPage("About",null,"Settings");
@@ -314,7 +314,7 @@ public final class MainActivity extends Activity {
         ImageView icon=new ImageView(this);icon.setImageResource(R.drawable.ic_about);
         icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         hero.addView(icon,new LinearLayout.LayoutParams(b.dp(88),b.dp(88)));
-        TextView wordmark=b.wordmark(40,false);wordmark.setPadding(0,b.dp(14),0,0);
+        TextView wordmark=b.wordmark(40,true);wordmark.setPadding(0,b.dp(14),0,0);
         hero.addView(wordmark,new LinearLayout.LayoutParams(-1,-2));
         TextView version=b.label("Version "+versionName(),15,b.secondary);version.setGravity(Gravity.CENTER);version.setPadding(0,b.dp(8),0,0);
         hero.addView(version,new LinearLayout.LayoutParams(-1,-2));col.addView(hero);
@@ -326,7 +326,7 @@ public final class MainActivity extends Activity {
         row(col,"OpenStreetMap","ODbL 1.0 ›",v->open("https://www.openstreetmap.org/copyright"));
         row(col,"Country downloads","Mapsforge ›",v->open("https://download.mapsforge.org/"));
         row(col,"Satellite composite","NASA Blue Marble ›",v->open("https://earthobservatory.nasa.gov/features/BlueMarble"));
-        note(col,"NASA Blue Marble satellite composite, served by NASA EOSDIS GIBS. Public-domain NASA imagery. Regional detail, up to zoom 8; this is a static composite, not live imagery. Satellite downloads are not included in beta 1.");
+        note(col,"NASA Blue Marble satellite composite, served by NASA EOSDIS GIBS. Public-domain NASA imagery. Regional detail, up to zoom 8; this is a static composite, not live imagery. Satellite downloads are not included in this version.");
         row(col,"Place search","Nominatim ›",v->open("https://operations.osmfoundation.org/policies/nominatim/"));
         row(col,"Driving directions","OSRM ›",v->open("https://project-osrm.org/"));
         note(col,"Online map views send the visible tile area to OpenStreetMap or NASA. Search sends the submitted query to Nominatim; directions send endpoints to OSRM. Public services have usage limits and may be unavailable. No location is sent in the background.");
