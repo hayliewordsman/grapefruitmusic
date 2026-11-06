@@ -14,6 +14,7 @@ import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import com.grapefruitmusic.ui.Fonts;
+import com.grapefruitmusic.ui.UniversalTheme;
 import org.json.*;
 import org.mapsforge.core.model.LatLong;
 import java.io.*;
@@ -22,6 +23,7 @@ import java.util.concurrent.*;
 
 public final class MainActivity extends Activity {
     static final String[] THEMES={"Grapefruit Dark","Grapefruit Light","Pitch Black","Victory Blue"};
+    private static final int[] UNIVERSAL_THEME_IDS={0,1,2,3};
     Brand b;
     android.content.SharedPreferences prefs;
     LinearLayout root, tabs;
@@ -47,6 +49,7 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         prefs=getSharedPreferences("maps",MODE_PRIVATE);
+        UniversalTheme.sync(this,prefs,false,UNIVERSAL_THEME_IDS);
         Fonts.init(this);
         b=new Brand(this,prefs.getInt("theme",0));
         downloads=MapDownloads.get(this);
@@ -287,6 +290,7 @@ public final class MainActivity extends Activity {
         LinearLayout col=scrollPage("Settings",null,null);
         section(col,"Appearance");
         row(col,"Theme",THEMES[prefs.getInt("theme",0)],v->choose("Theme",THEMES,i->{prefs.edit().putInt("theme",i).apply();recreate();}));
+        note(col,"A new universal theme selection in Grapefruit Settings also applies here. You can keep a different local theme until the next universal selection.");
         section(col,"Maps");
         row(col,"Map source",prefs.getString("offline_file","").isEmpty()?"Online":"Downloaded map",v->choose("2D map source",new String[]{"Online OpenStreetMap","Downloaded maps"},i->{if(i==0){prefs.edit().remove("offline_file").apply();show("settings");}else show("offline");}));
         LinearLayout toggle=row(col,"Offline mode","",null);Toggle sw=new Toggle(this);sw.setOffColors(b.toggleOff,b.toggleOffSegments);sw.setChecked(offlineOnly());
@@ -353,11 +357,10 @@ public final class MainActivity extends Activity {
     }
     private void easterEgg() {
         if(prefs.getInt("theme",0)!=3) {show("about");return;}
-        LinearLayout col=scrollPage("Victory break","Tap the red cap. Make your mark.","About");
-        EggView.Hat hat=new EggView.Hat(this);col.addView(hat,new LinearLayout.LayoutParams(-1,b.dp(112)));
-        egg=new EggView(this,b);col.addView(egg,new LinearLayout.LayoutParams(-1,b.dp(Math.min(280,getResources().getConfiguration().screenWidthDp*.65f))));
+        LinearLayout col=scrollPage("Victory break","Tap the head. Make your mark.","About");
+        EggView scene=new EggView(this,b);egg=scene;col.addView(scene,new LinearLayout.LayoutParams(-1,b.dp(148+Math.min(280,getResources().getConfiguration().screenWidthDp*.65f))));
         TextView counter=b.label("0 drops",14,b.secondary);counter.setGravity(Gravity.CENTER);col.addView(counter);
-        hat.setOnClickListener(v->{egg.drop();counter.setText(egg.count+" drops");});
+        scene.setOnClickListener(v->{scene.drop();counter.setText(scene.count+(scene.count==1?" drop":" drops"));});
         note(col,"Drops clear when you go back.");
     }
     private void offline(String selectedCountry) {
@@ -426,7 +429,7 @@ public final class MainActivity extends Activity {
     private void stopLocation(){if(locationManager!=null&&locationListener!=null){try{locationManager.removeUpdates(locationListener);}catch(SecurityException ignored){}locationListener=null;}}
     @Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grants){super.onRequestPermissionsResult(requestCode,permissions,grants);if(requestCode==10&&grants.length>0){for(int g:grants)if(g==PackageManager.PERMISSION_GRANTED){locate();return;}message("Location permission","You can still browse maps and search by place or coordinates.");}}
     @Override public void onBackPressed(){if(page.equals("egg")||page.equals("licenses"))show("about");else if(page.equals("about"))show("settings");else if(page.equals("country"))show("offline");else if(!page.equals("map"))show("map");else super.onBackPressed();}
-    @Override protected void onResume(){super.onResume();if(map!=null)map.resume();}
+    @Override protected void onResume(){super.onResume();if(UniversalTheme.sync(this,prefs,false,UNIVERSAL_THEME_IDS)){recreate();return;}if(map!=null)map.resume();}
     @Override protected void onPause(){rememberMap();stopLocation();if(map!=null)map.pause();super.onPause();}
     @Override protected void onDestroy(){dead=true;downloads.listener=null;stopLocation();worker.shutdownNow();main.removeCallbacksAndMessages(null);if(map!=null){map.destroy();map=null;}if(egg!=null)egg.clear();super.onDestroy();}
 }

@@ -1,4 +1,14 @@
-# Grapefruit Maps 1.0 beta 1.4
+# Grapefruit Maps 1.0 beta 2
+
+Beta 2 updates Victory Break with a side-profile Trump caricature in the red
+cap. Tapping the head shoots the drawn poop emojis out of his mouth onto the
+map, with a bounded, local animation. Back clears the drops. The generated
+source PNG, prompt and offline packaging recipe are in `brand/victory/` and
+`tools/maps/victory_assets.py`. The APK uses a 384px bundled sprite, and the
+poop/map art remains drawn with Canvas; old devices do not need emoji fonts.
+
+It also adds the universal theme client from the Grapefruit Settings branch.
+See Universal themes below.
 
 Beta 1.4 uses the Settings back-button/header layout across the app, including
 place search and country downloads. Every back icon and title share one header
@@ -23,7 +33,7 @@ It installs over beta 1 with the same package and signing certificate.
 A separate, native GPL-3.0-or-later Android app in the Grapefruit repository.
 Android **4.2.2 (API 17) and later**, targeting API 36. No Google Maps SDK,
 Play services, WebView, advertising or analytics. The universal APK includes
-ARMv7, ARM64, x86 and x86_64 TLS support and is approximately 4.1 MB.
+ARMv7, ARM64, x86 and x86_64 TLS support and is under 5 MB.
 
 ## Beta 1
 
@@ -57,9 +67,26 @@ ARMv7, ARM64, x86 and x86_64 TLS support and is approximately 4.1 MB.
   the media apps' palettes, Geist fonts, grouped pill rows, custom dialogs,
   tabs and grapefruit-slice switches. Settings uses the media apps' design.
 - Victory Blue only: Settings → About → tap **Developer / Haylie five times**.
-  Tap the red baseball cap above the map of the contiguous United States to
-  drop poop faces. Back clears all drops. Art is original Canvas paths and
-  shapes bundled in source; no system emoji support or internet is required.
+  Tap the cartoon head in the red cap above the map of the contiguous United
+  States to send poop faces out of his mouth. Back clears all drops. Art is
+  bundled in source; no system emoji support or internet is required.
+
+## Universal themes
+
+Maps follows new selections from the optional Grapefruit Settings companion
+on launch and resume. It uses all four general theme IDs (Dark 0, Light 1,
+Black 2, Blue 3), including Victory Blue. Local theme choices are kept until
+the next universal selection. With no compatible companion installed, Maps
+keeps its local theme. Only palette IDs and revision tokens are read; Maps
+does not write to the provider or request system-settings privileges.
+
+The client is the existing `UniversalTheme.java` from
+[`codex/jp5s-grapefruit-settings`](https://github.com/hayliewordsman/grapefruitmusic/tree/df116946820c4f47accc9803419ab36650d8306e).
+It reads `content://io.github.hayliewordsman.grapefruitsettings.theme/theme`.
+Unlike standard Audio/TV, Maps supports Blue and uses the general `theme`
+and `revision` columns, not the three-theme `media_theme` fallback. The
+explicit provider query in the manifest supports Android 11+ package visibility.
+The Settings/OEM frontend itself is not imported into Maps.
 
 ## Build
 
@@ -86,7 +113,10 @@ curl --fail --location https://download.mapsforge.org/maps/v5/europe/andorra.map
 The sample map is test data only, not shipped in the APK. Tests cover download
 validation/resume/failures, coordinates, country catalogue, theme-exclusive
 unlocking, game reset, native screenshots and offline Mapsforge rendering.
-Functional tests run on API 23, 28 and 35; graphics tests run on API 28.
+Functional tests run on API 23, 28 and 35; graphics tests run on API 28. Beta 2
+also checks mouth-origin flight paths, map landings, bounded drops, head-only
+taps, universal theme revisions, local overrides and clearing the game after
+switching away from Blue. The suite currently runs 32 checks.
 API 17 compatibility is checked by minSdk/API lint and APK v1 signature
 verification. An actual Android 4.2.2 device has **not** been tested here.
 
