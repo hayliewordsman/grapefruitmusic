@@ -11,12 +11,27 @@ HERE=Path(__file__).resolve().parent
 MAX_SOURCE_BYTES=12*1024*1024
 RUNTIME_MEMBER_FIELDS={'id','name','state','chamber','district','partyCode','office','status','sources','flags','identitySources'}
 
+def download_source(url):
+    # Some source CDNs answer automated requests with an empty HTTP 200. Never cache that
+    # as fresh evidence, and retry through their ordinary public browser representation.
+    errors=[]
+    for attempt in range(2):
+        target=url if not attempt else url+('&' if '?' in url else '?')+'blue_roll_call='+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d%H')
+        request=urllib.request.Request(target,headers={'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36','Accept':'text/html,application/json,text/plain,*/*','Accept-Language':'en-US,en;q=0.9','Cache-Control':'no-cache'})
+        try:
+            with urllib.request.urlopen(request,timeout=25) as response:
+                if response.status!=200:raise ValueError('HTTP '+str(response.status))
+                data=response.read(MAX_SOURCE_BYTES+1)
+            if len(data)>MAX_SOURCE_BYTES:raise ValueError('Source is too large')
+            if len(data)<64:raise ValueError('Empty or truncated source response')
+            return data
+        except Exception as error:errors.append(str(error))
+    raise ValueError('; '.join(errors))
+
 def fetch_source(source,cache):
     source=dict(source);file=cache/source['file']
     try:
-        request=urllib.request.Request(source.get('retrievalUrl',source['url']),headers={'User-Agent':'BlueGrapefruit-RollCall/1.1 (+https://github.com/hayliewordsman/grapefruitmusic)'})
-        with urllib.request.urlopen(request,timeout=25) as response:data=response.read(MAX_SOURCE_BYTES+1)
-        if len(data)>MAX_SOURCE_BYTES:raise ValueError('Source is too large')
+        data=download_source(source.get('retrievalUrl',source['url']))
         source['retrievedSha256']=hashlib.sha256(data).hexdigest()
         if source['kind']=='current':
             reader=csv.DictReader(io.StringIO(data.decode('utf-8-sig')));fields=['name','current_chamber','current_district','current_party','sources'];out=io.StringIO();writer=csv.DictWriter(out,fieldnames=fields);writer.writeheader()
