@@ -16,7 +16,13 @@ unrelated Audio, TV and Blue modules before scanning/building. Listing text,
 icon, four screenshots and changelog are in `maps/fastlane/metadata/android/`.
 `Binaries` and `AllowedAPKSigningKeys` request reproducible builds so users
 can update between GitHub, the developer repo and a future official listing.
-The stable APK must be published before running the binary comparison.
+Validation on November 6, 2026: `fdroid lint` and `fdroid rewritemeta --list`
+pass. `fdroid build --test --no-tarball` with fdroidserver 2.4.5, JDK 21,
+Gradle 8.14.3 and the real `maps-v1.0` tag passes the source scanner, builds
+version 1.0 (7), and reports "compared built binary to supplied reference binary
+successfully". It also verifies the allowed permanent signer. This confirms
+reproducibility against the published GitHub APK. The local test uses the
+installed JDK instead of running the build-server-only sudo setup commands.
 
 Suggested introduction:
 

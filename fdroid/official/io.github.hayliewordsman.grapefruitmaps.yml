@@ -23,14 +23,11 @@ Builds:
       - apt-get install -y -t trixie openjdk-21-jdk-headless
       - update-alternatives --auto java
     gradle:
-      - release
+      - yes
     prebuild:
       - sed -i '/^include /d' ../settings.gradle
       - printf '\ninclude ":maps", ":grapefruit-ui"\n' >> ../settings.gradle
-    scandelete:
-      - app
-      - tv
-      - blue-victory
+      - rm -r ../app ../tv ../blue-victory
 
 AllowedAPKSigningKeys: 85cac0ef72777211d99e2bbe4ad09a3815c6cf313e5fa18f401ec8da0ae0e795
 
