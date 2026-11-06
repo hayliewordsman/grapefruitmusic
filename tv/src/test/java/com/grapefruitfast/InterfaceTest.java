@@ -19,7 +19,7 @@ public class InterfaceTest {
             assertNotNull(text(root,"Live TV"));assertNotNull(text(root,"CityNews 24/7 · Toronto"));
             capture(root,"landscape-dark.png");
             tap(text(root,"Favourites"));measure(a.getWindow().getDecorView(),1024,600);
-            assertNotNull(text(a.getWindow().getDecorView(),"No favourites yet. Hold a channel, or press Menu, to add one."));
+            assertNotNull(text(a.getWindow().getDecorView(),"No favourites yet. Hold a channel or a film, or press Menu, to add one."));
             tap(text(a.getWindow().getDecorView(),"Search"));root=a.getWindow().getDecorView();
             EditText search=edit(root);assertNotNull(search);search.setText("Winnipeg");measure(root,1024,600);
             assertNotNull(text(root,"Global News · Winnipeg"));capture(root,"landscape-search.png");
@@ -86,6 +86,194 @@ public class InterfaceTest {
             assertTrue(a.back());assertFalse(a.back());
         }
     }
+    /**
+     * 2.5: leaving a channel keeps it playing in the floating player on the same stream (handed between the
+     * views, never reopened); tapping it goes back; another channel replaces it; ✕ stops it. Never two streams.
+     */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void floatingPlayerPassesTheOneStreamBetweenViews() throws Exception {
+        LivePlayer.open=0;
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"CityNews 24/7 · Toronto"));
+            LivePlayer stream=a.player();assertNotNull(stream);assertEquals(1,LivePlayer.open);
+            assertTrue(stream.view() instanceof android.view.SurfaceView);assertNull(a.floating());
+            // Back: the channel floats over Live TV, on the same stream, now on the window's picture.
+            assertTrue(a.back());root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNull(text(root,"Full screen"));assertNotNull(a.floating());
+            assertSame(stream,a.player());assertTrue(stream.view() instanceof android.view.TextureView);assertEquals(1,LivePlayer.open);
+            assertNull("the floating player is the way back",text(root,"Continue watching"));
+            assertNotNull(described(root,"Floating player: CityNews 24/7 · Toronto. Tap to open."));
+            settle();measure(root,1233,2742);capturePlayer(a,root,"portrait-floating.png");
+            // Other tabs keep it floating, on the same stream.
+            tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Floating Player"));assertNotNull(a.floating());assertSame(stream,a.player());assertEquals(1,LivePlayer.open);
+            settle();measure(root,1233,2742);capturePlayer(a,root,"portrait-floating-settings.png");
+            // Tapping it opens the channel again, still on that stream.
+            a.floating().performClick();root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Full screen"));assertNull(a.floating());
+            assertSame(stream,a.player());assertTrue(stream.view() instanceof android.view.SurfaceView);assertEquals(1,LivePlayer.open);
+            // Another channel: the first stops and the new one starts in its place.
+            a.back();root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"Live TV"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"Global News · National"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotSame(stream,a.player());assertNotNull(a.player());assertEquals(1,LivePlayer.open);
+            assertNotNull(text(root,"Global News · National"));assertNull(a.floating());
+            // The app in the background closes the stream; back in front, it opens again in the window.
+            a.back();assertNotNull(a.floating());
+            controller.pause().stop();assertEquals(0,LivePlayer.open);
+            controller.start().resume();assertEquals(1,LivePlayer.open);assertTrue(a.player().view() instanceof android.view.TextureView);
+            // ✕ stops it; Continue watching comes back.
+            root=a.getWindow().getDecorView();tap(described(root,"Stop Global News · National"));
+            root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNull(a.player());assertNull(a.floating());assertEquals(0,LivePlayer.open);
+            assertNotNull(text(root,"Continue watching"));
+        }
+        assertEquals(0,LivePlayer.open);
+    }
+    /** Settings › Floating Player off: leaving a channel stops it, as before 2.5. */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void floatingPlayerCanBeTurnedOff() throws Exception {
+        LivePlayer.open=0;
+        org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).edit().putBoolean("floating",false).commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"CityNews 24/7 · Toronto"));assertEquals(1,LivePlayer.open);
+            assertTrue(a.back());assertNull(a.floating());assertNull(a.player());assertEquals(0,LivePlayer.open);
+        }
+    }
+    /** Square screens and sideways: the floating player fits, clear of the tabs. */
+    @Test @Config(qualifiers="w914dp-h411dp-land-xxhdpi") public void floatingPlayerSideways() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,2742,1233);
+            tap(text(root,"CityNews 24/7 · Toronto"));a.back();root=a.getWindow().getDecorView();measure(root,2742,1233);
+            settle();measure(root,2742,1233);View f=a.floating();assertNotNull(f);
+            ViewGroup page=(ViewGroup)f.getParent();
+            assertTrue(f.getTranslationX()+f.getWidth()<=page.getWidth());assertTrue(f.getTranslationY()+f.getHeight()<=page.getHeight());
+            capturePlayer(a,root,"landscape-floating.png");
+        }
+    }
+    /** Robolectric can't draw a TextureView: render the floating player as a phone shows it before the first frame. */
+    private static void capturePlayer(MainActivity a,View root,String name)throws Exception{
+        View picture=((ViewGroup)((ViewGroup)a.floating()).getChildAt(0)).getChildAt(0);
+        picture.setVisibility(View.INVISIBLE);capture(root,name);picture.setVisibility(View.VISIBLE);
+    }
+    /** 3.0: Movies, a film's page (pause, seek, download), the guide, Recordings and its chips. */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void moviesTabAndAFilmsPage() throws Exception {
+        LivePlayer.open=0;
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(described(root,"Movies"));assertNotNull(described(root,"Recordings"));assertNull("no On Demand without a source",described(root,"On Demand"));
+            tap(described(root,"Movies"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Free films: public domain and Creative Commons."));
+            assertNotNull(text(root,"His Girl Friday"));assertNotNull(text(root,"Horror"));assertNotNull(text(root,"Downloaded"));
+            settle();measure(root,1233,2742);capture(root,"portrait-movies.png");
+            tap(text(root,"His Girl Friday"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Pause"));assertNotNull(text(root,"+30 s"));assertNotNull(text(root,"Download"));assertNotNull(text(root,"Internet Archive"));
+            assertNull("films aren't recorded",text(root,"●  Record"));
+            boolean bar=false;for(View v:views(root))if(v instanceof SeekBar)bar=true;assertTrue("a bar to move through the film",bar);
+            assertEquals(1,LivePlayer.open);capture(root,"portrait-film.png");
+            // One stream: a live channel after the film replaces it.
+            a.back();root=a.getWindow().getDecorView();assertNotNull(a.floating());
+            tap(described(root,"Live TV"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(text(root,"CityNews 24/7 · Toronto"));assertEquals(1,LivePlayer.open);
+            root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"●  Record"));assertNotNull(text(root,Guide.UNAVAILABLE));
+        }
+        assertEquals(0,LivePlayer.open);
+    }
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void guideInLiveTv() throws Exception {
+        org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).edit().putBoolean("guide",true).commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            int rows=0;for(View v:views(root))if(v instanceof GuideViews.Row)rows++;
+            assertTrue("guide rows",rows>3);
+            boolean ruler=false;for(View v:views(root))if(v instanceof GuideViews.Ruler)ruler=true;assertTrue(ruler);
+            settle();measure(root,1233,2742);capture(root,"portrait-guide.png");
+            // The Guide chip turns it off again.
+            tap(text(root,"Guide"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            rows=0;for(View v:views(root))if(v instanceof GuideViews.Row)rows++;assertEquals(0,rows);
+        }
+    }
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void recordingsTabWithItsChips() throws Exception {
+        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();
+            Channel cpac=null;for(Channel ch:Catalog.parse(Catalog.read(c.getAssets().open("channels.json"))))if(ch.name.startsWith("CityNews 24/7 · Toronto"))cpac=ch;
+            long start=System.currentTimeMillis()+3*Guide.HOUR;
+            Recordings.schedule(c,cpac,"Evening News",start,start+Guide.HOUR);
+            View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(described(root,"Recordings"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"All"));assertNotNull(text(root,"Finished"));assertNotNull(text(root,"Scheduled"));
+            assertNotNull(text(root,"Evening News"));assertNotNull(text(root,"+  Schedule a Recording"));
+            settle();measure(root,1233,2742);capture(root,"portrait-recordings.png");
+            tap(text(root,"Finished"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNull(text(root,"Evening News"));assertNotNull(text(root,"No finished recordings yet."));
+            tap(text(root,"Scheduled"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"Evening News"));
+        }
+    }
+    /** A source with films and series: the On Demand tab appears. */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void onDemandAppearsWithASourcesFilms() throws Exception {
+        android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
+        java.io.File dir=new java.io.File(c.getFilesDir(),"sources");dir.mkdirs();
+        try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(dir,"s1.json"))){
+            out.write(("[{\"name\":\"Local News\",\"group\":\"News\",\"url\":\"http://tv.example.com/live/1.ts\",\"ua\":\"\",\"kind\":\"live\"},"
+                +"{\"name\":\"A Film\",\"group\":\"Films\",\"url\":\"http://tv.example.com/movie/u/p/7.mp4\",\"ua\":\"\",\"kind\":\"film\"}]").getBytes("UTF-8"));
+        }
+        c.getSharedPreferences("fast",0).edit().putString("userSources","[{\"id\":\"s1\",\"kind\":\"m3u\",\"name\":\"My TV\",\"address\":\"http://tv.example.com/list.m3u\",\"username\":\"\",\"password\":\"\"}]").commit();
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(described(root,"On Demand"));
+            tap(described(root,"On Demand"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertNotNull(text(root,"A Film"));assertNotNull(text(root,"Series"));assertNotNull(text(root,"Downloads"));
+            capture(root,"portrait-ondemand.png");
+        }
+    }
+    /**
+     * Beta 2: tapping a chip that was scrolled to (Adventure, far along Movies' row) leaves the row where it
+     * was, with that chip in view, instead of jumping back to the start. Live TV's regions too, and a tab
+     * shown again keeps its row's place.
+     */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void chipRowsKeepTheirPlace() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(described(root,"Movies"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            // Scrolled along until Adventure is on screen, as it is when it's tapped.
+            TextView adventure=text(root,"Adventure");HorizontalScrollView row=rowOf(adventure);
+            row.scrollTo(adventure.getLeft()-120,0);int before=row.getScrollX();assertTrue("the row scrolls",before>0);
+            assertTrue("on screen before the tap",adventure.getRight()<=before+row.getWidth());
+            tap(text(root,"Adventure"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            TextView chip=text(root,"Adventure");HorizontalScrollView after=rowOf(chip);
+            assertNotSame("the page was rebuilt",row,after);
+            assertEquals(before,after.getScrollX());
+            assertTrue("the chosen chip is in view",chip.getLeft()>=after.getScrollX()&&chip.getRight()<=after.getScrollX()+after.getWidth());
+            assertNotNull(text(root,"Hercules Unchained"));assertNull(text(root,"His Girl Friday"));
+            settle();measure(root,1233,2742);root.getViewTreeObserver().dispatchOnPreDraw();capture(root,"portrait-movies-adventure.png");
+            // Live TV's region chips, at the far end of its row.
+            tap(described(root,"Live TV"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            HorizontalScrollView live=rowOf(text(root,"Australia"));live.scrollTo(100000,0);int liveAt=live.getScrollX();assertTrue(liveAt>0);
+            tap(text(root,"Australia"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertEquals(liveAt,rowOf(text(root,"Australia")).getScrollX());
+            // Back to Movies: its row is still where it was left.
+            tap(described(root,"Movies"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            assertEquals(before,rowOf(text(root,"Adventure")).getScrollX());
+        }
+    }
+    /** A row with no place yet scrolls its chosen chip into view (Movies opened with Animation chosen). */
+    @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void aChosenChipFarAlongStartsInView() throws Exception {
+        try(org.robolectric.android.controller.ActivityController<MainActivity> controller=launch()) {
+            MainActivity a=controller.get();View root=a.getWindow().getDecorView();measure(root,1233,2742);
+            tap(described(root,"Movies"));root=a.getWindow().getDecorView();measure(root,1233,2742);
+            HorizontalScrollView row=rowOf(text(root,"Animation"));row.scrollTo(100000,0);
+            tap(text(root,"Animation"));
+            // A fresh activity, as after Android recreates it: no remembered place, Animation still chosen.
+            controller.recreate();root=controller.get().getWindow().getDecorView();measure(root,1233,2742);
+            TextView chip=text(root,"Animation");HorizontalScrollView fresh=rowOf(chip);
+            assertTrue("scrolled to it",fresh.getScrollX()>0);
+            assertTrue("in view",chip.getLeft()>=fresh.getScrollX()&&chip.getRight()<=fresh.getScrollX()+fresh.getWidth());
+            assertNotNull(text(root,"Sintel"));
+        }
+    }
+    private static HorizontalScrollView rowOf(View v){while(v!=null&&!(v instanceof HorizontalScrollView))v=(View)v.getParent();return (HorizontalScrollView)v;}
     private static org.robolectric.android.controller.ActivityController<MainActivity> launch(){
         MainActivity.splashShown=false;
         org.robolectric.android.controller.ActivityController<MainActivity> c=Robolectric.buildActivity(MainActivity.class).setup();
@@ -97,10 +285,10 @@ public class InterfaceTest {
         MainActivity.splashShown=false;
         try(org.robolectric.android.controller.ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup()) {
             View root=controller.get().getWindow().getDecorView();measure(root,1080,1920);
-            View logo=described(root,"Grapefruit TV");assertTrue(logo instanceof ImageView);assertTrue(logo.getWidth()>0);
+            View logo=described(root,MainActivity.NAME);assertTrue(logo instanceof ImageView);assertTrue(logo.getWidth()>0);
             capture(root,"portrait-splash.png");
             settle();root=controller.get().getWindow().getDecorView();measure(root,1080,1920);
-            assertNull(described(root,"Grapefruit TV"));
+            assertNull(described(root,MainActivity.NAME));
         }
     }
     @Test public void settingsLikeMusicWithAboutAndToggles() throws Exception {
@@ -112,8 +300,8 @@ public class InterfaceTest {
             Toggle keep=null;for(View v:views(root))if(v instanceof Toggle&&"Keep Screen On".contentEquals(v.getContentDescription()))keep=(Toggle)v;
             assertTrue(keep.isChecked());tap(text(root,"Keep Screen On"));assertFalse(keep.isChecked());
             assertFalse(org.robolectric.RuntimeEnvironment.getApplication().getSharedPreferences("fast",0).getBoolean("keepScreenOn",true));
-            tap(text(root,"About Grapefruit TV"));root=a.getWindow().getDecorView();measure(root,1024,600);
-            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 2.0"));assertNotNull(text(root,"Source Code"));
+            tap(text(root,"About Grapefruit TV & Movies"));root=a.getWindow().getDecorView();measure(root,1024,600);
+            TextView wm=wordmark(root);assertTrue("wordmark on screen",wm.getLayout().getLineLeft(0)<wm.getWidth());assertNotNull(wordmark(root));assertNotNull(text(root,"Version 3.0"));assertNotNull(text(root,"Source Code"));
             capture(root,"landscape-about.png");
             assertTrue(a.back());root=a.getWindow().getDecorView();assertNotNull(text(root,"Appearance"));assertNull(text(root,"Source Code"));
         }
@@ -126,7 +314,7 @@ public class InterfaceTest {
             assertNull(text(root,"Continue watching"));
         }
     }
-    private static TextView wordmark(View root){for(View v:views(root))if(v instanceof TextView&&"Grapefruit TV".equals(String.valueOf(((TextView)v).getText())))return(TextView)v;return null;}
+    private static TextView wordmark(View root){for(View v:views(root))if(v instanceof TextView&&MainActivity.NAME.equals(String.valueOf(((TextView)v).getText())))return(TextView)v;return null;}
     /** On a phone, Settings scrolls far enough for About to clear the floating tabs and Continue watching. */
     @Test @Config(qualifiers="w411dp-h914dp-xxhdpi") public void aboutRowClearsTheFloatingBarsOnAPhone() throws Exception {
         android.content.Context c=org.robolectric.RuntimeEnvironment.getApplication();
@@ -136,7 +324,7 @@ public class InterfaceTest {
             tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,1233,2742);settle();measure(root,1233,2742);
             ScrollView scroll=null;for(View v:views(root))if(v instanceof ScrollView)scroll=(ScrollView)v;
             scroll.scrollTo(0,100000);measure(root,1233,2742);settle();measure(root,1233,2742);
-            View about=(View)text(root,"About Grapefruit TV").getParent();
+            View about=(View)text(root,"About Grapefruit TV & Movies").getParent();
             int[] at=new int[2];about.getLocationInWindow(at);
             View cont=(View)text(root,"Continue watching").getParent().getParent();int[] bar=new int[2];cont.getLocationInWindow(bar);
             assertTrue("Settings scrolled",scroll.getScrollY()>0);
@@ -231,7 +419,7 @@ public class InterfaceTest {
             tap(text(root,"Settings"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-settings.png");
             ScrollView scroll=null;for(View v:views(root))if(v instanceof ScrollView)scroll=(ScrollView)v;
             scroll.scrollTo(0,100000);measure(root,w,h);settle();measure(root,w,h);capture(root,name+"-settings-bottom.png");
-            tap(text(root,"About Grapefruit TV"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-about.png");
+            tap(text(root,"About Grapefruit TV & Movies"));root=a.getWindow().getDecorView();measure(root,w,h);capture(root,name+"-about.png");
         }
     }
     /** A channel its provider refuses where the viewer is: listed anyway, and the player box says so. */

@@ -3,14 +3,22 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.view.SurfaceView;
+import android.view.TextureView;
+import android.view.View;
 import com.google.android.exoplayer2.*;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.upstream.*;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.util.MimeTypes;
 
-/** ExoPlayer 2.18.7 supports Jelly Bean. Its Java HTTPS data source uses our Conscrypt TLS. */
+/**
+ * ExoPlayer 2.18.7 supports Jelly Bean. Its Java HTTPS data source uses our Conscrypt TLS.
+ * One LivePlayer plays one stream; the views that show it (the watch page's SurfaceView, the floating
+ * player's TextureView) take turns with attach(), so moving between them never opens a second connection.
+ */
 public final class LivePlayer {
+    /** How many streams are open in this app right now: never more than one (IPTV services limit connections). */
+    static int open;
     public interface Listener {
         void status(String message); void format(String message); void aspect(float ratio);
         /** Whether the stream offers captions (closed captions in the video, or subtitle tracks). */
@@ -25,7 +33,9 @@ public final class LivePlayer {
     private final DefaultBandwidthMeter bandwidth;
     private ExoPlayer player;
     private Channel channel; private int sourceIndex, retries, generation, refused; private boolean released;
-    private SurfaceView surface; private int quality; private boolean captionsOn; private String captionLanguage="en";
+    private View surface; private int quality; private long resume;
+    /** The last "nothing played" outcome, kept for the next view that attaches: null while playing or trying. */
+    private Boolean unavailable; private boolean captionsOn; private String captionLanguage="en";
     public LivePlayer(Context c,Listener l,int quality) {
         context=c;listener=l;this.quality=quality;
         bandwidth=new DefaultBandwidthMeter.Builder(c).setInitialBitrateEstimate(800_000).build();
@@ -53,25 +63,67 @@ public final class LivePlayer {
         captionsOn=on;if(language!=null&&!language.isEmpty())captionLanguage=language;configure();
         if(!on)listener.captions("");
     }
-    public void attach(SurfaceView view) {surface=view;if(player!=null) {player.setVideoSurfaceView(view);listener.status(player.getPlaybackState()==Player.STATE_READY?"LIVE":"Connecting…");report();}}
-    public void tune(Channel c) {
+    /**
+     * Shows the stream on this view (a SurfaceView or a TextureView; null shows it nowhere) without
+     * reconnecting: the stream and its buffer stay, only the picture moves. The new view is told the
+     * stream's state, including a refusal.
+     */
+    public void attach(View view) {
+        surface=view;if(player==null)return;
+        show();
+        if(unavailable!=null){
+            listener.status(unavailable?"Not available where you are":"This stream isn't playing right now.");listener.unavailable(unavailable);return;
+        }
+        listener.status(state());report();
+    }
+    /** "LIVE", "PLAYING" or "PAUSED" (films and recordings), "Finished", or "Connecting…". */
+    private String state() {
+        if(player.getPlaybackState()==Player.STATE_ENDED&&!channel.live())return "Finished";
+        if(player.getPlaybackState()!=Player.STATE_READY)return "Connecting…";
+        return channel.live()?"LIVE":player.getPlayWhenReady()?"PLAYING":"PAUSED";
+    }
+    // ---- Films, episodes and recordings: they have a length, so they pause and seek. ----
+    public long position(){return player==null?0:Math.max(0,player.getCurrentPosition());}
+    /** The length (ms), or 0 while it isn't known. */
+    public long duration(){long d=player==null?C.TIME_UNSET:player.getDuration();return d==C.TIME_UNSET||d<0?0:d;}
+    public boolean paused(){return player!=null&&!player.getPlayWhenReady();}
+    public void pause(boolean pause){if(player!=null){player.setPlayWhenReady(!pause);listener.status(state());}}
+    public void seekTo(long ms){if(player!=null&&player.isCurrentMediaItemSeekable())player.seekTo(Math.max(0,duration()>0?Math.min(ms,duration()-1000):ms));}
+    public void seekBy(long ms){seekTo(position()+ms);}
+    public Channel channel(){return channel;}
+    /** The view the picture is on now, or null. */
+    View view(){return surface;}
+    private void show() {
+        if(surface instanceof TextureView)player.setVideoTextureView((TextureView)surface);
+        else if(surface instanceof SurfaceView)player.setVideoSurfaceView((SurfaceView)surface);
+        else player.clearVideoSurface();
+    }
+    public void tune(Channel c) {tune(c,0);}
+    /** Plays a channel; a film, an episode or a recording from start (ms). */
+    public void tune(Channel c,long start) {
+        resume=c.live()?0:start;
+        // One of the viewer's own services: this takes one of its streams (Connections).
+        Connections.watch(c.added()&&!c.local()?Guide.sourceId(c):null);
         channel=c;sourceIndex=0;retries=0;refused=0;generation++;handler.removeCallbacksAndMessages(null);
-        if(player!=null) player.release();
+        unavailable=null;
+        if(player!=null) {player.release();player=null;open--;}
         player=new ExoPlayer.Builder(context).setTrackSelector(selector).setBandwidthMeter(bandwidth)
             .setLoadControl(new DefaultLoadControl.Builder().setBufferDurationsMs(8000,25000,1500,3000)
                 .setTargetBufferBytes(12*1024*1024).setPrioritizeTimeOverSizeThresholds(false).build()).build();
+        open++;
         player.setAudioAttributes(new com.google.android.exoplayer2.audio.AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).build(),true);
         player.setHandleAudioBecomingNoisy(true);
         player.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT);
-        player.setVideoSurfaceView(surface);
+        show();
         player.addListener(new Player.Listener() {
             @Override public void onPlaybackStateChanged(int state) {
-                if(state==Player.STATE_READY) { retries=0;listener.status("LIVE");report(); }
+                if(state==Player.STATE_READY) { retries=0;listener.status(state());report(); }
                 else if(state==Player.STATE_BUFFERING) listener.status("Connecting…");
-                else if(state==Player.STATE_ENDED) failed(null);
+                else if(state==Player.STATE_ENDED) {if(channel.live())failed(null);else listener.status("Finished");}
             }
             @Override public void onPlayerError(PlaybackException error) {failed(error);}
+            @Override public void onPlayWhenReadyChanged(boolean play,int reason) {if(player!=null&&player.getPlaybackState()==Player.STATE_READY)listener.status(state());}
             @Override public void onTracksChanged(Tracks tracks) { listener.captionsAvailable(tracks.containsType(C.TRACK_TYPE_TEXT)); }
             @Override public void onCues(com.google.android.exoplayer2.text.CueGroup cues) { listener.captions(captionsOn?joined(cues.cues):""); }
             @Override public void onVideoSizeChanged(com.google.android.exoplayer2.video.VideoSize size) { if(size.height>0)listener.aspect(size.width*size.pixelWidthHeightRatio/size.height);report(); }
@@ -97,7 +149,7 @@ public final class LivePlayer {
         String mode=quality==0?"Auto":quality==1?"Data saver":"Compatibility";
         listener.format(f==null?mode:mode+" · "+f.height+"p"+(f.bitrate>0?" · "+String.format(java.util.Locale.US,"%.1f Mbps",f.bitrate/1000000f):""));
     }
-    static final String USER_AGENT="GrapefruitTV/2.0 (Android)";
+    static final String USER_AGENT="GrapefruitTV/3.0 (Android)";
     /** An HLS playlist (.m3u8), by its address; anything else is played as a direct stream. */
     static boolean hls(String url) {
         String path=url.toLowerCase(java.util.Locale.US);int q=path.indexOf('?');if(q>=0)path=path.substring(0,q);
@@ -118,7 +170,10 @@ public final class LivePlayer {
             ? new HlsMediaSource.Factory(data).createMediaSource(item)
             // An MPEG-TS (or other direct) live stream, as most IPTV services send.
             : new com.google.android.exoplayer2.source.ProgressiveMediaSource.Factory(data).createMediaSource(item));
-        player.prepare();player.setPlayWhenReady(true);
+        player.prepare();
+        // A film picks up where it was (a retry, too); live channels play from the live edge.
+        if(!channel.live()&&resume>0)player.seekTo(resume);
+        player.setPlayWhenReady(true);
     }
     /**
      * The provider said no for where the viewer is: HTTP 403 (forbidden) or 451 (unavailable for legal
@@ -136,6 +191,7 @@ public final class LivePlayer {
     }
     private void failed(PlaybackException error) {
         if(released) return;
+        if(!channel.live()&&player!=null&&player.getCurrentPosition()>0)resume=player.getCurrentPosition();
         boolean refusal=locationRefusal(error);
         // A location refusal won't change on a retry: straight on to the next source. Other failures get
         // two bounded reconnects per source; stale requests cannot restart another channel.
@@ -146,7 +202,7 @@ public final class LivePlayer {
             retries++;listener.status("Reconnecting… ("+retries+"/2)");
         } else if(sourceIndex+1<channel.streams.length) { sourceIndex++;retries=0; }
         else {
-            boolean location=refused==channel.streams.length;
+            boolean location=refused==channel.streams.length;unavailable=location;
             listener.status(location?"Not available where you are":"This stream isn't playing right now.");
             listener.unavailable(location);return;
         }
@@ -156,6 +212,7 @@ public final class LivePlayer {
     }
     public void release() {
         released=true;generation++;handler.removeCallbacksAndMessages(null);
-        if(player!=null) {player.release();player=null;}
+        if(player!=null) {player.release();player=null;open--;}
+        Connections.watch(null);
     }
 }

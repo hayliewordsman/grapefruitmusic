@@ -1,17 +1,21 @@
-Grapefruit TV brings your live TV together in one small, native app for Android 4.2.2 (Jelly Bean) and later, from the makers of Grapefruit Music & Podcasts. It was called Grapefruit FAST until version 2.0.
+Grapefruit TV & Movies brings live TV, free films and your own IPTV together in one small, native app for Android 4.2.2 (Jelly Bean) and later, from the makers of Grapefruit Audio. It was called Grapefruit TV until 3.0, and Grapefruit FAST before 2.0.
 
-• 59 free built-in channels, no account needed: news from Canada, the United States, the UK, Europe and Australia, and classic series, reality and lifestyle channels
-• Your own IPTV: add a service you subscribe to with its M3U playlist address, or its server, username and password. Channel names only, no programme guide
+• Live TV: 59 free built-in channels, no account needed: news from Canada, the United States, the UK, Europe and Australia, and classic series, reality and lifestyle channels
+• Movies: hand-picked free films that are legal to watch (public domain in the United States, or Creative Commons), from the Internet Archive, to stream or download. Nothing discriminatory
+• Your own IPTV: add a service you subscribe to with its M3U playlist address, or its server, username and password
+• On Demand: your service's films and series, with seasons and episodes, and downloads for offline viewing
+• Guide: each channel's programmes beside it, from your service's guide where it has one; elsewhere, hour blocks on news channels and half hours on the rest
+• Recordings: record free channels and your IPTV channels on the device, from the guide or a channel's page, on time even with the app in the background or closed. All, Finished and Scheduled
+• Streams at a Time: watching, recording and downloading stay within your IPTV plan's limit
+• A floating player: leave a channel or film and it keeps playing in a small window you can drag aside. One stream at a time
 • Your TV Apps: the streaming and TV-provider apps on your device sit at the top of Live TV and open with a tap
-• Captions where a channel provides them
-• Favourites, search by name, city or genre, and Continue watching
-• Full screen, with sideways-to-full-screen on phones
-• Adaptive quality, with Data saver and Compatibility modes
-• Grapefruit Dark, Grapefruit Light and Pitch Black themes, in Grapefruit's floating pill design
+• Captions where a channel provides them; a seek bar, pause and resume for films and recordings
+• Favourites, search across channels and films, and Continue watching
+• Full screen, adaptive quality with Data saver and Compatibility modes, and Grapefruit Dark, Grapefruit Light and Pitch Black themes in Grapefruit's floating pill design
 • Phones, tablets, square screens and Android TV, with remote control support
 
-Built-in channels come straight from broadcasters and their official distributors. Some are offered only in certain countries; if a channel's provider doesn't offer it where you are, the player says so. Their own advertisements play as usual. Grapefruit TV adds no ads of its own and no tracking.
+Built-in channels come straight from broadcasters and their official distributors. Some are offered only in certain countries; if a channel's provider doesn't offer it where you are, the player says so. Their own advertisements play as usual. Grapefruit TV & Movies adds no ads of its own and no tracking.
 
-Grapefruit TV doesn't provide, sell or recommend any IPTV service: only add ones you're entitled to use. It never signs in to your TV apps; you watch and sign in there.
+Grapefruit TV & Movies doesn't provide, sell or recommend any IPTV service: only add ones you're entitled to use. It never signs in to your TV apps; you watch and sign in there. Encrypted streams aren't recorded.
 
-Grapefruit TV is free software under the GNU GPL, version 3 or later.
+Grapefruit TV & Movies is free software under the GNU GPL, version 3 or later.

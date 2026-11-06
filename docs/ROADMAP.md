@@ -11,6 +11,34 @@ when it ships (its release notes say what shipped).
 
 _Nothing planned yet._
 
+### 3.0: Grapefruit TV & Movies (in 3.0 beta 1)
+
+Built in 3.0 beta 1 (see docs/tv/releases/3.0-beta-1.md):
+- **Movies tab:** hand-picked films that are free and legal to watch (public domain in the United States, or
+  Creative Commons), streamed and downloaded from the Internet Archive (tools/tv/movies.py). Nothing discriminatory.
+- **On Demand tab** (shows only when an IPTV source has films or series): films, series with seasons and
+  episodes, the source's groups, and **downloads for offline playback** (resuming, Wi-Fi only by default).
+- **Guide (EPG) in Live TV:** programmes from the source's own guide (Xtream short EPG, a playlist's XMLTV);
+  elsewhere, hour blocks on news channels and half hours on others, labelled "Program information currently
+  unavailable".
+- **DVR and the Recordings tab** (All, Finished, Scheduled): records free channels and IPTV channels on the
+  device, from the guide, the channel page or a manual schedule, in a foreground service woken by exact alarms
+  (and set again after a restart), so recordings happen with the app in the background or closed. Streams at a
+  Time keeps watching, recording and downloading within an IPTV plan's limit.
+- The in-app floating player from 2.5 beta 1 stays; background play is dropped.
+
+Still to come in 3.0 betas:
+- Watching a recording while it's still recording (time-shift), and a series recording rule ("record every
+  episode").
+- Recording streams whose sound is kept separately (HLS with separate audio renditions).
+- Posters on a grid for Movies and On Demand, and more films for Movies.
+- A real-device check of recordings with the screen off on Jelly Bean, a Pixel and Android TV.
+
+### Later
+
+- **Android picture-in-picture** (8.0+, and Android TVs that support it): Home shrinks the channel into
+  Android's own floating window over other apps. Android 4.2–7 keep the in-app floating player.
+
 ### Ideas
 
 - **Regional FAST lineups through official partnerships.** Pluto TV, Samsung TV Plus, Plex, Roku,
@@ -29,7 +57,9 @@ _Nothing planned yet._
   Grapefruit TV: their live TV is DRM-protected and only plays in their own apps; getting around
   that is illegal and against their terms. Your TV Apps opens those apps instead.
 - Posing as another service's own app (Pluto's web player) to get past its refusal.
-- A programme guide (EPG) for now: channel names only.
+- Background play (sound with the screen off or in another app): dropped for 3.0; the in-app floating
+  player stays.
+- Recording or saving streams that are encrypted or DRM-protected: not done.
 
 ## Grapefruit Music & Podcasts
 

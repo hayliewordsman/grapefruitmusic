@@ -7,9 +7,9 @@ the iOS 10 Music app. ("Grapefruit Audio" under its icon; up to 5.1 it was Grape
 It plays music you own: files on the phone, and your own **Navidrome / Subsonic** or **Jellyfin** server,
 with downloads for offline listening and time-synced lyrics.
 
-## Grapefruit TV (second app)
+## Grapefruit TV & Movies (second app)
 
-The repository also contains **Grapefruit TV 2.0** (formerly Grapefruit FAST), a separate Android live-TV app with its own application ID, APKs and workflow. See [tv/README.md](tv/README.md) for building, channel availability and signing. Both apps share fonts and HTTPS support through `grapefruit-ui/`.
+The repository also contains **Grapefruit TV & Movies 3.0** (formerly Grapefruit TV and, before 2.0, Grapefruit FAST), a separate Android app for live TV, free films, IPTV on demand and recordings, with its own application ID, APKs and workflow. See [tv/README.md](tv/README.md) for building, channel availability and signing. Both apps share fonts and HTTPS support through `grapefruit-ui/`.
 
 ## Features
 

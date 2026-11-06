@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Grapefruit TV's wordmark font: Geist Pixel in its Triangle shape (Vercel, SIL Open Font License 1.1),
 from the geist npm package (1.9.0, as tools/brand/logo.py uses), cut down to the letters of
-"Grapefruit TV" and saved as TTF (Android 4.2 can't read WOFF2). Geist Pixel's OFL names no Reserved
+"Grapefruit TV & Movies" and saved as TTF (Android 4.2 can't read WOFF2). Geist Pixel's OFL names no Reserved
 Font Name, so the subset may keep its name. Needs fontTools and brotli.
 
   npm pack geist@1.9.0 && tar -xzf geist-1.9.0.tgz
@@ -12,7 +12,7 @@ from pathlib import Path
 from fontTools import subset
 from fontTools.ttLib import TTFont
 
-WORDMARK = "Grapefruit TV"
+WORDMARK = "Grapefruit TV & Movies"
 root = Path(__file__).resolve().parents[2]
 source = Path(sys.argv[1]) / "dist/fonts/geist-pixel/GeistPixel-Triangle.woff2"
 out = root / "tv/src/main/assets/fonts/GeistPixel-Triangle-TV.ttf"
