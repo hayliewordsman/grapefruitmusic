@@ -1,6 +1,12 @@
 # JP5S test line
 
-[**Download Grapefruit Settings 1.0 · JP5S beta 1**](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/jp5s-grapefruit-settings/downloads/jp5s/Grapefruit-Settings-1.0-jp5s-beta1.apk)
+[**Download Grapefruit Settings 1.0 · JP5S beta 2**](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/jp5s-grapefruit-settings/downloads/jp5s/Grapefruit-Settings-1.0-jp5s-beta2.apk)
+
+Beta 2 adds an entirely in-app Wi-Fi selector, password dialogs, saved networks,
+disconnect/forget, and connection details. Wi-Fi no longer opens the crashing
+OEM page. Copy/Cut/Paste/Select all remain available in Jelly Bean dialogs. Back
+uses drawn arrows and returns to the actual parent page, preserving scroll.
+It installs as an update over beta 1 and keeps existing app preferences.
 
 Install normally beside the existing Settings app. Keep stock Settings installed.
 This APK modifies the frontend only and is signed with the same public AOSP test

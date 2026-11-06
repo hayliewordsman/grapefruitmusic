@@ -105,7 +105,9 @@ def assemble(args):
         for element in ET.parse(ROOT / "settings/src/main/res/values" / file).getroot():
             merged.append(element)
     ET.ElementTree(merged).write(original / "res/values/grapefruit.xml", encoding="utf-8", xml_declaration=True)
-    shutil.copytree(ROOT / "settings/src/main/res/layout", original / "res/layout", dirs_exist_ok=True)
+    layouts = ROOT / "settings/src/main/res/layout"
+    if layouts.exists():
+        shutil.copytree(layouts, original / "res/layout", dirs_exist_ok=True)
     for folder in frontend.glob("smali*"):
         for smali in folder.rglob("*.smali"):
             target = original / "smali" / smali.relative_to(folder)
@@ -213,8 +215,8 @@ def assemble(args):
         shutil.copyfile(ROOT / f"settings/src/main/res/mipmap-{density}/ic_launcher.png", icon)
     config = original / "apktool.yml"
     text = config.read_text()
-    text = re.sub(r"versionCode: .*", "versionCode: 1", text)
-    text = re.sub(r"versionName: .*", "versionName: 1.0-jp5s-beta1", text)
+    text = re.sub(r"versionCode: .*", "versionCode: 2", text)
+    text = re.sub(r"versionName: .*", "versionName: 1.0-jp5s-beta2", text)
     config.write_text(text)
     (out / "assembly-report.json").write_text(json.dumps(count, indent=2) + "\n")
     run("java", "-jar", args.apktool, "b", "-p", framework, original, "-o", out / "jp5s-unsigned.apk")

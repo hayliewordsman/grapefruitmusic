@@ -26,37 +26,74 @@ public final class MainActivity extends Activity {
     private LinearLayout content;
     private ScrollView scroll;
     private String page="home";
+    private final ArrayList<String> history=new ArrayList<>();
+    private final ArrayList<Integer> scrollHistory=new ArrayList<>();
+    WifiNetworks wifiNetworks;
+    private WifiUi wifiUi;
+    private final ArrayList<Dialog> dialogs=new ArrayList<>();
     private final Handler handler=new Handler(Looper.getMainLooper());
     private boolean listening;
     private Toggle wifiToggle, bluetoothToggle;
     private TextView wifiStatus,bluetoothStatus;
     private final BroadcastReceiver states=new BroadcastReceiver() {
-        @Override public void onReceive(Context c,Intent i) { refreshRadios(); }
+        @Override public void onReceive(Context c,Intent i) {
+            wifiNetworks.event(i);refreshRadios();
+            if(wifiUi!=null)wifiUi.refresh();
+        }
     };
 
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);Fonts.init(this);
         prefs=getSharedPreferences("settings",MODE_PRIVATE);
         UniversalTheme.sync(this,prefs,false,new int[]{0,1,2,3});
-        if(saved!=null)page=saved.getString("page","home");
-        build();
+        if(wifiNetworks==null)wifiNetworks=new WifiNetworks(new WifiNetworks.AndroidBackend(wifiManager()));
+        if(saved!=null){
+            page=saved.getString("page","home");
+            ArrayList<String> pages=saved.getStringArrayList("history");ArrayList<Integer> positions=saved.getIntegerArrayList("scroll_history");
+            if(pages!=null&&positions!=null&&pages.size()==positions.size()){history.addAll(pages);scrollHistory.addAll(positions);}
+        }
+        wifiNetworks.refresh();build();
+        if(saved!=null)restoreScroll(saved.getInt("scroll",0));
     }
-    @Override protected void onSaveInstanceState(Bundle state) { super.onSaveInstanceState(state);state.putString("page",page); }
+    @Override protected void onSaveInstanceState(Bundle state) { super.onSaveInstanceState(state);state.putString("page",page);state.putStringArrayList("history",new ArrayList<>(history));state.putIntegerArrayList("scroll_history",new ArrayList<>(scrollHistory));state.putInt("scroll",scroll==null?0:scroll.getScrollY()); }
     @Override protected void onResume() {
         super.onResume();
         if(UniversalTheme.sync(this,prefs,false,new int[]{0,1,2,3}))build();
         IntentFilter f=new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
         f.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);f.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        f.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);f.addAction(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION);f.addAction(WifiManager.RSSI_CHANGED_ACTION);f.addAction("android.net.wifi.CONFIGURED_NETWORKS_CHANGE");
         if(Build.VERSION.SDK_INT>=33)registerReceiver(states,f,Context.RECEIVER_EXPORTED);else registerReceiver(states,f);
-        listening=true;refreshRadios();
+        listening=true;wifiNetworks.refresh();refreshRadios();if(wifiUi!=null){wifiUi.refresh();requestWifiScan(false);watchWifiConnection();}
     }
     @Override protected void onPause() {
         if(listening){unregisterReceiver(states);listening=false;}
         handler.removeCallbacksAndMessages(null);super.onPause();
     }
-    @Override public void onBackPressed() { if(!page.equals("home"))navigate("home");else super.onBackPressed(); }
+    @Override public void onBackPressed() {
+        for(int i=dialogs.size()-1;i>=0;i--)if(dialogs.get(i).isShowing()){dialogs.get(i).dismiss();return;}
+        hideKeyboard();
+        if(!history.isEmpty()){int last=history.size()-1;page=history.remove(last);int position=scrollHistory.remove(last);build();restoreScroll(position);}
+        else if(!page.equals("home")){page=parent(page);build();}
+        else super.onBackPressed();
+    }
+    private static String parent(String page){return page.equals("saved_networks")?"networks":page.equals("networks")||page.equals("wifi_advanced")?"wifi":page.equals("universal")?"appearance":"home";}
+    private String parentLabel(){String target=history.isEmpty()?parent(page):history.get(history.size()-1);return target.equals("home")?"Settings":target.equals("wifi")?"Wi-Fi":target.equals("networks")?"Networks":target.equals("saved_networks")?"Saved networks":target.equals("appearance")?"App appearance":"Settings";}
+    private void hideKeyboard(){android.view.inputmethod.InputMethodManager keyboard=(android.view.inputmethod.InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);if(keyboard!=null&&scroll!=null)keyboard.hideSoftInputFromWindow(scroll.getWindowToken(),0);}
+    private void restoreScroll(int y){final ScrollView target=scroll;target.post(()->target.scrollTo(0,y));}
+    @Override protected void onDestroy(){for(Dialog dialog:new ArrayList<>(dialogs))dialog.dismiss();dialogs.clear();handler.removeCallbacksAndMessages(null);super.onDestroy();}
+    void requestWifiScan(boolean force){
+        if(wifiUi==null)return;
+        if(wifiNetworks.scan(force)){handler.removeCallbacks(scanTimeout);handler.postDelayed(scanTimeout,12000);}
+        wifiNetworks.refresh();wifiUi.refresh();
+    }
+    private final Runnable scanTimeout=()->{wifiNetworks.scanTimeout();if(wifiUi!=null)wifiUi.refresh();};
+    void watchWifiConnection(){long delay=wifiNetworks.pendingMillis();handler.removeCallbacks(connectionTimeout);if(delay>=0)handler.postDelayed(connectionTimeout,delay);}
+    private final Runnable connectionTimeout=()->{wifiNetworks.connectionTimeout();if(wifiUi!=null)wifiUi.refresh();};
     private int dp(float n){return p.dp(n);}
-    private void navigate(String target){page=target;build();}
+    void navigate(String target){
+        if(!page.equals(target)){history.add(page);scrollHistory.add(scroll==null?0:scroll.getScrollY());}
+        hideKeyboard();page=target;build();if(wifiUi!=null)requestWifiScan(false);
+    }
 
     private void build() {
         p=new Palette(this,prefs.getInt("theme",0));
@@ -66,11 +103,14 @@ public final class MainActivity extends Activity {
         if(Build.VERSION.SDK_INT>=23)getWindow().getDecorView().setSystemUiVisibility(p.light?View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR:0);
         scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(p.bg);
         content=column();content.setPadding(dp(18),dp(20),dp(18),dp(28));scroll.addView(content);
-        if(!page.equals("home"))add(p.chip("‹  Settings",false,v->navigate("home")));
+        wifiUi=null;
         switch(page) {
             case "appearance": appearance(false);break;
             case "universal": appearance(true);break;
-            case "wifi": wifi();break;
+            case "wifi": wifiUi=new WifiUi(this,p,wifiNetworks);wifiUi.overview();break;
+            case "networks": wifiUi=new WifiUi(this,p,wifiNetworks);wifiUi.networks(false);break;
+            case "saved_networks": wifiUi=new WifiUi(this,p,wifiNetworks);wifiUi.networks(true);break;
+            case "wifi_advanced": wifiUi=new WifiUi(this,p,wifiNetworks);wifiUi.details();break;
             case "bluetooth": bluetooth();break;
             case "sound": sound();break;
             case "display": display();break;
@@ -82,15 +122,19 @@ public final class MainActivity extends Activity {
         }
         setContentView(scroll);refreshRadios();
     }
-    private LinearLayout column(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);return l;}
-    private LinearLayout horizontal(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.HORIZONTAL);l.setGravity(Gravity.CENTER_VERTICAL);return l;}
-    private TextView text(String s,int sp,boolean bold){TextView t=p.text(s,sp,bold);t.setTextColor(p.text);return t;}
-    private void add(View v){LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.topMargin=dp(8);content.addView(v,lp);}
-    private void title(String s,String sub){add(text(s,30,true));if(sub!=null)note(sub);}
-    private void note(String s){TextView t=text(s,14,false);t.setTextColor(p.secondary);t.setLineSpacing(dp(3),1);add(t);}
-    private void section(String s){TextView t=text(s,13,true);t.setTextColor(p.accent);t.setPadding(0,dp(15),0,dp(3));add(t);}
-    private void action(String title,View.OnClickListener click){add(p.chip(title,false,click));}
-    private LinearLayout row(String kind,String title,String detail,View.OnClickListener click){
+    LinearLayout column(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);return l;}
+    LinearLayout horizontal(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.HORIZONTAL);l.setGravity(Gravity.CENTER_VERTICAL);return l;}
+    TextView text(String s,int sp,boolean bold){TextView t=p.text(s,sp,bold);t.setTextColor(p.text);return t;}
+    void add(View v){LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.topMargin=dp(8);content.addView(v,lp);}
+    void title(String s,String sub){
+        if(page.equals("home"))add(text(s,30,true));
+        else {LinearLayout header=horizontal();ImageButton back=new ImageButton(this);back.setImageDrawable(new BackIcon(p.text,dp(24)));back.setScaleType(ImageView.ScaleType.CENTER);back.setBackground(p.interactive(false));back.setContentDescription("Back to "+parentLabel());back.setOnClickListener(v->onBackPressed());header.addView(back,new LinearLayout.LayoutParams(dp(48),dp(48)));TextView heading=text(s,28,true);heading.setPadding(dp(12),0,0,0);header.addView(heading,new LinearLayout.LayoutParams(0,-2,1));add(header);}
+        if(sub!=null)note(sub);
+    }
+    void note(String s){TextView t=text(s,14,false);t.setTextColor(p.secondary);t.setLineSpacing(dp(3),1);add(t);}
+    void section(String s){TextView t=text(s,13,true);t.setTextColor(p.accent);t.setPadding(0,dp(15),0,dp(3));add(t);}
+    void action(String title,View.OnClickListener click){add(p.chip(title,false,click));}
+    LinearLayout row(String kind,String title,String detail,View.OnClickListener click){
         LinearLayout r=horizontal();r.setPadding(dp(12),dp(12),dp(12),dp(12));r.setMinimumHeight(dp(72));
         r.setBackground(p.interactive(false));
         r.addView(new SettingIcon(this,p,kind),new LinearLayout.LayoutParams(dp(42),dp(42)));
@@ -101,7 +145,7 @@ public final class MainActivity extends Activity {
         if(click!=null){TextView arrow=text("›",26,false);arrow.setTextColor(p.secondary);r.addView(arrow);r.setOnClickListener(click);r.setFocusable(true);}
         add(r);return r;
     }
-    private Toggle toggleRow(String kind,String title,boolean checked,Toggle.Listener listener){
+    Toggle toggleRow(String kind,String title,boolean checked,Toggle.Listener listener){
         LinearLayout r=row(kind,title,null,null);
         Toggle t=new Toggle(this);t.setPalette(p);t.setChecked(checked);t.setContentDescription(title);t.setListener(listener);
         r.addView(t,new LinearLayout.LayoutParams(dp(60),dp(48)));return t;
@@ -160,18 +204,6 @@ public final class MainActivity extends Activity {
     }
     private WifiManager wifiManager(){return (WifiManager)getApplicationContext().getSystemService(WIFI_SERVICE);}
     private BluetoothAdapter bluetoothAdapter(){return BluetoothAdapter.getDefaultAdapter();}
-    private void wifi(){
-        title("Wi-Fi","Stay connected.");WifiManager w=wifiManager();
-        if(w==null){note("Wi-Fi is unavailable.");return;}
-        wifiToggle=toggleRow("wifi","Wi-Fi",w.isWifiEnabled(),(t,on)->{
-            try{if(!w.setWifiEnabled(on)){t.setChecked(w.isWifiEnabled());toast("Use original Settings to change Wi-Fi.");}}
-            catch(SecurityException e){t.setChecked(w.isWifiEnabled());StockSettings.open(this,Settings.ACTION_WIFI_SETTINGS);}
-        });
-        wifiStatus=text("",14,false);add(wifiStatus);
-        action("Networks & saved connections  ›",v->StockSettings.open(this,Settings.ACTION_WIFI_SETTINGS));
-        action("Add a network",v->networkDialog());
-        action("Advanced Wi-Fi  ›",v->StockSettings.open(this,Settings.ACTION_WIFI_IP_SETTINGS));
-    }
     private void bluetooth(){
         title("Bluetooth","Headphones, speakers & more.");BluetoothAdapter b=bluetoothAdapter();
         if(b==null){note("Bluetooth is unavailable.");return;}
@@ -261,54 +293,39 @@ public final class MainActivity extends Activity {
         search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){render.run();}public void afterTextChanged(Editable e){}});render.run();
     }
     private void about(){
-        title("About this JP5S","Grapefruit Settings 1.0 · JP5S beta 1");
+        title("About this JP5S","Grapefruit Settings 1.0 · JP5S beta 2");
         row("about","Model",Build.MODEL,null);row("about","Android",Build.VERSION.RELEASE,null);row("about","Build",Build.DISPLAY,null);
         note("A separate Settings app for testing beside the original. Android's SettingsProvider stays in place. Original JP5S pages use Grapefruit colours and controls.");
         action("More device information  ›",v->StockSettings.open(this,Settings.ACTION_DEVICE_INFO_SETTINGS));
         action("Licences",v->message("Licences","Grapefruit Settings: GPL-3.0-or-later. Geist fonts: SIL Open Font License 1.1. Grapefruit toggle and palette adapted from Grapefruit Audio, TV and Launcher."));
     }
-    private void styleField(EditText f,String hint,boolean secret){
+    void styleField(EditText f,String hint,boolean secret){
         f.setTextColor(p.text);f.setHintTextColor(p.secondary);f.setTextSize(16);f.setTypeface(Fonts.regular());f.setSingleLine(true);f.setHint(hint);f.setContentDescription(hint);f.setMinimumHeight(dp(48));f.setPadding(dp(14),dp(10),dp(14),dp(10));f.setBackground(p.shape(p.control,22,true));
         f.setInputType(secret?android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD:android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         if(secret)f.setTransformationMethod(PasswordTransformationMethod.getInstance());
-        DialogEditing.prepare(f);
     }
-    private void editor(LinearLayout card,EditText field){
+    void editor(LinearLayout card,EditText field){
+        DialogEditing.prepare(field);
         LinearLayout.LayoutParams fp=new LinearLayout.LayoutParams(-1,-2);fp.topMargin=dp(10);card.addView(field,fp);
         if(Build.VERSION.SDK_INT<23){
             LinearLayout actions=horizontal();String[] names={"Select all","Copy","Cut","Paste"};
             for(int i=0;i<4;i++){final int id=i;TextView b=p.chip(names[i],false,v->{if(id==0)DialogEditing.selectAll(field);else if(id==3)DialogEditing.paste(field);else DialogEditing.copy(field,id==2);});b.setTextSize(12);b.setPadding(dp(6),dp(8),dp(6),dp(8));actions.addView(b,new LinearLayout.LayoutParams(0,dp(48),1));}card.addView(actions);
         }
     }
-    private Dialog dialog(String title,LinearLayout card){
+    Dialog dialog(String title,LinearLayout card){
         Dialog d=new Dialog(this,R.style.SettingsDialog);card.setPadding(dp(18),dp(18),dp(18),dp(18));card.setBackground(p.shape(p.surface,26,true));TextView heading=text(title,22,true);card.addView(heading,0);
-        ScrollView sv=new ScrollView(this);sv.addView(card);d.setContentView(sv);d.show();Window w=d.getWindow();if(w!=null){w.setLayout(Math.min(dp(440),getResources().getDisplayMetrics().widthPixels-dp(24)),-2);w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);}
+        ScrollView sv=new ScrollView(this);sv.addView(card);d.setContentView(sv);dialogs.add(d);d.setOnDismissListener(value->dialogs.remove(d));d.show();Window w=d.getWindow();if(w!=null){w.setLayout(Math.min(dp(440),getResources().getDisplayMetrics().widthPixels-dp(24)),-2);w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);}
         return d;
     }
-    private void dialogButton(LinearLayout card,String title,View.OnClickListener click){LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.topMargin=dp(10);card.addView(p.chip(title,false,click),lp);}
+    void dialogButton(LinearLayout card,String title,View.OnClickListener click){LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.topMargin=dp(10);card.addView(p.chip(title,false,click),lp);}
     private void renameBluetooth(){
         BluetoothAdapter b=bluetoothAdapter();if(b==null)return;
         LinearLayout card=column();EditText name=new EditText(this);styleField(name,"Device name",false);try{name.setText(b.getName());}catch(SecurityException e){toast("Bluetooth permission is unavailable.");return;}editor(card,name);
         Dialog d=dialog("Rename device",card);
         dialogButton(card,"Save",v->{String n=name.getText().toString().trim();if(n.isEmpty()){name.setError("Enter a device name");return;}try{if(!b.setName(n)){toast("Turn on Bluetooth and try again.");return;}}catch(SecurityException e){toast("The device name could not be changed.");return;}d.dismiss();build();});dialogButton(card,"Cancel",v->d.dismiss());
     }
-    private void networkDialog(){
-        LinearLayout card=column();EditText ssid=new EditText(this),password=new EditText(this);styleField(ssid,"Network name (SSID)",false);styleField(password,"Password (blank for open)",true);editor(card,ssid);editor(card,password);
-        TextView hint=text("For WPA/WPA2 personal or open networks. Other security types are available in original Wi-Fi settings.",13,false);hint.setTextColor(p.secondary);card.addView(hint);
-        Dialog d=dialog("Add a network",card);
-        dialogButton(card,"Save & connect",v->{
-            String name=ssid.getText().toString(),pass=password.getText().toString();
-            if(name.isEmpty()||name.getBytes(java.nio.charset.Charset.forName("UTF-8")).length>32){ssid.setError("Enter an SSID of 1–32 bytes");return;}
-            if(!pass.isEmpty()&&!validPassword(pass)){password.setError("Use 8–63 ASCII characters or 64 hexadecimal digits");return;}
-            WifiManager w=wifiManager();if(w==null||!w.isWifiEnabled()){toast("Turn on Wi-Fi first.");return;}
-            WifiConfiguration config=new WifiConfiguration();config.SSID=quote(name);
-            if(pass.isEmpty())config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-            else{config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);config.preSharedKey=pass.matches("[0-9a-fA-F]{64}")?pass:quote(pass);}
-            try{int id=w.addNetwork(config);if(id<0){toast("This network could not be saved. Try original Wi-Fi settings.");return;}w.saveConfiguration();if(!w.enableNetwork(id,true)||!w.reconnect()){toast("Network saved. Open Wi-Fi settings to connect.");}else toast("Network saved; connecting…");d.dismiss();}catch(SecurityException e){toast("Use original Wi-Fi settings to add this network.");}
-        });dialogButton(card,"Cancel",v->d.dismiss());
-    }
     static String quote(String s){return "\""+s.replace("\\","\\\\").replace("\"","\\\"")+"\"";}
     static boolean validPassword(String s){return s.matches("[0-9a-fA-F]{64}")||(s.length()>=8&&s.length()<=63&&s.matches("[\\x20-\\x7e]+"));}
-    private void message(String title,String body){LinearLayout card=column();TextView t=text(body,15,false);card.addView(t);Dialog d=dialog(title,card);dialogButton(card,"Close",v->d.dismiss());}
-    private void toast(String s){Toast.makeText(this,s,Toast.LENGTH_LONG).show();}
+    void message(String title,String body){LinearLayout card=column();TextView t=text(body,15,false);card.addView(t);Dialog d=dialog(title,card);dialogButton(card,"Close",v->d.dismiss());}
+    void toast(String s){Toast.makeText(this,s,Toast.LENGTH_LONG).show();}
 }
