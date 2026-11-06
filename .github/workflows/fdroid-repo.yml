@@ -209,6 +209,26 @@ jobs:
           "$RUNNER_TEMP/fdroidserver/bin/pip" install --quiet "fdroidserver==$FDROIDSERVER_VERSION"
           echo "$RUNNER_TEMP/fdroidserver/bin" >> "$GITHUB_PATH"
 
+      - name: Wait for the stable Maps APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A default-branch push can start this job before Maps finishes signing.
+          # Include its APK in the first Pages deployment of this commit: Pages can
+          # reuse a completed deployment when dispatched again at the same SHA.
+          name=$(sed -n 's/^ *versionName "\([^"]*\)" *$/\1/p' maps/build.gradle)
+          [[ "$name" =~ ^[0-9A-Za-z.-]+$ ]]
+          if [[ "${name,,}" =~ (alpha|beta|rc) ]]; then exit 0; fi
+          for attempt in $(seq 1 40); do
+            ready=$(gh release view "maps-v$name" --json isDraft,isPrerelease,assets \
+              --jq '.isDraft == false and .isPrerelease == false and any(.assets[]; .name | endswith(".apk"))' 2>/dev/null || true)
+            if [ "$ready" = true ]; then exit 0; fi
+            if [ "$attempt" = 1 ]; then echo "Waiting for Maps $name to publish its stable APK."; fi
+            sleep 15
+          done
+          echo '::error::The stable Maps APK was not published; preserving the existing repository.'
+          exit 1
+
       - name: Snapshot the original catalog
         if: github.event_name == 'workflow_dispatch' && inputs.repository_only
         run: |
