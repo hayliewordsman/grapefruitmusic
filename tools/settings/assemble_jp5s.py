@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from device_bundle import detach, TEST_PACKAGE
 
 ROOT = Path(__file__).resolve().parents[2]
 A = "{http://schemas.android.com/apk/res/android}"
@@ -24,6 +25,8 @@ def run(*args):
 
 
 def assemble(args):
+    global PKG
+    PKG = "com.android.settings" if args.mode == "replacement" else TEST_PACKAGE
     source = Path(args.input).resolve()
     expected = json.loads((ROOT / "settings/input.json").read_text())
     if hashlib.sha256(source.read_bytes()).hexdigest() != expected["sha256"]:
@@ -35,11 +38,15 @@ def assemble(args):
     run("java", "-jar", args.apktool, "d", "-f", "-p", framework, source, "-o", original)
     run("java", "-jar", args.apktool, "d", "-f", "-p", framework,
         ROOT / "settings/build/outputs/apk/debug/settings-debug.apk", "-o", frontend)
+    input_manifest = out / "input-manifest.xml"
+    shutil.copyfile(original / "AndroidManifest.xml", input_manifest)
 
     manifest = ET.parse(original / "AndroidManifest.xml")
     root = manifest.getroot()
     root.set("package", PKG)
     root.attrib.pop("coreApp", None)
+    if args.mode == "replacement":
+        root.set("coreApp", "true")
     for item in list(root):
         if item.tag == "original-package":
             root.remove(item)
@@ -50,22 +57,34 @@ def assemble(args):
     app.set(A + "theme", "@style/SettingsTheme")
     app.set(A + "taskAffinity", PKG)
     for child in list(app):
-        if child.tag in ("service", "receiver", "provider"):
+        if child.tag == "provider":
             app.remove(child)
             continue
-        if child.tag not in ("activity", "activity-alias"):
+        if child.tag not in ("activity", "activity-alias", "receiver", "service"):
             continue
         for key in ("name", "targetActivity", "parentActivityName"):
             value = child.get(A + key)
             if value:
                 child.set(A + key, "com.android.settings" + value if value.startswith(".") else
                           "com.android.settings." + value if "." not in value else value)
-        child.set(A + "exported", "false")
-        child.set(A + "taskAffinity", PKG)
+        helper = child.tag in ("receiver", "service")
+        interactive_bluetooth = child.get(A + "name").rsplit(".", 1)[-1] in ("BluetoothPairingRequest", "BluetoothPermissionRequest", "BluetoothAuthorizeRequest")
+        if args.mode == "test":
+            child.set(A + "exported", "true" if interactive_bluetooth else "false")
+        if not helper:
+            child.set(A + "taskAffinity", PKG)
+        if helper and args.mode == "test":
+            for filt in list(child.findall("intent-filter")):
+                if interactive_bluetooth:
+                    filt.set(A + "priority", "1001")
+                    child.set(A + "permission", "android.permission.BLUETOOTH_ADMIN")
+                else:
+                    child.remove(filt)
         # Private route actions avoid taking over Android's normal Settings intent resolution,
         # including calls by other apps that share the OEM's system UID.
-        for action in child.findall("intent-filter/action"):
-            action.set(A + "name", PKG + ".route." + action.get(A + "name"))
+        if not helper and args.mode == "test":
+            for action in child.findall("intent-filter/action"):
+                action.set(A + "name", PKG + ".route." + action.get(A + "name"))
         for filt in list(child.findall("intent-filter")):
             if any(c.get(A + "name") == "android.intent.category.LAUNCHER" for c in filt):
                 for category in list(filt.findall("category")):
@@ -77,7 +96,7 @@ def assemble(args):
     ET.SubElement(filt, "action", {A + "name": "android.intent.action.MAIN"})
     ET.SubElement(filt, "category", {A + "name": "android.intent.category.LAUNCHER"})
     ET.SubElement(app, "provider", {A + "name": "com.grapefruitsettings.ThemeProvider",
-                                  A + "authorities": PKG + ".theme", A + "exported": "true",
+                                  A + "authorities": TEST_PACKAGE + ".theme", A + "exported": "true",
                                   A + "grantUriPermissions": "false"})
     manifest.write(original / "AndroidManifest.xml", encoding="utf-8", xml_declaration=True)
     manifest_path = original / "AndroidManifest.xml"
@@ -124,7 +143,7 @@ def assemble(args):
     parents = {}
     for file in smalis:
         text = file.read_text()
-        cls = re.search(r"^\.class .* (L[^;]+;)", text, re.M)
+        cls = re.search(r"^\.class[^\n]* (L[^;]+;)", text, re.M)
         sup = re.search(r"^\.super (L[^;]+;)", text, re.M)
         if cls and sup:
             parents[cls[1]] = sup[1]
@@ -144,7 +163,7 @@ def assemble(args):
     count = {"activities": 0, "dialog_returns": 0, "dialog_shows": 0, "switch_constructors": 0, "preference_subclasses": 0}
     for file in smalis:
         text = file.read_text()
-        cls = re.search(r"^\.class .* (L[^;]+;)", text, re.M)
+        cls = re.search(r"^\.class[^\n]* (L[^;]+;)", text, re.M)
         if cls and extends(cls[1], activities):
             def hook(match):
                 method = match[0]
@@ -215,12 +234,14 @@ def assemble(args):
         shutil.copyfile(ROOT / f"settings/src/main/res/mipmap-{density}/ic_launcher.png", icon)
     config = original / "apktool.yml"
     text = config.read_text()
-    text = re.sub(r"versionCode: .*", "versionCode: 2", text)
-    text = re.sub(r"versionName: .*", "versionName: 1.0-jp5s-beta2", text)
+    text = re.sub(r"versionCode: .*", "versionCode: " + ("10003" if args.mode == "replacement" else "3"), text)
+    text = re.sub(r"versionName: .*", "versionName: 1.0-jp5s-beta3" + ("-replacement-experimental" if args.mode == "replacement" else ""), text)
     config.write_text(text)
     (out / "assembly-report.json").write_text(json.dumps(count, indent=2) + "\n")
+    dependency_report = detach(original, input_manifest, PKG, args.mode)
     run("java", "-jar", args.apktool, "b", "-p", framework, original, "-o", out / "jp5s-unsigned.apk")
     print(json.dumps(count))
+    print(json.dumps(dependency_report))
 
 
 if __name__ == "__main__":
@@ -228,4 +249,6 @@ if __name__ == "__main__":
     parser.add_argument("--input", required=True)
     parser.add_argument("--apktool", required=True)
     parser.add_argument("--work", default=ROOT / "work/jp5s")
+    parser.add_argument("--mode", choices=("test", "replacement"), default="test",
+                        help="Replacement is an unsigned firmware-integration candidate; do not install it during side-by-side testing.")
     assemble(parser.parse_args())

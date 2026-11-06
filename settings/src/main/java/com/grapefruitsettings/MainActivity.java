@@ -20,7 +20,7 @@ import com.grapefruitmusic.ui.UniversalTheme;
 import java.util.*;
 
 /** JP5S test frontend: public device controls, Grapefruit branding, and stock privileged pages. */
-public final class MainActivity extends Activity {
+public final class MainActivity extends DeviceActivity {
     private SharedPreferences prefs;
     private Palette p;
     private LinearLayout content;
@@ -52,6 +52,7 @@ public final class MainActivity extends Activity {
             ArrayList<String> pages=saved.getStringArrayList("history");ArrayList<Integer> positions=saved.getIntegerArrayList("scroll_history");
             if(pages!=null&&positions!=null&&pages.size()==positions.size()){history.addAll(pages);scrollHistory.addAll(positions);}
         }
+        if(saved==null)page=DeviceSettings.initialPage(this,getIntent());
         wifiNetworks.refresh();build();
         if(saved!=null)restoreScroll(saved.getInt("scroll",0));
     }
@@ -161,25 +162,24 @@ public final class MainActivity extends Activity {
         section("CONNECTIONS");
         row("wifi","Wi-Fi","Network & saved connections",v->navigate("wifi"));
         row("bluetooth","Bluetooth","Devices & pairing",v->navigate("bluetooth"));
-        row("settings","More connections","Airplane mode & network options",v->StockSettings.open(this,Settings.ACTION_WIRELESS_SETTINGS));
+        row("settings","More connections","Airplane mode & network options",v->DeviceSettings.open(this,Settings.ACTION_WIRELESS_SETTINGS));
         section("DEVICE");
         row("sound","Sound","Volume & audio",v->navigate("sound"));
         row("display","Display","Brightness, rotation & sleep",v->navigate("display"));
-        row("display","HDMI","JP5S display output",v->StockSettings.hdmi(this));
+        row("display","HDMI","JP5S display output",v->DeviceSettings.hdmi(this));
         row("storage","Storage","Internal & removable storage",v->navigate("storage"));
         row("battery","Battery","Charge & power usage",v->navigate("battery"));
         row("apps","Apps","Installed applications",v->navigate("apps"));
         section("PERSONAL");
-        row("security","Security","Screen lock & credentials",v->StockSettings.open(this,Settings.ACTION_SECURITY_SETTINGS));
-        row("keyboard","Language & input","Language, keyboard & dictionary",v->StockSettings.open(this,Settings.ACTION_INPUT_METHOD_SETTINGS));
-        row("account","Accounts","Accounts & sync",v->StockSettings.open(this,Settings.ACTION_SYNC_SETTINGS));
-        row("security","Backup & reset","Backup & factory reset",v->StockSettings.open(this,Settings.ACTION_PRIVACY_SETTINGS));
+        row("security","Security","Screen lock & credentials",v->DeviceSettings.open(this,Settings.ACTION_SECURITY_SETTINGS));
+        row("keyboard","Language & input","Language, keyboard & dictionary",v->DeviceSettings.open(this,Settings.ACTION_INPUT_METHOD_SETTINGS));
+        row("account","Accounts","Accounts & sync",v->DeviceSettings.open(this,Settings.ACTION_SYNC_SETTINGS));
+        row("security","Backup & reset","Backup & factory reset",v->DeviceSettings.open(this,Settings.ACTION_PRIVACY_SETTINGS));
         section("SYSTEM");
-        row("time","Date & time","Clock & time zone",v->StockSettings.open(this,Settings.ACTION_DATE_SETTINGS));
-        row("accessibility","Accessibility","Reading & interaction",v->StockSettings.open(this,Settings.ACTION_ACCESSIBILITY_SETTINGS));
-        row("developer","Developer options","Advanced device settings",v->StockSettings.open(this,Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS));
+        row("time","Date & time","Clock & time zone",v->DeviceSettings.open(this,Settings.ACTION_DATE_SETTINGS));
+        row("accessibility","Accessibility","Reading & interaction",v->DeviceSettings.open(this,Settings.ACTION_ACCESSIBILITY_SETTINGS));
+        row("developer","Developer options","Advanced device settings",v->DeviceSettings.open(this,Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS));
         row("about","About this JP5S","Device & Grapefruit Settings",v->navigate("about"));
-        action("Open original Settings",v->StockSettings.original(this));
     }
     private void appearance(boolean universal){
         title(universal?"Grapefruit\nApps Theme":"App appearance",universal?"One choice across compatible Grapefruit apps.":"Four familiar themes. Pick your favourite.");
@@ -203,21 +203,22 @@ public final class MainActivity extends Activity {
         else action("Set a universal Apps Theme",v->navigate("universal"));
     }
     private WifiManager wifiManager(){return (WifiManager)getApplicationContext().getSystemService(WIFI_SERVICE);}
+    boolean bluetoothPage(){return page.equals("bluetooth");}
     private BluetoothAdapter bluetoothAdapter(){return BluetoothAdapter.getDefaultAdapter();}
     private void bluetooth(){
         title("Bluetooth","Headphones, speakers & more.");BluetoothAdapter b=bluetoothAdapter();
         if(b==null){note("Bluetooth is unavailable.");return;}
         bluetoothToggle=toggleRow("bluetooth","Bluetooth",b.isEnabled(),(t,on)->{
-            try{boolean accepted=on?b.enable():b.disable();if(!accepted){t.setChecked(b.isEnabled());toast("Use original Settings to change Bluetooth.");}}
-            catch(SecurityException e){t.setChecked(b.isEnabled());StockSettings.open(this,Settings.ACTION_BLUETOOTH_SETTINGS);}
+            try{boolean accepted=on?b.enable():b.disable();if(!accepted){t.setChecked(b.isEnabled());toast("Bluetooth could not be changed. Try again in a moment.");}}
+            catch(SecurityException e){t.setChecked(b.isEnabled());DeviceSettings.open(this,Settings.ACTION_BLUETOOTH_SETTINGS);}
         });
         bluetoothStatus=text("",14,false);add(bluetoothStatus);
         action("Rename this device",v->renameBluetooth());
         section("PAIRED DEVICES");
         try{Set<BluetoothDevice> devices=b.getBondedDevices();if(devices.isEmpty())note("No paired devices yet.");
-            for(BluetoothDevice d:devices)row("bluetooth",d.getName()==null?"Bluetooth device":d.getName(),d.getAddress(),v->StockSettings.open(this,Settings.ACTION_BLUETOOTH_SETTINGS));
+            for(BluetoothDevice d:devices)row("bluetooth",d.getName()==null?"Bluetooth device":d.getName(),d.getAddress(),v->DeviceSettings.open(this,Settings.ACTION_BLUETOOTH_SETTINGS));
         }catch(SecurityException e){note("Open Bluetooth settings to view paired devices.");}
-        action("Pair & manage devices  ›",v->StockSettings.open(this,Settings.ACTION_BLUETOOTH_SETTINGS));
+        action("Pair & manage devices  ›",v->DeviceSettings.open(this,Settings.ACTION_BLUETOOTH_SETTINGS));
     }
     private void refreshRadios(){
         try{WifiManager w=wifiManager();if(w!=null){int state=w.getWifiState();if(wifiToggle!=null){wifiToggle.setChecked(state==WifiManager.WIFI_STATE_ENABLED||state==WifiManager.WIFI_STATE_ENABLING);wifiToggle.setEnabled(state!=WifiManager.WIFI_STATE_ENABLING&&state!=WifiManager.WIFI_STATE_DISABLING);}
@@ -230,7 +231,7 @@ public final class MainActivity extends Activity {
         volume(a,"Media",AudioManager.STREAM_MUSIC);volume(a,"Notifications",AudioManager.STREAM_NOTIFICATION);volume(a,"Alarm",AudioManager.STREAM_ALARM);
         toggleRow("sound","Touch sounds",systemInt(Settings.System.SOUND_EFFECTS_ENABLED,1)!=0,(t,on)->write(t,Settings.System.SOUND_EFFECTS_ENABLED,on?1:0));
         toggleRow("sound","Haptic feedback",systemInt(Settings.System.HAPTIC_FEEDBACK_ENABLED,1)!=0,(t,on)->write(t,Settings.System.HAPTIC_FEEDBACK_ENABLED,on?1:0));
-        action("More sound settings  ›",v->StockSettings.open(this,Settings.ACTION_SOUND_SETTINGS));
+        action("More sound settings  ›",v->DeviceSettings.open(this,Settings.ACTION_SOUND_SETTINGS));
     }
     private void volume(AudioManager a,String name,int stream){
         int max=a.getStreamMaxVolume(stream);slider(name,a.getStreamVolume(stream),max,value->{try{a.setStreamVolume(stream,value,0);}catch(SecurityException e){toast("Volume could not be changed.");}});
@@ -255,19 +256,19 @@ public final class MainActivity extends Activity {
         section("SLEEP");int timeout=systemInt(Settings.System.SCREEN_OFF_TIMEOUT,60000);
         int[] times={15000,30000,60000,120000,300000,600000,1800000};String[] names={"15 seconds","30 seconds","1 minute","2 minutes","5 minutes","10 minutes","30 minutes"};
         for(int i=0;i<times.length;i++){final int n=times[i];action((timeout==n?"✓  ":"")+names[i],v->{if(putSystem(Settings.System.SCREEN_OFF_TIMEOUT,n))build();});}
-        action("More display settings  ›",v->StockSettings.open(this,Settings.ACTION_DISPLAY_SETTINGS));
+        action("More display settings  ›",v->DeviceSettings.open(this,Settings.ACTION_DISPLAY_SETTINGS));
     }
     private int systemInt(String key,int fallback){return Settings.System.getInt(getContentResolver(),key,fallback);}
     private boolean putSystem(String key,int value){
         try{if(Settings.System.putInt(getContentResolver(),key,value))return true;}catch(SecurityException e){}
-        toast("Allow system settings changes in original Settings, then try again.");return false;
+        toast("The system did not allow this setting to change.");return false;
     }
     private void write(Toggle t,String key,int value){if(!putSystem(key,value))t.setChecked(value==0);}
     @SuppressWarnings("deprecation") private void storage(){
         title("Storage","Space for what you love.");
         storageVolume("Internal storage",Environment.getDataDirectory());
         if(Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())||Environment.MEDIA_MOUNTED_READ_ONLY.equals(Environment.getExternalStorageState()))storageVolume("Shared storage",Environment.getExternalStorageDirectory());
-        action("Storage & SD card management  ›",v->StockSettings.open(this,Settings.ACTION_INTERNAL_STORAGE_SETTINGS));
+        action("Storage & SD card management  ›",v->DeviceSettings.open(this,Settings.ACTION_INTERNAL_STORAGE_SETTINGS));
     }
     @SuppressWarnings("deprecation") private void storageVolume(String name,java.io.File path){
         try{StatFs fs=new StatFs(path.getAbsolutePath());long block=fs.getBlockSize();long total=block*fs.getBlockCount();long free=block*fs.getAvailableBlocks();row("storage",name,android.text.format.Formatter.formatFileSize(this,free)+" free of "+android.text.format.Formatter.formatFileSize(this,total),null);}catch(IllegalArgumentException e){note(name+" is unavailable.");}
@@ -279,7 +280,7 @@ public final class MainActivity extends Activity {
             add(text(percent+"%",56,true));int status=b.getIntExtra(BatteryManager.EXTRA_STATUS,-1);
             note(status==BatteryManager.BATTERY_STATUS_CHARGING?"Charging":status==BatteryManager.BATTERY_STATUS_FULL?"Fully charged":"On battery");
             row("battery","Temperature",String.format(Locale.getDefault(),"%.1f °C",b.getIntExtra(BatteryManager.EXTRA_TEMPERATURE,0)/10f),null);
-        }action("Power usage  ›",v->StockSettings.open(this,"android.intent.action.POWER_USAGE_SUMMARY"));
+        }action("Power usage  ›",v->DeviceSettings.open(this,"android.intent.action.POWER_USAGE_SUMMARY"));
     }
     private void apps(){
         title("Apps","Everything installed on your JP5S.");
@@ -287,16 +288,16 @@ public final class MainActivity extends Activity {
         LinearLayout list=column();add(list);PackageManager pm=getPackageManager();List<ApplicationInfo> all=pm.getInstalledApplications(0);
         Collections.sort(all,(a,b)->String.valueOf(pm.getApplicationLabel(a)).compareToIgnoreCase(String.valueOf(pm.getApplicationLabel(b))));
         Runnable render=()->{list.removeAllViews();String query=search.getText().toString().toLowerCase(Locale.ROOT);for(ApplicationInfo app:all){String label=String.valueOf(pm.getApplicationLabel(app));if(!label.toLowerCase(Locale.ROOT).contains(query))continue;
-            TextView item=p.chip(label,false,v->{Intent i=StockSettings.intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(android.net.Uri.parse("package:"+app.packageName));try{startActivity(i);}catch(ActivityNotFoundException|SecurityException e){StockSettings.open(this,Settings.ACTION_APPLICATION_SETTINGS);}});
+            TextView item=p.chip(label,false,v->{DeviceSettings.details(this,app.packageName);});
             LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.topMargin=dp(8);list.addView(item,lp);
         }};
         search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){render.run();}public void afterTextChanged(Editable e){}});render.run();
     }
     private void about(){
-        title("About this JP5S","Grapefruit Settings 1.0 · JP5S beta 2");
+        title("About this JP5S","Grapefruit Settings 1.0 · JP5S beta 3");
         row("about","Model",Build.MODEL,null);row("about","Android",Build.VERSION.RELEASE,null);row("about","Build",Build.DISPLAY,null);
-        note("A separate Settings app for testing beside the original. Android's SettingsProvider stays in place. Original JP5S pages use Grapefruit colours and controls.");
-        action("More device information  ›",v->StockSettings.open(this,Settings.ACTION_DEVICE_INFO_SETTINGS));
+        note("Device pages and helpers are included in Grapefruit. Android’s SettingsProvider and system services stay in place.");
+        action("More device information  ›",v->DeviceSettings.open(this,Settings.ACTION_DEVICE_INFO_SETTINGS));
         action("Licences",v->message("Licences","Grapefruit Settings: GPL-3.0-or-later. Geist fonts: SIL Open Font License 1.1. Grapefruit toggle and palette adapted from Grapefruit Audio, TV and Launcher."));
     }
     void styleField(EditText f,String hint,boolean secret){

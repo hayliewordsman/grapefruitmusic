@@ -17,6 +17,7 @@ public final class LegacyTheme {
     private LegacyTheme() {}
     static Palette palette(Context c){return new Palette(c,c.getSharedPreferences("settings",0).getInt("theme",0));}
     public static void apply(Activity a){
+        DeviceSettings.incoming(a);
         UniversalTheme.sync(a,a.getSharedPreferences("settings",0),false,new int[]{0,1,2,3});
         Palette p=palette(a);int[] styles={R.style.GrapefruitLegacyDark,R.style.GrapefruitLegacyLight,R.style.GrapefruitLegacyBlack,R.style.GrapefruitLegacyBlue};
         a.setTheme(styles[p.id]);showing.put(a,p.id);Fonts.init(a);

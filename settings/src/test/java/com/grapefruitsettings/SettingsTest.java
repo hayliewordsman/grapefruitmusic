@@ -62,10 +62,10 @@ public class SettingsTest {
         EditText f=new EditText(context);boolean longClick=f.isLongClickable();DialogEditing.prepare(f);
         assertEquals(longClick,f.isLongClickable());assertNull(f.getCustomSelectionActionModeCallback());
     }
-    @Test public void sideBySideIdentityAndStockRoutes(){
+    @Test public void sideBySideIdentityAndOwnedDeviceRoutes(){
         assertEquals("io.github.hayliewordsman.grapefruitsettings",context.getPackageName());
         assertNull(context.getApplicationInfo().sharedLibraryFiles);
-        assertEquals("com.android.settings",StockSettings.intent("android.settings.WIFI_SETTINGS").getPackage());
+        assertEquals(context.getPackageName(),DeviceSettings.nativeIntent(context,"android.settings.SECURITY_SETTINGS").getComponent().getPackageName());
     }
     @Test public void originalDialogGetsSafeEditingToolbar(){
         MainActivity activity=Robolectric.buildActivity(MainActivity.class).setup().get();

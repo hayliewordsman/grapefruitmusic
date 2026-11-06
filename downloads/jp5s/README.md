@@ -1,12 +1,16 @@
 # JP5S test line
 
-[**Download Grapefruit Settings 1.0 · JP5S beta 2**](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/jp5s-grapefruit-settings/downloads/jp5s/Grapefruit-Settings-1.0-jp5s-beta2.apk)
+[**Download Grapefruit Settings 1.0 · JP5S beta 3**](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/jp5s-grapefruit-settings/downloads/jp5s/Grapefruit-Settings-1.0-jp5s-beta3.apk)
 
-Beta 2 adds an entirely in-app Wi-Fi selector, password dialogs, saved networks,
-disconnect/forget, and connection details. Wi-Fi no longer opens the crashing
-OEM page. Copy/Cut/Paste/Select all remain available in Jelly Bean dialogs. Back
-uses drawn arrows and returns to the actual parent page, preserving scroll.
-It installs as an update over beta 1 and keeps existing app preferences.
+Beta 3 removes installed-stock-Settings handoffs. Device pages and their helper
+components are bundled under Grapefruit's own namespace, including nested
+navigation, app details and password/lock confirmation. All 71 settings routes
+resolve inside this APK; no stock frontend fallback remains.
+
+It retains the in-app Wi-Fi selector, saved networks, password dialogs,
+disconnect/forget and connection details. Copy/Cut/Paste/Select all remain
+available in Jelly Bean dialogs. The Back button sits in the top-left corner
+beside the header. Beta 3 updates earlier Grapefruit Settings betas in place.
 
 Install normally beside the existing Settings app. Keep stock Settings installed.
 This APK modifies the frontend only and is signed with the same public AOSP test
@@ -20,6 +24,8 @@ icon and switch changes. Device testing on the JP5S remains necessary.
 
 [Build, scope, universal themes and signing details](../../settings/README.md).
 [APK checksum](SHA256SUMS). [Signing verification](signature.txt).
+[Dependency audit](dependency-audit-beta3.json).
+[Future system-role build profile](../../settings/SYSTEM_REPLACEMENT.md).
 
 The **JP5S theme companions** Actions job adds Audio, TV and Launcher universal
 theme builds here, signed using the existing Grapefruit app key. Existing app
