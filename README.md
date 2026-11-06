@@ -11,6 +11,10 @@ with downloads for offline listening and time-synced lyrics.
 
 The repository also contains **Grapefruit TV 2.0** (formerly Grapefruit FAST), a separate Android live-TV app with its own application ID, APKs and workflow. See [tv/README.md](tv/README.md) for building, channel availability and signing. Both apps share fonts and HTTPS support through `grapefruit-ui/`.
 
+## Grapefruit Maps Legacy
+
+**Grapefruit Maps Legacy 1.0** is a separate GPL app for Android 4.2.2 and later, with four local/universal Grapefruit themes, 2D and satellite views, country downloads and driving directions. See [maps/README.md](maps/README.md) for features, data licensing, release limits and build instructions.
+
 ## Features
 
 - **Podcasts (4.0 beta):** discover and search podcasts, add an RSS address, subscribe, stream episodes,

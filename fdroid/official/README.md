@@ -1,3 +1,48 @@
+# Grapefruit Maps Legacy: official f-droid.org submission
+
+The signed developer repository already publishes Grapefruit apps at
+<https://hayliewordsman.github.io/grapefruitmusic/repo>. This is distinct from
+inclusion in f-droid.org, which requires an fdroiddata merge request and review.
+
+Maps metadata: [`io.github.hayliewordsman.grapefruitmaps.yml`](io.github.hayliewordsman.grapefruitmaps.yml).
+Copy it to `metadata/` in a public fork of <https://gitlab.com/fdroid/fdroiddata>,
+run its checks, and open **New app: Grapefruit Maps Legacy** against `master`.
+The account used for this repository has no connected GitLab submission
+credential in this workspace, so this file is a prepared submission, not an
+accepted upstream listing.
+
+The recipe uses JDK 21 and builds only Maps and grapefruit-ui. It removes
+unrelated Audio, TV and Blue modules before scanning/building. Listing text,
+icon, four screenshots and changelog are in `maps/fastlane/metadata/android/`.
+`Binaries` and `AllowedAPKSigningKeys` request reproducible builds so users
+can update between GitHub, the developer repo and a future official listing.
+The stable APK must be published before running the binary comparison.
+
+Suggested introduction:
+
+> Grapefruit Maps Legacy is a small GPL-3.0-or-later native map app for Android
+> 4.2.2 and later, tested by its developer and beta users on older hardware.
+> It offers OpenStreetMap/Mapsforge 2D maps, NASA Blue Marble satellite imagery,
+> country and regional offline maps, place search and written driving directions.
+> It uses no proprietary SDK, API key, advertising, account or telemetry.
+> Location is optional. Satellite detail is regional and directions use an online
+> OSRM service; offline routing and turn-by-turn navigation are not included.
+> Its four themes include an optional, hidden political-satire minigame.
+> The code and caricature were made with AI assistance under developer direction;
+> source, editable artwork, prompt, asset recipes and licenses are included.
+>
+> Please review the `Binaries` recipe for reproducibility and preservation of the
+> existing developer signing key. The certificate subject is Android Debug,
+> but the pinned certificate is the project's permanent private release key.
+
+F-Droid's inclusion policy normally asks for three months of development,
+unless an app already has users or its author maintains other F-Droid apps.
+This repository began October 25, 2026. Explain the existing beta users when
+submitting; the reviewers determine whether that exception applies. Acceptance
+and publication dates are controlled by F-Droid's reviewers and build servers.
+
+---
+
 # Getting Grapefruit Music & Podcasts into f-droid.org
 
 f-droid.org builds every app itself from its source, following a build recipe kept in its
