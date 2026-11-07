@@ -64,6 +64,7 @@ public final class KeyboardCodesSet {
         "key_right_curly_bracket",
         "key_grapefruit_number_pad",
         "key_grapefruit_return_alpha",
+        "key_grapefruit_symbols",
     };
 
     private static final int CODE_LEFT_PARENTHESIS = '(';
@@ -101,6 +102,7 @@ public final class KeyboardCodesSet {
         CODE_RIGHT_CURLY_BRACKET,
         Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD,
         Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA,
+        Keyboard.CODE_GRAPEFRUIT_SYMBOLS,
     };
 
     private static final int[] RTL = {
@@ -129,6 +131,7 @@ public final class KeyboardCodesSet {
         CODE_LEFT_CURLY_BRACKET,
         Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD,
         Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA,
+        Keyboard.CODE_GRAPEFRUIT_SYMBOLS,
     };
 
     private static final String LANGUAGE_DEFAULT = "DEFAULT";

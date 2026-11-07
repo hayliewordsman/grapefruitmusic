@@ -1,6 +1,6 @@
 # Grapefruit Keyboard LegacyHolo
 
-[Download the 1.0 beta 4 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-keyboard-legacyholo/downloads/Grapefruit-Keyboard-LegacyHolo-1.0-beta4.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
+[Download the 1.0 beta 5 APK](https://raw.githubusercontent.com/hayliewordsman/grapefruitmusic/codex/grapefruit-keyboard-legacyholo/downloads/Grapefruit-Keyboard-LegacyHolo-1.0-beta5.apk) — debug-signed test build for Android 4.2.2–4.4.4. [SHA-256 checksums](../downloads/SHA256SUMS.txt).
 
 A standalone Grapefruit redesign of **AOSP LatinIME from Android 4.2.2**, for
 **Android 4.2.2–4.4.4 (API 17–19)**. Application ID:
@@ -11,7 +11,20 @@ Keyboard** and **Choose Grapefruit Keyboard**. A text field at the bottom of
 Settings lets you try it. The original language selector and AOSP typing settings
 remain available.
 
-## Beta 4
+## Beta 5
+
+Fixed **ABC** briefly showing letters and then reverting to symbols when the
+number row is enabled. AOSP's mode key changed layouts on finger-down; the
+resulting height change made the pointer tracker reinterpret the same tap in the
+new layout. The reference layout's **ABC** and **?123** buttons now commit their
+fixed destination after the tap finishes, so the keyboard cannot reflow beneath
+an active mode-button press. Both left and right buttons, secondary symbols and
+the numeric pad return consistently. Accessibility announcements remain available.
+
+Version code 5 installs over previous betas with the same signing key and keeps
+existing settings. Android 4.2.2–4.4.4 remains the supported range.
+
+## Settings and press feedback
 
 Keyboard Settings now uses Grapefruit Audio’s design: large Geist headings,
 56dp pill rows, grapefruit-slice toggles, rounded choice sheets and form cards.
@@ -33,9 +46,6 @@ The suggestion strip’s side fills are transparent over the same palette backgr
 as its centre. Long-press character and expanded-suggestion panels have rounded
 Grapefruit surfaces, borders and 8dp internal padding. Character panels are clamped
 inside the keyboard edges; touch coordinates account for the new padding.
-
-Version code 4 installs over previous betas with the same signing key and keeps
-existing settings. Android 4.2.2–4.4.4 remains the supported range.
 
 ## Reference keyboard layout
 

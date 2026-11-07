@@ -1373,8 +1373,11 @@ public final class LatinIME extends InputMethodService implements KeyboardAction
             LatinImeLogger.logOnDelete(x, y);
             break;
         case Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD:
-        case Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA:
             commitTyped(LastComposedWord.NOT_A_SEPARATOR);
+            break;
+        case Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA:
+        case Keyboard.CODE_GRAPEFRUIT_SYMBOLS:
+            // Change layouts below without committing the word being composed.
             break;
         case Keyboard.CODE_SHIFT:
         case Keyboard.CODE_SWITCH_ALPHA_SYMBOL:
@@ -1434,7 +1437,9 @@ public final class LatinIME extends InputMethodService implements KeyboardAction
         switcher.onCodeInput(primaryCode);
         // Reset after any single keystroke, except shift and symbol-shift
         if (!didAutoCorrect && primaryCode != Keyboard.CODE_SHIFT
-                && primaryCode != Keyboard.CODE_SWITCH_ALPHA_SYMBOL)
+                && primaryCode != Keyboard.CODE_SWITCH_ALPHA_SYMBOL
+                && primaryCode != Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA
+                && primaryCode != Keyboard.CODE_GRAPEFRUIT_SYMBOLS)
             mLastComposedWord.deactivate();
         if (Keyboard.CODE_DELETE != primaryCode) {
             mEnteredText = null;
@@ -2358,6 +2363,8 @@ public final class LatinIME extends InputMethodService implements KeyboardAction
                 AccessibleKeyboardViewProxy.getInstance().notifyShiftState();
                 break;
             case Keyboard.CODE_SWITCH_ALPHA_SYMBOL:
+            case Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA:
+            case Keyboard.CODE_GRAPEFRUIT_SYMBOLS:
                 AccessibleKeyboardViewProxy.getInstance().notifySymbolsState();
                 break;
             }

@@ -136,7 +136,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
 
     private boolean mGrapefruitNumberPad;
     private static boolean isGrapefruitPaneKey(int code) {
-        return code==Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD || code==Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA;
+        return code==Keyboard.CODE_GRAPEFRUIT_NUMBER_PAD || code==Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA
+                || code==Keyboard.CODE_GRAPEFRUIT_SYMBOLS;
     }
 
     public void loadKeyboard(EditorInfo editorInfo, SettingsValues settingsValues) {
@@ -364,7 +365,13 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
             return;
         }
         if(code==Keyboard.CODE_GRAPEFRUIT_RETURN_ALPHA) {
-            resetKeyboardStateToAlphabet();
+            mGrapefruitNumberPad=false;
+            mState.onSwitchToAlphabet();
+            return;
+        }
+        if(code==Keyboard.CODE_GRAPEFRUIT_SYMBOLS) {
+            mGrapefruitNumberPad=false;
+            mState.onSwitchToSymbols();
             return;
         }
         if(mGrapefruitNumberPad) return;

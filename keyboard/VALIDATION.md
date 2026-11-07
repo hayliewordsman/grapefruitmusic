@@ -1,16 +1,34 @@
-# LegacyHolo beta 4 validation — 2026-11-06
+# LegacyHolo beta 5 validation — 2026-11-06
 
 - Debug and release builds, debug lint and release vital lint pass.
-- 74 unit checks pass across Robolectric API 17 and 19 framework models.
+- 84 unit checks pass across Robolectric API 17 and 19 framework models.
 - Debug APK v1/JAR signing verifies with minimum SDK 17; its certificate matches beta 1.
-- Minimum SDK remains 17 and target SDK remains 19; version code is 4.
+- Minimum SDK remains 17 and target SDK remains 19; version code is 5.
 - All five launcher bitmap densities use the new app-specific artwork.
 - Universal-theme tests cover all four canonical IDs, revision-based local overrides,
   malformed or unavailable providers, and preservation of unrelated settings.
 - In an Android 4.2.2 x86 emulator, both apps received Light and Victory Blue from
   the actual Grapefruit Settings UI preview/provider built from commit `df11694`.
 
-Beta 4 checks exercise the Audio-style renderer through its actual controls:
+The ABC regression was reproduced in beta 4 on the Android 4.2.2 emulator:
+`?123 → 1 → ABC → Q` entered `11`, proving it had returned to symbols.
+A regression using real PointerTracker down/up events, parsed layouts and AOSP's
+KeyboardState failed on API 17 and 19 before the fix. It now passes. Fixed-mode
+commands are delivered after touch-up and clear momentary modifier state.
+
+Mode tests cover number row on/off, both side buttons, heights 70/100/150,
+phone/tablet/landscape configurations, repeated `1q` round trips, secondary symbols
+and numeric-pad ABC. They also assert mode buttons leave the current layout intact
+while the finger is down. Animation timers and native proximity allocation are
+stubbed; pointer/key detection and the layout state machine run normally.
+
+The Android 4.2.2 emulator entered `1q1q1q1q1q1q` through three cycles on each side
+with the number row enabled, waiting after ABC before typing Q. ABC also returned
+correctly from secondary symbols and the numeric pad. Disabling the number row
+through Settings and repeating both side buttons produced `1q` again, without
+minimizing the keyboard between switches or any AndroidRuntime fatal exception.
+
+Settings checks exercise the Audio-style renderer through its actual controls:
 sound toggling and persistence, choosing Victory Blue without activity recreation,
 advanced-page navigation and Back, retained trial text, volume-card Save/Cancel,
 system-default restoration, and the input-style Add/Cancel form on API 17 and 19.

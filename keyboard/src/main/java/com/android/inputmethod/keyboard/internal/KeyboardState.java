@@ -1,4 +1,4 @@
-/*
+/* Modified for Grapefruit LegacyHolo: commit fixed mode buttons after touch-up.
  * Copyright (C) 2011 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -377,6 +377,24 @@ public final class KeyboardState {
             mPrevSymbolsKeyboardWasShifted = false;
         }
         mSymbolKeyState.onRelease();
+    }
+
+    /** Fixed destination buttons commit on code input, after the pointer is released.
+     * A number row changes keyboard height; switching on press would make PointerTracker
+     * reinterpret the same finger position as a different key in the new layout. */
+    public void onSwitchToAlphabet() {
+        mSymbolKeyState.onRelease();
+        mShiftKeyState.onRelease();
+        resetKeyboardStateToAlphabet();
+        mPrevSymbolsKeyboardWasShifted=false;
+    }
+
+    public void onSwitchToSymbols() {
+        mSymbolKeyState.onRelease();
+        mShiftKeyState.onRelease();
+        if(mIsAlphabetMode)mPrevMainKeyboardWasShiftLocked=mAlphabetShiftState.isShiftLocked();
+        mPrevSymbolsKeyboardWasShifted=false;
+        setSymbolsKeyboard();
     }
 
     public void onLongPressTimeout(int code) {

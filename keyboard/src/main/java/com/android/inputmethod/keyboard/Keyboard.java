@@ -86,6 +86,7 @@ public class Keyboard {
     public static final int CODE_UNSPECIFIED = -12;
     public static final int CODE_GRAPEFRUIT_NUMBER_PAD = -13;
     public static final int CODE_GRAPEFRUIT_RETURN_ALPHA = -14;
+    public static final int CODE_GRAPEFRUIT_SYMBOLS = -15;
 
     public final KeyboardId mId;
     public final int mThemeId;
@@ -236,6 +237,7 @@ public class Keyboard {
         case CODE_LANGUAGE_SWITCH: return "languageSwitch";
         case CODE_GRAPEFRUIT_NUMBER_PAD: return "numberPad";
         case CODE_GRAPEFRUIT_RETURN_ALPHA: return "alphabet";
+        case CODE_GRAPEFRUIT_SYMBOLS: return "grapefruitSymbols";
         case CODE_UNSPECIFIED: return "unspec";
         case CODE_TAB: return "tab";
         case CODE_ENTER: return "enter";
