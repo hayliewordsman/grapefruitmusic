@@ -61,6 +61,12 @@ Its app job stopped in SDK setup because the setup action requested the retired 
 package by default. The workflow now explicitly selects `platform-tools` before installing
 the app compilation SDKs; the local app results above are independent of that setup failure.
 
+The subsequent [remote run 42333881257](https://github.com/hayliewordsman/grapefruitmusic/actions/runs/42333881257)
+at commit `a9c5f7e` passed **both source-validation and apps-validation**. App prebuilt staging
+was also exercised locally with five explicitly declared development certificates and two
+ARMv7 JNI libraries; substituting a wrong Media certificate was rejected before any output
+was created. This validates the staging path without establishing production signing continuity.
+
 ## Not built or tested
 
 - No complete AOSP checkout or supported JDK 6 host is present. New native classes and
