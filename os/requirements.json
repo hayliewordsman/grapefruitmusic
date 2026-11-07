@@ -14,7 +14,6 @@
     "Original app certificates, installed versionCodes and matching app private signing keys",
     "Coherent platform/shared-UID signing and userdata migration plan; JPay platform private key is unavailable",
     "Original AOSP 4.2.2 host: full source checkout, supported JDK 6 and legacy host tools",
-    "Legacy keyboard NDK 17.2.4988734/JNI toolchain (must validate with AGP) and full app build checks",
     "Physical JP5S testing of graphics, input, audio, suspend, Wi-Fi, codecs, orientation and settings"
   ],
   "excluded": ["GMS", "Google Play Services", "Xposed", "GravityBox", "standalone Grapefruit Settings APK"],

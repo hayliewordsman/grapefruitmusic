@@ -20,6 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
+    if: github.ref != 'refs/heads/grapefruit-os-jp5s-4.2.2'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.name }}

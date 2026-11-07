@@ -2,9 +2,9 @@ name: Grapefruit OS source validation
 on:
   push:
     branches: [grapefruit-os-jp5s-4.2.2]
-    paths: ["os/**", ".github/workflows/grapefruit-os-validation.yml"]
+    paths: ["os/**", "grapefruit-media/**", "app/**", "tv/**", "maps/**", "launcher/**", "keyboard/**", "calculator/**", "grapefruit-ui/**", "settings.gradle", "gradle.properties", ".github/workflows/grapefruit-os-validation.yml"]
   pull_request:
-    paths: ["os/**", ".github/workflows/grapefruit-os-validation.yml"]
+    paths: ["os/**", "grapefruit-media/**", "app/**", "tv/**", "maps/**", "launcher/**", "keyboard/**", "calculator/**", "grapefruit-ui/**", "settings.gradle", "gradle.properties", ".github/workflows/grapefruit-os-validation.yml"]
 permissions:
   contents: read
 jobs:
@@ -30,3 +30,18 @@ jobs:
           python3 os/scripts/fetch_aosp_references.py --output work/os-ci/aosp
           python3 os/scripts/apply_sources.py --aosp-root work/os-ci/aosp
       # No proprietary inputs, signing secrets, device access, images or publishing steps.
+  apps-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+      - name: Install application compilation SDKs
+        run: sdkmanager "platforms;android-35" "platforms;android-36" "build-tools;35.0.0"
+      - name: Compile application Java and test Media themes
+        run: |
+          ./gradlew -PgrapefruitSkipKeyboard :app:compileDebugJavaWithJavac :tv:compileDebugJavaWithJavac :maps:compileDebugJavaWithJavac :launcher:compileDebugJavaWithJavac :calculator:compileDebugJavaWithJavac :grapefruit-media:testDebugUnitTest --no-daemon
+      # Keyboard JNI is covered by the separately recorded local NDK 17 build, not this job.

@@ -5,8 +5,12 @@ PRODUCT_BRAND := Grapefruit
 PRODUCT_MODEL := JP5S
 PRODUCT_MANUFACTURER := JPay
 PRODUCT_CHARACTERISTICS := tablet
+PRODUCT_PROPERTY_OVERRIDES += ro.grapefruit.version=1.0-dev ro.grapefruit.theme_schema=1
 PRODUCT_PACKAGE_OVERLAYS := device/grapefruit/jp5s/overlay
-PRODUCT_PACKAGES += Settings SystemUI GrapefruitLauncher GrapefruitKeyboard GrapefruitCalculator GrapefruitMaps GrapefruitMedia
+PRODUCT_PACKAGES += Settings SystemUI
+ifneq ($(GRAPEFRUIT_FRAMEWORK_ONLY),true)
+PRODUCT_PACKAGES += GrapefruitLauncher GrapefruitKeyboard GrapefruitCalculator GrapefruitMaps GrapefruitMedia
+endif
 # Separate signed app prebuilts, with preserved certificates and original package IDs.
 $(call inherit-product-if-exists, vendor/grapefruit/apps/apps.mk)
 # Populated only by scripts/stage_vendor.py into a private, external AOSP workspace.

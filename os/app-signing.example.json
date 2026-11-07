@@ -2,6 +2,6 @@
   "GrapefruitLauncher": {"apk":"/private/signed/launcher.apk","certificate_sha256":null,"minimum_version_code":7},
   "GrapefruitKeyboard": {"apk":"/private/signed/keyboard.apk","certificate_sha256":null,"minimum_version_code":5},
   "GrapefruitCalculator": {"apk":"/private/signed/calculator.apk","certificate_sha256":null,"minimum_version_code":2},
-  "GrapefruitMaps": {"apk":"/private/signed/maps.apk","certificate_sha256":null,"minimum_version_code":1},
+  "GrapefruitMaps": {"apk":"/private/signed/maps.apk","certificate_sha256":null,"minimum_version_code":7},
   "GrapefruitMedia": {"apk":"/private/signed/media.apk","certificate_sha256":null,"minimum_version_code":9}
 }

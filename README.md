@@ -1,3 +1,5 @@
+> This development branch starts **Grapefruit OS 1.0 for JP5S / Android 4.2.2**. See [source implementation and validation](os/README.md) and [Grapefruit Media](grapefruit-media/README.md). No flashable image or physical boot validation is available. Existing app/release branches are unchanged.
+
 <p align="center"><img src="docs/brand/logo-stacked.svg" width="240" alt="Grapefruit Audio: Music, Podcasts, and Audiobooks"></p>
 
 # Grapefruit Audio: Music, Podcasts, and Audiobooks

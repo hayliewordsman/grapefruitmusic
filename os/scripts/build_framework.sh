@@ -11,6 +11,7 @@ if ! java -version 2>&1 | rg -q 'version "1\.6\.'; then
     exit 2
 fi
 source build/envsetup.sh
+export GRAPEFRUIT_FRAMEWORK_ONLY=true
 lunch grapefruit_jp5s-userdebug
 # BUILD_PACKAGE can compile these without guessing the JP5S partition/ramdisk geometry.
 make -j"${GRAPEFRUIT_BUILD_JOBS:-4}" framework-res Settings SystemUI
