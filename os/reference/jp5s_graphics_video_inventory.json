@@ -1,0 +1,85 @@
+{
+  "source_archive": "jp5slibfiles.zip",
+  "source_archive_sha256": "d48c552a17da2034672553ed8aea44a13336e894848a294233190f0422805e29",
+  "archive_crc_ok": true,
+  "method": "Static readelf inspection only; no execution or installation",
+  "libraries": [
+    {
+      "name": "lib/libMali.so",
+      "bytes": 963880,
+      "sha256": "db4a9cc735b44e3f8e3a211f2e0963e1e363c1adf970dc8b83d645537e7ad755",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "soname": "libMali.so",
+      "needed": [
+        "libutils.so",
+        "libcutils.so",
+        "libbinder.so",
+        "libc.so",
+        "libdl.so",
+        "libui.so",
+        "libhardware.so",
+        "liblog.so",
+        "libUMP.so",
+        "libstdc++.so",
+        "libm.so"
+      ],
+      "text_relocations": false,
+      "compiler_comment": "GCC: (GNU) 4.6.x-google 20120106 (prerelease)"
+    },
+    {
+      "name": "lib/libUMP.so",
+      "bytes": 21664,
+      "sha256": "1faa829394afb908d1fed8a3794117b6bef2efa851b9fd0aeb2417aaf078f903",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "soname": "libUMP.so",
+      "needed": [
+        "libutils.so",
+        "libcutils.so",
+        "libbinder.so",
+        "libdl.so",
+        "liblog.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ],
+      "text_relocations": false,
+      "compiler_comment": "GCC: (GNU) 4.6.x-google 20120106 (prerelease)"
+    },
+    {
+      "name": "lib/libion.so",
+      "bytes": 9664,
+      "sha256": "9304820ebb3948af2f25dc91aef9886fa061682a59cc8736e3a593868b0e7002",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "soname": "libion.so",
+      "needed": [
+        "liblog.so",
+        "libutils.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ],
+      "text_relocations": true,
+      "compiler_comment": "GCC: (GNU) 4.4.3"
+    },
+    {
+      "name": "lib/libvpu.so",
+      "bytes": 42220,
+      "sha256": "d42619b9c4b5905a81f278bd03ae46e7b1cd02b294de248e337b0e301dc4814a",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "soname": "libvpu.so",
+      "needed": [
+        "libion.so",
+        "libcorkscrew.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ],
+      "text_relocations": false,
+      "compiler_comment": "GCC: (GNU) 4.6.x-google 20120106 (prerelease)"
+    }
+  ]
+}

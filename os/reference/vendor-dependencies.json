@@ -1,0 +1,267 @@
+[
+  {
+    "archive": "JP5S-Kernel-Modules.zip",
+    "member": "modules/ump.ko.3.0.36+",
+    "bytes": 44609,
+    "sha256": "dfe728598b19f5d8a287c10f2cfb04d301f8eb7e3245ec4b011af50fc16ea958",
+    "candidate_destination": "system/lib/modules/ump.ko.3.0.36+",
+    "needed": [],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-Kernel-Modules.zip",
+    "member": "modules/vpu_service.ko.3.0.36+",
+    "bytes": 21591,
+    "sha256": "7d9d8979d50defdeacd5c3769c9c1df07ed10233f196ca7a1f0383b7ac74b689",
+    "candidate_destination": "system/lib/modules/vpu_service.ko.3.0.36+",
+    "needed": [],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-Kernel-Modules.zip",
+    "member": "modules/mali.ko.3.0.36+",
+    "bytes": 163975,
+    "sha256": "76ffc88a1a14d691dd59bbcf3f2efe868bad141c98ea1a6b056ec82408932c7a",
+    "candidate_destination": "system/lib/modules/mali.ko.3.0.36+",
+    "needed": [],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-Hardware-Libraries.zip",
+    "member": "hw/audio.primary.rk30board.so",
+    "bytes": 136672,
+    "sha256": "4ee92c9ce3536c1a74c61e3bb6cab7a2dad5764712e0aafbbe5bc7d6135f9fd5",
+    "candidate_destination": "system/lib/hw/audio.primary.rk30board.so",
+    "needed": [
+      "libc.so",
+      "liblog.so",
+      "libcutils.so",
+      "libutils.so",
+      "libmedia.so",
+      "libhardware_legacy.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-Hardware-Libraries.zip",
+    "member": "hw/lights.rk30board.so",
+    "bytes": 5336,
+    "sha256": "d565759f47e3646fac8f13f63919b3c9d3fc6795af441de5e3c41c7058cdab92",
+    "candidate_destination": "system/lib/hw/lights.rk30board.so",
+    "needed": [
+      "liblog.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-Hardware-Libraries.zip",
+    "member": "hw/gpu.rk30board.so",
+    "bytes": 5416,
+    "sha256": "818eec535cc182d7325b8b9408f8262c3726d3ad7d57621beef463d8d51752d0",
+    "candidate_destination": "system/lib/hw/gpu.rk30board.so",
+    "needed": [
+      "liblog.so",
+      "libcutils.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-Hardware-Libraries.zip",
+    "member": "hw/audio_policy.rk30board.so",
+    "bytes": 75200,
+    "sha256": "76cc8a1e8a86a49ddb5bf98aadf88a4592d4005ce76789f1952f57f48505445c",
+    "candidate_destination": "system/lib/hw/audio_policy.rk30board.so",
+    "needed": [
+      "liblog.so",
+      "libcutils.so",
+      "libutils.so",
+      "libmedia.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-Hardware-Libraries.zip",
+    "member": "hw/hwcomposer.rk30board.so",
+    "bytes": 28788,
+    "sha256": "61af9c8db42a68c9d3ab6e8c416300f1b477a79a4af0d7055437d38791cd6410",
+    "candidate_destination": "system/lib/hw/hwcomposer.rk30board.so",
+    "needed": [
+      "libhardware.so",
+      "liblog.so",
+      "libui.so",
+      "libEGL.so",
+      "libcutils.so",
+      "libbinder.so",
+      "libutils.so",
+      "libhardware_legacy.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-Hardware-Libraries.zip",
+    "member": "hw/power.rk3188.so",
+    "bytes": 5296,
+    "sha256": "527cd68e5d59b21a63bbabb8db674cc1505df184f188ec1a95f0ce54636eed8f",
+    "candidate_destination": "system/lib/hw/power.rk3188.so",
+    "needed": [
+      "liblog.so",
+      "libcutils.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-Hardware-Libraries.zip",
+    "member": "hw/gralloc.rk30board.so",
+    "bytes": 13548,
+    "sha256": "9a30a4de608058c548155d9103fc33b4fb400823caabe4657ea179f0c1c3cadd",
+    "candidate_destination": "system/lib/hw/gralloc.rk30board.so",
+    "needed": [
+      "liblog.so",
+      "libcutils.so",
+      "libMali.so",
+      "libGLESv1_CM.so",
+      "libUMP.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-EGL-Drivers.zip",
+    "member": "egl/egl.cfg",
+    "bytes": 21,
+    "sha256": "89e124ecc5da28514b4f7f3a5986b6e09bbf00d5ea32beb4204e08761876b53b",
+    "candidate_destination": "system/lib/egl/egl.cfg",
+    "needed": [],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-EGL-Drivers.zip",
+    "member": "egl/libGLESv1_CM_mali.so",
+    "bytes": 25624,
+    "sha256": "922612fd17d23fc7eb9ada24217af2ac9b22fbbafb44e608a39302d31fdfa469",
+    "candidate_destination": "system/lib/egl/libGLESv1_CM_mali.so",
+    "needed": [
+      "libMali.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-EGL-Drivers.zip",
+    "member": "egl/libEGL_mali.so",
+    "bytes": 13328,
+    "sha256": "d625d8c5c958db3aca707ab5f46708afd98c1b7574dc6fe4fa93943f8ebcb084",
+    "candidate_destination": "system/lib/egl/libEGL_mali.so",
+    "needed": [
+      "libMali.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "JP5S-EGL-Drivers.zip",
+    "member": "egl/libGLESv2_mali.so",
+    "bytes": 21524,
+    "sha256": "695d2f0e3e64ec96255421ca4cc82c07675dcc2b0cdaddb232cfbd8369362f75",
+    "candidate_destination": "system/lib/egl/libGLESv2_mali.so",
+    "needed": [
+      "libMali.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "jp5slibfiles.zip",
+    "member": "lib/libvpu.so",
+    "bytes": 42220,
+    "sha256": "d42619b9c4b5905a81f278bd03ae46e7b1cd02b294de248e337b0e301dc4814a",
+    "candidate_destination": "system/lib/libvpu.so",
+    "needed": [
+      "libion.so",
+      "libcorkscrew.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "jp5slibfiles.zip",
+    "member": "lib/libion.so",
+    "bytes": 9664,
+    "sha256": "9304820ebb3948af2f25dc91aef9886fa061682a59cc8736e3a593868b0e7002",
+    "candidate_destination": "system/lib/libion.so",
+    "needed": [
+      "liblog.so",
+      "libutils.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "jp5slibfiles.zip",
+    "member": "lib/libMali.so",
+    "bytes": 963880,
+    "sha256": "db4a9cc735b44e3f8e3a211f2e0963e1e363c1adf970dc8b83d645537e7ad755",
+    "candidate_destination": "system/lib/libMali.so",
+    "needed": [
+      "libutils.so",
+      "libcutils.so",
+      "libbinder.so",
+      "libc.so",
+      "libdl.so",
+      "libui.so",
+      "libhardware.so",
+      "liblog.so",
+      "libUMP.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  },
+  {
+    "archive": "jp5slibfiles.zip",
+    "member": "lib/libUMP.so",
+    "bytes": 21664,
+    "sha256": "1faa829394afb908d1fed8a3794117b6bef2efa851b9fd0aeb2417aaf078f903",
+    "candidate_destination": "system/lib/libUMP.so",
+    "needed": [
+      "libutils.so",
+      "libcutils.so",
+      "libbinder.so",
+      "libdl.so",
+      "liblog.so",
+      "libc.so",
+      "libstdc++.so",
+      "libm.so"
+    ],
+    "status": "candidate; kernel/BSP and runtime linkage unverified"
+  }
+]

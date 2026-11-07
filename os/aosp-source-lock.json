@@ -1,0 +1,115 @@
+{
+  "tag": "android-4.2.2_r1",
+  "files": [
+    {
+      "project": "frameworks/base",
+      "path": "core/java/android/content/ContentProvider.java",
+      "sha256": "f875c954bfc041178a378547c7a6a3998323304ae4ba7a3f39eea72c8acc0d53"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "core/res/res/values/config.xml",
+      "sha256": "98fa82d415c8ba5ad22126280c6bfe0a2d67c11eb14b04c44f3a4dac883827c8"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/Android.mk",
+      "sha256": "5e958dc2de5d3d9296595f3a4ba9c9c5ff42172ed833ecc0fe2069e5fd85496e"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/AndroidManifest.xml",
+      "sha256": "8d5aecf7ab0b436b061842349a9fddcafdac95e858910d4a09c8d8ce4dc2b1bd"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/res/layout/navigation_bar.xml",
+      "sha256": "9b314537c91af4534662790512016dd57ae3b68307ddefb3e65c053a5c5959ae"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/res/layout/system_bar.xml",
+      "sha256": "c0162bfc3a667d3e3c3066df2e42db443a2c795f829c0006654ccc139cefd5da"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/res/layout-sw600dp/navigation_bar.xml",
+      "sha256": "fd0660d4a1566bdb404a37321cb27212fdb640df5b67ff882cf890881b3bdf16"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/res/layout-sw600dp/super_status_bar.xml",
+      "sha256": "1ccea834ed3baf058c48ae4bf221801040952be6a8723917b24bf4b956db6037"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/res/values/config.xml",
+      "sha256": "08e999900dc981a31064920d842169d4bea1468e3294ebccace6810e4392d13a"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/res/values-sw600dp/config.xml",
+      "sha256": "df0726e988ba0750c76b5e6bc3f416e472515b8889f1f64d572427dd75147fc6"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/src/com/android/systemui/screenshot/TakeScreenshotService.java",
+      "sha256": "0a25ab05812b244958e32a3b5533c7be23b4b0ddb26d253a8107d6964fb17a83"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/src/com/android/systemui/statusbar/BaseStatusBar.java",
+      "sha256": "61a0769398ffa4ac0471db09d7dc2a515c8d3056055ecaf79ee4870583a6e2cd"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/src/com/android/systemui/statusbar/phone/NavigationBarView.java",
+      "sha256": "78c18e0242af69969853e75a2dbaa0eb7f045569a41a7a216f7cd498498bed0f"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBar.java",
+      "sha256": "f0ec776e71223a858315a6bc23c6a66fb927caf142f2d188bdcb9a8086791db3"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/src/com/android/systemui/statusbar/phone/QuickSettings.java",
+      "sha256": "af7ee41ac6c92806a7edc1019c1170063dd1f6497ae7d5deee97563683a93e39"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/src/com/android/systemui/statusbar/policy/KeyButtonView.java",
+      "sha256": "d311d675174575b6f4fc8508d4bb20d8e35fd84b05d3b8f126038d6d77e6cc72"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "packages/SystemUI/src/com/android/systemui/statusbar/tablet/TabletStatusBar.java",
+      "sha256": "9a97b950bf978c547ba2fcedfd0caa89bbb50ec061686b466647dad210a7b479"
+    },
+    {
+      "project": "frameworks/base",
+      "path": "policy/src/com/android/internal/policy/impl/PhoneWindowManager.java",
+      "sha256": "2f3fbfe63fbbee146b35178024babd8d2c14ea8b2cdafbc36a54f344e75fa6cc"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "path": "Android.mk",
+      "sha256": "d5c8bfa593b544470f84dd81918550132b3241ee195fbcca830c84587cec4c76"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "path": "AndroidManifest.xml",
+      "sha256": "360391e46d7da2fef57d56ce6f65a4555ffeea06650cde284a59685ee93d0c10"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "path": "res/xml/settings_headers.xml",
+      "sha256": "1126157668017dd8e501aded9954e303b13dc1376f2d54ea244ff2838b6725d1"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "path": "src/com/android/settings/Settings.java",
+      "sha256": "b5335c29261c7f1e91f4e81168b00b2faa04f4a6d22b5353eb6c1cd2e2e77023"
+    }
+  ]
+}

@@ -1,0 +1,511 @@
+--- a/core/res/res/values/config.xml
++++ b/core/res/res/values/config.xml
+@@ -869,6 +869,7 @@
+     <!-- Whether a software navigation bar should be shown. NOTE: in the future this may be
+          autodetected from the Configuration. -->
+     <bool name="config_showNavigationBar">false</bool>
++    <bool name="config_grapefruitBottomNavigation">false</bool>
+ 
+     <!-- Whether action menu items should be displayed in ALLCAPS or not.
+          Defaults to true. If this is not appropriate for specific locales
+--- a/packages/SystemUI/Android.mk
++++ b/packages/SystemUI/Android.mk
+@@ -8,7 +8,7 @@
+ 
+ LOCAL_JAVA_LIBRARIES := services telephony-common
+ 
+-LOCAL_STATIC_JAVA_LIBRARIES := android-common-carousel
++LOCAL_STATIC_JAVA_LIBRARIES := android-common-carousel grapefruit-platform
+ 
+ LOCAL_PACKAGE_NAME := SystemUI
+ LOCAL_CERTIFICATE := platform
+--- a/packages/SystemUI/res/layout/navigation_bar.xml
++++ b/packages/SystemUI/res/layout/navigation_bar.xml
+@@ -31,74 +31,21 @@
+         android:layout_width="match_parent"
+         >
+ 
+-        <LinearLayout
+-            android:layout_height="match_parent"
+-            android:layout_width="match_parent"
+-            android:orientation="horizontal"
+-            android:clipChildren="false"
+-            android:clipToPadding="false"
+-            android:id="@+id/nav_buttons"
+-            android:animateLayoutChanges="true"
+-            >
+-
+-            <!-- navigation controls -->
+-            <View
+-                android:layout_width="40dp"
+-                android:layout_height="match_parent"
+-                android:layout_weight="0"
+-                android:visibility="invisible"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/back"
+-                android:layout_width="@dimen/navigation_key_width"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_back"
+-                systemui:keyCode="4"
+-                android:layout_weight="0"
+-                android:scaleType="center"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                android:contentDescription="@string/accessibility_back"
+-                />
+-            <View 
+-                android:layout_width="match_parent"
+-                android:layout_height="match_parent"
+-                android:layout_weight="1"
+-                android:visibility="invisible"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/home"
+-                android:layout_width="@dimen/navigation_key_width"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_home"
+-                systemui:keyCode="3"
+-                systemui:keyRepeat="false"
+-                android:layout_weight="0"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                android:contentDescription="@string/accessibility_home"
+-                />
+-            <View 
+-                android:layout_width="match_parent"
+-                android:layout_height="match_parent"
+-                android:layout_weight="1"
+-                android:visibility="invisible"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/recent_apps"
+-                android:layout_width="@dimen/navigation_key_width"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_recent"
+-                android:layout_weight="0"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                android:contentDescription="@string/accessibility_recent"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/menu"
+-                android:layout_width="@dimen/navigation_menu_key_width"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_menu"
+-                systemui:keyCode="82"
+-                android:layout_weight="0"
+-                android:visibility="invisible"
+-                android:contentDescription="@string/accessibility_menu"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                />
+-        </LinearLayout>
++        <com.android.systemui.grapefruit.GrapefruitNavigationLayout
++            android:id="@+id/nav_buttons" android:layout_width="match_parent"
++            android:layout_height="match_parent" android:orientation="horizontal">
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_screenshot" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="screenshot" android:contentDescription="Screenshot" />
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_volume_down" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="volume_down" android:contentDescription="Volume down" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/back" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Back" systemui:keyCode="4" android:src="@drawable/ic_sysbar_back" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/home" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Home" systemui:keyCode="3" android:src="@drawable/ic_sysbar_home" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/recent_apps" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Recents" android:src="@drawable/ic_sysbar_recent" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_volume_up" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="volume_up" android:contentDescription="Volume up" />
++            <View android:id="@+id/grapefruit_spacer" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:clickable="false" android:focusable="false" android:importantForAccessibility="no" />
++        </com.android.systemui.grapefruit.GrapefruitNavigationLayout>
++        <!-- Retain the legacy ID for AOSP callers without introducing an eighth slot. -->
++        <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/menu"
++            android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"
++            systemui:keyCode="82" />
+ 
+         <!-- lights out layout to match exactly -->
+         <LinearLayout
+@@ -175,74 +122,21 @@
+         android:paddingTop="0dp"
+         >
+ 
+-        <LinearLayout 
+-            android:layout_height="match_parent"
+-            android:layout_width="match_parent"
+-            android:orientation="vertical"
+-            android:clipChildren="false"
+-            android:clipToPadding="false"
+-            android:id="@+id/nav_buttons"
+-            android:animateLayoutChanges="true"
+-            >
+-            
+-            <!-- navigation controls -->
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/menu"
+-                android:layout_height="40dp"
+-                android:layout_width="match_parent"
+-                android:src="@drawable/ic_sysbar_menu_land"
+-                systemui:keyCode="82"
+-                android:layout_weight="0"
+-                android:visibility="invisible"
+-                android:contentDescription="@string/accessibility_menu"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight_land"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/recent_apps"
+-                android:layout_height="80dp"
+-                android:layout_width="match_parent"
+-                android:src="@drawable/ic_sysbar_recent_land"
+-                android:layout_weight="0"
+-                android:contentDescription="@string/accessibility_recent"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight_land"
+-                />
+-            <View 
+-                android:layout_height="match_parent"
+-                android:layout_width="match_parent"
+-                android:layout_weight="1"
+-                android:visibility="invisible"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/home"
+-                android:layout_height="80dp"
+-                android:layout_width="match_parent"
+-                android:src="@drawable/ic_sysbar_home_land"
+-                systemui:keyCode="3"
+-                systemui:keyRepeat="false"
+-                android:layout_weight="0"
+-                android:contentDescription="@string/accessibility_home"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight_land"
+-                />
+-            <View 
+-                android:layout_height="match_parent"
+-                android:layout_width="match_parent"
+-                android:layout_weight="1"
+-                android:visibility="invisible"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/back"
+-                android:layout_height="80dp"
+-                android:layout_width="match_parent"
+-                android:src="@drawable/ic_sysbar_back_land"
+-                android:scaleType="center"
+-                systemui:keyCode="4"
+-                android:layout_weight="0"
+-                android:contentDescription="@string/accessibility_back"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight_land"
+-                />
+-            <View
+-                android:layout_height="40dp"
+-                android:layout_width="match_parent"
+-                android:layout_weight="0"
+-                android:visibility="invisible"
+-                />
+-        </LinearLayout>
++        <com.android.systemui.grapefruit.GrapefruitNavigationLayout
++            android:id="@+id/nav_buttons" android:layout_width="match_parent"
++            android:layout_height="match_parent" android:orientation="horizontal">
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_screenshot" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="screenshot" android:contentDescription="Screenshot" />
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_volume_down" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="volume_down" android:contentDescription="Volume down" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/back" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Back" systemui:keyCode="4" android:src="@drawable/ic_sysbar_back" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/home" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Home" systemui:keyCode="3" android:src="@drawable/ic_sysbar_home" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/recent_apps" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Recents" android:src="@drawable/ic_sysbar_recent" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_volume_up" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="volume_up" android:contentDescription="Volume up" />
++            <View android:id="@+id/grapefruit_spacer" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:clickable="false" android:focusable="false" android:importantForAccessibility="no" />
++        </com.android.systemui.grapefruit.GrapefruitNavigationLayout>
++        <!-- Retain the legacy ID for AOSP callers without introducing an eighth slot. -->
++        <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/menu"
++            android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"
++            systemui:keyCode="82" />
+ 
+         <!-- lights out layout to match exactly -->
+         <LinearLayout 
+--- a/packages/SystemUI/res/layout-sw600dp/navigation_bar.xml
++++ b/packages/SystemUI/res/layout-sw600dp/navigation_bar.xml
+@@ -30,73 +30,21 @@
+         android:layout_width="match_parent"
+         >
+ 
+-        <LinearLayout
+-            android:layout_height="match_parent"
+-            android:layout_width="match_parent"
+-            android:orientation="horizontal"
+-            android:clipChildren="false"
+-            android:clipToPadding="false"
+-            android:id="@+id/nav_buttons"
+-            android:animateLayoutChanges="true"
+-            >
+-
+-            <!-- navigation controls -->
+-            <View
+-                android:layout_width="48dp"
+-                android:layout_height="match_parent"
+-                android:layout_weight="0"
+-                android:layout_marginLeft="2dp"
+-                android:visibility="invisible"
+-                />
+-            <Space 
+-                android:layout_width="match_parent"
+-                android:layout_height="match_parent"
+-                android:layout_weight="1"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/back"
+-                android:layout_width="128dp" android:paddingLeft="25dp" android:paddingRight="25dp"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_back"
+-                systemui:keyCode="4"
+-                android:layout_weight="0"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                android:contentDescription="@string/accessibility_back"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/home"
+-                android:layout_width="128dp" android:paddingLeft="25dp" android:paddingRight="25dp"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_home"
+-                systemui:keyCode="3"
+-                systemui:keyRepeat="true"
+-                android:layout_weight="0"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                android:contentDescription="@string/accessibility_home"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/recent_apps"
+-                android:layout_width="128dp" android:paddingLeft="25dp" android:paddingRight="25dp"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_recent"
+-                android:layout_weight="0"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                android:contentDescription="@string/accessibility_recent"
+-                />
+-            <Space 
+-                android:layout_width="match_parent"
+-                android:layout_height="match_parent"
+-                android:layout_weight="1"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/menu"
+-                android:layout_width="48dp"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_menu"
+-                android:layout_marginRight="2dp"
+-                systemui:keyCode="82"
+-                android:layout_weight="0"
+-                android:visibility="invisible"
+-                android:contentDescription="@string/accessibility_menu"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                />
+-        </LinearLayout>
++        <com.android.systemui.grapefruit.GrapefruitNavigationLayout
++            android:id="@+id/nav_buttons" android:layout_width="match_parent"
++            android:layout_height="match_parent" android:orientation="horizontal">
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_screenshot" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="screenshot" android:contentDescription="Screenshot" />
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_volume_down" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="volume_down" android:contentDescription="Volume down" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/back" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Back" systemui:keyCode="4" android:src="@drawable/ic_sysbar_back" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/home" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Home" systemui:keyCode="3" android:src="@drawable/ic_sysbar_home" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/recent_apps" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Recents" android:src="@drawable/ic_sysbar_recent" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_volume_up" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="volume_up" android:contentDescription="Volume up" />
++            <View android:id="@+id/grapefruit_spacer" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:clickable="false" android:focusable="false" android:importantForAccessibility="no" />
++        </com.android.systemui.grapefruit.GrapefruitNavigationLayout>
++        <!-- Retain the legacy ID for AOSP callers without introducing an eighth slot. -->
++        <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/menu"
++            android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"
++            systemui:keyCode="82" />
+ 
+         <!-- lights out layout to match exactly -->
+         <LinearLayout
+@@ -171,73 +119,21 @@
+         android:paddingTop="0dp"
+         >
+ 
+-        <LinearLayout
+-            android:layout_height="match_parent"
+-            android:layout_width="match_parent"
+-            android:orientation="horizontal"
+-            android:clipChildren="false"
+-            android:clipToPadding="false"
+-            android:id="@+id/nav_buttons"
+-            android:animateLayoutChanges="true"
+-            >
+-
+-            <!-- navigation controls -->
+-            <View
+-                android:layout_width="48dp"
+-                android:layout_height="match_parent"
+-                android:layout_weight="0"
+-                android:layout_marginLeft="2dp"
+-                android:visibility="invisible"
+-                />
+-            <Space 
+-                android:layout_width="match_parent"
+-                android:layout_height="match_parent"
+-                android:layout_weight="1"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/back"
+-                android:layout_width="162dp" android:paddingLeft="42dp" android:paddingRight="42dp"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_back"
+-                systemui:keyCode="4"
+-                android:layout_weight="0"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                android:contentDescription="@string/accessibility_back"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/home"
+-                android:layout_width="162dp" android:paddingLeft="42dp" android:paddingRight="42dp"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_home"
+-                systemui:keyCode="3"
+-                systemui:keyRepeat="true"
+-                android:layout_weight="0"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                android:contentDescription="@string/accessibility_home"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/recent_apps"
+-                android:layout_width="162dp" android:paddingLeft="42dp" android:paddingRight="42dp"
+-                android:layout_height="match_parent"
+-                android:src="@drawable/ic_sysbar_recent"
+-                android:layout_weight="0"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                android:contentDescription="@string/accessibility_recent"
+-                />
+-            <Space 
+-                android:layout_width="match_parent"
+-                android:layout_height="match_parent"
+-                android:layout_weight="1"
+-                />
+-            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/menu"
+-                android:layout_width="48dp"
+-                android:layout_height="match_parent"
+-                android:layout_marginRight="2dp"
+-                android:src="@drawable/ic_sysbar_menu"
+-                systemui:keyCode="82"
+-                android:layout_weight="0"
+-                android:visibility="invisible"
+-                android:contentDescription="@string/accessibility_menu"
+-                systemui:glowBackground="@drawable/ic_sysbar_highlight"
+-                />
+-        </LinearLayout>
++        <com.android.systemui.grapefruit.GrapefruitNavigationLayout
++            android:id="@+id/nav_buttons" android:layout_width="match_parent"
++            android:layout_height="match_parent" android:orientation="horizontal">
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_screenshot" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="screenshot" android:contentDescription="Screenshot" />
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_volume_down" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="volume_down" android:contentDescription="Volume down" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/back" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Back" systemui:keyCode="4" android:src="@drawable/ic_sysbar_back" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/home" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Home" systemui:keyCode="3" android:src="@drawable/ic_sysbar_home" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/recent_apps" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:contentDescription="Recents" android:src="@drawable/ic_sysbar_recent" android:scaleType="center" systemui:glowBackground="@drawable/ic_sysbar_highlight" />
++            <com.android.systemui.grapefruit.NavActionButton android:id="@+id/grapefruit_volume_up" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:tag="volume_up" android:contentDescription="Volume up" />
++            <View android:id="@+id/grapefruit_spacer" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:clickable="false" android:focusable="false" android:importantForAccessibility="no" />
++        </com.android.systemui.grapefruit.GrapefruitNavigationLayout>
++        <!-- Retain the legacy ID for AOSP callers without introducing an eighth slot. -->
++        <com.android.systemui.statusbar.policy.KeyButtonView android:id="@+id/menu"
++            android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"
++            systemui:keyCode="82" />
+ 
+         <!-- lights out layout to match exactly -->
+         <LinearLayout
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBar.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBar.java
+@@ -443,6 +443,15 @@
+         }
+ 
+         mSettingsButton = (ImageView) mStatusBarWindow.findViewById(R.id.settings_button);
++        mSettingsButton.setOnLongClickListener(new View.OnLongClickListener() {
++            public boolean onLongClick(View v) {
++                Intent intent = new Intent().setClassName("com.android.settings", "com.android.settings.grapefruit.QuickSettingsEditor");
++                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
++                mContext.startActivityAsUser(intent, new UserHandle(UserHandle.USER_CURRENT));
++                animateCollapsePanels();
++                return true;
++            }
++        });
+         if (mSettingsButton != null) {
+             mSettingsButton.setOnClickListener(mSettingsButtonListener);
+             if (mHasSettingsPanel) {
+@@ -614,6 +623,7 @@
+         // listen for USER_SETUP_COMPLETE setting (per-user)
+         resetUserSetupObserver();
+ 
++        com.android.systemui.grapefruit.BarTheme.bind(mStatusBarView);
+         return mStatusBarView;
+     }
+ 
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/QuickSettings.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/QuickSettings.java
+@@ -267,6 +267,8 @@
+         addUserTiles(mContainerView, inflater);
+         addSystemTiles(mContainerView, inflater);
+         addTemporaryTiles(mContainerView, inflater);
++        com.android.systemui.grapefruit.QuickSettingsOrder.install(mContainerView);
++        com.android.systemui.grapefruit.BarTheme.bind(mContainerView);
+ 
+         queryForUserInformation();
+         mTilesSetUp = true;
+@@ -329,6 +331,7 @@
+                         R.string.accessibility_quick_settings_user, state.label));
+             }
+         });
++        userTile.setTag("user");
+         parent.addView(userTile);
+         mDynamicSpannedTiles.add(userTile);
+ 
+@@ -352,6 +355,7 @@
+                 dismissBrightnessDialog(mBrightnessDialogShortTimeout);
+             }
+         });
++        brightnessTile.setTag("brightness");
+         parent.addView(brightnessTile);
+         mDynamicSpannedTiles.add(brightnessTile);
+ 
+@@ -392,6 +396,7 @@
+                 tv.setText(state.label);
+             }
+         });
++        settingsTile.setTag("settings");
+         parent.addView(settingsTile);
+         mDynamicSpannedTiles.add(settingsTile);
+     }
+@@ -444,6 +449,7 @@
+                         (wifiState.connected) ? wifiState.label : ""));
+             }
+         });
++        wifiTile.setTag("wifi");
+         parent.addView(wifiTile);
+ 
+         if (mModel.deviceHasMobileData()) {
+@@ -482,7 +488,8 @@
+                             state.label));
+                 }
+             });
+-            parent.addView(rssiTile);
++            rssiTile.setTag("cellular");
++        parent.addView(rssiTile);
+         }
+ 
+         // Rotation Lock
+@@ -505,7 +512,8 @@
+                     tv.setText(state.label);
+                 }
+             });
+-            parent.addView(rotationLockTile);
++            rotationLockTile.setTag("rotation");
++        parent.addView(rotationLockTile);
+         }
+ 
+         // Battery
+@@ -545,6 +553,7 @@
+                         mContext.getString(R.string.accessibility_quick_settings_battery, t));
+             }
+         });
++        batteryTile.setTag("battery");
+         parent.addView(batteryTile);
+ 
+         // Airplane Mode
+@@ -565,6 +574,7 @@
+                 tv.setText(state.label);
+             }
+         });
++        airplaneTile.setTag("airplane");
+         parent.addView(airplaneTile);
+ 
+         // Bluetooth
+@@ -619,7 +629,8 @@
+                     tv.setText(label);
+                 }
+             });
+-            parent.addView(bluetoothTile);
++            bluetoothTile.setTag("bluetooth");
++        parent.addView(bluetoothTile);
+         }
+ 
+     }
+--- a/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
++++ b/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
+@@ -1015,6 +1015,10 @@
+             mNavigationBarCanMove = false;
+         }
+ 
++        if (mContext.getResources().getBoolean(com.android.internal.R.bool.config_grapefruitBottomNavigation)) {
++            mHasSystemNavBar = false;
++            mNavigationBarCanMove = false;
++        }
+         if (!mHasSystemNavBar) {
+             mHasNavigationBar = mContext.getResources().getBoolean(
+                     com.android.internal.R.bool.config_showNavigationBar);

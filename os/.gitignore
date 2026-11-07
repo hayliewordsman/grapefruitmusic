@@ -1,0 +1,10 @@
+/private/
+/vendor/
+*.apk
+*.jar
+*.so
+*.ko*
+*.img
+*.zip
+*.key
+*.pem

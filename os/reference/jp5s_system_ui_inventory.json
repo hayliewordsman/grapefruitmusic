@@ -1,0 +1,74 @@
+{
+  "archive": "JP5S-System-UI.zip",
+  "archive_sha256": "b3721742976e3dbd00279a65b50cb74a0f99c3daee0073ae38b8cff5b08ffeac",
+  "checked_zip_integrity": true,
+  "components": {
+    "Settings.apk": {
+      "size": 2004277,
+      "sha256": "11e5af05c1b62f10ff614cf332beefb917b978e110b6f6dd5a1579349d4dac89",
+      "signed_certificate_metadata": [
+        {
+          "subject": "1.2.840.113549.1.9.1=android@android.com,CN=Android,OU=Android,O=Android,L=Mountain View,ST=California,C=US",
+          "sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+        }
+      ],
+      "resource_entries": 421,
+      "has_dex": true,
+      "notable_paths": [
+        "res/xml/display_settings.xml",
+        "res/xml/hdmi_settings.xml",
+        "res/xml/screenshot.xml",
+        "res/xml/settings_headers.xml"
+      ],
+      "notable_classes": [
+        "Lcom/android/settings/ScreenshotSetting;"
+      ]
+    },
+    "SystemUI.apk": {
+      "size": 1600568,
+      "sha256": "3881a25ef754f1437b221b68c924be3ee25079be2b508545647472d658cb76a6",
+      "signed_certificate_metadata": [
+        {
+          "subject": "1.2.840.113549.1.9.1=android@android.com,CN=Android,OU=Android,O=Android,L=Mountain View,ST=California,C=US",
+          "sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+        }
+      ],
+      "resource_entries": 567,
+      "has_dex": true,
+      "notable_paths": [
+        "res/layout-sw480dp/navigation_bar.xml",
+        "res/layout-sw600dp/navigation_bar.xml",
+        "res/layout-sw600dp/system_bar.xml",
+        "res/layout/navigation_bar.xml",
+        "res/layout/quick_settings.xml",
+        "res/layout/quick_settings_tile.xml",
+        "res/layout/status_bar.xml",
+        "res/layout/status_bar_expanded.xml",
+        "res/layout/super_status_bar.xml",
+        "res/layout/system_bar.xml"
+      ],
+      "notable_classes": [
+        "Lcom/android/systemui/statusbar/phone/NavigationBarView;",
+        "Lcom/android/systemui/statusbar/phone/QuickSettings;",
+        "Lcom/android/systemui/statusbar/phone/PhoneStatusBar;",
+        "Lcom/android/systemui/statusbar/tablet/TabletStatusBar;",
+        "Lcom/android/systemui/screenshot/TakeScreenshotService;",
+        "Lcom/android/systemui/screenshot/GlobalScreenshot;"
+      ]
+    },
+    "framework-res.apk": {
+      "size": 8656587,
+      "sha256": "e549050d39df691c11c5866c1bce64efe33f3cafe74536cffa9d89ab75647f8d",
+      "signed_certificate_metadata": [
+        {
+          "subject": "1.2.840.113549.1.9.1=NA,CN=jp5platform,OU=JPay New Products,O=JPay Inc.,L=Miramar,ST=Florida,C=US",
+          "sha256": "ed09abf7186b79c5d7b450024c02dd6b4d221e729172e5b5e970ab5385ca3071"
+        }
+      ],
+      "resource_entries": 2232,
+      "has_dex": false,
+      "notable_paths": [],
+      "notable_classes": []
+    }
+  }
+}

@@ -1,0 +1,47 @@
+--- a/Android.mk
++++ b/Android.mk
+@@ -2,7 +2,7 @@
+ include $(CLEAR_VARS)
+ 
+ LOCAL_JAVA_LIBRARIES := bouncycastle telephony-common
+-LOCAL_STATIC_JAVA_LIBRARIES := guava android-support-v4 jsr305
++LOCAL_STATIC_JAVA_LIBRARIES := guava android-support-v4 jsr305 grapefruit-platform
+ 
+ LOCAL_MODULE_TAGS := optional
+ 
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -63,7 +63,7 @@
+     <uses-permission android:name="android.permission.CONFIGURE_WIFI_DISPLAY" />
+     <uses-permission android:name="android.permission.SET_TIME" />
+ 
+-    <application android:label="@string/settings_label"
++    <application android:name=".grapefruit.GrapefruitSettingsApplication" android:label="@string/settings_label"
+             android:icon="@mipmap/ic_launcher_settings"
+             android:taskAffinity=""
+             android:theme="@android:style/Theme.Holo"
+@@ -71,6 +71,12 @@
+             android:hardwareAccelerated="true"
+             android:supportsRtl="true">
+ 
++        <provider android:name=".grapefruit.ThemeProvider"
++            android:authorities="io.github.hayliewordsman.grapefruitsettings.theme"
++            android:exported="true" android:grantUriPermissions="false" />
++        <activity android:name=".grapefruit.QuickSettingsEditor"
++            android:label="Edit Quick Settings" android:exported="true"
++            android:permission="android.permission.WRITE_SETTINGS" />
+         <!-- Settings -->
+ 
+         <activity android:name="Settings"
+--- a/res/xml/settings_headers.xml
++++ b/res/xml/settings_headers.xml
+@@ -18,6 +18,9 @@
+         xmlns:android="http://schemas.android.com/apk/res/android">
+ 
+ 
++    <header android:id="@+id/grapefruit_appearance"
++        android:title="Grapefruit appearance"
++        android:fragment="com.android.settings.grapefruit.AppearanceSettings" />
+     <!-- WIRELESS and NETWORKS -->
+     <header android:id="@+id/wireless_section"
+         android:title="@string/header_category_wireless_networks" />

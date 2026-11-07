@@ -1,0 +1,1209 @@
+[
+  {
+    "file": "rt5370sta.ko.3.0.8+",
+    "size": 1960303,
+    "sha256": "e400648d83a3fdcd8d4b6a5dcd20d47f6f2365fb5fd51543ed37c967b690288e",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL",
+      "GPL"
+    ],
+    "description": [
+      "RT2870 Wireless Lan Linux Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v0471p2104d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04DAp23F6d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04DAp1801d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04DAp1800d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v043Ep7A42d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v043Ep7A32d*dc*dsc*dp*ic*isc*ip*"
+    ],
+    "firmware": [],
+    "version": [
+      "2.6.1.0"
+    ],
+    "keys": [
+      "license",
+      "parm",
+      "parmtype",
+      "version",
+      "description",
+      "author",
+      "srcversion",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "ump.ko.3.0.36+",
+    "size": 44609,
+    "sha256": "dfe728598b19f5d8a287c10f2cfb04d301f8eb7e3245ec4b011af50fc16ea958",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [
+      ""
+    ],
+    "keys": [
+      "version",
+      "author",
+      "license",
+      "parm",
+      "parmtype",
+      "srcversion",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "mali.ko",
+    "size": 151930,
+    "sha256": "a0a8ac25ac7420a5e321ddfaab2eee99fd98aaaa9ccbf89c1a136d7688c578c9",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      "ump"
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [
+      "r3p2-01rel0"
+    ],
+    "keys": [
+      "version",
+      "author",
+      "license",
+      "parm",
+      "parmtype",
+      "srcversion",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "8723as.ko",
+    "size": 1224534,
+    "sha256": "dbf1d140ccdf409c9c38ee2930f5d70f77590dd5af22b255fcf452b4feda3900",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Realtek Wireless Lan Driver"
+    ],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [
+      "v4.1.7_8012.20130628_BTCOEX20130528_ver3.3_beta"
+    ],
+    "keys": [
+      "parm",
+      "parmtype",
+      "version",
+      "author",
+      "description",
+      "license",
+      "srcversion",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "vpu_service.ko.3.0.36+",
+    "size": 21591,
+    "sha256": "7d9d8979d50defdeacd5c3769c9c1df07ed10233f196ca7a1f0383b7ac74b689",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "8188eu.ko.3.0.8+",
+    "size": 606073,
+    "sha256": "976f95d331b4f066c3a67c6d875535ac200ae263c8f344cd8ff6065c31fbb456",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Realtek Wireless Lan Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v0BDAp8179d*dc*dsc*dp*ic*isc*ip*"
+    ],
+    "firmware": [],
+    "version": [
+      "v4.1.0_4126.20120530"
+    ],
+    "keys": [
+      "parmtype",
+      "parm",
+      "version",
+      "author",
+      "description",
+      "license",
+      "srcversion",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "rk29-ipp.ko.3.0.36+",
+    "size": 17387,
+    "sha256": "eec255459174a6243a982021b9e1698eaf7c708933635cb678d0c9c592f5eaad",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Driver for rk29 ipp device"
+    ],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "description",
+      "author",
+      "depends",
+      "staging",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "mali.ko.3.0.36+",
+    "size": 163975,
+    "sha256": "76ffc88a1a14d691dd59bbcf3f2efe868bad141c98ea1a6b056ec82408932c7a",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      "ump"
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [
+      "r3p2-01rel0"
+    ],
+    "keys": [
+      "version",
+      "author",
+      "license",
+      "parm",
+      "parmtype",
+      "srcversion",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "8188eu.ko",
+    "size": 852989,
+    "sha256": "c2aa97fd0b8a6c9666fe8f683ef0e7807ea63ac894690275b3f8eec8ff0d9795",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Realtek Wireless Lan Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v07B8p8179d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v0BDAp0179d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v0BDAp8179d*dc*dsc*dp*ic*isc*ip*"
+    ],
+    "firmware": [],
+    "version": [
+      "v4.1.8_9499.20131104"
+    ],
+    "keys": [
+      "parm",
+      "parmtype",
+      "version",
+      "author",
+      "description",
+      "license",
+      "srcversion",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "ump.ko",
+    "size": 42846,
+    "sha256": "42be5cf10ef8aec744c2a209d7b34ca7116ac556af0de1a16b2a6b6d106185ab",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [
+      ""
+    ],
+    "keys": [
+      "version",
+      "author",
+      "license",
+      "parm",
+      "parmtype",
+      "srcversion",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "rk29-ipp.ko",
+    "size": 16862,
+    "sha256": "d943d703235e82a525a8ab2cb1ab2d18b5f3cbf3af30d8efbf4453cebec89d1b",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Driver for rk29 ipp device"
+    ],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "description",
+      "author",
+      "depends",
+      "staging",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "8723au.ko",
+    "size": 1049056,
+    "sha256": "872182ef329a6b14ce73efea7ade74942402647006e5b733f1f401e2b792df95",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Realtek Wireless Lan Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v0BDAp0724d*dc*dsc*dp*icFFiscFFipFF*",
+      "usb:v0BDAp1724d*dc*dsc*dp*icFFiscFFipFF*",
+      "usb:v0BDAp8724d*dc*dsc*dp*icFFiscFFipFF*"
+    ],
+    "firmware": [],
+    "version": [
+      "v4.1.7_7700.20130531_BTCOEX20130528_ver3.3_beta"
+    ],
+    "keys": [
+      "parm",
+      "parmtype",
+      "version",
+      "author",
+      "description",
+      "license",
+      "srcversion",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "8192cu.ko",
+    "size": 624545,
+    "sha256": "5b30b5ba3ee1037d55b17a58b3321d89e5a5d1de1ee71955d7ed546db48ea32f",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Realtek Wireless Lan Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v0BDAp8186d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v0789p016Dd*dc*dsc*dp*ic*isc*ip*",
+      "usb:v0DF6p0070d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04BBp0950d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v06F8pE035d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v2357p0100d*dc*dsc*dp*ic*isc*ip*"
+    ],
+    "firmware": [],
+    "version": [
+      "v4.0.1_6911.20130308"
+    ],
+    "keys": [
+      "parm",
+      "parmtype",
+      "version",
+      "author",
+      "description",
+      "license",
+      "srcversion",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "rt5370sta.ko",
+    "size": 1960303,
+    "sha256": "e400648d83a3fdcd8d4b6a5dcd20d47f6f2365fb5fd51543ed37c967b690288e",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL",
+      "GPL"
+    ],
+    "description": [
+      "RT2870 Wireless Lan Linux Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v0471p2104d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04DAp23F6d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04DAp1801d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04DAp1800d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v043Ep7A42d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v043Ep7A32d*dc*dsc*dp*ic*isc*ip*"
+    ],
+    "firmware": [],
+    "version": [
+      "2.6.1.0"
+    ],
+    "keys": [
+      "license",
+      "parm",
+      "parmtype",
+      "version",
+      "description",
+      "author",
+      "srcversion",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "esp_init_data.bin",
+    "size": 128,
+    "sha256": "c98f3b97595d2295d1de15e5653b44042d9059e6643cfb90c6aa6e4d49d9f3d4",
+    "elf": false,
+    "machine": null,
+    "vermagic": [],
+    "depends": [],
+    "license": [],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": []
+  },
+  {
+    "file": "rk30_mirroring.ko.3.0.36+",
+    "size": 18857,
+    "sha256": "5cfd1f4f2e6750cd718a10e44ce80a289d5db062a04c9ef6f06d3579f84b71af",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "esp8089.ko",
+    "size": 194165,
+    "sha256": "7b1e1c448a2f651532de0c8af8fa797f75998c5cf6b6855643c9a0e949447fe2",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Driver for SDIO interconnected eagle low-power WLAN devices"
+    ],
+    "name": [],
+    "alias": [
+      "sdio:c*v6666d1111*"
+    ],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "description",
+      "author",
+      "parmtype",
+      "parm",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "rkwifi.ko",
+    "size": 577406,
+    "sha256": "ff25ee551f53e9842ef80e885a476546f4923e62372c17f18d417381ec02b52c",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL v2"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [
+      "sdio:c00v*d*",
+      "sdio:c*v02D0dA962*",
+      "sdio:c*v02D0dA8E7*",
+      "sdio:c*v02D0d4324*",
+      "sdio:c*v02D0d4334*",
+      "sdio:c*v02D0d4330*"
+    ],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "parm",
+      "parmtype",
+      "license",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "rk30_mirroring.ko.3.0.8+",
+    "size": 19421,
+    "sha256": "77f8d3e55d2b15eb27cb851459e23dcab6d4a775c9ca25da43256f7548e4ef76",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "wlan.ko.3.0.8+",
+    "size": 2683,
+    "sha256": "b6a33f1962a27acfc076b91896c3ee535b4984564734cc4605501976a9e704d5",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "Dual BSD/GPL"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "rt5370ap.ko",
+    "size": 1107594,
+    "sha256": "0dca4b4cbd2183c3bb238c0f75440789e17b6066db5177aa665449c3c4ba7d27",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL",
+      "GPL"
+    ],
+    "description": [
+      "RT2870 Wireless Lan Linux Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v04DAp23F6d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04DAp1800d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04DAp1801d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v043Ep7A22d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v043Ep7A12d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v2001p3C1Dd*dc*dsc*dp*ic*isc*ip*"
+    ],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "parm",
+      "parmtype",
+      "description",
+      "author",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "8189es.ko",
+    "size": 931771,
+    "sha256": "4ea6ea52140522b8a11769d90b99ff3b286796e15bcfe84b9dd0b3c6e6e46c49",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Realtek Wireless Lan Driver"
+    ],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [
+      "v4.1.5_7309.20130425"
+    ],
+    "keys": [
+      "parm",
+      "parmtype",
+      "version",
+      "author",
+      "description",
+      "license",
+      "srcversion",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "8723bu.ko",
+    "size": 1525808,
+    "sha256": "5f03e293ca135299573fd44115343cd15f62ebaf674dc85c2c3cf9ac6b17eee0",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Realtek Wireless Lan Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v0BDApB720d*dc*dsc*dp*icFFiscFFipFF*"
+    ],
+    "firmware": [],
+    "version": [
+      "v4.3.0_10670.20140303_BTCOEX20140123-4A40"
+    ],
+    "keys": [
+      "parm",
+      "parmtype",
+      "version",
+      "author",
+      "description",
+      "license",
+      "srcversion",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "mt5931.ko",
+    "size": 406218,
+    "sha256": "22a8883625ad977e88018978f8ffbc40a40146c1b161a9d4f1b8222f6aaef6e5",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "NIC_DESC"
+    ],
+    "name": [],
+    "alias": [
+      "sdio:c*v037Ad5931*"
+    ],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "description",
+      "author",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "vpu_service.ko",
+    "size": 20737,
+    "sha256": "8ad8a390e6a3161d1b5ea5ea0ae4cab71f3bbce930f780194b2af1415c50d1b3",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "init_data.conf",
+    "size": 171,
+    "sha256": "4de00753fd5ebadc02abffe98eed7516a23ad2089a0669db7ec7ace4bcd72839",
+    "elf": false,
+    "machine": null,
+    "vermagic": [],
+    "depends": [],
+    "license": [],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": []
+  },
+  {
+    "file": "mt7601sta.ko",
+    "size": 2018271,
+    "sha256": "5f7a99107b970c47da7ad6a3d781a18dfde307acd91356b2427a1b83f3b04b08",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      "mtprealloc7601Usta"
+    ],
+    "license": [
+      "GPL",
+      "GPL"
+    ],
+    "description": [
+      "RT2870 Wireless Lan Linux Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v148Fp7601d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v148Fp6370d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v148Fp7650d*dc*dsc*dp*ic*isc*ip*"
+    ],
+    "firmware": [],
+    "version": [
+      "3.0.0.3_android_jb_20130223"
+    ],
+    "keys": [
+      "parm",
+      "parmtype",
+      "version",
+      "license",
+      "description",
+      "author",
+      "srcversion",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "rkwifi.ko.3.0.8+",
+    "size": 535790,
+    "sha256": "ae22174a1a2c45ab0354dd56baddd242154973cd544abe54f699337bdb564fba",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL v2"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [
+      "sdio:c00v*d*",
+      "sdio:c*v02D0dA962*",
+      "sdio:c*v02D0dA8E7*",
+      "sdio:c*v02D0d4324*",
+      "sdio:c*v02D0d4334*",
+      "sdio:c*v02D0d4330*"
+    ],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "parm",
+      "parmtype",
+      "license",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "tun.ko",
+    "size": 21979,
+    "sha256": "732b7f3503acb8b926459c76a0157b2cf67f6e59e4e76d544bf916ff35ebffd5",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Universal TUN/TAP device driver"
+    ],
+    "name": [],
+    "alias": [
+      "devname:net/tun",
+      "char-major-10-200"
+    ],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "alias",
+      "license",
+      "author",
+      "description",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "mtprealloc7601Usta.ko",
+    "size": 4753,
+    "sha256": "6a35af66ad07daab853f841bf6a2ccb2a325688e38981aea6ba30502b68061af",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "8192cu.ko.3.0.8+",
+    "size": 548824,
+    "sha256": "aff88b64be4d99b3a1888cbe340a7287cb6e3c3f54df7178b28c11c12608b0ec",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [
+      "Realtek Wireless Lan Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v0BDAp8186d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v0E66p0019d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v0846p9021d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v0B05p17ABd*dc*dsc*dp*ic*isc*ip*",
+      "usb:v0DF6p0061d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v20F4p624Dd*dc*dsc*dp*ic*isc*ip*"
+    ],
+    "firmware": [],
+    "version": [
+      "v3.4.2_3727.20120404"
+    ],
+    "keys": [
+      "parmtype",
+      "parm",
+      "version",
+      "author",
+      "description",
+      "license",
+      "srcversion",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "rkwifi.oob.ko",
+    "size": 595918,
+    "sha256": "f736dca154a04e5abe4b90c39901057ac00761b3178eac2deebe6e0bcd5b2a84",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL v2"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [
+      "sdio:c00v*d*",
+      "sdio:c*v02D0dA8E7*",
+      "sdio:c*v02D0d4324*",
+      "sdio:c*v02D0d4334*",
+      "sdio:c*v02D0d4330*",
+      "sdio:c*v02D0d4319*"
+    ],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "parm",
+      "parmtype",
+      "license",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "mt7601ap.ko",
+    "size": 975817,
+    "sha256": "23dba71cd704d1a4b436ddf8ef6284b04875c08686318c6060bccabc2c328bf8",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL",
+      "GPL"
+    ],
+    "description": [
+      "RT2870 Wireless Lan Linux Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v148Fp7601d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v148Fp6370d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v148Fp7650d*dc*dsc*dp*ic*isc*ip*"
+    ],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "parm",
+      "parmtype",
+      "license",
+      "description",
+      "author",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "gps_rk30xx.ko.3.0.36+",
+    "size": 283847,
+    "sha256": "28d47d1f3d671c0ff1fc838f82f21e6307efde7313ee77988818b1457e83c512",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "wlan.ko",
+    "size": 2778,
+    "sha256": "633d0939ee3d2a3cab0f6e0d93b72d1351079860fe1148ac273412ff3f8cd4b5",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.36+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "Dual BSD/GPL"
+    ],
+    "description": [],
+    "name": [],
+    "alias": [],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "depends",
+      "vermagic"
+    ]
+  },
+  {
+    "file": "rt5370ap.ko.3.0.8+",
+    "size": 1107594,
+    "sha256": "0dca4b4cbd2183c3bb238c0f75440789e17b6066db5177aa665449c3c4ba7d27",
+    "elf": true,
+    "machine": 40,
+    "vermagic": [
+      "3.0.8+ SMP preempt mod_unload ARMv7 "
+    ],
+    "depends": [
+      ""
+    ],
+    "license": [
+      "GPL",
+      "GPL"
+    ],
+    "description": [
+      "RT2870 Wireless Lan Linux Driver"
+    ],
+    "name": [],
+    "alias": [
+      "usb:v04DAp23F6d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04DAp1800d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v04DAp1801d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v043Ep7A22d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v043Ep7A12d*dc*dsc*dp*ic*isc*ip*",
+      "usb:v2001p3C1Dd*dc*dsc*dp*ic*isc*ip*"
+    ],
+    "firmware": [],
+    "version": [],
+    "keys": [
+      "license",
+      "parm",
+      "parmtype",
+      "description",
+      "author",
+      "alias",
+      "depends",
+      "vermagic"
+    ]
+  }
+]

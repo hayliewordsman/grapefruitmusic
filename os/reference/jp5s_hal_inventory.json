@@ -1,0 +1,539 @@
+{
+  "source_file": "JP5S-Hardware-Libraries.zip",
+  "source_archive_sha256": "b96bbd894fac3d8640536027370a1da41c9c268e272a21b12933b431e7dd02a8",
+  "archive_integrity": "ZIP CRC OK",
+  "module_count": 24,
+  "aggregate_uncompressed_bytes": 2065872,
+  "note": "Static ELF analysis only; binaries were not loaded or executed; no runtime compatibility established.",
+  "shared_library_dependencies_outside_supplied_hal_folder": [
+    "libEGL.so",
+    "libGLESv1_CM.so",
+    "libMali.so",
+    "libUMP.so",
+    "libasound.so",
+    "libbinder.so",
+    "libbt-hci.so",
+    "libbt-utils.so",
+    "libc.so",
+    "libcamera_client.so",
+    "libcrypto.so",
+    "libcutils.so",
+    "libdl.so",
+    "libgui.so",
+    "libhardware.so",
+    "libhardware_legacy.so",
+    "libion.so",
+    "libjpeg.so",
+    "libjpeghwenc.so",
+    "libkeystore_client.so",
+    "liblog.so",
+    "libm.so",
+    "libmedia.so",
+    "libnbaio.so",
+    "libpower.so",
+    "libstdc++.so",
+    "libtinyalsa.so",
+    "libui.so",
+    "libutils.so",
+    "libvpu.so"
+  ],
+  "entries": [
+    {
+      "path": "hw/acoustics.default.so",
+      "name": "acoustics.default.so",
+      "size_bytes": 5292,
+      "sha256": "b939714ec00f2e31b11cf6324e0e13d7cf2d2d0d10a5d3879679a50e8f23434f",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/alsa.audio.primary.rk30board.so",
+      "name": "alsa.audio.primary.rk30board.so",
+      "size_bytes": 54920,
+      "sha256": "7230a718caf3fa98e926a2901064c1bd91791ce0556c3dffb03cc844cfa2d7bc",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "libasound.so",
+        "liblog.so",
+        "libcutils.so",
+        "libutils.so",
+        "libmedia.so",
+        "libhardware.so",
+        "libhardware_legacy.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/alsa.audio_policy.rk30board.so",
+      "name": "alsa.audio_policy.rk30board.so",
+      "size_bytes": 75156,
+      "sha256": "af6524e4a72cfe1bf831255a439e326653a2a1ae9ea010f4cd0bd3e820851883",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libutils.so",
+        "libmedia.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/alsa.default.so",
+      "name": "alsa.default.so",
+      "size_bytes": 13700,
+      "sha256": "5f4b39a30046a5b0cb9fd230da029c1ac2a02a37d5322908db1ba2c6028a479c",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "libasound.so",
+        "liblog.so",
+        "libutils.so",
+        "libcutils.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/audio.a2dp.default.so",
+      "name": "audio.a2dp.default.so",
+      "size_bytes": 9492,
+      "sha256": "4e6b8436a807df58d77fa3a209a9e8314be63326a81e8a1ee69963df5581c4d8",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libpower.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/audio.primary.default.so",
+      "name": "audio.primary.default.so",
+      "size_bytes": 5348,
+      "sha256": "56463140927a3cbd9330f65e913b84e8e8841255f14071d6bef3d7867476d0c6",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/audio.primary.rk30board.so",
+      "name": "audio.primary.rk30board.so",
+      "size_bytes": 136672,
+      "sha256": "4ee92c9ce3536c1a74c61e3bb6cab7a2dad5764712e0aafbbe5bc7d6135f9fd5",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "libc.so",
+        "liblog.so",
+        "libcutils.so",
+        "libutils.so",
+        "libmedia.so",
+        "libhardware_legacy.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/audio.r_submix.default.so",
+      "name": "audio.r_submix.default.so",
+      "size_bytes": 17692,
+      "sha256": "f845ecc203b0fe3d81715a5800d053b5f133a132ebf632087e5e4d8c87542502",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libutils.so",
+        "libnbaio.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/audio.usb.default.so",
+      "name": "audio.usb.default.so",
+      "size_bytes": 5384,
+      "sha256": "f1a2fa74b10a9676afc4c91dc0fbcfcefe6f1469a035cf21c8f7c731f7e91af8",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libtinyalsa.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/audio_policy.default.so",
+      "name": "audio_policy.default.so",
+      "size_bytes": 75156,
+      "sha256": "775b2b0917c3205bbe8952ecd13dc9564d96abeff952364ad69cec2ffd7f8447",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libutils.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/audio_policy.rk30board.so",
+      "name": "audio_policy.rk30board.so",
+      "size_bytes": 75200,
+      "sha256": "76cc8a1e8a86a49ddb5bf98aadf88a4592d4005ce76789f1952f57f48505445c",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libutils.so",
+        "libmedia.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/bluetooth.default.so",
+      "name": "bluetooth.default.so",
+      "size_bytes": 753296,
+      "sha256": "9e9ba204105d91e11008fe3ef2ef1b48802c042c9ca1e81c229410e463c78ebf",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libpower.so",
+        "libbt-hci.so",
+        "libbt-utils.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/camera.rk30board.so",
+      "name": "camera.rk30board.so",
+      "size_bytes": 120916,
+      "sha256": "fb323634e956dda68304ed2071f05431cc500f3913fbe3a2009d09ce1b8f1ce3",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "libui.so",
+        "libbinder.so",
+        "libutils.so",
+        "liblog.so",
+        "libcutils.so",
+        "libcamera_client.so",
+        "libgui.so",
+        "libjpeg.so",
+        "libjpeghwenc.so",
+        "libion.so",
+        "libvpu.so",
+        "libdl.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/gps.rk30xx.so",
+      "name": "gps.rk30xx.so",
+      "size_bytes": 570392,
+      "sha256": "ed3cdeef4c2c8e067cd384d9975c1b6a696f532e88a15aacce6979eefb7cf61a",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.4.3"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libc.so",
+        "libcutils.so",
+        "libm.so",
+        "libstdc++.so"
+      ]
+    },
+    {
+      "path": "hw/gpu.rk30board.so",
+      "name": "gpu.rk30board.so",
+      "size_bytes": 5416,
+      "sha256": "818eec535cc182d7325b8b9408f8262c3726d3ad7d57621beef463d8d51752d0",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/gralloc.default.so",
+      "name": "gralloc.default.so",
+      "size_bytes": 9720,
+      "sha256": "1c02aa57fd046b69f2357396f044b0ccc0b9de540f392bb30410fde3d9481172",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/gralloc.rk30board.so",
+      "name": "gralloc.rk30board.so",
+      "size_bytes": 13548,
+      "sha256": "9a30a4de608058c548155d9103fc33b4fb400823caabe4657ea179f0c1c3cadd",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libMali.so",
+        "libGLESv1_CM.so",
+        "libUMP.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/hwcomposer.rk30board.so",
+      "name": "hwcomposer.rk30board.so",
+      "size_bytes": 28788,
+      "sha256": "61af9c8db42a68c9d3ab6e8c416300f1b477a79a4af0d7055437d38791cd6410",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "libhardware.so",
+        "liblog.so",
+        "libui.so",
+        "libEGL.so",
+        "libcutils.so",
+        "libbinder.so",
+        "libutils.so",
+        "libhardware_legacy.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/keystore.default.so",
+      "name": "keystore.default.so",
+      "size_bytes": 9408,
+      "sha256": "c8110b0d325485f6fc6ebef79cc07b2c3adbe87e5955e97b12aa5443a9f26d52",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "libcrypto.so",
+        "liblog.so",
+        "libkeystore_client.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/lights.rk30board.so",
+      "name": "lights.rk30board.so",
+      "size_bytes": 5336,
+      "sha256": "d565759f47e3646fac8f13f63919b3c9d3fc6795af441de5e3c41c7058cdab92",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/local_time.default.so",
+      "name": "local_time.default.so",
+      "size_bytes": 5292,
+      "sha256": "0e02493dec3e254cf79cbbbb55a4524e5468adfcc61924f9797a985104ff7877",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/power.default.so",
+      "name": "power.default.so",
+      "size_bytes": 5292,
+      "sha256": "6b0830a593df90ed26ba3524a4ceb23793f4a370ef0cbdd0637e241b60e9262a",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/power.rk3188.so",
+      "name": "power.rk3188.so",
+      "size_bytes": 5296,
+      "sha256": "527cd68e5d59b21a63bbabb8db674cc1505df184f188ec1a95f0ce54636eed8f",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    },
+    {
+      "path": "hw/sensors.rk30board.so",
+      "name": "sensors.rk30board.so",
+      "size_bytes": 59160,
+      "sha256": "eca0a3f39ab356e4508a1cd1d722ada28e8ada215acc3ef7aba3677fad4ad530",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "has_hal_info_symbol_HMI": true,
+      "compiler_comment": [
+        "4.6.x-google 20120106 (prerelease)",
+        "4.2.2"
+      ],
+      "needed_libraries": [
+        "liblog.so",
+        "libcutils.so",
+        "libutils.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ]
+    }
+  ]
+}

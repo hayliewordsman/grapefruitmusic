@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Unified AOSP 4.2 tablet route: separate status bar, bottom navigation and native QS. -->
+    <string name="config_statusBarComponent" translatable="false">com.android.systemui.statusbar.phone.PhoneStatusBar</string>
+    <bool name="config_hasSettingsPanel">true</bool>
+    <bool name="quick_settings_show_rotation_lock">true</bool>
+</resources>

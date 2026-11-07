@@ -1,0 +1,23 @@
+{
+  "product": "Grapefruit OS 1.0 / JP5S",
+  "aosp_tag": "android-4.2.2_r1",
+  "build_type": "source development; no installable image",
+  "hardware": {"soc": "RK3188", "cpu": "ARMv7 Cortex-A9", "ram_mib": 1024, "display_pixels": [1024,600], "kernel_release": "3.0.36+"},
+  "blocking_inputs": [
+    "Original JP5S/Rockchip BSP device sources and OEM Settings/framework patches",
+    "Working unlocked kernel image or matching source, .config, compiler and Module.symvers",
+    "Working recovery-boot ramdisk/init scripts, fstab and read-only partition/mount map identifying every shared resource",
+    "Verified boot-entry ownership and untouched normal-boot partitions; independent rollback evidence",
+    "Board audio_policy.conf, media_codecs.xml/media_profiles.xml, input IDC/keylayouts and display calibration",
+    "Actual Wi-Fi chipset/module/firmware, loaded-module inventory and working init/property selection",
+    "Unresolved non-AOSP ELF dependencies and matching exported symbols in the selected BSP",
+    "Original app certificates, installed versionCodes and matching app private signing keys",
+    "Coherent platform/shared-UID signing and userdata migration plan; JPay platform private key is unavailable",
+    "Original AOSP 4.2.2 host: full source checkout, supported JDK 6 and legacy host tools",
+    "Legacy keyboard NDK 17.2.4988734/JNI toolchain (must validate with AGP) and full app build checks",
+    "Physical JP5S testing of graphics, input, audio, suspend, Wi-Fi, codecs, orientation and settings"
+  ],
+  "excluded": ["GMS", "Google Play Services", "Xposed", "GravityBox", "standalone Grapefruit Settings APK"],
+  "prohibited_outputs": ["flash commands", "installation scripts", "partition table guesses", "normal-boot modifications"],
+  "kitkat_target": "android-4.4.2_r2 (future separate port; no ABI compatibility or data preservation asserted)"
+}

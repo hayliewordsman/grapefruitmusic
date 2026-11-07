@@ -1,0 +1,73 @@
+{
+  "archive_sha256": "0760d1c2ba2ff76e3e0823c0cf8216e0fba530c21bfb7e6778f36b3df8646f23",
+  "egl_cfg": "0 0 android\n0 1 mali\n",
+  "files": [
+    {
+      "file": "egl/egl.cfg",
+      "size": 21,
+      "sha256": "89e124ecc5da28514b4f7f3a5986b6e09bbf00d5ea32beb4204e08761876b53b"
+    },
+    {
+      "file": "egl/libGLESv1_CM_mali.so",
+      "size": 25624,
+      "sha256": "922612fd17d23fc7eb9ada24217af2ac9b22fbbafb44e608a39302d31fdfa469",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "needed": [
+        "libMali.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ],
+      "soname": "libGLESv1_CM_mali.so"
+    },
+    {
+      "file": "egl/libGLES_android.so",
+      "size": 83196,
+      "sha256": "d3736954a67608b347b4972304b242566e36a5c0c2628d9f56432ecb6942317a",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "needed": [
+        "liblog.so",
+        "libcutils.so",
+        "libhardware.so",
+        "libutils.so",
+        "libpixelflinger.so",
+        "libETC1.so",
+        "libui.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ],
+      "soname": "libGLES_android.so"
+    },
+    {
+      "file": "egl/libEGL_mali.so",
+      "size": 13328,
+      "sha256": "d625d8c5c958db3aca707ab5f46708afd98c1b7574dc6fe4fa93943f8ebcb084",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "needed": [
+        "libMali.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ],
+      "soname": "libEGL_mali.so"
+    },
+    {
+      "file": "egl/libGLESv2_mali.so",
+      "size": 21524,
+      "sha256": "695d2f0e3e64ec96255421ca4cc82c07675dcc2b0cdaddb232cfbd8369362f75",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "needed": [
+        "libMali.so",
+        "libc.so",
+        "libstdc++.so",
+        "libm.so"
+      ],
+      "soname": "libGLESv2_mali.so"
+    }
+  ]
+}

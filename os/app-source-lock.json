@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/hayliewordsman/grapefruitmusic.git",
+  "base_commit": "f271bde",
+  "imported_modules": {
+    "launcher": "61dba8530aefa0d5055d0ce731f416389487b9e3",
+    "keyboard": "4dfed22bf41c3a3691f5fd7cde4187e7b68bd95a",
+    "calculator": "c3bad6d951decd35442f90c752861023a4a79252"
+  },
+  "theme_provider_reference": "9211bba797f58912f0a167922acefef9c65d2058:settings/src/main/java/com/grapefruitsettings/",
+  "media_base": "f271bde:blue-victory",
+  "media_icon": "37addb2:app/src/main/res/mipmap-*/ic_launcher.png",
+  "notes": "Only app source directories were imported. Other branches and release identities remain unchanged. Media replaces Blue under the same package ID and requires the same signing certificate."
+}

@@ -1,0 +1,548 @@
+{
+  "archives": [
+    {
+      "name": "JP5S-Kernel-Modules.zip",
+      "sha256": "3d07278dc835c39c88926f8c438b80807a156fd0e7586d59a42eea0ff8faaa11"
+    },
+    {
+      "name": "JP5S-Hardware-Libraries.zip",
+      "sha256": "b96bbd894fac3d8640536027370a1da41c9c268e272a21b12933b431e7dd02a8"
+    },
+    {
+      "name": "JP5S-EGL-Drivers.zip",
+      "sha256": "0760d1c2ba2ff76e3e0823c0cf8216e0fba530c21bfb7e6778f36b3df8646f23"
+    },
+    {
+      "name": "jp5slibfiles.zip",
+      "sha256": "d48c552a17da2034672553ed8aea44a13336e894848a294233190f0422805e29"
+    },
+    {
+      "name": "jp5sjars.zip",
+      "sha256": "aee846d20a9ee27a44ef8bd5b2b6164a50d69109654c95509697394f9e406e62"
+    },
+    {
+      "name": "JP5S-System-UI.zip",
+      "sha256": "b3721742976e3dbd00279a65b50cb74a0f99c3daee0073ae38b8cff5b08ffeac"
+    }
+  ],
+  "files": [
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rt5370sta.ko.3.0.8+",
+      "bytes": 1960303,
+      "sha256": "e400648d83a3fdcd8d4b6a5dcd20d47f6f2365fb5fd51543ed37c967b690288e",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/ump.ko.3.0.36+",
+      "bytes": 44609,
+      "sha256": "dfe728598b19f5d8a287c10f2cfb04d301f8eb7e3245ec4b011af50fc16ea958",
+      "candidate_destination": "system/lib/modules/ump.ko.3.0.36+"
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/mali.ko",
+      "bytes": 151930,
+      "sha256": "a0a8ac25ac7420a5e321ddfaab2eee99fd98aaaa9ccbf89c1a136d7688c578c9",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/8723as.ko",
+      "bytes": 1224534,
+      "sha256": "dbf1d140ccdf409c9c38ee2930f5d70f77590dd5af22b255fcf452b4feda3900",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/vpu_service.ko.3.0.36+",
+      "bytes": 21591,
+      "sha256": "7d9d8979d50defdeacd5c3769c9c1df07ed10233f196ca7a1f0383b7ac74b689",
+      "candidate_destination": "system/lib/modules/vpu_service.ko.3.0.36+"
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/8188eu.ko.3.0.8+",
+      "bytes": 606073,
+      "sha256": "976f95d331b4f066c3a67c6d875535ac200ae263c8f344cd8ff6065c31fbb456",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rk29-ipp.ko.3.0.36+",
+      "bytes": 17387,
+      "sha256": "eec255459174a6243a982021b9e1698eaf7c708933635cb678d0c9c592f5eaad",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/mali.ko.3.0.36+",
+      "bytes": 163975,
+      "sha256": "76ffc88a1a14d691dd59bbcf3f2efe868bad141c98ea1a6b056ec82408932c7a",
+      "candidate_destination": "system/lib/modules/mali.ko.3.0.36+"
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/8188eu.ko",
+      "bytes": 852989,
+      "sha256": "c2aa97fd0b8a6c9666fe8f683ef0e7807ea63ac894690275b3f8eec8ff0d9795",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/ump.ko",
+      "bytes": 42846,
+      "sha256": "42be5cf10ef8aec744c2a209d7b34ca7116ac556af0de1a16b2a6b6d106185ab",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rk29-ipp.ko",
+      "bytes": 16862,
+      "sha256": "d943d703235e82a525a8ab2cb1ab2d18b5f3cbf3af30d8efbf4453cebec89d1b",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/8723au.ko",
+      "bytes": 1049056,
+      "sha256": "872182ef329a6b14ce73efea7ade74942402647006e5b733f1f401e2b792df95",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/8192cu.ko",
+      "bytes": 624545,
+      "sha256": "5b30b5ba3ee1037d55b17a58b3321d89e5a5d1de1ee71955d7ed546db48ea32f",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rt5370sta.ko",
+      "bytes": 1960303,
+      "sha256": "e400648d83a3fdcd8d4b6a5dcd20d47f6f2365fb5fd51543ed37c967b690288e",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/esp_init_data.bin",
+      "bytes": 128,
+      "sha256": "c98f3b97595d2295d1de15e5653b44042d9059e6643cfb90c6aa6e4d49d9f3d4",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rk30_mirroring.ko.3.0.36+",
+      "bytes": 18857,
+      "sha256": "5cfd1f4f2e6750cd718a10e44ce80a289d5db062a04c9ef6f06d3579f84b71af",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/esp8089.ko",
+      "bytes": 194165,
+      "sha256": "7b1e1c448a2f651532de0c8af8fa797f75998c5cf6b6855643c9a0e949447fe2",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rkwifi.ko",
+      "bytes": 577406,
+      "sha256": "ff25ee551f53e9842ef80e885a476546f4923e62372c17f18d417381ec02b52c",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rk30_mirroring.ko.3.0.8+",
+      "bytes": 19421,
+      "sha256": "77f8d3e55d2b15eb27cb851459e23dcab6d4a775c9ca25da43256f7548e4ef76",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/wlan.ko.3.0.8+",
+      "bytes": 2683,
+      "sha256": "b6a33f1962a27acfc076b91896c3ee535b4984564734cc4605501976a9e704d5",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rt5370ap.ko",
+      "bytes": 1107594,
+      "sha256": "0dca4b4cbd2183c3bb238c0f75440789e17b6066db5177aa665449c3c4ba7d27",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/8189es.ko",
+      "bytes": 931771,
+      "sha256": "4ea6ea52140522b8a11769d90b99ff3b286796e15bcfe84b9dd0b3c6e6e46c49",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/8723bu.ko",
+      "bytes": 1525808,
+      "sha256": "5f03e293ca135299573fd44115343cd15f62ebaf674dc85c2c3cf9ac6b17eee0",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/mt5931.ko",
+      "bytes": 406218,
+      "sha256": "22a8883625ad977e88018978f8ffbc40a40146c1b161a9d4f1b8222f6aaef6e5",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/vpu_service.ko",
+      "bytes": 20737,
+      "sha256": "8ad8a390e6a3161d1b5ea5ea0ae4cab71f3bbce930f780194b2af1415c50d1b3",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/init_data.conf",
+      "bytes": 171,
+      "sha256": "4de00753fd5ebadc02abffe98eed7516a23ad2089a0669db7ec7ace4bcd72839",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/mt7601sta.ko",
+      "bytes": 2018271,
+      "sha256": "5f7a99107b970c47da7ad6a3d781a18dfde307acd91356b2427a1b83f3b04b08",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rkwifi.ko.3.0.8+",
+      "bytes": 535790,
+      "sha256": "ae22174a1a2c45ab0354dd56baddd242154973cd544abe54f699337bdb564fba",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/tun.ko",
+      "bytes": 21979,
+      "sha256": "732b7f3503acb8b926459c76a0157b2cf67f6e59e4e76d544bf916ff35ebffd5",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/mtprealloc7601Usta.ko",
+      "bytes": 4753,
+      "sha256": "6a35af66ad07daab853f841bf6a2ccb2a325688e38981aea6ba30502b68061af",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/8192cu.ko.3.0.8+",
+      "bytes": 548824,
+      "sha256": "aff88b64be4d99b3a1888cbe340a7287cb6e3c3f54df7178b28c11c12608b0ec",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rkwifi.oob.ko",
+      "bytes": 595918,
+      "sha256": "f736dca154a04e5abe4b90c39901057ac00761b3178eac2deebe6e0bcd5b2a84",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/mt7601ap.ko",
+      "bytes": 975817,
+      "sha256": "23dba71cd704d1a4b436ddf8ef6284b04875c08686318c6060bccabc2c328bf8",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/gps_rk30xx.ko.3.0.36+",
+      "bytes": 283847,
+      "sha256": "28d47d1f3d671c0ff1fc838f82f21e6307efde7313ee77988818b1457e83c512",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/wlan.ko",
+      "bytes": 2778,
+      "sha256": "633d0939ee3d2a3cab0f6e0d93b72d1351079860fe1148ac273412ff3f8cd4b5",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Kernel-Modules.zip",
+      "member": "modules/rt5370ap.ko.3.0.8+",
+      "bytes": 1107594,
+      "sha256": "0dca4b4cbd2183c3bb238c0f75440789e17b6066db5177aa665449c3c4ba7d27",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/camera.rk30board.so",
+      "bytes": 120916,
+      "sha256": "fb323634e956dda68304ed2071f05431cc500f3913fbe3a2009d09ce1b8f1ce3",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/alsa.audio_policy.rk30board.so",
+      "bytes": 75156,
+      "sha256": "af6524e4a72cfe1bf831255a439e326653a2a1ae9ea010f4cd0bd3e820851883",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/audio.primary.rk30board.so",
+      "bytes": 136672,
+      "sha256": "4ee92c9ce3536c1a74c61e3bb6cab7a2dad5764712e0aafbbe5bc7d6135f9fd5",
+      "candidate_destination": "system/lib/hw/audio.primary.rk30board.so"
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/lights.rk30board.so",
+      "bytes": 5336,
+      "sha256": "d565759f47e3646fac8f13f63919b3c9d3fc6795af441de5e3c41c7058cdab92",
+      "candidate_destination": "system/lib/hw/lights.rk30board.so"
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/gpu.rk30board.so",
+      "bytes": 5416,
+      "sha256": "818eec535cc182d7325b8b9408f8262c3726d3ad7d57621beef463d8d51752d0",
+      "candidate_destination": "system/lib/hw/gpu.rk30board.so"
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/keystore.default.so",
+      "bytes": 9408,
+      "sha256": "c8110b0d325485f6fc6ebef79cc07b2c3adbe87e5955e97b12aa5443a9f26d52",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/alsa.default.so",
+      "bytes": 13700,
+      "sha256": "5f4b39a30046a5b0cb9fd230da029c1ac2a02a37d5322908db1ba2c6028a479c",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/audio_policy.default.so",
+      "bytes": 75156,
+      "sha256": "775b2b0917c3205bbe8952ecd13dc9564d96abeff952364ad69cec2ffd7f8447",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/gralloc.default.so",
+      "bytes": 9720,
+      "sha256": "1c02aa57fd046b69f2357396f044b0ccc0b9de540f392bb30410fde3d9481172",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/audio_policy.rk30board.so",
+      "bytes": 75200,
+      "sha256": "76cc8a1e8a86a49ddb5bf98aadf88a4592d4005ce76789f1952f57f48505445c",
+      "candidate_destination": "system/lib/hw/audio_policy.rk30board.so"
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/audio.primary.default.so",
+      "bytes": 5348,
+      "sha256": "56463140927a3cbd9330f65e913b84e8e8841255f14071d6bef3d7867476d0c6",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/audio.r_submix.default.so",
+      "bytes": 17692,
+      "sha256": "f845ecc203b0fe3d81715a5800d053b5f133a132ebf632087e5e4d8c87542502",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/acoustics.default.so",
+      "bytes": 5292,
+      "sha256": "b939714ec00f2e31b11cf6324e0e13d7cf2d2d0d10a5d3879679a50e8f23434f",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/power.default.so",
+      "bytes": 5292,
+      "sha256": "6b0830a593df90ed26ba3524a4ceb23793f4a370ef0cbdd0637e241b60e9262a",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/local_time.default.so",
+      "bytes": 5292,
+      "sha256": "0e02493dec3e254cf79cbbbb55a4524e5468adfcc61924f9797a985104ff7877",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/alsa.audio.primary.rk30board.so",
+      "bytes": 54920,
+      "sha256": "7230a718caf3fa98e926a2901064c1bd91791ce0556c3dffb03cc844cfa2d7bc",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/audio.a2dp.default.so",
+      "bytes": 9492,
+      "sha256": "4e6b8436a807df58d77fa3a209a9e8314be63326a81e8a1ee69963df5581c4d8",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/audio.usb.default.so",
+      "bytes": 5384,
+      "sha256": "f1a2fa74b10a9676afc4c91dc0fbcfcefe6f1469a035cf21c8f7c731f7e91af8",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/hwcomposer.rk30board.so",
+      "bytes": 28788,
+      "sha256": "61af9c8db42a68c9d3ab6e8c416300f1b477a79a4af0d7055437d38791cd6410",
+      "candidate_destination": "system/lib/hw/hwcomposer.rk30board.so"
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/gps.rk30xx.so",
+      "bytes": 570392,
+      "sha256": "ed3cdeef4c2c8e067cd384d9975c1b6a696f532e88a15aacce6979eefb7cf61a",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/power.rk3188.so",
+      "bytes": 5296,
+      "sha256": "527cd68e5d59b21a63bbabb8db674cc1505df184f188ec1a95f0ce54636eed8f",
+      "candidate_destination": "system/lib/hw/power.rk3188.so"
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/bluetooth.default.so",
+      "bytes": 753296,
+      "sha256": "9e9ba204105d91e11008fe3ef2ef1b48802c042c9ca1e81c229410e463c78ebf",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/sensors.rk30board.so",
+      "bytes": 59160,
+      "sha256": "eca0a3f39ab356e4508a1cd1d722ada28e8ada215acc3ef7aba3677fad4ad530",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-Hardware-Libraries.zip",
+      "member": "hw/gralloc.rk30board.so",
+      "bytes": 13548,
+      "sha256": "9a30a4de608058c548155d9103fc33b4fb400823caabe4657ea179f0c1c3cadd",
+      "candidate_destination": "system/lib/hw/gralloc.rk30board.so"
+    },
+    {
+      "archive": "JP5S-EGL-Drivers.zip",
+      "member": "egl/egl.cfg",
+      "bytes": 21,
+      "sha256": "89e124ecc5da28514b4f7f3a5986b6e09bbf00d5ea32beb4204e08761876b53b",
+      "candidate_destination": "system/lib/egl/egl.cfg"
+    },
+    {
+      "archive": "JP5S-EGL-Drivers.zip",
+      "member": "egl/libGLESv1_CM_mali.so",
+      "bytes": 25624,
+      "sha256": "922612fd17d23fc7eb9ada24217af2ac9b22fbbafb44e608a39302d31fdfa469",
+      "candidate_destination": "system/lib/egl/libGLESv1_CM_mali.so"
+    },
+    {
+      "archive": "JP5S-EGL-Drivers.zip",
+      "member": "egl/libGLES_android.so",
+      "bytes": 83196,
+      "sha256": "d3736954a67608b347b4972304b242566e36a5c0c2628d9f56432ecb6942317a",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-EGL-Drivers.zip",
+      "member": "egl/libEGL_mali.so",
+      "bytes": 13328,
+      "sha256": "d625d8c5c958db3aca707ab5f46708afd98c1b7574dc6fe4fa93943f8ebcb084",
+      "candidate_destination": "system/lib/egl/libEGL_mali.so"
+    },
+    {
+      "archive": "JP5S-EGL-Drivers.zip",
+      "member": "egl/libGLESv2_mali.so",
+      "bytes": 21524,
+      "sha256": "695d2f0e3e64ec96255421ca4cc82c07675dcc2b0cdaddb232cfbd8369362f75",
+      "candidate_destination": "system/lib/egl/libGLESv2_mali.so"
+    },
+    {
+      "archive": "jp5slibfiles.zip",
+      "member": "lib/libvpu.so",
+      "bytes": 42220,
+      "sha256": "d42619b9c4b5905a81f278bd03ae46e7b1cd02b294de248e337b0e301dc4814a",
+      "candidate_destination": "system/lib/libvpu.so"
+    },
+    {
+      "archive": "jp5slibfiles.zip",
+      "member": "lib/libion.so",
+      "bytes": 9664,
+      "sha256": "9304820ebb3948af2f25dc91aef9886fa061682a59cc8736e3a593868b0e7002",
+      "candidate_destination": "system/lib/libion.so"
+    },
+    {
+      "archive": "jp5slibfiles.zip",
+      "member": "lib/libMali.so",
+      "bytes": 963880,
+      "sha256": "db4a9cc735b44e3f8e3a211f2e0963e1e363c1adf970dc8b83d645537e7ad755",
+      "candidate_destination": "system/lib/libMali.so"
+    },
+    {
+      "archive": "jp5slibfiles.zip",
+      "member": "lib/libUMP.so",
+      "bytes": 21664,
+      "sha256": "1faa829394afb908d1fed8a3794117b6bef2efa851b9fd0aeb2417aaf078f903",
+      "candidate_destination": "system/lib/libUMP.so"
+    },
+    {
+      "archive": "jp5sjars.zip",
+      "member": "jp5sjars/services.jar",
+      "bytes": 1121444,
+      "sha256": "79076f6562cc4de2d5642b4aa5a307b2ab6cb8756e7e4e2abe9ea49d23959cf6",
+      "candidate_destination": null
+    },
+    {
+      "archive": "jp5sjars.zip",
+      "member": "jp5sjars/framework.jar",
+      "bytes": 3967674,
+      "sha256": "5f1bdb59a43c6397ffd7283a6128485d13c7710c7ff2700415222f29c91fea31",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-System-UI.zip",
+      "member": "Grapefruit-System-UI/Settings.apk",
+      "bytes": 2004277,
+      "sha256": "11e5af05c1b62f10ff614cf332beefb917b978e110b6f6dd5a1579349d4dac89",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-System-UI.zip",
+      "member": "Grapefruit-System-UI/SystemUI.apk",
+      "bytes": 1600568,
+      "sha256": "3881a25ef754f1437b221b68c924be3ee25079be2b508545647472d658cb76a6",
+      "candidate_destination": null
+    },
+    {
+      "archive": "JP5S-System-UI.zip",
+      "member": "Grapefruit-System-UI/framework-res.apk",
+      "bytes": 8656587,
+      "sha256": "e549050d39df691c11c5866c1bce64efe33f3cafe74536cffa9d89ab75647f8d",
+      "candidate_destination": null
+    }
+  ]
+}
