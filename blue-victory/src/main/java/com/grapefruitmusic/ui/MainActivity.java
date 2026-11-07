@@ -1025,6 +1025,9 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     /** The volume keys turn the radio's own volume, on tablets where it has one (the chip's). */
     @Override
     public boolean onKeyDown(int keyCode, android.view.KeyEvent event) {
+        if(television instanceof BlueTelevision&&television.active()&&(keyCode==android.view.KeyEvent.KEYCODE_CHANNEL_UP||keyCode==android.view.KeyEvent.KEYCODE_CHANNEL_DOWN)){
+            BlueTelevision tv=(BlueTelevision)television;if(tv.session.current!=null&&tv.session.current.live()){tv.session.next(keyCode==android.view.KeyEvent.KEYCODE_CHANNEL_UP?1:-1);return true;}
+        }
         if ((keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP || keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN)
                 && radio.inSession() && radio.ownVolumeMax() > 0 && radio.wantsToPlay()) {
             radio.stepVolume(keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP);

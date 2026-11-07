@@ -107,7 +107,7 @@ public final class UserSources {
     static List<Channel> parseM3u(Source s,String text) throws IOException {
         if(!text.trim().startsWith("#EXTM3U")&&!text.contains("#EXTINF")) throw new IOException("That address isn't an M3U playlist.");
         List<Channel> out=new ArrayList<>();
-        String name=null,group="",ua="",tvg="",logo="";
+        String name=null,group="",ua="",tvg="",logo="",vodType="";
         for(String raw:text.split("\r?\n")) {
             String line=raw.trim();
             if(line.startsWith("#EXTM3U")) {
@@ -116,7 +116,7 @@ public final class UserSources {
                 if(guide.contains(","))guide=guide.substring(0,guide.indexOf(',')).trim();
                 if(guide.startsWith("http://")||guide.startsWith("https://"))s.guide=guide;
             } else if(line.startsWith("#EXTINF")) {
-                tvg=attribute(line,"tvg-id");logo=attribute(line,"tvg-logo");
+                tvg=attribute(line,"tvg-id");logo=attribute(line,"tvg-logo");vodType=attribute(line,"tvg-type");if(vodType.isEmpty())vodType=attribute(line,"type");
                 int comma=line.lastIndexOf(',');
                 name=comma>=0?line.substring(comma+1).trim():"";
                 group=attribute(line,"group-title");
@@ -130,9 +130,9 @@ public final class UserSources {
                 Channel c=channel(s,out.size(),name==null||name.isEmpty()?"Channel "+(out.size()+1):name,group,line,ua);
                 c.guideId=tvg;
                 // Films and episodes in a playlist (files, or a server's /movie/ and /series/ paths) go to On Demand.
-                if(onDemandAddress(line)){c.kind=Channel.FILM;c.poster=logo;}
+                if(onDemandAddress(line)||"vod".equalsIgnoreCase(vodType)||"movie".equalsIgnoreCase(vodType)||"episode".equalsIgnoreCase(vodType)||"series".equalsIgnoreCase(vodType)){c.kind=line.toLowerCase(java.util.Locale.US).contains("/series/")||"episode".equalsIgnoreCase(vodType)||"series".equalsIgnoreCase(vodType)?Channel.EPISODE:Channel.FILM;c.poster=logo;}
                 out.add(c);
-                name=null;group="";ua="";tvg="";logo="";
+                name=null;group="";ua="";tvg="";logo="";vodType="";
                 if(out.size()>=MAX_CHANNELS) break;
             }
         }

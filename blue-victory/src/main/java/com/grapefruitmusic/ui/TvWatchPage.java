@@ -14,6 +14,9 @@ public final class TvWatchPage extends BaseFragment {
     private TvStyle b;
     private TvVideoView video,fullVideo;
     private TextView title,state,quality,now,pause,captions,elapsed;
+    private TextView record;
+    private List<TvRecordings.Item> planned=Collections.emptyList();
+    private final Runnable recordingChanged=()->{if(getActivity()!=null)planned=TvRecordings.all(getActivity());update();};
     private SeekBar seek;
     private Dialog fullscreen;
     private boolean seeking;
@@ -41,6 +44,7 @@ public final class TvWatchPage extends BaseFragment {
         action(actions,"Quality",()->{String[] labels={"Auto","Data Saver","Compatibility"};tv.choice("TV Playback Quality",labels,tv.repo.prefs.getInt("quality",0),n->{tv.repo.prefs.edit().putInt("quality",n).apply();s.settingsChanged();});});
         captions=action(actions,"Captions",()->{tv.repo.prefs.edit().putBoolean("captions",!tv.repo.prefs.getBoolean("captions",false)).apply();s.settingsChanged();});
         action(actions,"Full screen",this::fullScreen);
+        if(s.current!=null){action(actions,tv.repo.favourite(s.current)?"Remove Favourite":"Favourite",()->{tv.repo.toggleFavourite(s.current);rebuild();});if(s.current.live())record=action(actions,"Record",()->{long time=System.currentTimeMillis();TvRecordings.Item item=TvRecordings.scheduledAt(planned,s.current.id,time,time+1);if(item!=null&&item.active())TvRecorderService.stop(item.id);else tv.recordNow(s.current);});}
         if(s.current!=null&&s.current.onDemand()&&!s.current.local())action(actions,"Download",()->tv.download(s.current));
         if(s.current!=null){TextView description=b.label(s.current.meta==null?s.current.description:s.current.meta,13,b.secondary);description.setPadding(b.dp(4),b.dp(14),b.dp(4),b.dp(14));page.addView(description);}
         if(s.current!=null&&s.current.live()){
@@ -57,6 +61,7 @@ public final class TvWatchPage extends BaseFragment {
         if(tv==null||video==null)return;TvSession s=tv.session;
         title.setText(s.current==null?"TV":s.current.name);state.setText(s.playing()&&s.current!=null&&s.current.live()?"● LIVE":s.status);quality.setText(s.format);
         pause.setText(s.playing()?"Pause":"Play");captions.setVisibility(s.captionsAvailable?View.VISIBLE:View.GONE);captions.setSelected(tv.repo.prefs.getBoolean("captions",false));
+        if(record!=null&&s.current!=null){long time=System.currentTimeMillis();TvRecordings.Item item=TvRecordings.scheduledAt(planned,s.current.id,time,time+1);record.setText(item!=null&&item.active()?"Stop Recording":"Record");}
         video.update(s);if(fullVideo!=null)fullVideo.update(s);
         if(s.watchVisible&&isResumed())s.attach(fullVideo==null?video.texture:fullVideo.texture);
         if(s.current!=null&&s.current.live()){
@@ -79,8 +84,8 @@ public final class TvWatchPage extends BaseFragment {
         fullscreen.setOnDismissListener(d->{fullVideo=null;fullscreen=null;update();});fullscreen.show();fullscreen.getWindow().setLayout(-1,-1);update();
     }
     private static String clock(long ms){long seconds=Math.max(0,ms)/1000;return seconds>=3600?String.format(Locale.US,"%d:%02d:%02d",seconds/3600,(seconds/60)%60,seconds%60):String.format(Locale.US,"%d:%02d",seconds/60,seconds%60);}
-    @Override public void onResume(){super.onResume();tv.session.watchVisible=true;tv.session.listeners.add(changed);tv.repo.listen(changed);tv.session.changed();timer.post(tick);}
-    @Override public void onPause(){timer.removeCallbacks(tick);tv.session.listeners.remove(changed);tv.repo.unlisten(changed);tv.session.watchVisible=false;if(fullscreen!=null)fullscreen.dismiss();if(getActivity()!=null)getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);tv.session.changed();super.onPause();}
-    @Override public void onDestroyView(){video=null;fullVideo=null;super.onDestroyView();}
+    @Override public void onResume(){super.onResume();tv.session.watchVisible=true;tv.session.listeners.add(changed);tv.repo.listen(changed);TvRecordings.listeners.add(recordingChanged);recordingChanged.run();tv.session.changed();timer.post(tick);}
+    @Override public void onPause(){timer.removeCallbacks(tick);tv.session.listeners.remove(changed);tv.repo.unlisten(changed);TvRecordings.listeners.remove(recordingChanged);tv.session.watchVisible=false;if(fullscreen!=null)fullscreen.dismiss();if(getActivity()!=null)getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);tv.session.changed();super.onPause();}
+    @Override public void onDestroyView(){video=null;fullVideo=null;record=null;super.onDestroyView();}
     @Override boolean onBackPressed(){if(fullscreen!=null){fullscreen.dismiss();return true;}return false;}
 }

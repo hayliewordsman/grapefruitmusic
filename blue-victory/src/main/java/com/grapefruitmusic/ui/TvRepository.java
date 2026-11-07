@@ -48,11 +48,14 @@ final class TvRepository {
     }
     boolean hasOnDemand(){return !films.isEmpty();}
     List<String> sections(){
-        List<String> result=new ArrayList<String>(Arrays.asList("Channels","Guide"));
+        List<String> result=new ArrayList<String>(Arrays.asList("Channels","Guide","Favourites","Search"));
         if(hasOnDemand())result.add("On Demand");
         if(hasOnDemand()||!TvDownloads.all(context).isEmpty())result.add("Downloads");
+        result.add("Recordings");result.add("TV Apps");
         return result;
     }
+    boolean favourite(Channel c){return prefs.getStringSet("favourites",Collections.<String>emptySet()).contains(c.id);}
+    void toggleFavourite(Channel c){Set<String> saved=new HashSet<String>(prefs.getStringSet("favourites",Collections.<String>emptySet()));if(!saved.remove(c.id))saved.add(c.id);prefs.edit().putStringSet("favourites",saved).apply();changed();}
     Channel find(String id){for(Channel c:channels)if(c.id.equals(id))return c;for(Channel c:films)if(c.id.equals(id))return c;return null;}
     UserSources.Source source(Channel c){return sources.find(Guide.sourceId(c));}
     void refresh(UserSources.Source only){

@@ -26,6 +26,7 @@ final class GuideViews {
         void tune(Channel c);
         void program(Channel c,Guide.Program p);
         void details(Channel c);
+        default boolean recording(Channel c,long start,long end){return false;}
     }
 
     /** One channel's row of programmes. */
@@ -87,6 +88,7 @@ final class GuideViews {
                 c.drawText(line,0,line.length(),x,h/2f-b.dp(2),title);
                 CharSequence when=fit(times(p),small,room);
                 c.drawText(when,0,when.length(),x,h/2f+b.dp(14),small);
+                if(host.recording(channel,p.start,p.end)){fill.setColor(b.accent);c.drawCircle(r.right-b.dp(9),h-b.dp(9),b.dp(3),fill);}
             }
             // Now: a line in the accent.
             float nowX=col+(now-start)/(float)Guide.MINUTE*minute;

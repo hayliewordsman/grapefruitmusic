@@ -1,7 +1,7 @@
 import copy,json,tempfile,unittest
 from pathlib import Path
 from unittest.mock import patch
-from refresh_feed import compact_snapshot,download_source,fetch_source,update_from_trackers
+from refresh_feed import compact_snapshot,download_source,fetch_source,update_from_trackers,tracker_contest
 from build_snapshot import Builder
 
 class PublicResponse:
@@ -85,5 +85,11 @@ class TrackerRefreshTest(unittest.TestCase):
         result=update_from_trackers(builder,self.previous,self.ballots)
         self.assertEqual({'state_house','us_senate','governor'},{m['chamber'] for m in result.members.values()})
         senator=next(m for m in result.members.values() if m['chamber']=='us_senate');self.assertEqual('Special election',senator['district'])
+    def test_at_large_tracker_title_matches_the_at_large_ballot(self):
+        self.house['card']['title']='U.S. House NY at-large';self.ballots[('NY','us_house','atlarge')]=self.ballots[('NY','us_house','5')]
+        contest=tracker_contest(self.house,{'NY':'New York'},self.ballots);self.assertEqual(('NY','us_house','atlarge'),contest[0])
+    def test_partial_tracker_does_not_reopen_already_verified_multimember_contest(self):
+        self.ballots[('NY','state_house','5')]['seats']=2
+        result=update_from_trackers(self.builder(),self.previous,self.ballots);self.assertFalse(result.pending)
 
 if __name__=='__main__':unittest.main()

@@ -24,6 +24,7 @@ final class TvSession implements LivePlayer.Listener {
     private TvSession(Context c){
         context=c;repository=TvRepository.get(c);
         PlaybackSwitch.pauseVideo=()->pause(true);
+        Connections.stopWatching=id->{if(current!=null&&current.added()&&id.equals(Guide.sourceId(current))){pause(false);com.grapefruitmusic.util.Notice.showLong(context,"TV paused so your scheduled recording can use this provider’s stream.");}};
         PlaybackSwitch.videoKeys=key->{
             if(!active())return false;
             switch(key){
@@ -45,7 +46,7 @@ final class TvSession implements LivePlayer.Listener {
         synchronized(Connections.class){
         if(Channel.SERIES.equals(channel.kind))return false;
         if(channel.added()&&!channel.local()&&!Connections.canWatch(Guide.sourceId(channel),Connections.limit(context,Guide.sourceId(channel)))){
-            com.grapefruitmusic.util.Notice.showLong(context,"A download is using this provider's connection. Pause it in TV Downloads, then try again.");return false;
+            com.grapefruitmusic.util.Notice.showLong(context,"A recording or download is using this provider’s connection. Stop it in TV Recordings or pause it in TV Downloads, then try again.");return false;
         }
         saveResume();if(engine!=null){engine.release();engine=null;}
         current=channel;selected=true;captions="";captionsAvailable=false;status="Connecting…";

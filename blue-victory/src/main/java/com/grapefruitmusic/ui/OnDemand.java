@@ -13,36 +13,46 @@ import java.util.*;
  */
 public final class OnDemand {
     private final File cache;
-    public OnDemand(Context c){cache=new File(c.getFilesDir(),"ondemand");}
-    /** A login's films and series, as last fetched (this device's cache), or none. */
-    public List<Channel> cached(UserSources.Source s) {
-        File f=new File(cache,s.id+".json");
-        if(!f.exists())return Collections.emptyList();
-        try{return parse(s,new String(UserSources.read(new FileInputStream(f),UserSources.MAX_BYTES),"UTF-8"));}
-        catch(Exception e){return Collections.emptyList();}
+    interface Fetcher { byte[] get(String url) throws IOException; }
+    private final Fetcher fetcher;
+    public OnDemand(Context c){this(c,url->UserSources.fetch(url,LivePlayer.USER_AGENT));}
+    OnDemand(Context c,Fetcher fetcher){cache=new File(c.getFilesDir(),"ondemand");this.fetcher=fetcher;}
+    private JSONObject cachedJson(UserSources.Source source){
+        try{return new JSONObject(new String(UserSources.read(new android.util.AtomicFile(new File(cache,source.id+".json")).openRead(),UserSources.MAX_BYTES),"UTF-8"));}catch(Exception e){return new JSONObject();}
     }
-    /** Fetches a login's films and series (network, off the main thread) and keeps them. */
-    public List<Channel> refresh(UserSources.Source s) throws IOException {
-        if(!UserSources.LOGIN.equals(s.kind))return Collections.emptyList();
-        String api=UserSources.base(s)+"/player_api.php?"+UserSources.auth(s);
+    public List<Channel> cached(UserSources.Source source){try{return parse(source,cachedJson(source).toString());}catch(Exception e){return Collections.emptyList();}}
+    /** Films-only and series-only providers work independently; transient failures retain good data. */
+    public List<Channel> refresh(UserSources.Source source) throws IOException {
+        if(!UserSources.LOGIN.equals(source.kind))return Collections.emptyList();
+        String api=UserSources.base(source)+"/player_api.php?"+UserSources.auth(source);JSONObject old=cachedJson(source),all=new JSONObject();
+        String[] keys={"vodCategories","vod","seriesCategories","series"};String[] actions={"get_vod_categories","get_vod_streams","get_series_categories","get_series"};int catalogs=0;IOException failure=null;
         try{
-            JSONObject all=new JSONObject();
-            all.put("vodCategories",array(api+"&action=get_vod_categories"));
-            all.put("vod",array(api+"&action=get_vod_streams"));
-            all.put("seriesCategories",array(api+"&action=get_series_categories"));
-            all.put("series",array(api+"&action=get_series"));
-            String json=all.toString();
-            cache.mkdirs();FileOutputStream out=new FileOutputStream(new File(cache,s.id+".json"));out.write(json.getBytes("UTF-8"));out.close();
-            return parse(s,json);
-        }catch(IOException e){throw e;}
-        catch(Exception e){throw new IOException("The server's films and series couldn't be read.");}
+            for(int n=0;n<keys.length;n++){
+                try{JSONArray data=array(api+"&action="+actions[n]);all.put(keys[n],data);if(n==1||n==3)catalogs++;}
+                catch(IOException error){
+                    String message=error.getMessage()==null?"":error.getMessage();boolean unsupported=message.contains("HTTP 404")||message.contains("HTTP 405")||message.contains("HTTP 501");
+                    boolean denied=message.contains("HTTP 401")||message.contains("HTTP 403");
+                    all.put(keys[n],unsupported||denied||old.optJSONArray(keys[n])==null?new JSONArray():old.optJSONArray(keys[n]));
+                    if(!unsupported)failure=error;
+                }
+            }
+            if(catalogs==0&&failure!=null)throw failure;
+            List<Channel> parsed=parse(source,all.toString());write(new File(cache,source.id+".json"),all.toString());return parsed;
+        }catch(IOException error){throw error;}catch(Exception error){throw new IOException("The provider’s films and series could not be read.");}
     }
-    public void remove(String sourceId){new File(cache,sourceId+".json").delete();}
-    private static JSONArray array(String url) throws IOException {
-        try{
-            String text=new String(UserSources.fetch(url,LivePlayer.USER_AGENT),"UTF-8").trim();
-            return text.startsWith("[")?new JSONArray(text):new JSONArray(); // a server without films answers {} or nothing
-        }catch(JSONException e){return new JSONArray();}
+    public void remove(String sourceId){new File(cache,sourceId+".json").delete();File[] files=cache.listFiles();if(files!=null)for(File file:files)if(file.getName().startsWith(sourceId+"-episodes-"))file.delete();}
+    private JSONArray array(String url)throws IOException{
+        try{String text=new String(fetcher.get(url),"UTF-8").trim();if(text.isEmpty())return new JSONArray();if(text.startsWith("["))return new JSONArray(text);JSONObject reply=new JSONObject(text);if(reply.has("error")||reply.has("message")||reply.has("user_info"))throw new IOException("The provider did not return an On Demand catalog.");return new JSONArray();}
+        catch(JSONException error){throw new IOException("The provider returned an invalid On Demand catalog.");}
+    }
+    private static void write(File destination,String text)throws IOException{
+        destination.getParentFile().mkdirs();android.util.AtomicFile file=new android.util.AtomicFile(destination);FileOutputStream output=null;
+        try{output=file.startWrite();output.write(text.getBytes("UTF-8"));file.finishWrite(output);}catch(IOException error){if(output!=null)file.failWrite(output);throw error;}
+    }
+    Map<Integer,List<Channel>> episodesFor(UserSources.Source source,Channel series)throws IOException{
+        if(source==null)throw new IOException("This provider is no longer linked.");String id=series.id.substring(series.id.lastIndexOf('-')+1);File file=new File(cache,source.id+"-episodes-"+id+".json");
+        try{String text=new String(fetcher.get(UserSources.base(source)+"/player_api.php?"+UserSources.auth(source)+"&action=get_series_info&series_id="+URLEncoder.encode(id,"UTF-8")),"UTF-8");Map<Integer,List<Channel>> parsed=parseEpisodes(source,series,new JSONObject(text));write(file,text);return parsed;}
+        catch(Exception error){if(file.isFile())try{return parseEpisodes(source,series,new JSONObject(new String(UserSources.read(new android.util.AtomicFile(file).openRead(),UserSources.MAX_BYTES),"UTF-8")));}catch(Exception ignored){}if(error instanceof IOException)throw (IOException)error;throw new IOException("The series’ episodes could not be read.");}
     }
     static List<Channel> parse(UserSources.Source s,String json) throws Exception {
         JSONObject all=new JSONObject(json);List<Channel> out=new ArrayList<>();

@@ -6,7 +6,7 @@ public final class Channel {
      * episodes), an episode, or a recording or download kept on this device. Everything that plays is a
      * Channel, so the watch page, the floating player and the one-stream rule treat them all alike.
      */
-    public static final String LIVE="live", FILM="film", SERIES="series", EPISODE="episode";
+    public static final String LIVE="live", FILM="film", SERIES="series", EPISODE="episode", RECORDING="recording";
     public String kind=LIVE;
     /** A poster or cover picture (films, series), or "". */
     public String poster="";

@@ -22,8 +22,8 @@ android {
         applicationId "io.github.hayliewordsman.bluegrapefruit.victory"
         minSdk 17 // Android 4.2.2; do not add a maxSdkVersion.
         targetSdk 36
-        versionCode 8
-        versionName "1.0"
+        versionCode 9
+        versionName "1.1 beta 1"
         ndk { abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64" }
     }
     sourceSets {

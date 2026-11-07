@@ -27,15 +27,19 @@ public class BlueIntegrationTest {
     private BlueTelevision tv;
     @Before public void launch() throws Exception {
         Application app=RuntimeEnvironment.getApplication();Prefs.init(app);Fonts.init(app);Brand.init(app);
+        // Robolectric creates a new data directory for every test; application singletons must
+        // not retain a previous test's directory. A real app process has one Application.
+        TvRepository prior=org.robolectric.util.ReflectionHelpers.getStaticField(TvRepository.class,"instance");if(prior!=null)prior.worker.shutdownNow();
+        org.robolectric.util.ReflectionHelpers.setStaticField(TvRepository.class,"instance",null);org.robolectric.util.ReflectionHelpers.setStaticField(TvSession.class,"instance",null);
         controller=Robolectric.buildActivity(MainActivity.class).setup().visible();activity=controller.get();tv=(BlueTelevision)activity.television();
         tv.repo.worker.submit(()->{}).get(10,TimeUnit.SECONDS);settle();
     }
     @After public void close(){if(tv!=null)tv.session.stop();if(controller!=null)controller.pause().stop().destroy();}
     private void settle(){Shadows.shadowOf(Looper.getMainLooper()).idle();activity.getFragmentManager().executePendingTransactions();View root=activity.getWindow().getDecorView();for(int pass=0;pass<3;pass++){root.measure(View.MeasureSpec.makeMeasureSpec(411,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(914,View.MeasureSpec.EXACTLY));root.layout(0,0,411,914);Shadows.shadowOf(Looper.getMainLooper()).idle();}}
-    @Test public void tvChipsAndTabPopupMatchWithoutDvrAndSettingsStayUnified() throws Exception {
-        assertNotNull(tv);assertEquals(59,tv.repo.channels.size());assertEquals(Arrays.asList("Channels","Guide"),tv.sections());
+    @Test public void tvChipsAndTabPopupMatchWithDvrAndSettingsStayUnified() throws Exception {
+        assertNotNull(tv);assertEquals(59,tv.repo.channels.size());assertEquals(Arrays.asList("Channels","Guide","Favourites","Search","Recordings","TV Apps"),tv.sections());
         activity.showTvSection("Channels");settle();View root=activity.getWindow().getDecorView();
-        assertNotNull(text(root,"Guide"));assertNull(text(root,"On Demand"));assertNull(text(root,"DVR"));
+        assertNotNull(text(root,"Guide"));assertNotNull(text(root,"Recordings"));assertNotNull(text(root,"Favourites"));assertNull(text(root,"On Demand"));assertNull(text(root,"DVR"));
         View tab=described(root,"TV");assertNotNull(tab);assertTrue(tab.performLongClick());settle();
         Field field=TabMenu.class.getDeclaredField("showing");field.setAccessible(true);PopupWindow popup=(PopupWindow)field.get(null);assertNotNull(popup);
         assertNotNull(text(popup.getContentView(),"Channels"));assertNotNull(text(popup.getContentView(),"Guide"));assertNull(text(popup.getContentView(),"On Demand"));popup.dismiss();
@@ -71,11 +75,12 @@ public class BlueIntegrationTest {
         Map<String,List<Channel>> map=(Map<String,List<Channel>>)f.get(tv.repo);
         Channel film=new Channel("vod-abc-4","Provider Film","","Added","Drama","","Provider",new String[]{"https://example.test/movie/4.mp4"},"","Provider","");film.kind=Channel.FILM;map.put("abc",Collections.singletonList(film));
         java.lang.reflect.Method merge=TvRepository.class.getDeclaredMethod("merge");merge.setAccessible(true);merge.invoke(tv.repo);
-        assertEquals(Arrays.asList("Channels","Guide","On Demand","Downloads"),tv.sections());
+        assertEquals(Arrays.asList("Channels","Guide","Favourites","Search","On Demand","Downloads","Recordings","TV Apps"),tv.sections());
         activity.showTvSection("On Demand");settle();assertNotNull(text(activity.getWindow().getDecorView(),"Provider Film"));
         TvDownloads.Item saved=new TvDownloads.Item();saved.id="finished";saved.title="Saved Film";saved.file=new File(activity.getFilesDir(),"saved.mp4").getPath();saved.state=TvDownloads.DONE;TvDownloads.put(activity,saved);
-        map.clear();merge.invoke(tv.repo);tv.repo.changed();settle();assertEquals(Arrays.asList("Channels","Guide","Downloads"),tv.sections());
-        TvDownloads.remove(activity,saved.id);settle();assertEquals(Arrays.asList("Channels","Guide"),tv.sections());
+        assertNotNull("Saved downloads remain visible after provider content is unavailable",TvDownloads.get(tv.repo.context,saved.id));
+        map.clear();merge.invoke(tv.repo);tv.repo.changed();settle();assertEquals(Arrays.asList("Channels","Guide","Favourites","Search","Downloads","Recordings","TV Apps"),tv.sections());
+        TvDownloads.remove(activity,saved.id);settle();assertEquals(Arrays.asList("Channels","Guide","Favourites","Search","Recordings","TV Apps"),tv.sections());
     }
     static TextView text(View root,String value){if(root instanceof TextView&&value.contentEquals(((TextView)root).getText()))return (TextView)root;if(root instanceof ViewGroup)for(int n=0;n<((ViewGroup)root).getChildCount();n++){TextView got=text(((ViewGroup)root).getChildAt(n),value);if(got!=null)return got;}return null;}
     static View described(View root,String value){if(value.equals(String.valueOf(root.getContentDescription())))return root;if(root instanceof ViewGroup)for(int n=0;n<((ViewGroup)root).getChildCount();n++){View got=described(((ViewGroup)root).getChildAt(n),value);if(got!=null)return got;}return null;}

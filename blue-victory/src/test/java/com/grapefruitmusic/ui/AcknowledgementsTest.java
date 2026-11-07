@@ -27,7 +27,7 @@ public class AcknowledgementsTest {
         assertTrue(find(r,"Danica Roem","state_senate").flags.contains("transgender"));
     }
     @Test public void allReviewedTransgenderMembersHaveASourcedFlag()throws Exception{
-        AcknowledgementsRoster r=AcknowledgementsRoster.load(RuntimeEnvironment.getApplication());assertEquals("November 5, 2026",r.date);
+        AcknowledgementsRoster r=AcknowledgementsRoster.load(RuntimeEnvironment.getApplication());assertEquals("November 6, 2026",r.date);
         for(String name:new String[]{"Allison Montgomery","Alexis Hoffkling","Bentley Hudgins","Aime Wichtendahl","Elle Abigail Boatman","Joanna Whaley","Liish Kozlowski","Leigh Finke","Wick Thomas","Zooey Zephyr","SJ Howell","Alissandra Murray","Alice Wade","Jaelynn Scott","Dina Nina Martinez-Rutherford","Kim Coco Iwamoto"}){
             AcknowledgementsRoster.Member m=find(r,name,"state_house");assertTrue(name,m.flags.contains("transgender"));assertFalse(name,m.identitySources.get("transgender").isEmpty());
         }

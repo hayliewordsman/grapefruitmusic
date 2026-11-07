@@ -1,6 +1,6 @@
 # Blue Grapefruit: Victory Edition
 
-Version **1.0 stable**, application ID `io.github.hayliewordsman.bluegrapefruit.victory`.
+Version **1.1 beta 1** (version code 9), application ID `io.github.hayliewordsman.bluegrapefruit.victory`.
 This separate app module uses Grapefruit Audio's original layouts and unmodified shared classes,
 with Blue-only Java overrides for edition changes. Build-type
 resource overlays supply the blue palette and branding. The approved blue grapefruit icon has a donkey silhouette over the Capitol and no headphones. The two-line wordmark reads **Blue Grapefruit** / **Victory Edition**,
@@ -12,6 +12,40 @@ with Android 17 must be checked on that OS: minSdk 17 means Android 4.2.2, not A
 All four original native ABIs are retained. Stable releases are published on GitHub and in the
 developer's F-Droid repository. Test downloads remain GitHub prereleases and stay out of F-Droid.
 The Blue download page is https://hayliewordsman.github.io/grapefruitmusic/blue/.
+
+## 1.1 beta 1
+
+Victory Roll Call reads its last validated private cache (or the included November 6 snapshot)
+when opened, then requests the latest public results feed in the background. Successful,
+validated downloads replace the cache atomically. Failed, interrupted, invalid or older feed
+responses retain the newer offline roster. The independently scheduled results publisher runs
+hourly; neither results updates nor opening this page require a new APK. Results remain
+provisional and each entry retains its election/term and public identity citations.
+
+The revised closing paragraph omits “future federal prisoner,” and is the last row after loaded
+results, including filtered searches. It is absent while results are still loading. Pride flags
+remain bundled Canvas drawings rather than system emoji.
+
+**Victory Break** follows Maps' route: **Settings → About → tap Developer / Haylie five times**.
+The same sprite, map outline and drop animation are local; leaving the page resets the game.
+Maps itself is unchanged.
+
+TV adds Favourites, Search, Recordings and TV Apps alongside Channels and Guide. IPTV On Demand
+appears when linked M3U/Xtream content supports it, with films, series, seasons and episodes;
+Downloads appears with that capability or existing saved downloads. The free public-domain
+Movies catalog is excluded. Existing picture mini-player and audio-only background playback
+remain. All TV preferences, including recording padding, stay in the unified Settings screen.
+
+DVR can record the current channel or schedule a guide programme, with early/late padding,
+persistent jobs, boot/time-change rescheduling, foreground notification controls and
+provider-connection limits. Recording supports unencrypted MPEG-TS or muxed-audio HLS;
+encrypted streams and separate-audio HLS are unsupported. Downloaded IPTV content uses the
+existing Downloads page. Installed TV Apps shortcuts pause Blue playback before launching.
+
+This is a GitHub prerelease only. Stable 1.0 remains in F-Droid. The original Audio, standalone
+TV and Maps source, artwork, listings and releases are unchanged. The approved private EP and
+Blue signing identity are retained. Validation includes 118 Blue JVM/Robolectric tests and
+Blue beta lint; physical-device and actual-provider testing are still required.
 
 ## Private music inputs
 

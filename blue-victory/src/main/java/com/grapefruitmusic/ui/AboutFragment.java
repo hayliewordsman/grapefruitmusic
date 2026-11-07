@@ -21,11 +21,14 @@ import com.grapefruitmusic.util.Notice;
 
 /** Settings › About Grapefruit. */
 public final class AboutFragment extends BaseFragment {
+    private int victoryTaps;
     static final String COPYRIGHT = "Copyright © 2026 MagicFlute LLC";
     static final String DEVELOPER = "Haylie";
     static final String TELEGRAM = "afishinauto";
     static final String PAYPAL = "paypal.me/fishglub";
     static final String SOURCE = "github.com/hayliewordsman/grapefruitmusic";
+
+    @Override public void onDestroyView(){victoryTaps=0;super.onDestroyView();}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
@@ -87,7 +90,7 @@ public final class AboutFragment extends BaseFragment {
                     + " warranty.");
 
         g.section("Developer");
-        g.value("Developer", DEVELOPER, null);
+        g.value("Developer", DEVELOPER, v->{if(++victoryTaps==5){victoryTaps=0;main().push(new VictoryBreakFragment());}});
         linkRow(g, "Telegram", "@" + TELEGRAM, "https://t.me/" + TELEGRAM);
         linkRow(g, "Donate (PayPal)", PAYPAL, "https://" + PAYPAL);
         g.footer("Tap to open, or touch and hold to copy.");
