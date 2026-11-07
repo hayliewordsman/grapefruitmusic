@@ -1547,6 +1547,18 @@
       "url": "https://ballotpedia.org/United_States_Senate_elections,_2026",
       "kind": "research",
       "state": ""
+    },
+    {
+      "file": "mvp-us-senate-results.html",
+      "url": "https://movement.vote/election-results/2026/races/us-senate/",
+      "state": "",
+      "kind": "research"
+    },
+    {
+      "file": "mvp-governors-results.html",
+      "url": "https://movement.vote/election-results/2026/races/governors/",
+      "state": "",
+      "kind": "research"
     }
   ]
 }

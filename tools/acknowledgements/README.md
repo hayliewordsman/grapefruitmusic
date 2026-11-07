@@ -129,3 +129,38 @@ The same-page closing paragraph is created lazily as the roster's final adapter 
 an always-present ListView footer: it cannot appear while the background loader is still empty,
 and a filtered name/state search shows only the search results. Clearing the search restores it
 at the end of the full roster.
+
+## 1.1 independent results feed
+
+`refresh_feed.py` publishes a compact runtime snapshot independently of all APKs. The
+`blue-roll-call.yml` workflow checks sources hourly and updates only `roster.json` on the
+`blue-roll-call-data` branch. It cannot build, sign, tag or release an app. Blue requests the
+raw HTTPS feed whenever Victory Roll Call opens, validates it off the UI thread, and saves it
+atomically for offline use; the APK includes a first-use fallback snapshot.
+
+Install Beautiful Soup and PyYAML, then run:
+
+```sh
+python -m unittest discover -s tools/acknowledgements -p 'test_*.py'
+python tools/acknowledgements/refresh_feed.py --cache work/roll-call-sources \
+  --previous /path/to/published-roster.json --output work/roster.json
+```
+
+Empty HTTP 200 responses, HTTP 202 challenge responses, malformed pages and failed requests
+are not fresh evidence. The updater first attempts the full source batch. If most result sites
+are unavailable, all four public AP-backed trackers (state legislatures, House, Senate and
+governors) must still be freshly accessible and expose matching 2026 contests. Their explicit
+calls are checked against `feed-seed/general-ballots.json`; candidate identity, party, state,
+office and district must match. Complete replacement calls remove earlier projections,
+including when a Republican now wins. A withdrawn call removes projections that depended on
+that tracker and restores an unresolved notice. Partial multi-member calls cannot close a gap.
+
+Previously verified results outside refreshed coverage remain. The displayed note states that
+some sources are unavailable; a new check date does not imply a complete or certified roster.
+Missing tracker coverage or a large unexplained roster loss prevents publication, leaving the
+last good feed available. Pride labels remain limited to source-backed public self-description;
+the preserved identity evidence follows exact member IDs and never establishes an election win.
+
+For 1.1 the revised closing paragraph is the last loaded row in both full and filtered results.
+Raw research and unused contact fields are excluded from the public runtime JSON. Publisher
+diagnostics retain only public result-source metadata for seven days after a failed run.

@@ -12,6 +12,7 @@ jobs:
   refresh:
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
@@ -19,6 +20,8 @@ jobs:
           python-version: '3.12'
       - name: Install public-source parser dependencies
         run: python -m pip install 'beautifulsoup4>=4.12,<5' 'PyYAML>=6,<7'
+      - name: Check projection and feed rules
+        run: python -m unittest discover -s tools/acknowledgements -p 'test_*.py'
       - name: Read the previous published snapshot
         run: |
           if git fetch origin blue-roll-call-data; then
