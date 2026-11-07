@@ -1,0 +1,4 @@
+<lint>
+    <!-- AOSP 4.2.2 ships partial language packs; missing strings fall back to English. -->
+    <issue id="MissingTranslation" severity="warning" />
+</lint>

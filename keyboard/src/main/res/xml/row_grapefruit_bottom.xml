@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<!-- Grapefruit LegacyHolo reference arrangement. Mode buttons commit on release, before resizing. -->
+<merge xmlns:latin="http://schemas.android.com/apk/res-auto">
+    <Row latin:keyWidth="8.5%p">
+        <switch>
+            <case latin:keyboardLayoutSetElement="symbols|symbolsShifted">
+                <Key latin:keyStyle="toAlphaKeyStyle" latin:code="!code/key_grapefruit_return_alpha"/>
+            </case>
+            <default>
+                <Key latin:keyStyle="toSymbolKeyStyle" latin:code="!code/key_grapefruit_symbols"/>
+            </default>
+        </switch>
+        <Key latin:keyLabel="!text/keylabel_for_comma" latin:moreKeys="!text/more_keys_for_comma"/>
+        <switch>
+            <case latin:keyboardLayoutSetElement="symbols|symbolsShifted">
+                <Key latin:code="!code/key_grapefruit_number_pad" latin:keyLabel="1234" latin:keyActionFlags="noKeyPreview"/>
+            </case>
+            <case latin:languageSwitchKeyEnabled="true">
+                <Key latin:keyStyle="languageSwitchKeyStyle"/>
+            </case>
+            <default>
+                <Spacer latin:keyWidth="8.5%p"/>
+            </default>
+        </switch>
+        <Spacer latin:keyWidth="2.5%p"/>
+        <Key latin:keyStyle="spaceKeyStyle" latin:keyWidth="44%p"/>
+        <Spacer latin:keyWidth="2.5%p"/>
+        <switch>
+            <case latin:keyboardLayoutSetElement="symbols|symbolsShifted">
+                <Spacer latin:keyWidth="8.5%p"/>
+            </case>
+            <case latin:hasShortcutKey="true">
+                <Key latin:keyStyle="shortcutKeyStyle"/>
+            </case>
+            <default>
+                <Key latin:keyLabel=":-)" latin:keyOutputText=":-) " latin:moreKeys="!text/more_keys_for_smiley" latin:keyLabelFlags="hasPopupHint|preserveCase"/>
+            </default>
+        </switch>
+        <Key latin:keyStyle="punctuationKeyStyle"/>
+        <switch>
+            <case latin:keyboardLayoutSetElement="symbols|symbolsShifted">
+                <Key latin:keyStyle="toAlphaKeyStyle" latin:code="!code/key_grapefruit_return_alpha" latin:keyWidth="fillRight"/>
+            </case>
+            <default>
+                <Key latin:keyStyle="toSymbolKeyStyle" latin:code="!code/key_grapefruit_symbols" latin:keyWidth="fillRight"/>
+            </default>
+        </switch>
+    </Row>
+</merge>

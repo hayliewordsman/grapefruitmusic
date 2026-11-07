@@ -11,6 +11,27 @@ public final class UniversalTheme {
     public static final Uri URI = Uri.parse("content://io.github.hayliewordsman.grapefruitsettings.theme/theme");
     private UniversalTheme() {}
 
+    /** Refresh a visible Activity immediately; release the observer with its decor window. */
+    public static void watch(final android.app.Activity activity, final SharedPreferences prefs,
+                             final boolean media, final int[] mapping) {
+        final android.view.View decor=activity.getWindow().getDecorView();
+        final android.database.ContentObserver observer=new android.database.ContentObserver(new android.os.Handler()) {
+            @Override public void onChange(boolean self) {
+                if(sync(activity,prefs,media,mapping) && !activity.isFinishing())activity.recreate();
+            }
+        };
+        decor.addOnAttachStateChangeListener(new android.view.View.OnAttachStateChangeListener() {
+            private boolean registered;
+            public void onViewAttachedToWindow(android.view.View v) {
+                if(!registered){activity.getContentResolver().registerContentObserver(URI,false,observer);registered=true;}
+                observer.onChange(false);
+            }
+            public void onViewDetachedFromWindow(android.view.View v) {
+                if(registered){activity.getContentResolver().unregisterContentObserver(observer);registered=false;}
+            }
+        });
+    }
+
     /** Canonical IDs: Dark=0, Light=1, Black=2, Blue=3; mappings are client preference IDs. */
     public static boolean sync(Context c, SharedPreferences prefs, boolean media, int[] mapping) {
         try (Cursor cursor = c.getContentResolver().query(URI, null, null, null, null)) {

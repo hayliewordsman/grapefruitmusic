@@ -94,8 +94,10 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
 
     @Override
     protected void onCreate(Bundle saved) {
+        com.grapefruitmusic.ui.UniversalTheme.sync(this, Prefs.raw(), true, new int[]{4,3,2,5});
         Ui.applyTheme(this);
         super.onCreate(saved);
+        UniversalTheme.watch(this, Prefs.raw(), true, new int[]{4,3,2,5});
         setContentView(R.layout.activity_main);
         Fonts.applyAll(findViewById(R.id.root));
         if (android.os.Build.VERSION.SDK_INT >= 35) {
@@ -759,6 +761,7 @@ public final class MainActivity extends Activity implements Player.Listener, Rad
     @Override
     protected void onResume() {
         super.onResume();
+        if (com.grapefruitmusic.ui.UniversalTheme.sync(this, Prefs.raw(), true, new int[]{4,3,2,5})) { recreate(); return; }
         com.grapefruitmusic.podcast.PodcastStore.get(this).resumeDownloads();
         Notice.setSink(this);
         com.grapefruitmusic.download.Downloads.get(this).startWorker();

@@ -43,6 +43,7 @@ public class Toggle extends View implements Checkable {
     private final float trackHeight;
     private int offTrack = 0xffe3e3e8;
     private int offSegments = 0xffdcdce0;
+    private int onTop=ON_TOP,onBottom=ON_BOTTOM,knobColor=KNOB,fleshColor=FLESH_ON,segmentColor=SEGMENTS_ON;
     private Shader onShader;
     private float shaderTop = Float.NaN;
 
@@ -65,6 +66,7 @@ public class Toggle extends View implements Checkable {
 
     public Toggle(Context context, AttributeSet attrs) {
         super(context, attrs);
+        if(context.getSharedPreferences("fast",Context.MODE_PRIVATE).getInt("theme",0)==3){onTop=0xff75ceff;onBottom=0xff2368d8;knobColor=0xffeaf4ff;fleshColor=0xff7ccbff;segmentColor=0xfff0f8ff;}
         density = getResources().getDisplayMetrics().density;
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         trackWidth = 50 * density;
@@ -140,7 +142,7 @@ public class Toggle extends View implements Checkable {
         canvas.drawRoundRect(rect, r, r, paint);
         if (position > 0f) {
             if (onShader == null || shaderTop != top) {
-                onShader = new LinearGradient(0, top, 0, top + trackHeight, ON_TOP, ON_BOTTOM, Shader.TileMode.CLAMP);
+                onShader = new LinearGradient(0, top, 0, top + trackHeight, onTop, onBottom, Shader.TileMode.CLAMP);
                 shaderTop = top;
             }
             paint.setShader(onShader);
@@ -157,10 +159,10 @@ public class Toggle extends View implements Checkable {
         float cy = top + r;
         paint.setColor(0x26000000);
         canvas.drawCircle(cx, cy + 0.8f * density, knobR + 0.6f * density, paint);
-        paint.setColor(KNOB);
+        paint.setColor(knobColor);
         canvas.drawCircle(cx, cy, knobR, paint);
         float flesh = knobR * 0.72f;
-        paint.setColor(blend(KNOB, FLESH_ON, position));
+        paint.setColor(blend(knobColor, fleshColor, position));
         canvas.drawCircle(cx, cy, flesh, paint);
 
         // Segments turn as the slice rolls along the track.
@@ -168,7 +170,7 @@ public class Toggle extends View implements Checkable {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeWidth(1.1f * density);
-        paint.setColor(blend(offSegments, SEGMENTS_ON, position));
+        paint.setColor(blend(offSegments, segmentColor, position));
         float inner = flesh * 0.16f;
         float outer = flesh * 0.86f;
         for (int i = 0; i < SEGMENTS; i++) {

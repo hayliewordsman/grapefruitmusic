@@ -1,0 +1,39 @@
+Grapefruit Launcher
+Copyright (C) 2026 MagicFlute LLC
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+The complete GNU GPL is bundled as GPL-3.0.txt.
+Source and build instructions:
+https://github.com/hayliewordsman/grapefruitmusic/tree/codex/grapefruit-launcher-preview/launcher
+
+Geist and Geist Pixel Triangle are by Vercel, licensed under the SIL Open Font
+License 1.1. The full copyright and licence notice is in fonts/Geist-OFL.txt.
+The launcher wordmark is a subset of Geist Pixel Triangle from geist 1.9.0;
+tools/launcher/wordmark.py documents its reproducible generation.
+
+AOSP Launcher2 (Android 4.2.2)
+Copyright (C) 2008-2012 The Android Open Source Project
+Licensed under the Apache License, Version 2.0; full text in Apache-2.0.txt.
+Pinned upstream commit: 002c25eede2a33a5378c16c5bb9165179783e729
+https://android.googlesource.com/platform/packages/apps/Launcher2/+/002c25eede2a33a5378c16c5bb9165179783e729
+The drag controller/contracts, in-window drag layer/image, paged workspace and
+cell geometry are adapted from Launcher2. Modifications by MagicFlute LLC (2026)
+remove platform-private APIs, system wallpaper, widget/folder/fling animations,
+and adapt public API 17+ layout, icon memory handling and Grapefruit controls.
+Original source snapshots and detailed modifications are in third_party/launcher2.
+Upstream files retain their Apache 2.0 licence and copyright; the combined app is
+provided under GPL-3.0-or-later with the Apache and font notices retained.
+
+The launcher has no third-party runtime SDKs beyond these bundled open-source
+launcher components. Its only runtime requirements are
+Android's framework and the bundled open-source fonts. Test/build tools are not
+included in the APK. Installed app artwork is read locally from those apps;
+its original authors retain their rights. The launcher's original icon plates,
+branding tools and source code are licensed under GPL-3.0-or-later.

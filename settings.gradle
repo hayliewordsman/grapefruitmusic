@@ -19,3 +19,7 @@ include ":app"
 include ":grapefruit-ui", ":tv"
 include ":blue-victory"
 include ":maps"
+// ROM development modules; the existing application and release tasks retain their identities.
+include ":launcher", ":calculator", ":grapefruit-media"
+// Allows Java/resource validation of the other apps on hosts without the legacy IME NDK.
+if (!providers.gradleProperty("grapefruitSkipKeyboard").isPresent()) include ":keyboard"

@@ -48,6 +48,7 @@ public final class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        com.grapefruitmusic.ui.UniversalTheme.watch(this,getSharedPreferences("maps",MODE_PRIVATE),false,new int[]{0,1,2,3});
         prefs=getSharedPreferences("maps",MODE_PRIVATE);
         UniversalTheme.sync(this,prefs,false,UNIVERSAL_THEME_IDS);
         Fonts.init(this);

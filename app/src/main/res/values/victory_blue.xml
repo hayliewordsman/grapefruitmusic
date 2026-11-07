@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <style name="Theme.Grapefruit.VictoryBlue" parent="Theme.Grapefruit.Dark">
+    <item name="android:fontFamily">sans-serif</item>
+    <item name="android:windowBackground">#07162B</item>
+    <item name="android:colorBackground">#07162B</item>
+    <item name="android:textColorHighlight">#6667C7FF</item>
+    <item name="gfBackground">#07162B</item>
+    <item name="gfSplash">@drawable/splash_grapefruit_dark</item>
+    <item name="gfGroupedBackground">#07162B</item>
+    <item name="gfSurface">#102541</item>
+    <item name="gfBar">#0B1D35</item>
+    <item name="gfTextPrimary">#EAF4FF</item>
+    <item name="gfTextSecondary">#A2BAD8</item>
+    <item name="gfSeparator">#294665</item>
+    <item name="gfDisclosure">#B2D5F5</item>
+    <item name="gfAccent">#67C7FF</item>
+    <item name="gfFill">#102541</item>
+    <item name="gfScrim">#D907162B</item>
+    <item name="gfFieldBackground">@drawable/field_grapefruit_dark</item>
+    <item name="gfControl">#1C3B60</item>
+    <item name="gfControlPressed">#284F78</item>
+    <item name="gfToggleOff">#294665</item>
+    <item name="gfToggleOffSegments">#BDDDF6</item>
+    <item name="gfKnob">#BDDDF6</item>
+    <item name="gfAccentEnd">#398BFF</item>
+    <item name="gfOnAccent">#06172C</item>
+    <item name="gfOutline">#294665</item>
+    <item name="android:editTextStyle">@style/GrapefruitEditText.GrapefruitDark</item>
+  </style>
+</resources>

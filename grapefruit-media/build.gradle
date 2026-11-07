@@ -1,0 +1,80 @@
+plugins { id "com.android.application" }
+
+// A ROM-only edition of Blue. Keep Blue's application ID and playback implementation;
+// package it instead of Blue, never beside Blue under the same ID.
+def shared = layout.buildDirectory.dir("generated/sources/media/main")
+def prepareMediaSources = tasks.register("prepareMediaSources", Sync) {
+    into shared
+    from(rootProject.file("blue-victory/src/main/java")) {
+        exclude { entry -> file("src/main/java/" + entry.path).isFile() }
+    }
+    from(rootProject.file("app/src/main/java")) {
+        exclude { entry -> file("src/main/java/" + entry.path).isFile() ||
+                rootProject.file("blue-victory/src/main/java/" + entry.path).isFile() }
+    }
+    inputs.files(fileTree("src/main/java") { include "**/*.java" })
+}
+android {
+    namespace "com.grapefruitmusic"
+    compileSdk 36
+    defaultConfig {
+        applicationId "io.github.hayliewordsman.bluegrapefruit.victory"
+        minSdk 17
+        targetSdk 36
+        versionCode 9
+        versionName "1.0-os-dev"
+        ndk { abiFilters "armeabi-v7a" }
+    }
+    sourceSets {
+        main {
+            manifest.srcFile "../app/src/main/AndroidManifest.xml"
+            java.srcDirs = ["src/main/java", shared]
+            res.srcDirs = ["../app/src/main/res"]
+            assets.srcDirs = ["../app/src/main/assets"]
+        }
+        debug { res.srcDirs = ["src/main/res"]; manifest.srcFile "../blue-victory/src/main/AndroidManifest.xml"; assets.srcDir "src/main/assets" }
+        release { res.srcDirs = ["src/main/res"]; manifest.srcFile "../blue-victory/src/main/AndroidManifest.xml"; assets.srcDir "src/main/assets" }
+    }
+    signingConfigs {
+        // Explicit Blue signing input. Never silently substitute the Audio or platform key.
+        blueOriginal {
+            def key = System.getenv("GRAPEFRUIT_MEDIA_KEYSTORE")
+            if (key) {
+                storeFile file(key)
+                storePassword System.getenv("GRAPEFRUIT_MEDIA_STORE_PASSWORD")
+                keyAlias System.getenv("GRAPEFRUIT_MEDIA_KEY_ALIAS")
+                keyPassword System.getenv("GRAPEFRUIT_MEDIA_KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        release { minifyEnabled false; if(System.getenv("GRAPEFRUIT_MEDIA_KEYSTORE")) signingConfig signingConfigs.blueOriginal }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+    packaging { jniLibs { useLegacyPackaging = true; keepDebugSymbols += "**/libconscrypt_jni.so" } }
+    dependenciesInfo { includeInApk false; includeInBundle false }
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.all {
+            def testHome=layout.buildDirectory.dir("test-home").get().asFile
+            systemProperty "user.home",testHome.absolutePath
+            doFirst { testHome.mkdirs() }
+            systemProperty "robolectric.dependency.repo.url","https://repo.maven.apache.org/maven2"
+            ["http.proxyHost","http.proxyPort","https.proxyHost","https.proxyPort","http.nonProxyHosts","javax.net.ssl.trustStore"].each { key ->
+                if(System.getProperty(key))systemProperty key,System.getProperty(key)
+            }
+        }
+    }
+}
+tasks.named("preBuild").configure { dependsOn prepareMediaSources }
+dependencies {
+    implementation project(":grapefruit-ui")
+    implementation "org.conscrypt:conscrypt-android:2.5.3"
+    implementation "com.google.android.exoplayer:exoplayer-core:2.18.7"
+    implementation "com.google.android.exoplayer:exoplayer-hls:2.18.7"
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.8.2"
+    testImplementation "org.ow2.asm:asm:9.7.1"
+    testImplementation "org.ow2.asm:asm-commons:9.7.1"
+    testImplementation "org.ow2.asm:asm-util:9.7.1"
+}

@@ -35,12 +35,15 @@ public final class Ui {
     public static int theme(Context c) {
         int t = Prefs.theme();
         if (t == Prefs.THEME_STARLIGHT) return Prefs.THEME_GRAPEFRUIT_LIGHT;
-        return t == Prefs.THEME_PITCH_BLACK || t == Prefs.THEME_GRAPEFRUIT_LIGHT || t == Prefs.THEME_GRAPEFRUIT_DARK
+        return t == Prefs.THEME_VICTORY_BLUE || t == Prefs.THEME_PITCH_BLACK || t == Prefs.THEME_GRAPEFRUIT_LIGHT || t == Prefs.THEME_GRAPEFRUIT_DARK
                 ? t : Prefs.THEME_GRAPEFRUIT_DARK;
     }
 
     public static void applyTheme(Activity a) {
         switch (theme(a)) {
+            case Prefs.THEME_VICTORY_BLUE:
+                a.setTheme(R.style.Theme_Grapefruit_VictoryBlue);
+                break;
             case Prefs.THEME_PITCH_BLACK:
                 a.setTheme(R.style.Theme_Grapefruit_Dark);
                 break;

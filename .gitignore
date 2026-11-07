@@ -21,6 +21,8 @@ fdroid/metadata/io.github.hayliewordsman.grapefruitmusic/
 
 # Local implementation and verification scratch
 work/
+.cxx/
+.externalNativeBuild/
 
 # Unreleased Blue Grapefruit EP: private build inputs, never public source.
 blue-victory/private/

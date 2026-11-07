@@ -23,7 +23,7 @@ public final class MainActivity extends Activity {
     private static final String[] TABS={"Live TV","Favourites","Search","Settings"};
     private static final int[] TAB_ICONS={TabIcon.LIVE_TV,TabIcon.FAVOURITES,TabIcon.SEARCH,TabIcon.SETTINGS};
     private static final String[] GENRES={"All","News","Series","Reality","Lifestyle"};
-    private static final String[] THEMES={"Grapefruit Dark","Grapefruit Light","Pitch Black"};
+    private static final String[] THEMES={"Grapefruit Dark","Grapefruit Light","Pitch Black","Victory Blue"};
     private static final String[] QUALITIES={"Auto","Data Saver","Compatibility"};
     /** null for Settings itself, or "about" for Settings › About Grapefruit TV. */
     private String settingsPage;
@@ -55,6 +55,8 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
         prefs=getSharedPreferences("fast",MODE_PRIVATE);
+        com.grapefruitmusic.ui.UniversalTheme.sync(this,prefs,true,new int[]{0,1,2,3});
+        com.grapefruitmusic.ui.UniversalTheme.watch(this,prefs,true,new int[]{0,1,2,3});
         favourites.addAll(prefs.getStringSet("favourites",Collections.<String>emptySet()));
         try { builtIn=Catalog.parse(Catalog.read(getAssets().open("channels.json"))); }
         catch(Exception e) {error="The channel list could not be opened.";}
@@ -651,7 +653,7 @@ public final class MainActivity extends Activity {
         TextView heading=b.text("Settings",30,true);heading.setPadding(dp(18),dp(16),dp(18),dp(4));g.addView(heading);
         int theme=prefs.getInt("theme",0);
         section(g,"Appearance");
-        value(g,"Theme",THEMES[theme],()->dialog("Theme",null,THEMES,theme,new Runnable[]{()->theme(0),()->theme(1),()->theme(2)}));
+        value(g,"Theme",THEMES[theme],()->dialog("Theme",null,THEMES,theme,new Runnable[]{()->theme(0),()->theme(1),()->theme(2),()->theme(3)}));
 
         section(g,"Watching");
         value(g,"Playback Quality",QUALITIES[prefs.getInt("quality",0)],this::qualityDialog);
@@ -980,7 +982,7 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onStart(){super.onStart();started=true;if(watching!=null&&playback==null&&pendingSurface!=null)startPlayer(pendingSurface);}
     @Override protected void onStop(){started=false;if(playback!=null){playback.release();playback=null;}super.onStop();}
-    @Override protected void onResume(){super.onResume();if(started&&watching!=null&&playback==null)watchPage();}
+    @Override protected void onResume(){super.onResume();if(com.grapefruitmusic.ui.UniversalTheme.sync(this,prefs,true,new int[]{0,1,2,3})){recreate();return;}if(started&&watching!=null&&playback==null)watchPage();}
     /** Whether the phone is being held sideways for full screen (turning it back ends it). */
     private boolean sideways;
     private boolean phone(){return getResources().getConfiguration().smallestScreenWidthDp<600;}

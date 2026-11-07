@@ -17,20 +17,20 @@ public final class Brand {
     public final boolean light;
     public Brand(Context c, int theme) {
         context=c;
-        light=theme==1; boolean black=theme==2;
-        bg=Color.parseColor(light?"#FCE4D9":black?"#000000":"#1C0A0E");
-        surface=Color.parseColor(light?"#FFFAF6":black?"#180A0E":"#2E1218");
-        control=Color.parseColor(light?"#FADCCF":black?"#261116":"#421C24");
-        pressed=Color.parseColor(light?"#F3CDBF":black?"#3A1820":"#55262F");
-        text=Color.parseColor(light?"#4A1622":"#FFF1E8");
-        secondary=Color.parseColor(light?"#9A5C63":"#B88A8F");
-        accent=Color.parseColor(light?"#E83850":"#FF7F6B");
-        end=Color.parseColor(light?"#D92B4B":"#F2546B");
-        outline=Color.parseColor(light?"#F3CDBF":"#46202A");
-        onAccent=Color.parseColor(light?"#FFFFFF":"#2A0A10");
+        light=theme==1; boolean black=theme==2; boolean blue=theme==3;
+        bg=Color.parseColor(light?"#FCE4D9":black?"#000000":blue?"#07162B":"#1C0A0E");
+        surface=Color.parseColor(light?"#FFFAF6":black?"#180A0E":blue?"#102541":"#2E1218");
+        control=Color.parseColor(light?"#FADCCF":black?"#261116":blue?"#1C3B60":"#421C24");
+        pressed=Color.parseColor(light?"#F3CDBF":black?"#3A1820":blue?"#284F78":"#55262F");
+        text=Color.parseColor(light?"#4A1622":blue?"#EAF4FF":"#FFF1E8");
+        secondary=Color.parseColor(light?"#9A5C63":blue?"#A2BAD8":"#B88A8F");
+        accent=Color.parseColor(light?"#E83850":blue?"#67C7FF":"#FF7F6B");
+        end=Color.parseColor(light?"#D92B4B":blue?"#398BFF":"#F2546B");
+        outline=Color.parseColor(light?"#F3CDBF":blue?"#294665":"#46202A");
+        onAccent=Color.parseColor(light?"#FFFFFF":blue?"#06172C":"#2A0A10");
         // Music's switch colours for each theme.
-        toggleOff=Color.parseColor(light?"#F7D6C9":black?"#3A1D23":"#4A2229");
-        toggleOffSegments=Color.parseColor(light?"#F1C8B9":"#F2D0C6");
+        toggleOff=Color.parseColor(light?"#F7D6C9":black?"#3A1D23":blue?"#294665":"#4A2229");
+        toggleOffSegments=Color.parseColor(light?"#F1C8B9":blue?"#BDDDF6":"#F2D0C6");
     }
     private static Typeface pixel;
     /** Geist Pixel Triangle, cut down to the letters of "Grapefruit TV" (tools/tv/wordmark.py). */

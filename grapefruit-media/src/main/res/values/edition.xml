@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="blue_victory">false</bool>
+    <string name="app_name">Grapefruit Media</string>
+    <string name="launcher_name">Grapefruit Media</string>
+    <string name="brand_wordmark_name">Grapefruit Media</string>
+    <string name="brand_wordmark_tagline">Music, Podcasts, Audiobooks &amp; Television</string>
+</resources>

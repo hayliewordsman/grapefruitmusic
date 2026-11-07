@@ -16,6 +16,7 @@ public final class Prefs {
     public static final int THEME_PITCH_BLACK = 2;
     public static final int THEME_GRAPEFRUIT_LIGHT = 3;
     public static final int THEME_GRAPEFRUIT_DARK = 4;
+    public static final int THEME_VICTORY_BLUE = 5;
 
     /** Quality 0 means "original file when this phone can play it"; otherwise MP3 at that kbps. */
     public static final int QUALITY_ORIGINAL = 0;

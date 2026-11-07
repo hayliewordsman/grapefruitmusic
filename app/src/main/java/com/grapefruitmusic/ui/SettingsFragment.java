@@ -25,8 +25,8 @@ public final class SettingsFragment extends BaseFragment
         implements Sources.Listener, Downloads.Listener, VolumeMatch.Listener {
     /** The themes to pick from, and their names. */
     private static final int[] THEME_IDS = {Prefs.THEME_GRAPEFRUIT_LIGHT, Prefs.THEME_GRAPEFRUIT_DARK,
-            Prefs.THEME_PITCH_BLACK};
-    private static final String[] THEMES = {"Grapefruit Light", "Grapefruit Dark", "Pitch Black"};
+            Prefs.THEME_PITCH_BLACK, Prefs.THEME_VICTORY_BLUE};
+    private static final String[] THEMES = {"Grapefruit Light", "Grapefruit Dark", "Pitch Black", "Victory Blue"};
 
     private static int themeIndex(int theme) {
         for (int i = 0; i < THEME_IDS.length; i++) if (THEME_IDS[i] == theme) return i;
