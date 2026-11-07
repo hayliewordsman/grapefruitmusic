@@ -56,6 +56,11 @@ source and app checks without signing secrets or vendor binaries; remote CI resu
 separate from these local results. Existing app CI jobs skip this development branch and
 retain their normal behavior on other branches.
 
+The first remote source-validation job passed, including original AOSP patch application.
+Its app job stopped in SDK setup because the setup action requested the retired `tools`
+package by default. The workflow now explicitly selects `platform-tools` before installing
+the app compilation SDKs; the local app results above are independent of that setup failure.
+
 ## Not built or tested
 
 - No complete AOSP checkout or supported JDK 6 host is present. New native classes and

@@ -39,6 +39,10 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: android-actions/setup-android@v3
+        with:
+          # setup-android's default also requests the retired SDK package named "tools".
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - name: Install application compilation SDKs
         run: sdkmanager "platforms;android-35" "platforms;android-36" "build-tools;35.0.0"
       - name: Compile application Java and test Media themes
