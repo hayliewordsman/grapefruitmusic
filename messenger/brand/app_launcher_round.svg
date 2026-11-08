@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><title>Grapefruitgram Messenger</title><desc>A speech bubble holding a grapefruit slice. Original GPL-3.0-or-later artwork.</desc><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FF8C6B"/><stop offset="1" stop-color="#EC485C"/></linearGradient></defs><circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+  <path d="M256 92 C352 92 428 158 428 240 C428 322 352 388 256 388 C232 388 209 384 188 377 L112 414 C104 418 96 410 100 402 L124 344 C98 316 84 280 84 240 C84 158 160 92 256 92 Z" transform="translate(0 10)" fill="#851936" opacity=".22"/>
+  <path d="M256 92 C352 92 428 158 428 240 C428 322 352 388 256 388 C232 388 209 384 188 377 L112 414 C104 418 96 410 100 402 L124 344 C98 316 84 280 84 240 C84 158 160 92 256 92 Z" fill="#FFF7EE"/>
+  <circle cx="256" cy="240" r="112" fill="#FFD6C8"/>
+  <circle cx="256" cy="240" r="100" fill="#FFF7EE"/>
+  <path d="M256 240 L347.776 246.418 A92 92 0 0 1 325.433 300.357 Z" fill="#EC3B56"/>
+  <path d="M256 240 L316.357 309.433 A92 92 0 0 1 262.418 331.776 Z" fill="#F2545B"/>
+  <path d="M256 240 L249.582 331.776 A92 92 0 0 1 195.643 309.433 Z" fill="#EC3B56"/>
+  <path d="M256 240 L186.567 300.357 A92 92 0 0 1 164.224 246.418 Z" fill="#F2545B"/>
+  <path d="M256 240 L164.224 233.582 A92 92 0 0 1 186.567 179.643 Z" fill="#EC3B56"/>
+  <path d="M256 240 L195.643 170.567 A92 92 0 0 1 249.582 148.224 Z" fill="#F2545B"/>
+  <path d="M256 240 L262.418 148.224 A92 92 0 0 1 316.357 170.567 Z" fill="#EC3B56"/>
+  <path d="M256 240 L325.433 179.643 A92 92 0 0 1 347.776 233.582 Z" fill="#F2545B"/>
+  <circle cx="256" cy="240" r="6" fill="#FFF7EE"/></svg>

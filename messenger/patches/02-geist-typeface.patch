@@ -1,0 +1,29 @@
+diff --git a/app/src/main/java/org/thunderdog/challegram/tool/Fonts.java b/app/src/main/java/org/thunderdog/challegram/tool/Fonts.java
+index 6f00401..b3c9798 100644
+--- a/app/src/main/java/org/thunderdog/challegram/tool/Fonts.java
++++ b/app/src/main/java/org/thunderdog/challegram/tool/Fonts.java
+@@ -103,13 +103,13 @@ public class Fonts {
+   public static final boolean FORCE_BUILTIN_MONO = LOAD_MONO && Device.IS_SAMSUNG;
+ 
+   public static Typeface getRobotoRegular () {
+-    return robotoRegular != null ? robotoRegular : (robotoRegular = loadFont("fonts/Roboto-Regular.ttf", () ->
++    return robotoRegular != null ? robotoRegular : (robotoRegular = loadFont("fonts/Geist-Regular.ttf", () ->
+       LOAD_SANS ? loadSystemFont("sans-serif", Typeface.NORMAL, Typeface.DEFAULT) : Typeface.DEFAULT
+     ));
+   }
+ 
+   public static Typeface getRobotoBold () {
+-    return robotoBold != null ? robotoBold : (robotoBold = loadFont("fonts/Roboto-Bold.ttf", () -> {
++    return robotoBold != null ? robotoBold : (robotoBold = loadFont("fonts/Geist-SemiBold.ttf", () -> {
+       if (LOAD_SANS) {
+         return loadSystemFont("sans-serif", Typeface.BOLD, Typeface.DEFAULT_BOLD);
+       } else {
+@@ -119,7 +119,7 @@ public class Fonts {
+   }
+ 
+   public static Typeface getRobotoMedium () {
+-    return robotoMedium != null ? robotoMedium : (robotoMedium = loadFont("fonts/Roboto-Medium.ttf", () -> {
++    return robotoMedium != null ? robotoMedium : (robotoMedium = loadFont("fonts/Geist-Medium.ttf", () -> {
+       if (LOAD_SANS) {
+         Typeface typeface = loadSystemFont("sans-serif-light", Typeface.BOLD, null);
+         return typeface != null ? typeface : loadSystemFont("sans-serif-medium", Typeface.NORMAL, Typeface.DEFAULT_BOLD);

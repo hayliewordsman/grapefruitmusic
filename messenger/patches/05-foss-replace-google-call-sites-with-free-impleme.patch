@@ -1,0 +1,1387 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 5456b9e..ecfb972 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -1195,6 +1195,3 @@ dependencies {
+   testImplementation(libs.bundles.unit.test)
+   androidTestImplementation(project(":tests:core"))
+ }
+-
+-if (!config.isExperimentalBuild) {
+-}
+\ No newline at end of file
+diff --git a/app/src/main/java/org/thunderdog/challegram/BaseActivity.java b/app/src/main/java/org/thunderdog/challegram/BaseActivity.java
+index c90bae4..cfd448b 100644
+--- a/app/src/main/java/org/thunderdog/challegram/BaseActivity.java
++++ b/app/src/main/java/org/thunderdog/challegram/BaseActivity.java
+@@ -163,7 +163,6 @@ import me.vkryl.core.lambda.RunnableData;
+ import me.vkryl.core.reference.ReferenceList;
+ import me.vkryl.core.reference.ReferenceUtils;
+ import nl.dionsegijn.konfetti.xml.KonfettiView;
+-import tgx.app.RecaptchaProviderRegistry;
+ 
+ @SuppressWarnings("deprecation")
+ public abstract class BaseActivity extends FragmentActivity implements View.OnTouchListener, FactorAnimator.Target, Keyboard.OnStateChangeListener, ThemeChangeListener, SensorEventListener, TGPlayerController.TrackChangeListener, TGLegacyManager.EmojiLoadListener, Lang.Listener, Handler.Callback {
+@@ -471,7 +470,6 @@ public abstract class BaseActivity extends FragmentActivity implements View.OnTo
+     AppState.initApplication();
+     AppState.ensureReady();
+ 
+-    RecaptchaProviderRegistry.setApplication(this.getApplication());
+ 
+     appUpdater = new AppUpdater(this);
+     roundVideoController = new RoundVideoController(this);
+diff --git a/app/src/main/java/org/thunderdog/challegram/BaseApplication.kt b/app/src/main/java/org/thunderdog/challegram/BaseApplication.kt
+index 74511d1..0845c15 100644
+--- a/app/src/main/java/org/thunderdog/challegram/BaseApplication.kt
++++ b/app/src/main/java/org/thunderdog/challegram/BaseApplication.kt
+@@ -16,10 +16,8 @@ package org.thunderdog.challegram
+ 
+ import android.content.Context
+ import androidx.work.Configuration
+-import com.google.firebase.messaging.FirebaseMessaging
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.MainScope
+-import org.thunderdog.challegram.push.FirebaseDeviceTokenRetriever
+ import org.thunderdog.challegram.service.PushHandler
+ import org.thunderdog.challegram.telegram.TdlibManager
+ import org.thunderdog.challegram.unsorted.AppContext
+@@ -47,14 +45,9 @@ class BaseApplication : TgxApplication(), Configuration.Provider {
+       },
+       object : DeviceTokenRetrieverFactory {
+         override fun onCreateNewTokenRetriever(context: Context): DeviceTokenRetriever {
+-          val defaultTokenRetriever = FirebaseDeviceTokenRetriever()
+-          val tokenRetriever = TelegramXExtension.createNewTokenRetriever(context)
+-          return tokenRetriever?.takeIf {
+-            !BuildConfig.EXPERIMENTAL && (
+-              Settings.instance().isExperimentEnabled(Settings.EXPERIMENT_FLAG_FORCE_ALTERNATIVE_PUSH_SERVICE) ||
+-              !defaultTokenRetriever.isAvailable(applicationContext)
+-            )
+-          } ?: defaultTokenRetriever
++          // Grapefruitgram Messenger: the extension's push service (UnifiedPush), never Firebase.
++          // Without one, the app keeps its own background connection, as Telegram X does without Play services.
++          return TelegramXExtension.createNewTokenRetriever(context) ?: NoPushServiceTokenRetriever
+         }
+       }
+     )
+@@ -64,9 +57,6 @@ class BaseApplication : TgxApplication(), Configuration.Provider {
+     if (!BuildConfig.EXPERIMENTAL) {
+       val deviceTokenRetriever = DeviceTokenRetrieverInstance.get()
+       TelegramXExtension.configure(this, deviceTokenRetriever)
+-      if (deviceTokenRetriever !is FirebaseDeviceTokenRetriever) {
+-        FirebaseMessaging.getInstance().isAutoInitEnabled = false
+-      }
+     }
+   }
+ 
+@@ -77,4 +67,12 @@ class BaseApplication : TgxApplication(), Configuration.Provider {
+ 
+   override val workManagerConfiguration: Configuration
+     get() = Configuration.Builder().build()
+-}
+\ No newline at end of file
++}
++
++/** No push service compiled in: token requests fail, so Telegram X falls back to its background connection. */
++private object NoPushServiceTokenRetriever : DeviceTokenRetriever("none") {
++  override fun isAvailable(context: Context): Boolean = false
++  override fun performInitialization(context: Context): Boolean = true
++  override fun fetchDeviceToken(context: Context, listener: TokenRetrieverListener) =
++    listener.onTokenRetrievalError("NO_PUSH_SERVICE", null)
++}
+diff --git a/app/src/main/java/org/thunderdog/challegram/U.java b/app/src/main/java/org/thunderdog/challegram/U.java
+index dcd0da2..25b731a 100644
+--- a/app/src/main/java/org/thunderdog/challegram/U.java
++++ b/app/src/main/java/org/thunderdog/challegram/U.java
+@@ -107,8 +107,6 @@ import androidx.media3.extractor.DefaultExtractorsFactory;
+ import androidx.media3.extractor.ExtractorInput;
+ import androidx.recyclerview.widget.RecyclerView;
+ 
+-import com.google.android.gms.common.ConnectionResult;
+-import com.google.android.gms.common.GoogleApiAvailability;
+ 
+ import org.drinkless.tdlib.TdApi;
+ import org.thunderdog.challegram.config.Config;
+@@ -856,14 +854,8 @@ public class U {
+     return new ProgressiveMediaSource.Factory(new TdlibDataSource.Factory(accountId)).createMediaSource(newMediaItem(TdlibDataSource.UriFactory.create(accountId, fileId)));
+   }
+ 
++  /** Grapefruitgram Messenger is built without Google Play services: every caller takes its free path. */
+   public static boolean isGooglePlayServicesAvailable (Context context) {
+-    try {
+-      if (context != null && Config.GCM_ENABLED) {
+-        GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+-        int resultCode = googleApiAvailability.isGooglePlayServicesAvailable(context);
+-        return resultCode == ConnectionResult.SUCCESS;
+-      }
+-    } catch (Throwable ignored) { }
+     return false;
+   }
+ 
+diff --git a/app/src/main/java/org/thunderdog/challegram/component/attach/MediaLayout.java b/app/src/main/java/org/thunderdog/challegram/component/attach/MediaLayout.java
+index 65fa16a..4dd9c75 100644
+--- a/app/src/main/java/org/thunderdog/challegram/component/attach/MediaLayout.java
++++ b/app/src/main/java/org/thunderdog/challegram/component/attach/MediaLayout.java
+@@ -35,7 +35,6 @@ import androidx.annotation.Nullable;
+ import androidx.annotation.RequiresApi;
+ import androidx.collection.LongSparseArray;
+ 
+-import com.google.android.gms.maps.MapsInitializer;
+ 
+ import org.drinkless.tdlib.TdApi;
+ import org.thunderdog.challegram.BaseActivity;
+@@ -696,22 +695,7 @@ public class MediaLayout extends FrameLayoutFix implements
+ 
+     switch (toIndex) {
+       case 3: {
+-        boolean googleMapsInstalled;
+-        try {
+-          MapsInitializer.initialize(getContext());
+-          googleMapsInstalled = DeviceUtils.isApplicationInstalled(getContext(), U.PACKAGE_GOOGLE_MAPS, false);
+-        } catch (Throwable t) {
+-          googleMapsInstalled = false;
+-        }
+-        if (!googleMapsInstalled) {
+-          ViewController<?> c = UI.getCurrentStackItem(getContext());
+-          if (c != null) {
+-            c.openMissingGoogleMapsAlert();
+-          } else {
+-            UI.showToast(R.string.NoGoogleMaps, Toast.LENGTH_LONG);
+-          }
+-          return false;
+-        }
++        // Grapefruitgram Messenger: OpenStreetMap needs no Google Maps app.
+         break;
+       }
+       case 1: {
+diff --git a/app/src/main/java/org/thunderdog/challegram/helper/LocationHelper.java b/app/src/main/java/org/thunderdog/challegram/helper/LocationHelper.java
+index be194f4..0add7d1 100644
+--- a/app/src/main/java/org/thunderdog/challegram/helper/LocationHelper.java
++++ b/app/src/main/java/org/thunderdog/challegram/helper/LocationHelper.java
+@@ -27,18 +27,6 @@ import android.os.Looper;
+ import androidx.annotation.NonNull;
+ import androidx.annotation.Nullable;
+ 
+-import com.google.android.gms.common.api.ApiException;
+-import com.google.android.gms.common.api.GoogleApiClient;
+-import com.google.android.gms.common.api.ResolvableApiException;
+-import com.google.android.gms.location.FusedLocationProviderClient;
+-import com.google.android.gms.location.LocationAvailability;
+-import com.google.android.gms.location.LocationRequest;
+-import com.google.android.gms.location.LocationResult;
+-import com.google.android.gms.location.LocationServices;
+-import com.google.android.gms.location.LocationSettingsRequest;
+-import com.google.android.gms.location.LocationSettingsResponse;
+-import com.google.android.gms.location.LocationSettingsStatusCodes;
+-import com.google.android.gms.tasks.Task;
+ 
+ import org.thunderdog.challegram.BaseActivity;
+ import org.thunderdog.challegram.BuildConfig;
+@@ -141,8 +129,6 @@ public class LocationHelper implements ActivityResultHandler {
+     // TODO
+   }
+ 
+-  @SuppressWarnings("deprecation")
+-  private GoogleApiClient client; // TODO: rework to GoogleApi
+ 
+   public static final int ERROR_CODE_NONE = 0;
+   public static final int ERROR_CODE_PERMISSION = -1;
+@@ -203,78 +189,26 @@ public class LocationHelper implements ActivityResultHandler {
+       }
+     }
+ 
+-    try {
+-      if (client == null) {
+-        // TODO rework to GoogleApi
+-        GoogleApiClient.Builder b = new GoogleApiClient.Builder(context);
+-        b.addApi(LocationServices.API);
+-        client = b.build();
+-        client.connect();
+-      }
+-
+-      final LocationSettingsRequest.Builder b = new LocationSettingsRequest.Builder()
+-        .addLocationRequest(LocationRequest.create())
+-        .setAlwaysShow(true);
+-      final LocationSettingsRequest request = b.build();
+-      Task<LocationSettingsResponse> task = LocationServices.getSettingsClient(context).checkLocationSettings(request);
+-      task.addOnCompleteListener(task1 -> {
+-        if (sendStatus[0]) {
+-          return;
+-        }
++    // Grapefruitgram Messenger: Android's location providers (no Play services).
++    if (!org.thunderdog.challegram.grapefruit.OsmMaps.isLocationEnabled(context)) {
++      if (allowResolution && !onlyCheck) {
+         try {
+-          LocationSettingsResponse response = task1.getResult(ApiException.class);
+-          if (onlyCheck) {
+-            onReceiveLocation(null);
+-            return;
+-          }
+-          receiveCurrentLocation(sendStatus, true);
+-        } catch (ApiException exception) {
+-          boolean retryWithoutGoogle = false;
+-          switch (exception.getStatusCode()) {
+-            case LocationSettingsStatusCodes.RESOLUTION_REQUIRED: {
+-              if (!allowResolution) {
+-                /*if (onlyCheck) {
+-                  onReceiveLocationFailure(ERROR_CODE_PERMISSION);
+-                } else {
+-                  receiveCurrentLocation(sendStatus, false);
+-                }*/
+-                onReceiveLocationFailure(ERROR_CODE_PERMISSION);
+-                return;
+-              }
+-              try {
+-                ResolvableApiException resolvable = (ResolvableApiException) exception;
+-                BaseActivity activity1 = UI.getContext(context);
+-                activity1.putActivityResultHandler(Intents.ACTIVITY_RESULT_RESOLUTION_INLINE, LocationHelper.this);
+-                resolvable.startResolutionForResult(
+-                  activity1,
+-                  Intents.ACTIVITY_RESULT_RESOLUTION_INLINE);
+-              } catch (Throwable t) {
+-                retryWithoutGoogle = true;
+-              }
+-              break;
+-            }
+-            case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+-            default: {
+-              retryWithoutGoogle = true;
+-              break;
+-            }
+-          }
+-          if (retryWithoutGoogle) {
+-            if (onlyCheck) {
+-              onReceiveLocationFailure(ERROR_CODE_PERMISSION);
+-            } else {
+-              receiveCurrentLocation(sendStatus, false);
+-            }
+-          }
++          BaseActivity activity1 = UI.getContext(context);
++          activity1.putActivityResultHandler(Intents.ACTIVITY_RESULT_RESOLUTION_INLINE, LocationHelper.this);
++          activity1.startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), Intents.ACTIVITY_RESULT_RESOLUTION_INLINE);
++          return;
++        } catch (Throwable t) {
++          Log.w("Unable to open location settings", t);
+         }
+-      });
+-    } catch (Throwable t) {
+-      if (onlyCheck) {
+-        onReceiveLocationFailure(ERROR_CODE_UNKNOWN);
+-        return;
+       }
+-      receiveCurrentLocation(sendStatus, false);
++      onReceiveLocationFailure(ERROR_CODE_PERMISSION);
++      return;
+     }
++    if (onlyCheck) {
++      onReceiveLocation(null);
++      return;
++    }
++    receiveCurrentLocation(sendStatus, false);
+   }
+ 
+   private void receiveCurrentLocation (boolean[] signal, boolean tryGoogleClient) {
+@@ -304,8 +238,6 @@ public class LocationHelper implements ActivityResultHandler {
+       location.setLongitude(lonO);
+ 
+       onReceiveLocation(location);
+-    } else if (tryGoogleClient) {
+-      receiveLocationViaGoogleClient(signal);
+     } else {
+       receiveLocationViaManager(signal);
+     }
+@@ -316,103 +248,13 @@ public class LocationHelper implements ActivityResultHandler {
+     if (requestCode != Intents.ACTIVITY_RESULT_RESOLUTION_INLINE || lastSignal == null || lastSignal[0]) {
+       return;
+     }
+-    if (resultCode == Activity.RESULT_OK) {
+-      receiveCurrentLocation(lastSignal, true);
++    if (resultCode == Activity.RESULT_OK || org.thunderdog.challegram.grapefruit.OsmMaps.isLocationEnabled(context)) {
++      receiveCurrentLocation(lastSignal, false);
+     } else {
+       onReceiveLocationFailure(ERROR_CODE_RESOLUTION);
+     }
+   }
+ 
+-  private void receiveLocationViaGoogleClient (final boolean[] signal) {
+-    if (signal[0]) {
+-      return;
+-    }
+-
+-    if (checkLocationPermissions(context, needBackground) != PackageManager.PERMISSION_GRANTED) {
+-      onReceiveLocationFailure(ERROR_CODE_PERMISSION);
+-      return;
+-    }
+-
+-    final FusedLocationProviderClient locationClient = LocationServices.getFusedLocationProviderClient(context);
+-    final CancellableRunnable[] timeout = new CancellableRunnable[1];
+-    /*final LocationListener listener = new LocationListener() {
+-      @Override
+-      public void onLocationChanged (Location location) {
+-        timeout[0].cancel();
+-        if (!signal[0]) {
+-          signal[0] = true;
+-          onReceiveLocation(location);
+-        }
+-      }
+-    };*/
+-    final com.google.android.gms.location.LocationCallback callback = new com.google.android.gms.location.LocationCallback() {
+-      @Override
+-      public void onLocationResult (LocationResult locationResult) {
+-        timeout[0].cancel();
+-        if (!signal[0]) {
+-          signal[0] = true;
+-          onReceiveLocation(locationResult.getLastLocation());
+-        }
+-        try { locationClient.removeLocationUpdates(this); } catch (Throwable ignored) { }
+-      }
+-
+-      @Override
+-      public void onLocationAvailability (LocationAvailability locationAvailability) {
+-        if (!locationAvailability.isLocationAvailable()) {
+-          timeout[0].cancel();
+-          if (!signal[0]) {
+-            signal[0] = true;
+-            onReceiveLocationFailure(ERROR_CODE_PERMISSION);
+-          }
+-          try { locationClient.removeLocationUpdates(this); } catch (Throwable ignored) { }
+-        }
+-      }
+-    };
+-    timeout[0] = new CancellableRunnable() {
+-      @Override
+-      public void act () {
+-        if (!signal[0]) {
+-          signal[0] = true;
+-          try { locationClient.removeLocationUpdates(callback); } catch (Throwable ignored) { }
+-          Location location = null;
+-          try {
+-            location = locationClient.getLastLocation().getResult();
+-          } catch (SecurityException ignored) { }
+-            catch (Throwable t) {
+-            Log.w("getLastLocation error", t);
+-          }
+-          if (location == null && allowCached) {
+-            location = U.getLastKnownLocation(context, false);
+-          }
+-          if (location != null) {
+-            onReceiveLocation(location);
+-          } else {
+-            onReceiveLocationFailure(ERROR_CODE_TIMEOUT);
+-          }
+-        }
+-      }
+-    };
+-    timeout[0].removeOnCancel(UI.getAppHandler());
+-    if (this.timeout != -1) {
+-      UI.post(timeout[0], this.timeout);
+-    }
+-    try {
+-      LocationRequest request = LocationRequest.create()
+-        .setPriority(UI.isResumed() ? LocationRequest.PRIORITY_HIGH_ACCURACY : LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
+-        .setNumUpdates(1)
+-        .setMaxWaitTime(5000);
+-      if (this.timeout != -1) {
+-        request.setExpirationDuration(this.timeout);
+-      }
+-      locationClient.requestLocationUpdates(request, callback, Looper.getMainLooper());
+-    } catch (Throwable t) {
+-      signal[0] = true;
+-      boolean[] newSignal = new boolean[1];
+-      this.lastSignal = newSignal;
+-      receiveLocationViaManager(newSignal);
+-    }
+-  }
+-
+   private void receiveLocationViaManager (final boolean[] signal) {
+     if (signal[0]) {
+       return;
+@@ -510,10 +352,5 @@ public class LocationHelper implements ActivityResultHandler {
+     return null;
+   }
+ 
+-  public void destroy () {
+-    if (client != null) {
+-      try { client.disconnect(); } catch (Throwable ignored) { }
+-      client = null;
+-    }
+-  }
++  public void destroy () { }
+ }
+diff --git a/app/src/main/java/org/thunderdog/challegram/service/PushHandler.kt b/app/src/main/java/org/thunderdog/challegram/service/PushHandler.kt
+index 0eb287f..034974e 100644
+--- a/app/src/main/java/org/thunderdog/challegram/service/PushHandler.kt
++++ b/app/src/main/java/org/thunderdog/challegram/service/PushHandler.kt
+@@ -1,6 +1,6 @@
+ package org.thunderdog.challegram.service
+ 
+-import android.app.Service
++import android.content.Context
+ import org.drinkless.tdlib.TdApi.DeviceToken
+ import org.thunderdog.challegram.Log
+ import org.thunderdog.challegram.TDLib
+@@ -11,21 +11,21 @@ import tgx.bridge.PushManager
+ import tgx.td.stringify
+ 
+ class PushHandler : PushManager {
+-  override fun onNewToken(service: Service, token: DeviceToken) {
+-    AppContext.init(service.applicationContext)
++  override fun onNewToken(context: Context, token: DeviceToken) {
++    AppContext.init(context.applicationContext)
+     log("onNewToken %s, sending to all accounts", token)
+     TdlibManager.instance().runWithWakeLock { manager ->
+       manager.setDeviceToken(token)
+     }
+   }
+ 
+-  override fun onMessageReceived(service: Service, message: Map<String, Any>, sentTime: Long, ttl: Int) {
+-    AppContext.init(service.applicationContext)
++  override fun onMessageReceived(context: Context, message: Map<String, Any>, sentTime: Long, ttl: Int) {
++    AppContext.init(context.applicationContext)
+     val pushId = Settings.instance().newPushId()
+ 
+     val payload = stringify(message)
+ 
+-    val pushProcessor = PushProcessor(service)
++    val pushProcessor = PushProcessor(context.applicationContext)
+     pushProcessor.processPush(pushId, payload, sentTime, ttl)
+   }
+ 
+diff --git a/app/src/main/java/org/thunderdog/challegram/telegram/Tdlib.java b/app/src/main/java/org/thunderdog/challegram/telegram/Tdlib.java
+index 0537c19..11a8247 100644
+--- a/app/src/main/java/org/thunderdog/challegram/telegram/Tdlib.java
++++ b/app/src/main/java/org/thunderdog/challegram/telegram/Tdlib.java
+@@ -37,14 +37,6 @@ import androidx.collection.SparseArrayCompat;
+ import androidx.core.os.CancellationSignal;
+ import androidx.core.util.Pair;
+ 
+-import com.google.android.gms.tasks.Task;
+-import com.google.android.play.core.integrity.IntegrityManager;
+-import com.google.android.play.core.integrity.IntegrityManagerFactory;
+-import com.google.android.play.core.integrity.IntegrityTokenRequest;
+-import com.google.android.play.core.integrity.IntegrityTokenResponse;
+-import com.google.android.recaptcha.RecaptchaAction;
+-import com.google.android.recaptcha.RecaptchaTasksClient;
+-import com.google.firebase.FirebaseOptions;
+ 
+ import org.drinkless.tdlib.Client;
+ import org.drinkless.tdlib.TdApi;
+@@ -134,7 +126,6 @@ import me.vkryl.core.lambda.RunnableData;
+ import me.vkryl.core.lambda.RunnableInt;
+ import me.vkryl.core.lambda.RunnableLong;
+ import me.vkryl.core.util.ConditionalExecutor;
+-import tgx.app.RecaptchaProviderRegistry;
+ import tgx.td.ChatId;
+ import tgx.td.ChatPosition;
+ import tgx.td.JSON;
+@@ -9217,44 +9208,8 @@ public class Tdlib implements TdlibProvider, Settings.SettingsChangeListener, Da
+       }
+       callback.onApplicationVerificationResult(error);
+     };
+-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+-      onError.runWithData(new ApplicationVerificationException("PLAYINTEGRITY_FAILED_SDK_TOO_LOW_" + Build.VERSION.SDK_INT));
+-      return;
+-    }
+-    long projectId = 0;
+-    try {
+-      FirebaseOptions options = FirebaseOptions.fromResource(AppContext.get());
+-      String projectIdRaw = options != null ? options.getGcmSenderId() : "";
+-      if (!StringUtils.isEmpty(projectIdRaw)) {
+-        projectId = Long.parseLong(projectIdRaw);
+-      } else {
+-        throw new IllegalStateException();
+-      }
+-    } catch (Exception e) {
+-      onError.runWithData(new ApplicationVerificationException("PLAYINTEGRITY_FAILED_EXCEPTION_NOPROJECT"));
+-      return;
+-    }
+-    try {
+-      IntegrityTokenRequest request = IntegrityTokenRequest.builder()
+-        .setNonce(nonce)
+-        .setCloudProjectNumber(projectId)
+-        .build();
+-      IntegrityManager integrityManager = IntegrityManagerFactory.create(AppContext.get());
+-      Task<IntegrityTokenResponse> integrityTokenResponse = integrityManager.requestIntegrityToken(request);
+-      integrityTokenResponse
+-        .addOnSuccessListener(r -> {
+-          final String token = r.token();
+-          if (token != null) {
+-            TDLib.Tag.playIntegrity("success verificationId=%d: %s", verificationId, token);
+-            callback.onApplicationVerificationResult(token);
+-          } else {
+-            onError.runWithData(new ApplicationVerificationException("PLAYINTEGRITY_FAILED_EXCEPTION_NULL"));
+-          }
+-        })
+-        .addOnFailureListener(onError::runWithData);
+-    } catch (Exception e) {
+-      onError.runWithData(e);
+-    }
++    // Grapefruitgram Messenger: Play Integrity is proprietary and not included.
++    onError.runWithData(new ApplicationVerificationException("PLAYINTEGRITY_FAILED_NOT_AVAILABLE"));
+   }
+ 
+   public void requestRecaptcha (long verificationId, String action, String recaptchaKeyId, ApplicationVerificationCallback callback) {
+@@ -9263,27 +9218,8 @@ public class Tdlib implements TdlibProvider, Settings.SettingsChangeListener, Da
+       TDLib.Tag.recaptcha("failure verificationId=%d: %s", verificationId, Log.toString(e));
+       callback.onApplicationVerificationResult(e.getMessage());
+     };
+-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+-      onError.runWithData(new ApplicationVerificationException("RECAPTCHA_FAILED_SDK_TOO_LOW_" + Build.VERSION.SDK_INT));
+-      return;
+-    }
+-    RunnableData<RecaptchaTasksClient> actor = client -> {
+-      client.executeTask(RecaptchaAction.custom(action))
+-        .addOnSuccessListener(token -> {
+-          if (token != null) {
+-            TDLib.Tag.recaptcha("success verificationId=%d", verificationId);
+-            callback.onApplicationVerificationResult(token);
+-          } else {
+-            onError.runWithData(new ApplicationVerificationException("RECAPTCHA_FAILED_TOKEN_NULL"));
+-          }
+-        })
+-        .addOnFailureListener(taskError ->
+-          onError.runWithData(new ApplicationVerificationException("RECAPTCHA_FAILED_TASK_EXCEPTION_" + ApplicationVerificationException.formatReCaptchaMessage(taskError), taskError))
+-        );
+-    };
+-    RecaptchaProviderRegistry.execute(recaptchaKeyId, actor, clientError ->
+-      onError.runWithData(new ApplicationVerificationException("RECAPTCHA_FAILED_GETCLIENT_EXCEPTION_" + ApplicationVerificationException.formatReCaptchaMessage(clientError), clientError))
+-    );
++    // Grapefruitgram Messenger: reCAPTCHA is proprietary and not included.
++    onError.runWithData(new ApplicationVerificationException("RECAPTCHA_FAILED_NOT_AVAILABLE"));
+   }
+ 
+   private TdApi.AgeVerificationParameters ageVerificationParameters;
+diff --git a/app/src/main/java/org/thunderdog/challegram/ui/MessagesController.java b/app/src/main/java/org/thunderdog/challegram/ui/MessagesController.java
+index 04cd2dc..2209410 100644
+--- a/app/src/main/java/org/thunderdog/challegram/ui/MessagesController.java
++++ b/app/src/main/java/org/thunderdog/challegram/ui/MessagesController.java
+@@ -64,15 +64,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
+ import androidx.recyclerview.widget.RecyclerView;
+ import androidx.viewpager.widget.PagerAdapter;
+ 
+-import com.google.android.gms.common.api.GoogleApiClient;
+-import com.google.android.gms.common.api.PendingResult;
+-import com.google.android.gms.common.api.Status;
+-import com.google.android.gms.location.LocationListener;
+-import com.google.android.gms.location.LocationRequest;
+-import com.google.android.gms.location.LocationServices;
+-import com.google.android.gms.location.LocationSettingsRequest;
+-import com.google.android.gms.location.LocationSettingsResult;
+-import com.google.android.gms.location.LocationSettingsStatusCodes;
+ 
+ import org.drinkless.tdlib.Client;
+ import org.drinkless.tdlib.TdApi;
+@@ -4396,8 +4387,7 @@ public class MessagesController extends ViewController<MessagesController.Argume
+         inputView.performDestroy();
+       if (wallpaperView != null)
+         wallpaperView.performDestroy();
+-      if (googleClient != null) {
+-        closeGoogleClient();
++      if (false) {
+       }
+       if (botHelper != null) {
+         botHelper.destroy();
+@@ -7720,19 +7710,6 @@ public class MessagesController extends ViewController<MessagesController.Argume
+     }
+   }
+ 
+-  private GoogleApiClient googleClient;
+-
+-  private void closeGoogleClient () {
+-    if (googleClient != null) {
+-      try {
+-        googleClient.disconnect();
+-      } catch (Throwable t) {
+-        Log.w("GoogleApiClient throws", t);
+-      }
+-      googleClient = null;
+-    }
+-  }
+-
+   private boolean currentShareLocationDestroyKeyboard;
+   private long currentShareLocationChatId;
+ 
+@@ -7746,47 +7723,16 @@ public class MessagesController extends ViewController<MessagesController.Argume
+       return;
+     }
+ 
+-    try {
+-      if (googleClient == null) {
+-        GoogleApiClient.Builder b = new GoogleApiClient.Builder(context());
+-        b.addApi(LocationServices.API);
+-        googleClient = b.build();
+-        googleClient.connect();
+-      }
+-
+-      final LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+-        .addLocationRequest(LocationRequest.create())
+-        .setAlwaysShow(true);
+-      final LocationSettingsRequest request = builder.build();
+-      final PendingResult<LocationSettingsResult> result =
+-        LocationServices.SettingsApi.checkLocationSettings(googleClient, request);
+-
+-      result.setResultCallback(result1 -> {
+-        final Status status = result1.getStatus();
+-        //final LocationSettingsStates state = result.getLocationSettingsStates();
+-        switch (status.getStatusCode()) {
+-          case LocationSettingsStatusCodes.RESOLUTION_REQUIRED: {
+-            try {
+-              status.startResolutionForResult(context(), Intents.ACTIVITY_RESULT_RESOLUTION);
+-            } catch (Throwable t) {
+-              getCustomCurrentLocation(destroyKeyboard, true, false);
+-            }
+-            break;
+-          }
+-          case LocationSettingsStatusCodes.SUCCESS: {
+-            getCurrentLocation(destroyKeyboard, googleClient);
+-            break;
+-          }
+-          case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+-          default: {
+-            getCurrentLocation(destroyKeyboard, googleClient);
+-            break;
+-          }
+-        }
+-      });
+-    } catch (Throwable t) {
+-      shareCurrentLocation(destroyKeyboard, null);
++    // Grapefruitgram Messenger: Android's location providers (no Play services).
++    if (!org.thunderdog.challegram.grapefruit.OsmMaps.isLocationEnabled(context())) {
++      try {
++        context().startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), Intents.ACTIVITY_RESULT_RESOLUTION);
++      } catch (Throwable t) {
++        getCustomCurrentLocation(destroyKeyboard, true, false);
++      }
++      return;
+     }
++    getCurrentLocation(destroyKeyboard);
+   }
+ 
+   public void sendPickedLocation (TdApi.Location location, final TdApi.MessageSendOptions sendOptions) {
+@@ -7825,71 +7771,13 @@ public class MessagesController extends ViewController<MessagesController.Argume
+     // TODO run MediaLayout with only map available
+   }
+ 
+-  private void getCurrentLocation (final boolean destroyKeyboard, @Nullable GoogleApiClient client) {
+-    if (client != null && USE_GOOGLE_LOCATION) {
+-      getCurrentLocationViaGoogleApiClient(destroyKeyboard, client);
+-    } else {
+-      shareCurrentLocationViaManager(destroyKeyboard);
+-    }
++  private void getCurrentLocation (final boolean destroyKeyboard) {
++    shareCurrentLocationViaManager(destroyKeyboard);
+   }
+ 
+   private static final long LOCATION_MAX_WAIT_TIME = 3000L;
+-  private static final boolean USE_GOOGLE_LOCATION = true;
+   private static final boolean USE_LAST_KNOWN_LOCATION = false;
+ 
+-  @SuppressWarnings("deprecation")
+-  private void getCurrentLocationViaGoogleApiClient (final boolean destroyKeyboard, final @NonNull GoogleApiClient client) {
+-    final CancellableRunnable[] timeout = new CancellableRunnable[1];
+-    final boolean[] sent = new boolean[1];
+-    final LocationListener listener = location -> {
+-      timeout[0].cancel();
+-      if (!sent[0]) {
+-        sent[0] = true;
+-        shareCurrentLocation(destroyKeyboard, location);
+-      }
+-    };
+-    timeout[0] = new CancellableRunnable() {
+-      @Override
+-      public void act () {
+-        if (!sent[0]) {
+-          sent[0] = true;
+-          try {
+-            LocationServices.FusedLocationApi.removeLocationUpdates(googleClient, listener);
+-          } catch (Throwable t) {
+-            Log.w("Error removeLocationUpdates", t);
+-          }
+-          Location location = null;
+-          try {
+-            location = LocationServices.FusedLocationApi.getLastLocation(client);
+-          } catch (SecurityException ignored) { }
+-            catch (Throwable t) {
+-            Log.w("getLastLocation error", t);
+-          }
+-          if (location == null && USE_LAST_KNOWN_LOCATION) {
+-            location = U.getLastKnownLocation(context(), false);
+-          }
+-          if (location != null) {
+-            shareCurrentLocation(destroyKeyboard, location);
+-          } else {
+-            getCustomCurrentLocation(destroyKeyboard, false, true);
+-          }
+-        }
+-      }
+-    };
+-    UI.post(timeout[0], LOCATION_MAX_WAIT_TIME);
+-    try {
+-      LocationRequest request = LocationRequest.create().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY).setExpirationDuration(LOCATION_MAX_WAIT_TIME).setNumUpdates(1).setMaxWaitTime(5000L);
+-      LocationServices.FusedLocationApi.requestLocationUpdates(googleClient, request, listener);
+-    } catch (SecurityException ignored) {
+-      sent[0] = true;
+-      shareCurrentLocationViaManager(destroyKeyboard);
+-    } catch (Throwable t) {
+-      Log.w("requestLocationUpdates error", t);
+-      sent[0] = true;
+-      shareCurrentLocationViaManager(destroyKeyboard);
+-    }
+-  }
+-
+   private void shareCurrentLocationViaManager (final boolean destroyKeyboard) {
+     try {
+       final LocationManager manager = (LocationManager) context().getSystemService(Context.LOCATION_SERVICE);
+@@ -10154,7 +10042,7 @@ public class MessagesController extends ViewController<MessagesController.Argume
+     }
+     switch (requestCode) {
+       case Intents.ACTIVITY_RESULT_RESOLUTION: {
+-        getCurrentLocation(currentShareLocationDestroyKeyboard, googleClient);
++        getCurrentLocation(currentShareLocationDestroyKeyboard);
+         break;
+       }
+       case Intents.ACTIVITY_RESULT_IMAGE_CAPTURE:
+diff --git a/app/src/main/java/org/thunderdog/challegram/ui/PasswordController.java b/app/src/main/java/org/thunderdog/challegram/ui/PasswordController.java
+index 6610589..d1e6727 100644
+--- a/app/src/main/java/org/thunderdog/challegram/ui/PasswordController.java
++++ b/app/src/main/java/org/thunderdog/challegram/ui/PasswordController.java
+@@ -35,7 +35,6 @@ import androidx.annotation.NonNull;
+ import androidx.annotation.Nullable;
+ import androidx.annotation.StringRes;
+ 
+-import com.google.android.gms.safetynet.SafetyNet;
+ 
+ import org.drinkless.tdlib.TdApi;
+ import org.json.JSONException;
+@@ -732,53 +731,9 @@ public class PasswordController extends ViewController<PasswordController.Args>
+       requestNextCodeType(new TdApi.ResendCodeReasonVerificationFailed("GOOGLE_PLAY_SERVICES_UNAVAILABLE"), false);
+       return;
+     }
+-    SafetyNet.getClient(context)
+-      .attest(safetyNetParameters.nonce, safetyNetApiKey)
+-      .addOnSuccessListener(attestationSuccess -> {
+-        String result = attestationSuccess.getJwsResult();
+-        if (result == null) {
+-          TDLib.Tag.safetyNet("Resend firebase sms because JWS = null");
+-          requestNextCodeType(new TdApi.ResendCodeReasonVerificationFailed("SAFETYNET_NULL_JWS"), false);
+-          return;
+-        }
+-        String[] spl = result.split("\\.");
+-        if (spl.length == 0) {
+-          TDLib.Tag.safetyNet("Resend firebase sms because can't split JWS token");
+-          requestNextCodeType(new TdApi.ResendCodeReasonVerificationFailed("SAFETYNET_CANT_SPLIT"), false);
+-          return;
+-        }
+-        try {
+-          JSONObject obj = new JSONObject(new String(Base64.decode(spl[1].getBytes(StringUtils.UTF_8), 0)));
+-          final boolean basicIntegrity = obj.optBoolean("basicIntegrity");
+-          final boolean ctsProfileMatch = obj.optBoolean("ctsProfileMatch");
+-          if (basicIntegrity && ctsProfileMatch) {
+-            handleVerificationResult(safetyNetParameters, false, result, onVerificationError);
+-          } else {
+-            if (!basicIntegrity && !ctsProfileMatch) {
+-              TDLib.Tag.safetyNet("Resend firebase sms because ctsProfileMatch = false and basicIntegrity = false");
+-              requestNextCodeType(new TdApi.ResendCodeReasonVerificationFailed("SAFETYNET_BASICINTEGRITY_CTSPROFILEMATCH_FALSE"), false);
+-            } else {
+-              if (!basicIntegrity) {
+-                TDLib.Tag.safetyNet("Resend firebase sms because basicIntegrity = false");
+-                requestNextCodeType(new TdApi.ResendCodeReasonVerificationFailed("SAFETYNET_BASICINTEGRITY_FALSE"), false);
+-              } else {
+-                TDLib.Tag.safetyNet("Resend firebase sms because ctsProfileMatch = false");
+-                requestNextCodeType(new TdApi.ResendCodeReasonVerificationFailed("SAFETYNET_CTSPROFILEMATCH_FALSE"), false);
+-              }
+-            }
+-          }
+-        } catch (JSONException e) {
+-          TDLib.Tag.safetyNet("Resend firebase sms because of exception: %s", Log.toString(e));
+-          requestNextCodeType(new TdApi.ResendCodeReasonVerificationFailed("SAFETYNET_JSON_EXCEPTION"), false);
+-        }
+-      })
+-      .addOnFailureListener(attestationError -> {
+-        String error = attestationError.getMessage();
+-        TDLib.Tag.safetyNet("Attestation failed with error: %s", error);
+-        executeOnUiThreadOptional(() ->
+-          onVerificationError.runWithData(error)
+-        );
+-      });
++    // Grapefruitgram Messenger: SafetyNet is proprietary and not included.
++    TDLib.Tag.safetyNet("Requesting next code type, because SafetyNet is not included");
++    requestNextCodeType(new TdApi.ResendCodeReasonVerificationFailed("GOOGLE_PLAY_SERVICES_UNAVAILABLE"), false);
+   }
+ 
+   private void sendFirebaseSmsViaPlayIntegrity (TdApi.FirebaseDeviceVerificationParametersPlayIntegrity playIntegrityParameters, RunnableData<String> onVerificationError) {
+diff --git a/app/src/main/java/org/thunderdog/challegram/ui/SettingsNotificationController.java b/app/src/main/java/org/thunderdog/challegram/ui/SettingsNotificationController.java
+index edf6fba..50bd617 100644
+--- a/app/src/main/java/org/thunderdog/challegram/ui/SettingsNotificationController.java
++++ b/app/src/main/java/org/thunderdog/challegram/ui/SettingsNotificationController.java
+@@ -1533,7 +1533,8 @@ public class SettingsNotificationController extends RecyclerViewController<Setti
+           break;
+         }
+         case TdlibNotificationManager.Status.PUSH_SERVICE_MISSING: {
+-          Intents.openLink("https://play.google.com/store/apps/details?id=com.google.android.gms");
++          // Grapefruitgram Messenger: pushes come through a UnifiedPush distributor.
++          Intents.openLink("https://unifiedpush.org/users/distributors/");
+           break;
+         }
+         default: {
+diff --git a/app/src/main/java/org/thunderdog/challegram/ui/camera/CameraQrBridge.kt b/app/src/main/java/org/thunderdog/challegram/ui/camera/CameraQrBridge.kt
+index 86825b0..257971b 100644
+--- a/app/src/main/java/org/thunderdog/challegram/ui/camera/CameraQrBridge.kt
++++ b/app/src/main/java/org/thunderdog/challegram/ui/camera/CameraQrBridge.kt
+@@ -18,13 +18,6 @@ import android.os.Build
+ import androidx.annotation.RequiresApi
+ import androidx.camera.core.ImageProxy
+ import androidx.core.content.ContextCompat
+-import com.google.android.gms.tasks.OnFailureListener
+-import com.google.android.gms.tasks.OnSuccessListener
+-import com.google.mlkit.common.MlKitException
+-import com.google.mlkit.vision.barcode.BarcodeScanner
+-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+-import com.google.mlkit.vision.barcode.BarcodeScanning
+-import com.google.mlkit.vision.common.InputImage
+ import com.google.zxing.*
+ import com.google.zxing.common.HybridBinarizer
+ import com.google.zxing.qrcode.QRCodeReader
+@@ -34,7 +27,6 @@ import org.thunderdog.challegram.U
+ import org.thunderdog.challegram.ui.camera.legacy.CameraApiLegacy
+ import org.thunderdog.challegram.unsorted.AppContext
+ import org.thunderdog.challegram.unsorted.Settings
+-import tgx.flavor.Barcode
+ import java.nio.ByteBuffer
+ import java.util.concurrent.Executor
+ import java.util.concurrent.ExecutorService
+@@ -48,30 +40,9 @@ class CameraQrBridge(manager: CameraManager<*>) {
+   private val delegate: CameraDelegate = manager.delegate
+   private val mainExecutor: Executor = ContextCompat.getMainExecutor(manager.context)
+   private val zxingReader = QRCodeReader()
+-  private var barcodeScanner: BarcodeScanner? = null
+-  private var mlkitFailed = false
+-
+-  init {
+-    if (U.isGooglePlayServicesAvailable(AppContext.get()) && !Settings.instance().needForceZxingQrProcessing()) {
+-      try {
+-        barcodeScanner = BarcodeScanning.getClient(
+-          BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+-            .build()
+-        )
+-      } catch (e: Exception) {
+-        Log.e(Log.TAG_CAMERA, e)
+-      }
+-    }
+-  }
+ 
+   fun destroy() {
+-    barcodeScanner?.apply {
+-      close()
+-    }?.also {
+-      barcodeScanner = null
+-    }
+     backgroundExecutor.shutdown()
+-    mlkitFailed = false
+   }
+ 
+   @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+@@ -80,22 +51,11 @@ class CameraQrBridge(manager: CameraManager<*>) {
+     proxy.use {
+       val mediaImage = it.image
+       if (mediaImage != null) {
+-        if (this.isGmsImplementationSupported) {
+-          gmsImplementation(
+-            InputImage.fromMediaImage(
+-              mediaImage,
+-              proxy.imageInfo.rotationDegrees
+-            ),
+-            bufferAsBytes(proxy.planes[0].buffer),
+-            U.isRotated(proxy.imageInfo.rotationDegrees)) {
+-          }
+-        } else {
+-          zxingImplementation(
+-            bufferAsBytes(proxy.planes[0].buffer),
+-            proxy.width,
+-            proxy.height,
+-            proxy.imageInfo.rotationDegrees) {
+-          }
++        zxingImplementation(
++          bufferAsBytes(proxy.planes[0].buffer),
++          proxy.width,
++          proxy.height,
++          proxy.imageInfo.rotationDegrees) {
+         }
+       }
+     }
+@@ -109,83 +69,18 @@ class CameraQrBridge(manager: CameraManager<*>) {
+   ) {
+     val rotation = delegate.getCurrentCameraOrientation()
+ 
+-    if (this.isGmsImplementationSupported) {
+-      gmsImplementation(
+-        InputImage.fromByteArray(
+-          data,
+-          previewWidth,
+-          previewHeight,
+-          rotation,
+-          ImageFormat.NV21
+-        ), data, U.isRotated(rotation)) {
+-        legacyApi.notifyCanReadNextFrame()
+-      }
+-    } else {
+-      zxingImplementation(
+-        data,
+-        previewWidth,
+-        previewHeight,
+-        rotation) {
+-        legacyApi.notifyCanReadNextFrame()
+-      }
++    zxingImplementation(
++      data,
++      previewWidth,
++      previewHeight,
++      rotation) {
++      legacyApi.notifyCanReadNextFrame()
+     }
+   }
+ 
++  // Grapefruitgram Messenger: ZXing (Apache-2.0) only; ML Kit is proprietary.
+   val isGmsImplementationSupported: Boolean
+-    get() = barcodeScanner != null && !mlkitFailed
+-
+-  private fun gmsImplementation(
+-    image: InputImage,
+-    safeData: ByteArray,
+-    swapSizes: Boolean,
+-    onCompleteListener: (() -> Unit)?
+-  ) {
+-    barcodeScanner!!.process(image).addOnSuccessListener(
+-      mainExecutor,
+-      OnSuccessListener { barcodes: MutableList<Barcode?>? ->
+-        if (barcodes!!.isEmpty()) {
+-          delegate.onQrCodeNotFound()
+-        } else {
+-          val first: Barcode = barcodes[0]!!
+-
+-          if (swapSizes) {
+-            delegate.onQrCodeFound(
+-              first.rawValue,
+-              RectF(first.boundingBox),
+-              image.width,
+-              image.height,
+-              0,
+-              false
+-            )
+-          } else {
+-            delegate.onQrCodeFound(
+-              first.rawValue,
+-              RectF(first.boundingBox),
+-              image.height,
+-              image.width,
+-              0,
+-              false
+-            )
+-          }
+-        }
+-      }).addOnFailureListener(OnFailureListener { ex: Exception? ->
+-      if (ex is MlKitException) {
+-        //Log.w("MlkitException - reverting to ZXing [code: %s, msg: %s]", ((MlKitException) ex).getErrorCode(), ex.getMessage());
+-        mlkitFailed = true
+-        zxingImplementation(
+-          safeData,
+-          image.width,
+-          image.height,
+-          image.rotationDegrees,
+-          onCompleteListener
+-        )
+-      } else {
+-        Log.e(Log.TAG_CAMERA, ex)
+-      }
+-    }).addOnCompleteListener { result ->
+-      if (onCompleteListener != null) onCompleteListener()
+-    }
+-  }
++    get() = false
+ 
+   private fun zxingImplementation(
+     data: ByteArray,
+diff --git a/app/src/main/java/org/thunderdog/challegram/util/AppUpdater.java b/app/src/main/java/org/thunderdog/challegram/util/AppUpdater.java
+index a701341..a43ef2d 100644
+--- a/app/src/main/java/org/thunderdog/challegram/util/AppUpdater.java
++++ b/app/src/main/java/org/thunderdog/challegram/util/AppUpdater.java
+@@ -20,16 +20,6 @@ import androidx.annotation.IntDef;
+ import androidx.annotation.NonNull;
+ import androidx.annotation.Nullable;
+ 
+-import com.google.android.play.core.appupdate.AppUpdateInfo;
+-import com.google.android.play.core.appupdate.AppUpdateManager;
+-import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+-import com.google.android.play.core.install.InstallState;
+-import com.google.android.play.core.install.InstallStateUpdatedListener;
+-import com.google.android.play.core.install.model.ActivityResult;
+-import com.google.android.play.core.install.model.AppUpdateType;
+-import com.google.android.play.core.install.model.InstallErrorCode;
+-import com.google.android.play.core.install.model.InstallStatus;
+-import com.google.android.play.core.install.model.UpdateAvailability;
+ 
+ import org.drinkless.tdlib.TdApi;
+ import org.thunderdog.challegram.BaseActivity;
+@@ -59,7 +49,7 @@ import me.vkryl.core.lambda.RunnableBool;
+ import me.vkryl.core.reference.ReferenceList;
+ import tgx.td.Td;
+ 
+-public class AppUpdater implements InstallStateUpdatedListener, FileUpdateListener, ConnectionListener {
++public class AppUpdater implements FileUpdateListener, ConnectionListener {
+   public interface Listener {
+     void onAppUpdateStateChanged (@State int state, @State int oldState, boolean isApk);
+     default void onAppUpdateDownloadProgress (long bytesDownloaded, long totalBytesToDownload) { }
+@@ -99,9 +89,6 @@ public class AppUpdater implements InstallStateUpdatedListener, FileUpdateListen
+   private final BaseActivity context;
+   private final ReferenceList<Listener> listeners;
+ 
+-  private final AppUpdateManager googlePlayUpdateManager;
+-  private AppUpdateInfo googlePlayUpdateInfo;
+-  private boolean googlePlayFlowError;
+ 
+   private boolean updateOffered;
+ 
+@@ -121,15 +108,6 @@ public class AppUpdater implements InstallStateUpdatedListener, FileUpdateListen
+   public AppUpdater (BaseActivity context) {
+     this.context = context;
+     this.listeners = new ReferenceList<>();
+-    AppUpdateManager appUpdateManager = null;
+-    if (AppInstallationUtil.allowInAppGooglePlayUpdates(context)) {
+-      try {
+-        appUpdateManager = AppUpdateManagerFactory.create(context);
+-      } catch (Throwable t) {
+-        Log.e("Unable to initialize Google Play update manager", t);
+-      }
+-    }
+-    this.googlePlayUpdateManager = appUpdateManager;
+   }
+ 
+   @State
+@@ -168,26 +146,16 @@ public class AppUpdater implements InstallStateUpdatedListener, FileUpdateListen
+     listeners.remove(listener);
+   }
+ 
++  /**
++   * Grapefruitgram Messenger doesn't update itself: updates come from F-Droid (or the project's
++   * releases). Telegram X's own update channel carries Telegram X builds, signed by its developers.
++   */
+   public void checkForUpdates () {
+-    if (state == State.NONE) {
+-      if (preferTelegramChannelFlow()) {
+-        checkForTelegramChannelUpdates();
+-      } else {
+-        checkForGooglePlayUpdates();
+-      }
+-    } else if (state == State.AVAILABLE) {
++    if (state == State.AVAILABLE) {
+       offerUpdate();
+     }
+   }
+ 
+-  private boolean preferTelegramChannelFlow () {
+-    // TODO: add server config to force
+-    if (googlePlayUpdateManager == null ||
+-      forceTelegramChannelFlow) return true;
+-    if (!googlePlayFlowError) return false;
+-    return AppInstallationUtil.isAppSideLoaded(AppContext.get());
+-  }
+-
+   public static AppInstallationUtil.PublicMarketUrls publicMarketUrls () {
+     return new AppInstallationUtil.PublicMarketUrls(
+       BuildConfig.DOWNLOAD_URL,
+@@ -214,111 +182,8 @@ public class AppUpdater implements InstallStateUpdatedListener, FileUpdateListen
+     }
+   }
+ 
+-  private void checkForGooglePlayUpdates () {
+-    if (googlePlayUpdateManager == null)
+-      return;
+-    setState(State.CHECKING);
+-    googlePlayUpdateManager.getAppUpdateInfo().addOnSuccessListener(updateInfo -> {
+-      this.googlePlayUpdateInfo = updateInfo;
+-      int installStatus = updateInfo.installStatus();
+-      if (installStatus == InstallStatus.DOWNLOADED) {
+-        onUpdateAvailable(FlowType.GOOGLE_PLAY, updateInfo.bytesDownloaded(), updateInfo.totalBytesToDownload(), "#" + (updateInfo.availableVersionCode() / 1000), null, true);
+-      } else if (installStatus == InstallStatus.FAILED) {
+-        onGooglePlayFlowError();
+-      } else {
+-        int updateAvailability = updateInfo.updateAvailability();
+-        switch (updateAvailability) {
+-          case UpdateAvailability.UPDATE_AVAILABLE: {
+-            onUpdateAvailable(FlowType.GOOGLE_PLAY, updateInfo.bytesDownloaded(), updateInfo.totalBytesToDownload(), "#" + (updateInfo.availableVersionCode() / 1000), null, false);
+-            break;
+-          }
+-          case UpdateAvailability.UNKNOWN: {
+-            onGooglePlayFlowError();
+-            break;
+-          }
+-          case UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS:
+-          case UpdateAvailability.UPDATE_NOT_AVAILABLE: {
+-            if (AppInstallationUtil.isAppSideLoaded(AppContext.get())) {
+-              onGooglePlayFlowError();
+-            } else {
+-              onUpdateUnavailable();
+-            }
+-            break;
+-          }
+-        }
+-      }
+-    }).addOnFailureListener(e -> {
+-      Log.i("Unable to check for app updates", e);
+-      onGooglePlayFlowError();
+-    });
+-  }
+-
+-  private void onGooglePlayFlowError () {
+-    if (!this.googlePlayFlowError) {
+-      this.googlePlayFlowError = true;
+-      if (preferTelegramChannelFlow()) {
+-        checkForTelegramChannelUpdates();
+-      } else {
+-        onUpdateUnavailable();
+-      }
+-    }
+-  }
+-
+-  private boolean offerGooglePlayUpdate () {
+-    int updateType;
+-    if (context.hasTdlib()) {
+-      Tdlib tdlib = context.currentTdlib();
+-      updateType = tdlib.context().inRecoveryMode() || !tdlib.context().hasActiveAccounts() ? AppUpdateType.IMMEDIATE : AppUpdateType.FLEXIBLE;
+-    } else {
+-      updateType = AppUpdateType.IMMEDIATE;
+-    }
+-    if (googlePlayUpdateInfo.isUpdateTypeAllowed(updateType)) {
+-      try {
+-        googlePlayUpdateManager.startUpdateFlowForResult(googlePlayUpdateInfo, updateType, context, Intents.ACTIVITY_RESULT_GOOGLE_PLAY_UPDATE);
+-        return true;
+-      } catch (IntentSender.SendIntentException e) {
+-        Log.e("Unable to offer an update", e);
+-      }
+-    }
+-    return false;
+-  }
+-
+   public void onGooglePlayFlowActivityResult (int resultCode, Intent data) {
+-    switch (resultCode) {
+-      case BaseActivity.RESULT_OK: {
+-        try {
+-          googlePlayUpdateManager.registerListener(this);
+-        } catch (Throwable t) {
+-          Log.e("Unable to register listener", t);
+-        }
+-        break;
+-      }
+-      case Activity.RESULT_CANCELED:
+-      case ActivityResult.RESULT_IN_APP_UPDATE_FAILED: {
+-        onGooglePlayFlowError();
+-        break;
+-      }
+-    }
+-  }
+-
+-  @Override
+-  public void onStateUpdate (@NonNull InstallState state) {
+-    final int installStatus = state.installStatus();
+-    if (installStatus == InstallStatus.FAILED) {
+-      final int errorCode = state.installErrorCode();
+-      Log.i("Google Play update failed, code: %d", errorCode);
+-      if (errorCode == InstallErrorCode.ERROR_PLAY_STORE_NOT_FOUND ||
+-        errorCode == InstallErrorCode.ERROR_APP_NOT_OWNED) {
+-        forceTelegramChannelFlow = true;
+-      }
+-      onGooglePlayFlowError();
+-    } else if (installStatus == InstallStatus.DOWNLOADING) {
+-      onUpdateDownloading();
+-      onUpdateDownloadProgress(state.bytesDownloaded(), state.totalBytesToDownload());
+-    } else if (installStatus == InstallStatus.DOWNLOADED) {
+-      googlePlayUpdateManager.unregisterListener(this);
+-      onUpdateAvailable(FlowType.GOOGLE_PLAY, state.bytesDownloaded(), state.totalBytesToDownload(), displayVersion, commit, true);
+-    }
++    // No Google Play update flow in this build.
+   }
+ 
+   private void checkForTelegramChannelUpdates () {
+@@ -458,10 +323,8 @@ public class AppUpdater implements InstallStateUpdatedListener, FileUpdateListen
+         case FlowType.NONE:
+           // Do nothing.
+           break;
+-        case FlowType.GOOGLE_PLAY: {
+-          updateOffered = offerGooglePlayUpdate();
++        case FlowType.GOOGLE_PLAY:
+           break;
+-        }
+         case FlowType.TELEGRAM_CHANNEL: {
+           updateOffered = offerTelegramChannelUpdate();
+           break;
+@@ -478,10 +341,8 @@ public class AppUpdater implements InstallStateUpdatedListener, FileUpdateListen
+       case FlowType.NONE:
+         // Do nothing.
+         break;
+-      case FlowType.GOOGLE_PLAY: {
+-        updateOffered = offerGooglePlayUpdate();
++      case FlowType.GOOGLE_PLAY:
+         break;
+-      }
+       case FlowType.TELEGRAM_CHANNEL: {
+         // TODO add tdlib reference & show progress
+         telegramChannelTdlib.files().downloadFile(telegramChannelFile.document.document);
+@@ -511,11 +372,8 @@ public class AppUpdater implements InstallStateUpdatedListener, FileUpdateListen
+         UI.openFile(new TdlibContext(context, telegramChannelTdlib), telegramChannelFile.document.fileName, new File(telegramChannelFile.document.document.local.path), telegramChannelFile.document.mimeType, 0);
+         break;
+       }
+-      case FlowType.GOOGLE_PLAY: {
+-        googlePlayUpdateManager.completeUpdate();
+-        setState(State.INSTALLING);
++      case FlowType.GOOGLE_PLAY:
+         break;
+-      }
+     }
+   }
+ 
+diff --git a/app/src/main/java/org/thunderdog/challegram/util/LanguageDetector.java b/app/src/main/java/org/thunderdog/challegram/util/LanguageDetector.java
+index 62cfdaa..829b94e 100644
+--- a/app/src/main/java/org/thunderdog/challegram/util/LanguageDetector.java
++++ b/app/src/main/java/org/thunderdog/challegram/util/LanguageDetector.java
+@@ -21,31 +21,9 @@ public class LanguageDetector {
+       }
+       return;
+     }
+-    try {
+-      if (initializeFirst) {
+-        com.google.mlkit.common.sdkinternal.MlKitContext.zza(context);
+-      }
+-      com.google.mlkit.nl.languageid.LanguageIdentification.getClient()
+-        .identifyLanguage(text)
+-        .addOnSuccessListener(str -> {
+-          if (onSuccess != null) {
+-            onSuccess.runWithData(str);
+-          }
+-        })
+-        .addOnFailureListener(e -> {
+-          if (onFail != null) {
+-            onFail.runWithData(e);
+-          }
+-        });
+-    } catch (Throwable t) {
+-      if (t instanceof IllegalStateException && !initializeFirst) {
+-        detectLanguage(context, text, onSuccess, onFail, true);
+-        return;
+-      }
+-      Log.w("LanguageDetector failure", t);
+-      if (onFail != null) {
+-        onFail.runWithData(t);
+-      }
++    // Grapefruitgram Messenger: ML Kit is proprietary and not included.
++    if (onFail != null) {
++      onFail.runWithData(new IllegalStateException("Language identification is not included."));
+     }
+   }
+ }
+diff --git a/app/src/onlyLegacy/AndroidManifest.xml b/app/src/onlyLegacy/AndroidManifest.xml
+index 2575ce3..4b4800e 100644
+--- a/app/src/onlyLegacy/AndroidManifest.xml
++++ b/app/src/onlyLegacy/AndroidManifest.xml
+@@ -8,8 +8,6 @@
+     com.otaliastudios.opengl
+ 
+     minSdk 19:
+-    com.google.android.recaptcha
+-    com.google.android.play.core.integrity.client
+     androidx.annotation.experimental
+     androidx.media3.datasource
+     androidx.media3.muxer
+@@ -27,8 +25,6 @@
+   <uses-sdk tools:overrideLibrary="
+     com.otaliastudios.transcoder,
+     com.otaliastudios.opengl,
+-    com.google.android.recaptcha,
+-    com.google.android.play.core.integrity.client,
+     androidx.annotation.experimental,
+     androidx.media3.transformer,
+     androidx.media3.effect,
+diff --git a/app/src/onlyLegacy/kotlin/tgx/flavor/LegacyFlavor.kt b/app/src/onlyLegacy/kotlin/tgx/flavor/LegacyFlavor.kt
+index 5ae3eb1..e1b66cc 100644
+--- a/app/src/onlyLegacy/kotlin/tgx/flavor/LegacyFlavor.kt
++++ b/app/src/onlyLegacy/kotlin/tgx/flavor/LegacyFlavor.kt
+@@ -11,18 +11,10 @@ import android.content.IntentFilter
+ import android.os.Build
+ import androidx.annotation.DrawableRes
+ import androidx.multidex.MultiDexApplication
+-import com.google.android.gms.tasks.Task
+-import com.google.android.recaptcha.Recaptcha
+-import com.google.android.recaptcha.RecaptchaTasksClient
+ import org.thunderdog.challegram.widget.SwirlView
+ 
+-typealias Barcode = com.google.mlkit.vision.barcode.Barcode
+-
+ typealias TgxApplication = MultiDexApplication
+ 
+-fun getRecaptchaTasksClient(application: Application, siteKey: String): Task<RecaptchaTasksClient> =
+-  Recaptcha.getTasksClient(application, siteKey)
+-
+ @Suppress("UnspecifiedRegisterReceiverFlag")
+ fun registerReceiver(
+   context: Context,
+diff --git a/app/src/sinceLollipop/kotlin/tgx/flavor/ModernFlavor.kt b/app/src/sinceLollipop/kotlin/tgx/flavor/ModernFlavor.kt
+index 7fdff15..21d50d7 100644
+--- a/app/src/sinceLollipop/kotlin/tgx/flavor/ModernFlavor.kt
++++ b/app/src/sinceLollipop/kotlin/tgx/flavor/ModernFlavor.kt
+@@ -10,20 +10,12 @@ import android.content.Intent
+ import android.content.IntentFilter
+ import androidx.annotation.DrawableRes
+ import androidx.core.content.ContextCompat
+-import com.google.android.gms.tasks.Task
+-import com.google.android.recaptcha.Recaptcha
+-import com.google.android.recaptcha.RecaptchaTasksClient
+ import org.thunderdog.challegram.R
+ import org.thunderdog.challegram.widget.SwirlView
+ import org.webrtc.ContextUtils;
+ 
+-typealias Barcode = com.google.mlkit.vision.barcode.common.Barcode
+-
+ typealias TgxApplication = Application
+ 
+-fun getRecaptchaTasksClient(application: Application, siteKey: String): Task<RecaptchaTasksClient> =
+-  Recaptcha.fetchTaskClient(application, siteKey)
+-
+ fun registerReceiver(
+   context: Context,
+   receiver: BroadcastReceiver,
+diff --git a/extension/bridge/src/main/kotlin/tgx/bridge/PushManagerBridge.kt b/extension/bridge/src/main/kotlin/tgx/bridge/PushManagerBridge.kt
+index e552e30..b4e53b1 100644
+--- a/extension/bridge/src/main/kotlin/tgx/bridge/PushManagerBridge.kt
++++ b/extension/bridge/src/main/kotlin/tgx/bridge/PushManagerBridge.kt
+@@ -1,6 +1,5 @@
+ package tgx.bridge
+ 
+-import android.app.Service
+ import android.content.Context
+ import kotlinx.coroutines.CoroutineScope
+ import org.drinkless.tdlib.TdApi.DeviceToken
+@@ -14,8 +13,8 @@ interface PushManagerFactory {
+ }
+ 
+ interface PushManager {
+-  fun onNewToken (service: Service, token: DeviceToken)
+-  fun onMessageReceived (service: Service, message: Map<String, Any>, sentTime: Long, ttl: Int)
++  fun onNewToken (context: Context, token: DeviceToken)
++  fun onMessageReceived (context: Context, message: Map<String, Any>, sentTime: Long, ttl: Int)
+ 
+   fun log(format: String, vararg args: Any)
+   fun error(message: String, error: Throwable?)
+@@ -43,11 +42,11 @@ object PushManagerBridge {
+   @JvmStatic fun onCreateNewTokenRetriever(context: Context): DeviceTokenRetriever =
+     deviceTokenRetrieverFactory.onCreateNewTokenRetriever(context)
+ 
+-  @JvmStatic fun onNewToken (service: Service, token: DeviceToken) =
+-    manager.onNewToken(service, token)
++  @JvmStatic fun onNewToken (context: Context, token: DeviceToken) =
++    manager.onNewToken(context, token)
+ 
+-  @JvmStatic fun onMessageReceived (service: Service, payload: Map<String, Any>, sentTime: Long, ttl: Int) =
+-    manager.onMessageReceived(service, payload, sentTime, ttl)
++  @JvmStatic fun onMessageReceived (context: Context, payload: Map<String, Any>, sentTime: Long, ttl: Int) =
++    manager.onMessageReceived(context, payload, sentTime, ttl)
+ 
+   @JvmStatic fun log(format: String, vararg args: Any) =
+     manager.log(format, *args)

@@ -1,0 +1,8 @@
+# Upstream paths that the FOSS build deletes (relative to the Telegram X checkout).
+# Google Play services, Firebase and Google Maps code; replaced by app/src/foss in the overlay.
+app/src/google
+# reCAPTCHA client glue (proprietary SDK).
+app/src/main/kotlin/tgx/app/RecaptchaContext.kt
+app/src/main/kotlin/tgx/app/RecaptchaProviderRegistry.kt
+# Huawei Mobile Services push (proprietary SDK); replaced by extension/unifiedpush.
+extension/hms

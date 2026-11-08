@@ -1,0 +1,217 @@
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index 857c5f0..538aee6 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -119,6 +119,8 @@
+       <action android:name="android.intent.action.VIEW" />
+       <data android:scheme="*" />
+     </intent>
++    <!-- Grapefruit universal theme (optional companion) -->
++    <provider android:authorities="io.github.hayliewordsman.grapefruitsettings.theme" />
+   </queries>
+ 
+   <application
+diff --git a/app/src/main/java/org/thunderdog/challegram/BaseActivity.java b/app/src/main/java/org/thunderdog/challegram/BaseActivity.java
+index 37db897..c90bae4 100644
+--- a/app/src/main/java/org/thunderdog/challegram/BaseActivity.java
++++ b/app/src/main/java/org/thunderdog/challegram/BaseActivity.java
+@@ -1134,6 +1134,7 @@ public abstract class BaseActivity extends FragmentActivity implements View.OnTo
+       passcodeController.onActivityResume();
+     }
+     notifyActivityResume();
++    org.thunderdog.challegram.grapefruit.UniversalTheme.check(this);
+     if (!windows.isEmpty()) {
+       for (PopupLayout window : windows) {
+         window.onActivityResume();
+diff --git a/app/src/main/java/org/thunderdog/challegram/theme/TGBackground.java b/app/src/main/java/org/thunderdog/challegram/theme/TGBackground.java
+index 860d991..d8ec5a1 100644
+--- a/app/src/main/java/org/thunderdog/challegram/theme/TGBackground.java
++++ b/app/src/main/java/org/thunderdog/challegram/theme/TGBackground.java
+@@ -246,6 +246,10 @@ public class TGBackground {
+       case ThemeId.BLACK_WHITE:
+       case ThemeId.NIGHT_BLACK:
+       case ThemeId.NIGHT_BLUE:
++      case ThemeId.GRAPEFRUIT_DARK:
++      case ThemeId.GRAPEFRUIT_LIGHT:
++      case ThemeId.PITCH_BLACK:
++      case ThemeId.VICTORY_BLUE:
+         return 0; // Disabled by default
+ 
+       case ThemeId.BLUE:
+diff --git a/app/src/main/java/org/thunderdog/challegram/theme/Theme.java b/app/src/main/java/org/thunderdog/challegram/theme/Theme.java
+index fc63d78..78c1752 100644
+--- a/app/src/main/java/org/thunderdog/challegram/theme/Theme.java
++++ b/app/src/main/java/org/thunderdog/challegram/theme/Theme.java
+@@ -255,6 +255,14 @@ public class Theme {
+         return ColorId.themeRed;
+       case ThemeId.WHITE_BLACK:
+         return ColorId.themeWhiteBlack;
++      case ThemeId.GRAPEFRUIT_DARK:
++        return ColorId.themeGrapefruitDark;
++      case ThemeId.GRAPEFRUIT_LIGHT:
++        return ColorId.themeGrapefruitLight;
++      case ThemeId.PITCH_BLACK:
++        return ColorId.themePitchBlack;
++      case ThemeId.VICTORY_BLUE:
++        return ColorId.themeVictoryBlue;
+     }
+     throw newError(themeId, "themeId");
+   }
+diff --git a/app/src/main/java/org/thunderdog/challegram/theme/ThemeManager.java b/app/src/main/java/org/thunderdog/challegram/theme/ThemeManager.java
+index a3d4511..0ae575e 100644
+--- a/app/src/main/java/org/thunderdog/challegram/theme/ThemeManager.java
++++ b/app/src/main/java/org/thunderdog/challegram/theme/ThemeManager.java
+@@ -45,8 +45,8 @@ import me.vkryl.core.MathUtils;
+ import me.vkryl.core.reference.ReferenceList;
+ 
+ public class ThemeManager implements FactorAnimator.Target, GlobalAccountListener {
+-  public static final int DEFAULT_DARK_THEME = ThemeId.NIGHT_BLUE;
+-  public static final int DEFAULT_LIGHT_THEME = ThemeId.CLASSIC;
++  public static final int DEFAULT_DARK_THEME = ThemeId.GRAPEFRUIT_DARK;
++  public static final int DEFAULT_LIGHT_THEME = ThemeId.GRAPEFRUIT_LIGHT;
+   public static final int DEFAULT_THEME = DEFAULT_DARK_THEME;
+ 
+   public static final int CHAT_STYLE_UNKNOWN = 0;
+@@ -111,6 +111,14 @@ public class ThemeManager implements FactorAnimator.Target, GlobalAccountListene
+         return R.string.ThemePink;
+       case ThemeId.WHITE_BLACK:
+         return R.string.ThemeWhiteBlack;
++      case ThemeId.GRAPEFRUIT_DARK:
++        return R.string.ThemeGrapefruitDark;
++      case ThemeId.GRAPEFRUIT_LIGHT:
++        return R.string.ThemeGrapefruitLight;
++      case ThemeId.PITCH_BLACK:
++        return R.string.ThemePitchBlack;
++      case ThemeId.VICTORY_BLUE:
++        return R.string.ThemeVictoryBlue;
+     }
+     throw Theme.newError(themeId, "themeId");
+   }
+@@ -133,6 +141,10 @@ public class ThemeManager implements FactorAnimator.Target, GlobalAccountListene
+ 
+   public List<ThemeInfo> getBuiltinThemes () {
+     int[] builtInThemeIds = BuildConfig.DEBUG ? new int[] {
++      ThemeId.GRAPEFRUIT_DARK,
++      ThemeId.GRAPEFRUIT_LIGHT,
++      ThemeId.PITCH_BLACK,
++      ThemeId.VICTORY_BLUE,
+       ThemeId.CLASSIC,
+       ThemeId.BLUE,
+       ThemeId.RED,
+@@ -145,6 +157,10 @@ public class ThemeManager implements FactorAnimator.Target, GlobalAccountListene
+       ThemeId.BLACK_WHITE,
+       ThemeId.WHITE_BLACK,
+     } : new int[] {
++      ThemeId.GRAPEFRUIT_DARK,
++      ThemeId.GRAPEFRUIT_LIGHT,
++      ThemeId.PITCH_BLACK,
++      ThemeId.VICTORY_BLUE,
+       ThemeId.CLASSIC,
+       ThemeId.BLUE,
+       ThemeId.RED,
+@@ -507,6 +523,10 @@ public class ThemeManager implements FactorAnimator.Target, GlobalAccountListene
+       case ThemeId.RED:
+       case ThemeId.WHITE_BLACK:
+       case ThemeId.CLASSIC:
++      case ThemeId.GRAPEFRUIT_DARK:
++      case ThemeId.GRAPEFRUIT_LIGHT:
++      case ThemeId.PITCH_BLACK:
++      case ThemeId.VICTORY_BLUE:
+         return themeId;
+ 
+       case ThemeId.TEMPORARY:
+@@ -521,7 +541,7 @@ public class ThemeManager implements FactorAnimator.Target, GlobalAccountListene
+         }
+       }
+     }
+-    return ThemeId.NIGHT_BLUE;
++    return DEFAULT_DARK_THEME;
+   }
+ 
+   public static int resolveCustomThemeId (int themeId) {
+@@ -634,6 +654,10 @@ public class ThemeManager implements FactorAnimator.Target, GlobalAccountListene
+       case ThemeId.PINK:
+       case ThemeId.CYAN:
+       case ThemeId.CLASSIC:
++      case ThemeId.GRAPEFRUIT_DARK:
++      case ThemeId.GRAPEFRUIT_LIGHT:
++      case ThemeId.PITCH_BLACK:
++      case ThemeId.VICTORY_BLUE:
+         return savedThemeId;
+       default: {
+         if (allowCustom) {
+diff --git a/app/src/main/java/org/thunderdog/challegram/theme/ThemeSet.java b/app/src/main/java/org/thunderdog/challegram/theme/ThemeSet.java
+index 6b19a36..aa60d8b 100644
+--- a/app/src/main/java/org/thunderdog/challegram/theme/ThemeSet.java
++++ b/app/src/main/java/org/thunderdog/challegram/theme/ThemeSet.java
+@@ -112,6 +112,15 @@ public class ThemeSet {
+       case ThemeId.BLACK_WHITE:
+         return new ThemeBlackWhite();
+ 
++      case ThemeId.GRAPEFRUIT_DARK:
++        return new ThemeGrapefruitDark();
++      case ThemeId.GRAPEFRUIT_LIGHT:
++        return new ThemeGrapefruitLight();
++      case ThemeId.PITCH_BLACK:
++        return new ThemePitchBlack();
++      case ThemeId.VICTORY_BLUE:
++        return new ThemeVictoryBlue();
++
+       case ThemeId.NONE:
+       case ThemeId.TEMPORARY:
+         break;
+diff --git a/app/src/main/other/themes/Blue.tgx-theme b/app/src/main/other/themes/Blue.tgx-theme
+index 3b91f9a..0e044b4 100644
+--- a/app/src/main/other/themes/Blue.tgx-theme
++++ b/app/src/main/other/themes/Blue.tgx-theme
+@@ -207,3 +207,7 @@ wp_catsGreen: #59843D66
+ wp_catsOrange: #94673F66
+ wp_catsPink: #B5779566
+ blockQuoteText, blockQuoteLine, bubbleIn_blockQuoteText, bubbleIn_blockQuoteLine, bubbleOut_blockQuoteText, bubbleOut_blockQuoteLine: #000000
++themeGrapefruitDark: #FF7F6B
++themeGrapefruitLight: #E83850
++themePitchBlack: #F2546B
++themeVictoryBlue: #398BFF
+diff --git a/app/src/main/other/themes/colors-and-properties.xml b/app/src/main/other/themes/colors-and-properties.xml
+index 795c154..9dfe041 100644
+--- a/app/src/main/other/themes/colors-and-properties.xml
++++ b/app/src/main/other/themes/colors-and-properties.xml
+@@ -3,8 +3,8 @@
+   <settings>
+     <source-theme>1</source-theme>
+     <default-theme>
+-      <light>11</light>
+-      <dark>10</dark>
++      <light>13</light>
++      <dark>12</dark>
+     </default-theme>
+   </settings>
+   <sections>
+@@ -517,6 +517,12 @@
+     <item name="themeBlackWhite" />
+     <item name="themeWhiteBlack" />
+ 
++    <!-- Grapefruitgram -->
++    <item name="themeGrapefruitDark" />
++    <item name="themeGrapefruitLight" />
++    <item name="themePitchBlack" />
++    <item name="themeVictoryBlue" />
++
+     <!-- CONSTANT -->
+ 
+     <item name="caption_textLink" />
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index 416f9af..d028ad8 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -1588,6 +1588,10 @@
+   <string name="Tweaks">Interface Options</string>
+   <string name="TweakSettings">Interface</string>
+   <string name="ThemeClassic">Classic</string>
++  <string name="ThemeGrapefruitDark">Grapefruit Dark</string>
++  <string name="ThemeGrapefruitLight">Grapefruit Light</string>
++  <string name="ThemePitchBlack">Pitch Black</string>
++  <string name="ThemeVictoryBlue">Victory Blue</string>
+   <string name="ThemeBlue">Blue</string>
+   <string name="ThemeNight">Night Black</string>
+   <string name="ThemeNightBlue">Night Blue</string>

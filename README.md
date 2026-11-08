@@ -15,6 +15,14 @@ The repository also contains **Grapefruit TV 2.0** (formerly Grapefruit FAST), a
 
 **Grapefruit Maps Legacy 1.0** is a separate GPL app for Android 4.2.2 and later, with four local/universal Grapefruit themes, 2D and satellite views, country downloads and driving directions. See [maps/README.md](maps/README.md) for features, data licensing, release limits and build instructions.
 
+## Grapefruitgram Messenger
+
+**Grapefruitgram Messenger** is a free-software Telegram client for Android 4.2.2 and later, built from
+Telegram X with the four Grapefruit themes, the universal theme, Geist, UnifiedPush notifications and
+OpenStreetMap maps, and without Google's or Huawei's proprietary libraries. The repository holds the
+patches and new files over a pinned Telegram X commit. See [messenger/README.md](messenger/README.md)
+for features, building and its current limits.
+
 ## Features
 
 - **Podcasts (4.0 beta):** discover and search podcasts, add an RSS address, subscribe, stream episodes,

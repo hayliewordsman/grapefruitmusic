@@ -1,0 +1,61 @@
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index 53a587b..d293d83 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -158,6 +158,18 @@
+         android:value="Telegram X is a messaging app. Users expect to receive instant new message notifications, and the app to be auto-started. A foreground service is required for push messages that require one-time end-to-end encryption key exchange (such as when users receive the first message from a new Secret Chat), for which there is no Firebase Cloud Messaging integration. Other foreground service types do not fit this use case, or can't be used on Android 15 because there are time limits or auto-starting on boot is not allowed. Using the Android work manager isn't an option either." />
+     </service>
+ 
++    <!-- Grapefruitgram Messenger: new messages without a push service (see GrapefruitBackgroundService). -->
++    <service
++      android:name=".telegram.GrapefruitBackgroundService"
++      android:enabled="true"
++      android:exported="false"
++      android:foregroundServiceType="specialUse"
++      android:stopWithTask="false">
++      <property
++        android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
++        android:value="Grapefruitgram Messenger is a messaging app without Firebase. When no UnifiedPush distributor is installed, this service keeps the connection to Telegram open so that new message notifications arrive. It stops as soon as a push service works." />
++    </service>
++
+     <service
+       android:name=".service.SyncContactsService"
+       android:enabled="true"
+diff --git a/app/src/main/java/org/thunderdog/challegram/BaseActivity.java b/app/src/main/java/org/thunderdog/challegram/BaseActivity.java
+index cfd448b..f04f80b 100644
+--- a/app/src/main/java/org/thunderdog/challegram/BaseActivity.java
++++ b/app/src/main/java/org/thunderdog/challegram/BaseActivity.java
+@@ -1133,6 +1133,7 @@ public abstract class BaseActivity extends FragmentActivity implements View.OnTo
+     }
+     notifyActivityResume();
+     org.thunderdog.challegram.grapefruit.UniversalTheme.check(this);
++    org.thunderdog.challegram.telegram.GrapefruitBackgroundService.check(this);
+     if (!windows.isEmpty()) {
+       for (PopupLayout window : windows) {
+         window.onActivityResume();
+diff --git a/app/src/main/java/org/thunderdog/challegram/telegram/TdlibManager.java b/app/src/main/java/org/thunderdog/challegram/telegram/TdlibManager.java
+index 5622e1f..a76126d 100644
+--- a/app/src/main/java/org/thunderdog/challegram/telegram/TdlibManager.java
++++ b/app/src/main/java/org/thunderdog/challegram/telegram/TdlibManager.java
+@@ -1655,6 +1655,8 @@ public class TdlibManager implements Iterable<TdlibAccount>, UI.StateListener {
+         }
+       }
+       global().notifyTokenStateChanged(newState, error, fullError);
++      // Grapefruitgram Messenger: keep a background connection while no push service works.
++      org.thunderdog.challegram.tool.UI.post(() -> GrapefruitBackgroundService.check(org.thunderdog.challegram.unsorted.AppContext.get()));
+       if (newState == TokenState.ERROR && !StringUtils.isEmpty(error)) {
+         String reportedError = Settings.instance().getReportedPushServiceError();
+         if (reportedError == null || !reportedError.equals(error)) {
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index 69bb74b..0270a0e 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -1588,6 +1588,8 @@
+   <string name="Tweaks">Interface Options</string>
+   <string name="TweakSettings">Interface</string>
+   <string name="ThemeClassic">Classic</string>
++  <string name="GrapefruitBackgroundConnection">Connected to Telegram</string>
++  <string name="GrapefruitBackgroundConnectionDesc">Receiving new messages without a push service</string>
+   <string name="ThemeGrapefruitDark">Grapefruit Dark</string>
+   <string name="ThemeGrapefruitLight">Grapefruit Light</string>
+   <string name="ThemePitchBlack">Pitch Black</string>
