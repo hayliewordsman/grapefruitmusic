@@ -15,6 +15,10 @@ The repository also contains **Grapefruit TV 2.0** (formerly Grapefruit FAST), a
 
 **Grapefruit Maps Legacy 1.0** is a separate GPL app for Android 4.2.2 and later, with four local/universal Grapefruit themes, 2D and satellite views, country downloads and driving directions. See [maps/README.md](maps/README.md) for features, data licensing, release limits and build instructions.
 
+## Grapefruit Maps: Barlow Edition
+
+**Grapefruit Maps: Barlow Edition 1.0** is the Google Maps edition: Google Map, Satellite and Terrain views, Street View, Google search and directions, and a landscape layout with an icon rail and side controls. It keeps Android 4.2.2 support with no Play services or Maps SDK, installs beside Legacy, and is not on F-Droid. See [maps-barlow/README.md](maps-barlow/README.md).
+
 ## Features
 
 - **Podcasts (4.0 beta):** discover and search podcasts, add an RSS address, subscribe, stream episodes,

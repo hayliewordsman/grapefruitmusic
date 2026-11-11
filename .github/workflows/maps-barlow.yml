@@ -1,0 +1,111 @@
+name: Grapefruit Maps Barlow Edition
+# Separate from Grapefruit Maps Legacy (maps.yml). Barlow Edition is never published to F-Droid.
+on:
+  push:
+    paths: ["maps-barlow/**", "grapefruit-ui/**", "tools/maps-barlow/**", "settings.gradle", "build.gradle", "gradle/**", ".github/workflows/maps-barlow.yml"]
+  pull_request:
+    paths: ["maps-barlow/**", "grapefruit-ui/**", "tools/maps-barlow/**", "settings.gradle", "build.gradle", "gradle/**", ".github/workflows/maps-barlow.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.name }}
+      apk_name: ${{ steps.version.outputs.apk_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read Barlow Edition version
+        id: version
+        run: |
+          name=$(sed -n 's/^ *versionName "\([^"]*\)" *$/\1/p' maps-barlow/build.gradle)
+          [[ "$name" =~ ^[0-9A-Za-z.-]+$ ]]
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "apk_name=grapefruit-maps-barlow-$name.apk" >> "$GITHUB_OUTPUT"
+          echo "APK_NAME=grapefruit-maps-barlow-$name.apk" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Android SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+      - name: Use permanent Grapefruit certificate when available
+        env:
+          KEYSTORE_BASE64: ${{ secrets.GRAPEFRUIT_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            umask 077
+            printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/grapefruit.p12"
+            echo "GRAPEFRUIT_KEYSTORE=$RUNNER_TEMP/grapefruit.p12" >> "$GITHUB_ENV"
+          fi
+      - name: Test and lint without a Maps key
+        run: ./gradlew --no-daemon :maps-barlow:testReleaseUnitTest :maps-barlow:lintRelease
+      - name: Build release APK
+        env:
+          GRAPEFRUIT_KEYSTORE_PASSWORD: ${{ secrets.GRAPEFRUIT_KEYSTORE_PASSWORD }}
+          MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: ./gradlew --no-daemon :maps-barlow:assembleRelease
+      - name: Verify installable Android 4.2.2 APK
+        run: |
+          mkdir -p work/maps-barlow-apk
+          apk=$(ls maps-barlow/build/outputs/apk/release/*.apk | head -1)
+          cp "$apk" "work/maps-barlow-apk/$APK_NAME"
+          if [ -n "$GRAPEFRUIT_KEYSTORE" ]; then
+            "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs --min-sdk-version 17 "work/maps-barlow-apk/$APK_NAME" > work/maps-barlow-apk/signature.txt
+            digest=$(sed -n 's/^.*certificate SHA-256 digest: *//p' work/maps-barlow-apk/signature.txt | sort -u)
+            test "$digest" = 85cac0ef72777211d99e2bbe4ad09a3815c6cf313e5fa18f401ec8da0ae0e795
+          fi
+          cd work/maps-barlow-apk
+          sha256sum "$APK_NAME" > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: grapefruit-maps-barlow-${{ steps.version.outputs.name }}
+          path: work/maps-barlow-apk/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: grapefruit-maps-barlow-reports
+          path: |
+            maps-barlow/build/reports/
+            maps-barlow/build/test-results/
+      - name: Remove temporary signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/grapefruit.p12"
+  release:
+    # GitHub release only, from the default branch, when the signing key and Maps key are both configured.
+    if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: grapefruit-maps-barlow-${{ needs.build.outputs.version }}
+          path: artifacts
+      - name: Publish verified Barlow Edition release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+          APK_NAME: ${{ needs.build.outputs.apk_name }}
+          HAS_MAPS_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY != '' }}
+        run: |
+          if [ ! -f artifacts/signature.txt ] || [ "$HAS_MAPS_KEY" != true ]; then
+            echo 'Releases need GRAPEFRUIT_KEYSTORE_BASE64 and GOOGLE_MAPS_API_KEY; skipping.'
+            exit 0
+          fi
+          (cd artifacts && sha256sum --check SHA256SUMS)
+          if gh release view "maps-barlow-v$VERSION" >/dev/null 2>&1; then
+            echo 'This version is already published; leaving the existing release intact.'
+            exit 0
+          fi
+          gh release create "maps-barlow-v$VERSION" "artifacts/$APK_NAME" artifacts/SHA256SUMS artifacts/signature.txt \
+            --target "$GITHUB_SHA" --title "Grapefruit Maps: Barlow Edition $VERSION" \
+            --notes-file maps-barlow/RELEASE-$VERSION.md --latest=false

@@ -1,0 +1,63 @@
+plugins { id "com.android.application" }
+
+// Google Maps Platform key (Map Tiles, Street View Static, Geocoding and Routes APIs). Never committed:
+// set MAPS_API_KEY in the environment, ~/.gradle/gradle.properties or the (ignored) local.properties.
+// Without it the app still builds and explains that Google services are not configured.
+def localProps = new Properties()
+def localFile = rootProject.file("local.properties")
+if (localFile.isFile()) localFile.withInputStream { localProps.load(it) }
+def mapsApiKey = System.getenv("MAPS_API_KEY") ?: (project.findProperty("MAPS_API_KEY") ?: localProps.getProperty("MAPS_API_KEY", ""))
+
+android {
+    namespace "com.grapefruitmaps.barlow"
+    compileSdk 36
+    defaultConfig {
+        applicationId "io.github.hayliewordsman.grapefruitmaps.barlow"
+        // No Google Maps SDK or Play services: plain HTTPS to Google's web APIs keeps Android 4.2.2.
+        minSdk 17
+        targetSdk 36
+        versionCode 1
+        versionName "1.0"
+        ndk { abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64" }
+        buildConfigField "String", "MAPS_API_KEY", "\"${mapsApiKey}\""
+    }
+    buildFeatures { buildConfig true }
+    signingConfigs {
+        permanent {
+            def key = System.getenv("GRAPEFRUIT_KEYSTORE")
+            if (key) {
+                storeFile file(key)
+                storeType "pkcs12"
+                storePassword System.getenv("GRAPEFRUIT_KEYSTORE_PASSWORD")
+                keyAlias "grapefruit"
+                keyPassword System.getenv("GRAPEFRUIT_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        release { minifyEnabled false; if (System.getenv("GRAPEFRUIT_KEYSTORE")) signingConfig signingConfigs.permanent }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+    packaging { jniLibs { keepDebugSymbols += "**/libconscrypt_jni.so" } }
+    dependenciesInfo { includeInApk false; includeInBundle false }
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.all {
+            jvmArgs "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED", "--add-opens=java.base/java.io=ALL-UNNAMED"
+            systemProperty "user.home", layout.buildDirectory.dir("test-home").get().asFile.absolutePath
+            systemProperty "robolectric.dependency.repo.url", (System.getProperty("robolectric.repo") ?: "https://repo.maven.apache.org/maven2")
+            ["http.proxyHost", "http.proxyPort", "https.proxyHost", "https.proxyPort", "http.nonProxyHosts", "javax.net.ssl.trustStore"].each {
+                if (System.getProperty(it)) systemProperty it, System.getProperty(it)
+            }
+            doFirst { layout.buildDirectory.dir("test-home").get().asFile.mkdirs() }
+        }
+    }
+    lint { abortOnError true }
+}
+dependencies {
+    implementation project(":grapefruit-ui")
+    // Only the online tile renderer: Google imagery is drawn by Mapsforge, as Legacy draws OSM.
+    implementation "org.mapsforge:mapsforge-map-android:0.21.0"
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.14.1"
+}
