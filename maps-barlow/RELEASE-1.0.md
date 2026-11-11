@@ -5,7 +5,7 @@ installs beside Grapefruit Maps Legacy, which is unchanged. Not on F-Droid.
 
 - Google Map, Satellite and Terrain views
 - Street View from the map centre or a dropped pin
-- Google search and traffic-aware driving directions, with hand-off to Google
+- Google search and driving directions, with hand-off to Google
   Maps for turn-by-turn navigation
 - Offline fallback: downloadable OpenStreetMap country maps, used in Offline
   mode or automatically when Google can't be reached

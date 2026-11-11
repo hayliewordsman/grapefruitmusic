@@ -476,7 +476,7 @@ public final class MainActivity extends Activity {
         margin(col,from,0,4); margin(col,to,0,4);
         TextWatcher watcher=new TextWatcher() { public void beforeTextChanged(CharSequence s,int a,int count,int after){} public void onTextChanged(CharSequence s,int start,int before,int count){fromText=from.getText().toString();toText=to.getText().toString();} public void afterTextChanged(Editable e){} };
         from.addTextChangedListener(watcher);to.addTextChangedListener(watcher);
-        TextView status=b.label("Routes use Google's Routes service, with live traffic. Places are sent when you request directions.",13,b.secondary);
+        TextView status=b.label("Routes use Google's Routes service (typical traffic, not live). Places are sent when you request directions.",13,b.secondary);
         margin(col,b.button("Get driving directions",true,v->{
             if(offlineOnly()) { message("Offline mode","New directions need a connection. Your last route remains available below and on the map.");return; }
             if(fromText.trim().isEmpty()||toText.trim().isEmpty()) {status.setText("Enter both a start and a destination.");return;}

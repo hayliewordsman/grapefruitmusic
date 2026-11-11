@@ -180,7 +180,8 @@ final class Net {
     static JSONObject route(Context c, String from, String to) throws Exception {
         if (!configured()) throw new IOException("No Google Maps API key is configured in this build");
         JSONObject body = new JSONObject().put("origin", waypoint(from)).put("destination", waypoint(to))
-                .put("travelMode", "DRIVE").put("routingPreference", "TRAFFIC_AWARE").put("units", "METRIC");
+        // TRAFFIC_UNAWARE keeps Compute Routes on the Essentials SKU (10,000 free a month; traffic is Pro, 5,000).
+                .put("travelMode", "DRIVE").put("routingPreference", "TRAFFIC_UNAWARE").put("units", "METRIC");
         return parseRoute(post(c, ROUTES, body, FIELDS));
     }
     /** Grapefruit's saved route: distance (m), duration (s), points [[lat,lng]...] and written steps. */

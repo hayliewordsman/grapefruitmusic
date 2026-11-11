@@ -23,7 +23,8 @@ OpenStreetMap and F-Droid. **Barlow Edition is not published to F-Droid.**
   Turn with the side buttons or by dragging, and look up and down. The nearest
   outdoor panorama within 80 m is found first, at no image charge.
 - **Search** with the Geocoding API. Coordinates work without a request.
-- **Driving directions** with the Routes API (traffic-aware): distance, time,
+- **Driving directions** with the Routes API (without live traffic, to stay in the
+  cheaper free tier): distance, time,
   route line and written steps. The last route is saved on the device.
   **Navigate in Google Maps** hands the trip to the Google Maps app or website
   for turn-by-turn guidance.
@@ -63,8 +64,26 @@ In Google Cloud, enable **Map Tiles API**, **Street View Static API**,
 **Geocoding API** and **Routes API** for the key. Restrict the key to these
 APIs. Tile and Street View image requests can't carry Android app headers, so
 an Android-app restriction would block them. The app sends `X-Android-Package`
-and `X-Android-Cert` on the calls that do support them. Set quotas or budget
-alerts: these APIs are billed beyond Google's free usage.
+and `X-Android-Cert` on the calls that do support them.
+
+### Staying within the free usage
+
+Each API has a monthly free allowance per SKU. Budgets only send alerts, so the
+hard limit is a **daily quota** on each API (Google Cloud › APIs & Services ›
+the API › Quotas), set at or below the free allowance divided by 31. Google
+then refuses requests over the limit instead of billing them. Check the
+current allowances on Google's pricing page before relying on these figures:
+
+| API | Free a month (SKU) | Suggested daily quota |
+| --- | --- | --- |
+| Map Tiles API | 100,000 (2D Map Tiles) | 3,000 |
+| Street View Static API | 10,000 | 300 |
+| Geocoding API | 10,000 | 300 |
+| Routes API | 10,000 (Compute Routes Essentials) | 300 |
+
+Directions request routes without live traffic, which keeps them on the
+Essentials SKU. When a quota runs out, that feature stops working until the
+next day; downloaded offline maps keep working.
 
 ## Build
 
