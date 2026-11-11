@@ -15,15 +15,23 @@ import org.mapsforge.map.layer.cache.*;
 import org.mapsforge.map.layer.download.*;
 import org.mapsforge.map.layer.download.tilesource.AbstractTileSource;
 import org.mapsforge.map.layer.overlay.Polyline;
+import org.mapsforge.map.layer.renderer.TileRendererLayer;
+import org.mapsforge.map.android.util.AndroidUtil;
+import org.mapsforge.map.rendertheme.InternalRenderTheme;
 
-/** Google Map Tiles API imagery (Map, Satellite with labels, Terrain) drawn by the lightweight Mapsforge view. */
+/**
+ * Google Map Tiles API imagery (Map, Satellite with labels, Terrain) drawn by the lightweight Mapsforge
+ * view, or a downloaded OpenStreetMap country map rendered on the device as the offline fallback.
+ */
 final class MapPanel {
     interface PinListener { void pin(LatLong position); }
     static final String[] TYPES={"Map","Satellite","Terrain"};
     final MapView view;
+    /** The Map Tiles session, or null for a downloaded offline map. */
     final String session;
+    final File offline;
     private final TileCache cache;
-    private final TileDownloadLayer download;
+    private TileDownloadLayer download;
     private Polyline route;
     private Layer pin;
     static final class Source extends AbstractTileSource {
@@ -43,17 +51,28 @@ final class MapPanel {
         @Override public int hashCode() { return session.hashCode(); }
     }
     static int maxZoom(int type) { return type==2?15:type==1?20:21; }
-    MapPanel(Context c, int type, String session, LatLong center, byte zoom, PinListener listener) {
-        this.session=session;
+    /** Online Google imagery. */
+    MapPanel(Context c, int type, String session, LatLong center, byte zoom, PinListener listener) { this(c,type,session,null,center,zoom,listener); }
+    /** A downloaded OpenStreetMap country map, rendered locally with no network. */
+    MapPanel(Context c, File offline, LatLong center, byte zoom, PinListener listener) { this(c,0,null,offline,center,zoom,listener); }
+    private MapPanel(Context c, int type, String session, File offline, LatLong center, byte zoom, PinListener listener) {
+        this.session=session; this.offline=offline;
+        int max=offline!=null?19:maxZoom(type);
         view=new MapView(c);
         view.getModel().displayModel.setFixedTileSize(256);
         view.setBuiltInZoomControls(false);
-        view.setZoomLevelMin((byte)1); view.setZoomLevelMax((byte)maxZoom(type));
-        // Bounded memory (24 tiles, about 6 MB) and disk (256 tiles), separate for each view.
-        cache=new TwoLevelTileCache(new InMemoryTileCache(24),new FileSystemTileCache(256,new File(c.getCacheDir(),"google-"+Net.SESSION_TYPES[type]),AndroidGraphicFactory.INSTANCE,true));
-        download=new TileDownloadLayer(cache,view.getModel().mapViewPosition,new Source(session,type),AndroidGraphicFactory.INSTANCE);
-        view.getLayerManager().getLayers().add(download); download.start();
-        view.setCenter(center); view.setZoomLevel((byte)Math.min(maxZoom(type),zoom));
+        view.setZoomLevelMin((byte)1); view.setZoomLevelMax((byte)max);
+        // Bounded memory (24 tiles, about 6 MB) and disk (256 tiles), separate for each view and map.
+        String key=offline!=null?"offline-"+offline.getName():"google-"+Net.SESSION_TYPES[type];
+        cache=new TwoLevelTileCache(new InMemoryTileCache(24),new FileSystemTileCache(256,new File(c.getCacheDir(),key),AndroidGraphicFactory.INSTANCE,true));
+        if(offline!=null) {
+            TileRendererLayer layer=AndroidUtil.createTileRendererLayer(cache,view.getModel().mapViewPosition,new PlaceNames.CanonicalMapFile(offline),InternalRenderTheme.DEFAULT);
+            view.getLayerManager().getLayers().add(layer);
+        } else {
+            download=new TileDownloadLayer(cache,view.getModel().mapViewPosition,new Source(session,type),AndroidGraphicFactory.INSTANCE);
+            view.getLayerManager().getLayers().add(download); download.start();
+        }
+        view.setCenter(center); view.setZoomLevel((byte)Math.min(max,zoom));
         Layer touches=new Layer() {
             @Override public void draw(BoundingBox b,byte z,org.mapsforge.core.graphics.Canvas canvas,Point p) {}
             @Override public boolean onLongPress(LatLong point,Point layer,Point tap) { view.post(() -> listener.pin(point)); return true; }
@@ -77,7 +96,7 @@ final class MapPanel {
         for(int i=0;i<coords.length();i++) { JSONArray p=coords.getJSONArray(i); points.add(new LatLong(p.getDouble(0),p.getDouble(1))); }
         route.setPoints(points); view.getLayerManager().getLayers().add(route); view.repaint();
     }
-    void pause() { download.onPause(); }
-    void resume() { download.onResume(); }
+    void pause() { if(download!=null) download.onPause(); }
+    void resume() { if(download!=null) download.onResume(); }
     void destroy() { view.destroyAll(); }
 }

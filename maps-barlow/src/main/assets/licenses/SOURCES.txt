@@ -2,7 +2,7 @@ Grapefruit Maps: Barlow Edition 1.0
 App source and build scripts, GPL-3.0-or-later:
 https://github.com/hayliewordsman/grapefruitmusic/tree/main/maps-barlow
 
-Mapsforge 0.21.0 (core, map, map-android: online map view only), LGPL-3.0-or-later:
+Mapsforge 0.21.0 (core, map, map-reader, map-android, themes), LGPL-3.0-or-later:
 https://github.com/mapsforge/mapsforge/tree/0.21.0
 See LGPL-3.0.txt and Mapsforge-exception.txt for the upstream section 4(d)/(e) waiver.
 
@@ -27,6 +27,11 @@ its data providers, under the Google Maps Platform terms of service.
 https://maps.google.com/help/terms_maps/
 https://cloud.google.com/maps-platform/terms
 No Google SDK or Google Play services library is bundled.
+
+Offline fallback maps: OpenStreetMap data, copyright OpenStreetMap contributors,
+ODbL 1.0. https://www.openstreetmap.org/copyright
+The app downloads unmodified Mapsforge country extracts from
+https://download.mapsforge.org/ ; no map database is bundled in the APK.
 
 Victory Break's generated Trump caricature is supplied as GPL-3.0-or-later
 artwork with this project. Editable PNG and prompt: maps/brand/victory/.

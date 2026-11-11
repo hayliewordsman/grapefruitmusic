@@ -50,6 +50,23 @@ public class MapsVisualTest {
             File f=new File("build/reports/maps-preview/icons.png");f.getParentFile().mkdirs();try(FileOutputStream out=new FileOutputStream(f)){bitmap.compress(Bitmap.CompressFormat.PNG,100,out);}
         }
     }
+    @Test public void countryMapRendersWithoutNetwork() throws Exception {
+        Application app=RuntimeEnvironment.getApplication();org.mapsforge.map.android.graphics.AndroidGraphicFactory.createInstance(app);
+        MapDownloads d=MapDownloads.get(app);File map=new File(d.directory,"visual-andorra.map");map.getParentFile().mkdirs();
+        java.nio.file.Files.copy(new File(System.getProperty("maps.fixture")).toPath(),map.toPath(),java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        app.getSharedPreferences("maps",0).edit().clear().putBoolean("offline_only",true).putString("offline_file",map.getName()).putInt("zoom",12)
+            .putLong("lat",Double.doubleToLongBits(42.5063)).putLong("lon",Double.doubleToLongBits(1.5218)).commit();
+        try(ActivityController<MainActivity> controller=Robolectric.buildActivity(MainActivity.class).setup().visible()){
+            MainActivity a=controller.get();assertNotNull(a.map);layout(a,360,640);
+            for(int i=0;i<12;i++){capture(a,"offline-andorra.png",360,640);Thread.sleep(150);Shadows.shadowOf(Looper.getMainLooper()).idle();}
+            layout(a,360,640);capture(a,"offline-andorra.png",360,640);
+            Bitmap image=BitmapFactory.decodeFile("build/reports/maps-preview/offline-andorra.png");
+            java.util.Set<Integer> colors=new java.util.HashSet<>();for(int y=280;y<480;y+=2)for(int x=20;x<230;x+=2)colors.add(image.getPixel(x,y));
+            assertTrue("Offline tile pixels should contain map features, not a blank surface",colors.size()>50);
+            a.show("offline");layout(a,360,640);capture(a,"offline-list.png",360,640);
+            a.show("directions");assertNull(a.map);
+        } finally {map.delete();}
+    }
     private void layout(MainActivity a,int w,int h){View v=a.getWindow().getDecorView();v.measure(View.MeasureSpec.makeMeasureSpec(w,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(h,View.MeasureSpec.EXACTLY));v.layout(0,0,w,h);Shadows.shadowOf(Looper.getMainLooper()).idle();}
     private void capture(MainActivity a,String name,int w,int h)throws Exception{View v=a.getWindow().getDecorView();Bitmap bitmap=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888);v.draw(new Canvas(bitmap));File f=new File("build/reports/maps-preview/"+name);f.getParentFile().mkdirs();try(FileOutputStream out=new FileOutputStream(f)){bitmap.compress(Bitmap.CompressFormat.PNG,100,out);}}
 }

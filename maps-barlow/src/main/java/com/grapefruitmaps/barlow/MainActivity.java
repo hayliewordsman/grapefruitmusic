@@ -8,6 +8,9 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.location.*;
 import android.net.Uri;
 import android.os.*;
@@ -35,6 +38,7 @@ public final class MainActivity extends Activity {
     LinearLayout root, tabs;
     FrameLayout content;
     MapPanel map;
+    MapDownloads downloads;
     EggView egg;
     /** True when the window is wider than tall: icon rail at the side and compact headers. */
     boolean landscape;
@@ -43,8 +47,9 @@ public final class MainActivity extends Activity {
     private final Handler main=new Handler(Looper.getMainLooper());
     private LocationManager locationManager;
     private LocationListener locationListener;
-    private TextView attribution;
-    private String page="map";
+    private TextView attribution, downloadStatus;
+    private BaseAdapter downloadAdapter;
+    private String page="map", country;
     private int mapType;
     private boolean dead;
     private int request;
@@ -60,6 +65,8 @@ public final class MainActivity extends Activity {
         UniversalTheme.sync(this,prefs,false,UNIVERSAL_THEME_IDS);
         Fonts.init(this);
         b=new Brand(this,prefs.getInt("theme",0));
+        downloads=MapDownloads.get(this);
+        downloads.listener=this::refreshDownloads;
         if(Build.VERSION.SDK_INT>=21) { getWindow().setStatusBarColor(b.bg); getWindow().setNavigationBarColor(b.bg); }
         center=new LatLong(Double.longBitsToDouble(prefs.getLong("lat",Double.doubleToLongBits(center.latitude))),Double.longBitsToDouble(prefs.getLong("lon",Double.doubleToLongBits(center.longitude))));
         zoom=(byte)prefs.getInt("zoom",12);
@@ -67,6 +74,7 @@ public final class MainActivity extends Activity {
         page=state==null?"map":state.getString("page","map");
         // Easter egg state and drops are deliberately never restored.
         if("egg".equals(page)) page="about";
+        country=state==null?null:state.getString("country");
         fromText=state==null?"":state.getString("from",""); toText=state==null?"":state.getString("to","");
         heading=state==null?0:state.getInt("heading",0);
         if(state!=null&&state.containsKey("street_lat")) streetPoint=new LatLong(state.getDouble("street_lat"),state.getDouble("street_lon"));
@@ -91,7 +99,7 @@ public final class MainActivity extends Activity {
         setContentView(root); show(page);
     }
     @Override protected void onSaveInstanceState(Bundle state) {
-        state.putString("page",page); state.putString("from",fromText); state.putString("to",toText); state.putInt("heading",heading);
+        state.putString("page",page); state.putString("country",country); state.putString("from",fromText); state.putString("to",toText); state.putInt("heading",heading);
         if(streetPoint!=null) { state.putDouble("street_lat",streetPoint.latitude); state.putDouble("street_lon",streetPoint.longitude); }
         super.onSaveInstanceState(state);
     }
@@ -106,9 +114,9 @@ public final class MainActivity extends Activity {
         if(!next.equals("about")) eggState.reset();
         rememberMap();
         if(map!=null) { map.destroy(); map=null; }
-        content.removeAllViews(); attribution=null; page=next;
+        content.removeAllViews(); attribution=null; downloadStatus=null; downloadAdapter=null; page=next;
         tabs.removeAllViews();
-        String selected=next.equals("about")||next.equals("egg")||next.equals("licenses")?"settings":next.equals("search")?"map":next;
+        String selected=next.equals("about")||next.equals("egg")||next.equals("licenses")||next.equals("offline")||next.equals("country")?"settings":next.equals("search")?"map":next;
         for(int i=0;i<TAB_LABELS.length;i++) {
             final String target=TAB_PAGES[i]; boolean on=selected.equals(target);
             if(landscape) {
@@ -125,6 +133,8 @@ public final class MainActivity extends Activity {
             case "about": about(); break;
             case "licenses": licenses(); break;
             case "egg": easterEgg(); break;
+            case "offline": offline(null); break;
+            case "country": offline(country); break;
             case "street": street(); break;
             case "directions": directions(); break;
             case "search": search(); break;
@@ -223,7 +233,7 @@ public final class MainActivity extends Activity {
     /** The Map page: map view chooser plus drawn controls; landscape gets a slim header and side controls. */
     private void mapPage() {
         LinearLayout col=b.column(); content.addView(col);
-        TextView typeButton=b.button(MapPanel.TYPES[mapType],true,v->chooseMapType());
+        TextView typeButton=b.button(offlineOnly()?"Offline":MapPanel.TYPES[mapType],true,v->chooseMapType());
         typeButton.setCompoundDrawablePadding(b.dp(6));
         typeButton.setCompoundDrawablesWithIntrinsicBounds(null,null,new ChevronDrawable(b.onAccent,b.dp(16),true),null);
         typeButton.setContentDescription("Map view: "+MapPanel.TYPES[mapType]+". Choose map view.");
@@ -240,10 +250,48 @@ public final class MainActivity extends Activity {
             tools.addView(typeButton,new LinearLayout.LayoutParams(0,b.dp(44),1));head.addView(tools);
         }
         FrameLayout frame=new FrameLayout(this); col.addView(frame,new LinearLayout.LayoutParams(-1,0,1));
-        if(!Net.configured()) { notConfigured(frame); return; }
+        File offline=offlineFile();
+        String reason=offlineOnly()?"Offline mode is on.":!Net.configured()?null:!online()?"No connection.":"";
+        if(reason==null||!reason.isEmpty()) {
+            // The offline fallback: a downloaded OpenStreetMap country map, rendered on the device.
+            if(offline!=null) { openOffline(frame,null,offline,reason==null?"Google Maps isn't set up in this build.":reason); return; }
+            if(reason==null) notConfigured(frame);
+            else frame.addView(column("You're offline","Download a country map to use Grapefruit Maps without a connection."));
+            LinearLayout box=(LinearLayout)frame.getChildAt(0);
+            margin(box,b.button("Offline maps",true,v->show("offline")),0,8);
+            return;
+        }
         TextView loading=b.label("Loading Google Maps…",14,b.secondary); loading.setGravity(Gravity.CENTER);
         frame.addView(loading,new FrameLayout.LayoutParams(-1,-1));
-        // Drawn round controls float on the right side; landscape adds search, view and Street View there too.
+        addControls(frame);
+        final int ticket=request, type=mapType;
+        final JSONArray styles=night()?nightStyle():null;
+        final File fallback=offline;
+        worker.execute(()->{
+            try {
+                String session=Net.session(this,prefs,type,styles);
+                main.post(()->{ if(!dead&&ticket==request) openMap(frame,loading,type,session); });
+            } catch(Exception e) { main.post(()->{ if(dead||ticket!=request) return;
+                if(fallback!=null) openOffline(frame,loading,fallback,"Google Maps unavailable.");
+                else loading.setText("Google Maps unavailable: "+e.getMessage()+"\nDownload a country map in Settings › Offline maps to use without a connection."); }); }
+        });
+    }
+    private boolean offlineOnly() { return prefs.getBoolean("offline_only",false); }
+    @SuppressWarnings("deprecation")
+    private boolean online() {
+        ConnectivityManager cm=(ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo info=cm==null?null:cm.getActiveNetworkInfo();
+        return info!=null&&info.isConnected();
+    }
+    /** The downloaded map chosen for offline use, else the first one downloaded. */
+    private File offlineFile() {
+        String saved=prefs.getString("offline_file","");
+        if(!saved.isEmpty()) { File f=new File(downloads.directory,saved); if(f.isFile()) return f; }
+        for(MapDownloads.Entry e:downloads.entries) { File f=downloads.file(e); if(f.isFile()) return f; }
+        return null;
+    }
+    /** Drawn round controls float on the right side; landscape adds search, view and Street View there too. */
+    private void addControls(FrameLayout frame) {
         LinearLayout controls=b.column(); controls.setGravity(Gravity.CENTER_HORIZONTAL);
         int size=b.dp(landscape?44:48);
         if(landscape) {
@@ -255,14 +303,32 @@ public final class MainActivity extends Activity {
         control(controls,iconButton(Icon.Kind.MINUS,"Zoom out",v->{if(map!=null)map.view.getModel().mapViewPosition.zoomOut();}),size);
         control(controls,iconButton(Icon.Kind.LOCATE,"Show my location",v->locate()),size);
         FrameLayout.LayoutParams cp=new FrameLayout.LayoutParams(-2,-2,Gravity.END|(landscape?Gravity.CENTER_VERTICAL:Gravity.TOP)); cp.setMargins(0,b.dp(8),b.dp(10),b.dp(8)); frame.addView(controls,cp);
-        final int ticket=request, type=mapType;
-        final JSONArray styles=night()?nightStyle():null;
-        worker.execute(()->{
-            try {
-                String session=Net.session(this,prefs,type,styles);
-                main.post(()->{ if(!dead&&ticket==request) openMap(frame,loading,type,session); });
-            } catch(Exception e) { main.post(()->{ if(!dead&&ticket==request) loading.setText("Google Maps unavailable: "+e.getMessage()); }); }
-        });
+    }
+    private MapPanel.PinListener pins() {
+        return point->{
+            map.mark(point,b.accent);
+            choose("Dropped pin",new String[]{"Street View here","Directions from here","Directions to here","Copy coordinates"},i->{
+                String value=coordinateText(point);
+                if(i==0) { streetPoint=point; heading=0; pitch=0; show("street"); }
+                else if(i==3) { ((android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("Coordinates",value)); }
+                else { if(i==1) fromText=value; else toText=value; show("directions"); }
+            });
+        };
+    }
+    private void openOffline(FrameLayout frame,View loading,File file,String reason) {
+        try {
+            map=new MapPanel(this,file,center,zoom,pins());
+            if(loading!=null) frame.removeView(loading);
+            frame.addView(map.view,0);
+            if(lastRoute!=null) map.route(lastRoute,b.accent);
+        } catch(Exception e) { if(map!=null) { map.destroy(); map=null; } message("Map unavailable","Remove this downloaded map and download it again. "+e.getMessage()); return; }
+        if(loading==null) addControls(frame);
+        attribution=b.label("© OpenStreetMap contributors · ODbL · offline",11,b.text);
+        attribution.setBackground(b.shape(b.surface,12,true)); attribution.setPadding(b.dp(10),b.dp(6),b.dp(10),b.dp(6));
+        attribution.setOnClickListener(v->show("about"));
+        FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(-2,-2,Gravity.BOTTOM|Gravity.START); ap.setMargins(b.dp(8),0,b.dp(8),b.dp(8)); frame.addView(attribution,ap);
+        TextView hint=b.label(reason+" Showing your downloaded map.",12,b.secondary);
+        hint.setPadding(b.dp(16),b.dp(landscape?4:8),b.dp(16),b.dp(landscape?4:8)); ((LinearLayout)frame.getParent()).addView(hint);
     }
     private boolean night() { return prefs.getInt("theme",0)!=1; }
     private JSONArray nightStyle() {
@@ -270,19 +336,13 @@ public final class MainActivity extends Activity {
         catch(IOException|JSONException e) { return null; }
     }
     private void chooseMapType() {
-        choose("Map view",MapPanel.TYPES,i->{ mapType=i; prefs.edit().putInt("map_type",i).apply(); show("map"); });
+        choose("Map view",MapPanel.TYPES,i->{
+            if(offlineOnly()) { message("Offline mode","Google map views need a connection. Turn off Offline mode in Settings to use them."); return; }
+            mapType=i; prefs.edit().putInt("map_type",i).apply(); show("map"); });
     }
     private void openMap(FrameLayout frame,View loading,int type,String session) {
         try {
-            map=new MapPanel(this,type,session,center,zoom,point->{
-                map.mark(point,b.accent);
-                choose("Dropped pin",new String[]{"Street View here","Directions from here","Directions to here","Copy coordinates"},i->{
-                    String value=coordinateText(point);
-                    if(i==0) { streetPoint=point; heading=0; pitch=0; show("street"); }
-                    else if(i==3) { ((android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("Coordinates",value)); }
-                    else { if(i==1) fromText=value; else toText=value; show("directions"); }
-                });
-            });
+            map=new MapPanel(this,type,session,center,zoom,pins());
             frame.removeView(loading); frame.addView(map.view,0);
             if(lastRoute!=null) map.route(lastRoute,b.accent);
             map.view.getModel().mapViewPosition.addObserver(this::scheduleAttribution);
@@ -323,6 +383,7 @@ public final class MainActivity extends Activity {
             String q=query.getText().toString().trim(); if(q.isEmpty())return;
             LatLong coordinate=Net.coordinate(q);if(coordinate==null)coordinate=PlaceNames.find(q);
             if(coordinate!=null) { center=coordinate;zoom=(byte)(coordinate.equals(PlaceNames.GULF_POINT)?5:coordinate.equals(PlaceNames.LAKE_POINT)?8:15);show("map");return; }
+            if(offlineOnly()) { message("Offline mode","Enter coordinates to find a point offline. Place search needs a connection."); return; }
             status.setText("Searching…"); results.removeAllViews(); final int ticket=request;
             worker.execute(()->{
                 try {
@@ -348,6 +409,7 @@ public final class MainActivity extends Activity {
             col.addView(head);
         } else col.addView(column("Street View","Look around at the map centre or a dropped pin."));
         FrameLayout frame=new FrameLayout(this); col.addView(frame,new LinearLayout.LayoutParams(-1,0,1));
+        if(offlineOnly()) { frame.addView(column("You're offline","Street View needs a connection. Turn off Offline mode in Settings to use it.")); return; }
         if(!Net.configured()) { notConfigured(frame); return; }
         if(streetPoint==null) streetPoint=center;
         final ImageView image=new ImageView(this); image.setScaleType(ImageView.ScaleType.CENTER_CROP); image.setBackgroundColor(b.surface);
@@ -416,6 +478,7 @@ public final class MainActivity extends Activity {
         from.addTextChangedListener(watcher);to.addTextChangedListener(watcher);
         TextView status=b.label("Routes use Google's Routes service, with live traffic. Places are sent when you request directions.",13,b.secondary);
         margin(col,b.button("Get driving directions",true,v->{
+            if(offlineOnly()) { message("Offline mode","New directions need a connection. Your last route remains available below and on the map.");return; }
             if(fromText.trim().isEmpty()||toText.trim().isEmpty()) {status.setText("Enter both a start and a destination.");return;}
             ((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(to.getWindowToken(),0);
             final String origin=fromText.trim(),destination=toText.trim(); final int ticket=request; status.setText("Finding a driving route…"); v.setEnabled(false);
@@ -461,11 +524,17 @@ public final class MainActivity extends Activity {
         section(col,"Maps");
         row(col,"Map view",MapPanel.TYPES[mapType]+" ›",v->choose("Map view",MapPanel.TYPES,i->{mapType=i;prefs.edit().putInt("map_type",i).apply();show("settings");}));
         row(col,"Street View","Open ›",v->show("street"));
+        LinearLayout toggle=row(col,"Offline mode","",null);Toggle sw=new Toggle(this);sw.setOffColors(b.toggleOff,b.toggleOffSegments);sw.setChecked(offlineOnly());
+        if(prefs.getInt("theme",0)==3)sw.setOnColors(b.accent,b.end,0xffBDDDF6);
+        sw.setContentDescription("Offline mode");sw.setListener((t,on)->prefs.edit().putBoolean("offline_only",on).apply());toggle.addView(sw);toggle.setOnClickListener(v->sw.performClick());
+        File fallback=offlineFile();
+        row(col,"Offline maps",fallback==null?"Countries ›":"Downloaded ›",v->show("offline"));
+        note(col,"Online, maps come from Google. Offline (or when Google can't be reached), Grapefruit shows your downloaded OpenStreetMap country map instead. Offline mode always uses it; coordinate search and your saved route still work. Street View, place search and new directions need a connection.");
         row(col,"Clear saved route",lastRoute==null?"None":"Clear",v->{lastRoute=null;prefs.edit().remove("last_route").apply();show("settings");});
         note(col,"Grapefruit uses Gulf of Mexico and Lake Ontario. Its own labels over the map and search results preserve these names. Text inside Google's map imagery is provider-controlled.");
         section(col,"Google Maps Platform");
         row(col,"Google services",Net.configured()?"Configured":"Not set up",null);
-        note(col,"Map Tiles, Street View Static, Geocoding and Routes are called directly over HTTPS. No Google Play services, Google Maps SDK or WebView is needed, so this works on Android 4.2.2 and later.");
+        note(col,"Map Tiles, Street View Static, Geocoding and Routes are called directly over HTTPS; country maps download from Mapsforge. No Google Play services, Google Maps SDK or WebView is needed, so this works on Android 4.2.2 and later.");
         section(col,"About");
         row(col,"About "+NAME,versionName()+" ›",v->show("about"));
         note(col,NAME+" is free software. No ads, tracking SDKs or accounts.");
@@ -489,10 +558,14 @@ public final class MainActivity extends Activity {
         row(col,"Google Maps","Terms ›",v->open("https://maps.google.com/help/terms_maps/"));
         row(col,"Google privacy","Policy ›",v->open("https://policies.google.com/privacy"));
         note(col,"Maps, satellite and terrain imagery, Street View, search and driving directions are provided by Google Maps Platform. Map data and imagery are © Google and its data providers, shown over the map for the visible area.");
+        section(col,"Offline maps");
+        row(col,"OpenStreetMap","ODbL 1.0 ›",v->open("https://www.openstreetmap.org/copyright"));
+        row(col,"Country downloads","Mapsforge ›",v->open("https://download.mapsforge.org/"));
+        note(col,"Offline country maps are © OpenStreetMap contributors (ODbL), downloaded unmodified from Mapsforge and drawn on your device.");
         note(col,"Online map views send the visible tile area to Google. Search sends the submitted query; directions send the start and destination; Street View sends the chosen point. No location is sent in the background.");
         section(col,"Open-source components");
         row(col,"Open-source licenses","Read ›",v->show("licenses"));
-        note(col,"Mapsforge 0.21.0 (map view only) · LGPL-3.0 with exception. AndroidSVG 1.4 · Apache-2.0. Conscrypt 2.5.3 · Apache-2.0, with bundled BoringSSL notices. Geist by Vercel · SIL OFL 1.1. Library licenses and source links ship in assets/licenses; the original game artwork is GPL-3.0-or-later.");
+        note(col,"Mapsforge 0.21.0 · LGPL-3.0 with exception. AndroidSVG 1.4 · Apache-2.0. Conscrypt 2.5.3 · Apache-2.0, with bundled BoringSSL notices. Geist by Vercel · SIL OFL 1.1. Library licenses and source links ship in assets/licenses; the original game artwork is GPL-3.0-or-later.");
     }
     private String versionName() {
         try { return getPackageManager().getPackageInfo(getPackageName(),0).versionName; }
@@ -511,6 +584,52 @@ public final class MainActivity extends Activity {
         TextView counter=b.label("0 drops",14,b.secondary);counter.setGravity(Gravity.CENTER);col.addView(counter);
         scene.setOnClickListener(v->{scene.drop();counter.setText(scene.count+(scene.count==1?" drop":" drops"));});
         note(col,"Drops clear when you go back.");
+    }
+    private void offline(String selectedCountry) {
+        LinearLayout col=column(selectedCountry==null?"Offline maps":selectedCountry,"Country maps from OpenStreetMap · Mapsforge",selectedCountry==null?"Settings":"Countries");content.addView(col);
+        EditText filter=field(selectedCountry==null?"Find a country or territory":"Find a region","");col.addView(filter);
+        downloadStatus=b.label("",13,b.secondary);downloadStatus.setPadding(0,b.dp(10),0,b.dp(10));col.addView(downloadStatus);
+        downloadStatus.setOnClickListener(v->{if(downloads.active!=null)choose("Download in progress",new String[]{"Pause download"},i->downloads.cancel());});
+        ListView list=new ListView(this);list.setDivider(null);list.setCacheColorHint(Color.TRANSPARENT);col.addView(list,new LinearLayout.LayoutParams(-1,0,1));
+        ArrayList<String> countries=new ArrayList<>(new TreeSet<String>() {{for(MapDownloads.Entry e:downloads.entries)add(e.country);}});
+        ArrayList<Object> visible=new ArrayList<>();
+        BaseAdapter adapter=new BaseAdapter() {
+            public int getCount(){return visible.size();} public Object getItem(int i){return visible.get(i);} public long getItemId(int i){return i;}
+            public View getView(int i,View old,ViewGroup parent){
+                Object item=visible.get(i); String title,sub;
+                if(item instanceof String) {title=(String)item;int installed=0,total=0;for(MapDownloads.Entry e:downloads.entries)if(e.country.equals(title)){total++;if(downloads.file(e).isFile())installed++;}sub=installed>0?installed+" downloaded · "+total+" maps":total+" map"+(total==1?"":"s")+" ›";}
+                else {MapDownloads.Entry e=(MapDownloads.Entry)item;title=e.region;sub=downloads.file(e).isFile()?"Downloaded · tap to open":e.path.equals(downloads.active)?"Downloading…":e.size+"B · download";}
+                LinearLayout box=b.column();box.setPadding(b.dp(16),b.dp(12),b.dp(16),b.dp(12));box.setMinimumHeight(b.dp(66));box.setBackground(b.interactive(false,24));box.addView(b.text(title,16,true));TextView small=b.label(sub,13,b.secondary);small.setPadding(0,b.dp(4),0,0);box.addView(small);
+                FrameLayout wrap=new FrameLayout(MainActivity.this);FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-1,-2);lp.setMargins(0,b.dp(3),0,b.dp(3));wrap.addView(box,lp);return wrap;
+            }
+        };
+        Runnable fill=()->{visible.clear();String q=filter.getText().toString().trim().toLowerCase(Locale.ROOT);if(selectedCountry==null){for(String c:countries)if(c.toLowerCase(Locale.ROOT).contains(q))visible.add(c);}else for(MapDownloads.Entry e:downloads.entries)if(e.country.equals(selectedCountry)&&e.region.toLowerCase(Locale.ROOT).contains(q))visible.add(e);adapter.notifyDataSetChanged();};
+        filter.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int a,int c,int after){}public void onTextChanged(CharSequence s,int a,int before,int count){fill.run();}public void afterTextChanged(Editable e){}});
+        list.setAdapter(adapter);downloadAdapter=adapter;fill.run();refreshDownloads();
+        list.setOnItemClickListener((parent,view,i,id)->{Object item=visible.get(i);if(item instanceof String){country=(String)item;show("country");}else mapAction((MapDownloads.Entry)item);});
+        note(col,"Country maps are OpenStreetMap data, used when you are offline or Google can't be reached. Tap a downloaded map to open or remove it. Keep the app open during downloads; interrupted transfers can be resumed. Sizes are approximate.");
+    }
+    private void refreshDownloads() {
+        if(downloadStatus!=null) downloadStatus.setText(downloads.active!=null?downloads.status+" · tap to pause":downloads.error!=null?downloads.error:downloads.status.isEmpty()?"Choose a country to see available downloads.":downloads.status);
+        if(downloadAdapter!=null)downloadAdapter.notifyDataSetChanged();
+    }
+    private void mapAction(MapDownloads.Entry e) {
+        File file=downloads.file(e);
+        if(file.isFile()) choose(e.region,new String[]{"Open offline (turns on Offline mode)","Remove download"},i->{
+            if(i==0) {
+                try {org.mapsforge.map.reader.MapFile data=new org.mapsforge.map.reader.MapFile(file);center=data.boundingBox().getCenterPoint();data.close();zoom=8;prefs.edit().putString("offline_file",file.getName()).putBoolean("offline_only",true).apply();show("map");}
+                catch(RuntimeException ex){message("Map unavailable","Remove this file and download it again. "+ex.getMessage());}
+            } else {if(file.delete()){if(file.getName().equals(prefs.getString("offline_file","")))prefs.edit().remove("offline_file").apply();refreshDownloads();}else message("Cannot remove map","Storage could not be updated.");}
+        });
+        else if(e.path.equals(downloads.active))choose(e.region,new String[]{"Pause download"},i->downloads.cancel());
+        else {
+            File partial=new File(file+".part");
+            choose(e.region+" · "+e.size+"B",partial.isFile()?new String[]{"Resume download","Discard partial download"}:new String[]{"Download country / region map"},i->{
+                if(i==1){if(partial.delete()){new File(file+".http").delete();downloads.status="Partial download removed.";downloads.error=null;refreshDownloads();}else message("Cannot remove partial map","Storage could not be updated.");return;}
+                if(offlineOnly()){message("Offline mode","Turn off Offline mode in Settings to download maps.");return;}
+                if(!downloads.start(e))message("Download in progress","Pause or finish the current download first.");
+            });
+        }
     }
     private void locate() {
         if(Build.VERSION.SDK_INT>=23&&checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED&&checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED) {
@@ -531,8 +650,8 @@ public final class MainActivity extends Activity {
     private void useLocation(Location l) {if(map!=null){LatLong p=new LatLong(l.getLatitude(),l.getLongitude());map.view.setCenter(p);map.mark(p,b.accent);}}
     private void stopLocation(){if(locationManager!=null&&locationListener!=null){try{locationManager.removeUpdates(locationListener);}catch(SecurityException ignored){}locationListener=null;}}
     @Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grants){super.onRequestPermissionsResult(requestCode,permissions,grants);if(requestCode==10&&grants.length>0){for(int g:grants)if(g==PackageManager.PERMISSION_GRANTED){locate();return;}message("Location permission","You can still browse maps and search by place or coordinates.");}}
-    @Override public void onBackPressed(){if(page.equals("egg")||page.equals("licenses"))show("about");else if(page.equals("about"))show("settings");else if(!page.equals("map"))show("map");else super.onBackPressed();}
+    @Override public void onBackPressed(){if(page.equals("egg")||page.equals("licenses"))show("about");else if(page.equals("about")||page.equals("offline"))show("settings");else if(page.equals("country"))show("offline");else if(!page.equals("map"))show("map");else super.onBackPressed();}
     @Override protected void onResume(){super.onResume();if(UniversalTheme.sync(this,prefs,false,UNIVERSAL_THEME_IDS)){recreate();return;}if(map!=null)map.resume();}
     @Override protected void onPause(){rememberMap();stopLocation();if(map!=null)map.pause();super.onPause();}
-    @Override protected void onDestroy(){dead=true;stopLocation();worker.shutdownNow();main.removeCallbacksAndMessages(null);if(map!=null){map.destroy();map=null;}if(egg!=null)egg.clear();super.onDestroy();}
+    @Override protected void onDestroy(){dead=true;downloads.listener=null;stopLocation();worker.shutdownNow();main.removeCallbacksAndMessages(null);if(map!=null){map.destroy();map=null;}if(egg!=null)egg.clear();super.onDestroy();}
 }

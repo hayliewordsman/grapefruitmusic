@@ -45,6 +45,7 @@ android {
         unitTests.all {
             jvmArgs "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED", "--add-opens=java.base/java.io=ALL-UNNAMED"
             systemProperty "user.home", layout.buildDirectory.dir("test-home").get().asFile.absolutePath
+            systemProperty "maps.fixture", rootProject.file("work/maps-beta/andorra.map").absolutePath
             systemProperty "robolectric.dependency.repo.url", (System.getProperty("robolectric.repo") ?: "https://repo.maven.apache.org/maven2")
             ["http.proxyHost", "http.proxyPort", "https.proxyHost", "https.proxyPort", "http.nonProxyHosts", "javax.net.ssl.trustStore"].each {
                 if (System.getProperty(it)) systemProperty it, System.getProperty(it)
@@ -56,8 +57,9 @@ android {
 }
 dependencies {
     implementation project(":grapefruit-ui")
-    // Only the online tile renderer: Google imagery is drawn by Mapsforge, as Legacy draws OSM.
+    // Mapsforge draws Google's online tiles and renders downloaded OpenStreetMap country maps offline.
     implementation "org.mapsforge:mapsforge-map-android:0.21.0"
+    implementation "org.mapsforge:mapsforge-themes:0.21.0"
     testImplementation "junit:junit:4.13.2"
     testImplementation "org.robolectric:robolectric:4.14.1"
 }

@@ -17,7 +17,7 @@ The repository also contains **Grapefruit TV 2.0** (formerly Grapefruit FAST), a
 
 ## Grapefruit Maps: Barlow Edition
 
-**Grapefruit Maps: Barlow Edition 1.0** is the Google Maps edition: Google Map, Satellite and Terrain views, Street View, Google search and directions, and a landscape layout with an icon rail and side controls. It keeps Android 4.2.2 support with no Play services or Maps SDK, installs beside Legacy, and is not on F-Droid. See [maps-barlow/README.md](maps-barlow/README.md).
+**Grapefruit Maps: Barlow Edition 1.0** is the Google Maps edition: Google Map, Satellite and Terrain views, Street View, Google search and directions, offline OpenStreetMap country maps as a fallback, and a landscape layout with an icon rail and side controls. It keeps Android 4.2.2 support with no Play services or Maps SDK, installs beside Legacy, and is not on F-Droid. See [maps-barlow/README.md](maps-barlow/README.md).
 
 ## Features
 

@@ -33,8 +33,11 @@ jobs:
           packages: platform-tools
           log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
-      - name: Android SDK
-        run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+      - name: Android SDK and offline map test fixture
+        run: |
+          sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+          mkdir -p work/maps-beta
+          curl --fail --location --retry 3 https://download.mapsforge.org/maps/v5/europe/andorra.map -o work/maps-beta/andorra.map
       - name: Use permanent Grapefruit certificate when available
         env:
           KEYSTORE_BASE64: ${{ secrets.GRAPEFRUIT_KEYSTORE_BASE64 }}
