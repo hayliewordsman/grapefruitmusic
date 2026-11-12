@@ -1,0 +1,221 @@
+{
+ "data": [
+  {
+   "id": "bytedance-seed/seedream-5-5",
+   "name": "ByteDance Seed: Seedream 5.5",
+   "description": "Seedream 5.5 is an image generation and editing model from ByteDance Seed. It is suited for creating images from text prompts and for editing or combining existing images, using up...",
+   "created": 1794517601,
+   "architecture": {
+    "input_modalities": [
+     "text",
+     "image"
+    ],
+    "output_modalities": [
+     "image"
+    ]
+   },
+   "supported_parameters": {
+    "resolution": {
+     "type": "enum",
+     "values": [
+      "1K",
+      "1.5K",
+      "2K"
+     ]
+    },
+    "aspect_ratio": {
+     "type": "enum",
+     "values": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9",
+      "9:19.5",
+      "19.5:9",
+      "9:20",
+      "20:9",
+      "9:21",
+      "21:9",
+      "auto"
+     ]
+    },
+    "n": {
+     "type": "range",
+     "min": 1,
+     "max": 1
+    },
+    "input_references": {
+     "type": "range",
+     "min": 0,
+     "max": 10
+    },
+    "seed": {
+     "type": "boolean"
+    }
+   },
+   "supports_streaming": false,
+   "endpoints": "/api/v1/images/models/bytedance-seed/seedream-5-5/endpoints"
+  },
+  {
+   "id": "minimax/minimax-h3-image-highspeed",
+   "name": "MiniMax: MiniMax H3 Image Highspeed",
+   "description": "MiniMax H3 Image Highspeed is the faster version of MiniMax's H3 Image model. It takes the same inputs and limits as MiniMax H3 Image: it creates images from text prompts...",
+   "created": 1794363447,
+   "architecture": {
+    "input_modalities": [
+     "text",
+     "image"
+    ],
+    "output_modalities": [
+     "image"
+    ]
+   },
+   "supported_parameters": {
+    "resolution": {
+     "type": "enum",
+     "values": [
+      "1K",
+      "2K",
+      "4K"
+     ]
+    },
+    "aspect_ratio": {
+     "type": "enum",
+     "values": [
+      "1:1",
+      "1:2",
+      "1:3",
+      "2:1",
+      "2:3",
+      "3:1",
+      "2.35:1",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:2",
+      "5:4",
+      "5:7",
+      "7:5",
+      "9:16",
+      "16:9",
+      "9:19.5",
+      "19.5:9",
+      "9:20",
+      "20:9",
+      "9:21",
+      "21:9",
+      "auto"
+     ]
+    },
+    "output_format": {
+     "type": "enum",
+     "values": [
+      "jpeg",
+      "png",
+      "webp"
+     ]
+    },
+    "n": {
+     "type": "range",
+     "min": 1,
+     "max": 10
+    },
+    "input_references": {
+     "type": "range",
+     "min": 0,
+     "max": 16
+    },
+    "size": {
+     "type": "boolean"
+    }
+   },
+   "supports_streaming": false,
+   "endpoints": "/api/v1/images/models/minimax/minimax-h3-image-highspeed/endpoints"
+  },
+  {
+   "id": "minimax/minimax-h3-image",
+   "name": "MiniMax: MiniMax H3 Image",
+   "description": "MiniMax H3 Image is MiniMax's image generation and editing model. It creates images from text prompts and edits or composes images from 1 to 16 reference images, with output up...",
+   "created": 1794340143,
+   "architecture": {
+    "input_modalities": [
+     "text",
+     "image"
+    ],
+    "output_modalities": [
+     "image"
+    ]
+   },
+   "supported_parameters": {
+    "resolution": {
+     "type": "enum",
+     "values": [
+      "1K",
+      "2K",
+      "4K"
+     ]
+    },
+    "aspect_ratio": {
+     "type": "enum",
+     "values": [
+      "1:1",
+      "1:2",
+      "1:3",
+      "2:1",
+      "2:3",
+      "3:1",
+      "2.35:1",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:2",
+      "5:4",
+      "5:7",
+      "7:5",
+      "9:16",
+      "16:9",
+      "9:19.5",
+      "19.5:9",
+      "9:20",
+      "20:9",
+      "9:21",
+      "21:9",
+      "auto"
+     ]
+    },
+    "output_format": {
+     "type": "enum",
+     "values": [
+      "jpeg",
+      "png",
+      "webp"
+     ]
+    },
+    "n": {
+     "type": "range",
+     "min": 1,
+     "max": 10
+    },
+    "input_references": {
+     "type": "range",
+     "min": 0,
+     "max": 16
+    },
+    "size": {
+     "type": "boolean"
+    }
+   },
+   "supports_streaming": false,
+   "endpoints": "/api/v1/images/models/minimax/minimax-h3-image/endpoints"
+  }
+ ]
+}

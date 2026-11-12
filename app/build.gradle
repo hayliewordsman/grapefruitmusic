@@ -1,0 +1,89 @@
+plugins { id "com.android.application" }
+
+android {
+    namespace "io.github.hayliewordsman.grapefruitai"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "io.github.hayliewordsman.grapefruitai"
+        // Android 4.2.2 (Jelly Bean MR1) is the baseline.
+        minSdk 17
+        // 34: installable on current Android without edge-to-edge enforcement.
+        targetSdk 34
+        versionCode 1
+        versionName "1.0-beta1"
+        testInstrumentationRunner "android.test.InstrumentationTestRunner"
+    }
+
+    // Release signing is separate from debug builds: only when CI provides a keystore through
+    // environment variables (never committed). Debug builds use the SDK's debug key.
+    signingConfigs {
+        release {
+            def key = System.getenv("GRAPEFRUIT_AI_KEYSTORE")
+            if (key) {
+                storeFile file(key)
+                storeType "pkcs12"
+                storePassword System.getenv("GRAPEFRUIT_AI_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("GRAPEFRUIT_AI_KEY_ALIAS") ?: "grapefruit"
+                keyPassword System.getenv("GRAPEFRUIT_AI_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            versionNameSuffix "-debug"
+        }
+        release {
+            minifyEnabled false
+            if (System.getenv("GRAPEFRUIT_AI_KEYSTORE")) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildFeatures { buildConfig true }
+    packaging { jniLibs { keepDebugSymbols += "**/libconscrypt_jni.so" } }
+    dependenciesInfo { includeInApk false; includeInBundle false }
+
+    lint {
+        abortOnError true
+        checkReleaseBuilds false
+        disable "OldTargetApi", "ExpiredTargetSdkVersion", "SetTextI18n", "HardcodedText",
+                "GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion",
+                "SetJavaScriptEnabled", "UseCompoundDrawables", "UnusedResources", "Overdraw",
+                "MonochromeLauncherIcon", "IconMissingDensityFolder", "DiscouragedApi"
+    }
+
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.returnDefaultValues = true
+        unitTests.all {
+            def testHome = layout.buildDirectory.dir("test-home").get().asFile
+            systemProperty "user.home", testHome.absolutePath
+            doFirst { testHome.mkdirs() }
+            systemProperty "robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2"
+            ["http.proxyHost", "http.proxyPort", "https.proxyHost", "https.proxyPort",
+             "http.nonProxyHosts", "javax.net.ssl.trustStore", "javax.net.ssl.trustStoreType"].each { k ->
+                if (System.getProperty(k)) systemProperty k, System.getProperty(k)
+            }
+        }
+    }
+}
+
+dependencies {
+    // TLS 1.2/1.3 with modern ciphers on Android 4.2.2 (the shared Grapefruit TLS helper).
+    implementation "org.conscrypt:conscrypt-android:2.5.3"
+
+    testImplementation "junit:junit:4.13.2"
+    // The JVM's org.json for plain unit tests (android.jar's is a stub).
+    testImplementation "org.json:json:20240303"
+    // Robolectric 4.8 still runs the Android 4.2 (API 17) framework, for explicit API 17 tests.
+    testImplementation "org.robolectric:robolectric:4.8.2"
+    testImplementation "org.ow2.asm:asm:9.7.1"
+    testImplementation "org.ow2.asm:asm-commons:9.7.1"
+    testImplementation "org.ow2.asm:asm-util:9.7.1"
+}

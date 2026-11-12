@@ -1,0 +1,62 @@
+name: Grapefruit AI debug APK
+
+# Builds on GitHub-hosted runners only (no Android SDK or Gradle on any self-hosted server).
+on:
+  push:
+    branches: [grapefruit-ai-android-4.2.2]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: grapefruit-ai-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # The runner image ships the Android SDK (ANDROID_HOME); AGP fetches platform 35 if needed.
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Unit and API 17 (Robolectric) tests
+        run: ./gradlew --no-daemon :app:testDebugUnitTest
+
+      - name: Lint (includes NewApi checks against minSdk 17)
+        run: ./gradlew --no-daemon :app:lintDebug
+
+      - name: Build debug APK
+        run: ./gradlew --no-daemon :app:assembleDebug
+
+      - name: APK facts
+        run: |
+          APK=$(ls app/build/outputs/apk/debug/*.apk)
+          AAPT=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          "$AAPT" dump badging "$APK" | grep -E "^package:|sdkVersion|targetSdkVersion"
+          ls -l "$APK"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: grapefruit-ai-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 14
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: grapefruit-ai-reports
+          path: |
+            app/build/reports/tests/
+            app/build/reports/lint-results-debug.html
+          retention-days: 7
+          if-no-files-found: ignore

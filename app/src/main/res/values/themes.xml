@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The four official Grapefruit themes. Views are built in code from ui/Palette; these
+         styles only set the window (no white flash at launch, matching system bars). -->
+    <style name="Theme.GrapefruitAI" parent="@android:style/Theme.Holo.NoActionBar">
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+    <style name="Theme.GrapefruitAI.GrapefruitDark">
+        <item name="android:windowBackground">@color/grapefruit_dark_background</item>
+        <item name="android:colorBackground">@color/grapefruit_dark_background</item>
+        <item name="android:textColorHighlight">#66FF7F6B</item>
+    </style>
+    <style name="Theme.GrapefruitAI.GrapefruitLight" parent="@android:style/Theme.Holo.Light.NoActionBar">
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/grapefruit_light_background</item>
+        <item name="android:colorBackground">@color/grapefruit_light_background</item>
+        <item name="android:textColorHighlight">#66E83850</item>
+    </style>
+    <style name="Theme.GrapefruitAI.PitchBlack">
+        <item name="android:windowBackground">@color/pitch_black_background</item>
+        <item name="android:colorBackground">@color/pitch_black_background</item>
+        <item name="android:textColorHighlight">#66FF7F6B</item>
+    </style>
+    <style name="Theme.GrapefruitAI.VictoryBlue">
+        <item name="android:windowBackground">@color/victory_blue_background</item>
+        <item name="android:colorBackground">@color/victory_blue_background</item>
+        <item name="android:textColorHighlight">#6667C7FF</item>
+    </style>
+</resources>

@@ -1,0 +1,507 @@
+package io.github.hayliewordsman.grapefruitai.ui;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.text.InputType;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import io.github.hayliewordsman.grapefruitai.chat.Attachment;
+import io.github.hayliewordsman.grapefruitai.chat.Conversation;
+import io.github.hayliewordsman.grapefruitai.chat.Message;
+import io.github.hayliewordsman.grapefruitai.chat.Store;
+import io.github.hayliewordsman.grapefruitai.net.Http;
+import io.github.hayliewordsman.grapefruitai.or.Catalog;
+import io.github.hayliewordsman.grapefruitai.or.ImageParams;
+import io.github.hayliewordsman.grapefruitai.or.Models;
+import io.github.hayliewordsman.grapefruitai.or.OpenRouter;
+import io.github.hayliewordsman.grapefruitai.or.OrModel;
+import io.github.hayliewordsman.grapefruitai.secure.Secrets;
+import io.github.hayliewordsman.grapefruitai.util.Bg;
+import io.github.hayliewordsman.grapefruitai.util.Format;
+import io.github.hayliewordsman.grapefruitai.util.Prefs;
+
+/**
+ * Image generation through OpenRouter's Image API (POST /api/v1/images), or chat completions
+ * with image output for models served only there. Aspect ratio, resolution and reference images
+ * appear only when the chosen model lists them; nothing is assumed about other models.
+ */
+public final class ImagePage extends Page implements MessageView.Actions {
+    private static final int PICK_REFERENCE = 2;
+
+    private final Store store;
+    private Conversation conversation;
+    private LinearLayout results;
+    private ScrollView scroll;
+    private EditText prompt;
+    private TextView modelButton;
+    private TextView costLine;
+    private LinearLayout optionsBox;
+    private LinearLayout referencesRow;
+    private TextView generate;
+    private final List<Attachment> references = new ArrayList<Attachment>();
+    private String aspect;
+    private String resolution;
+    private Http[] active;
+    private Message running;
+
+    public ImagePage(MainActivity a) {
+        super(a);
+        store = new Store(a);
+    }
+
+    private String model() {
+        return Prefs.str(Prefs.IMAGE_MODEL, "google/gemini-2.5-flash-image");
+    }
+
+    @Override
+    protected View build() {
+        Palette p = Ui.p();
+        LinearLayout root = Ui.vertical(a);
+        root.setBackgroundColor(p.background);
+        LinearLayout header = Ui.horizontal(a);
+        header.setPadding(Ui.dp(a, 16), Ui.dp(a, 10), Ui.dp(a, 12), Ui.dp(a, 4));
+        header.addView(Ui.title(a, "Images"), Ui.weight(1));
+        IconView history = Ui.circle(a, IconView.HISTORY, 40, false, "Image history");
+        history.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showHistory();
+            }
+        });
+        header.addView(history);
+        IconView fresh = Ui.circle(a, IconView.PLUS, 40, false, "New image session");
+        ((LinearLayout.LayoutParams) fresh.getLayoutParams()).leftMargin = Ui.dp(a, 8);
+        fresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                conversation = new Conversation(Conversation.IMAGE);
+                showResults();
+            }
+        });
+        header.addView(fresh);
+        root.addView(header, Ui.matchWrap());
+
+        scroll = new ScrollView(a);
+        LinearLayout inner = Ui.vertical(a);
+        inner.setPadding(Ui.dp(a, 14), 0, Ui.dp(a, 14), Ui.dp(a, 16));
+        scroll.addView(inner);
+        root.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+
+        modelButton = Ui.chip(a, "Model", false);
+        modelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ModelPicker.show(a, Catalog.IMAGE, model(), new ModelPicker.Listener() {
+                    @Override
+                    public void onPicked(OrModel m) {
+                        Prefs.put(Prefs.IMAGE_MODEL, m.id);
+                        aspect = null;
+                        resolution = null;
+                        refreshOptions();
+                    }
+                });
+            }
+        });
+        modelButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                OrModel m = Models.find(model());
+                if (m != null) ModelPicker.details(a, m);
+                return true;
+            }
+        });
+        LinearLayout.LayoutParams mlp = Ui.wrap();
+        mlp.bottomMargin = Ui.dp(a, 8);
+        inner.addView(modelButton, mlp);
+
+        prompt = Ui.field(a, "Describe the image", true);
+        prompt.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        prompt.setMinLines(3);
+        prompt.setMaxLines(8);
+        inner.addView(prompt, Ui.matchWrap());
+
+        optionsBox = Ui.vertical(a);
+        inner.addView(optionsBox, Ui.matchWrap());
+        referencesRow = Ui.horizontal(a);
+        inner.addView(referencesRow, Ui.matchWrap());
+
+        costLine = Ui.body(a, 13, p.secondary);
+        costLine.setPadding(Ui.dp(a, 4), Ui.dp(a, 8), Ui.dp(a, 4), Ui.dp(a, 8));
+        inner.addView(costLine, Ui.matchWrap());
+
+        generate = Ui.button(a, "Generate", true, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (running != null) cancel();
+                else start();
+            }
+        });
+        inner.addView(generate, Ui.matchWrap());
+
+        results = Ui.vertical(a);
+        inner.addView(results, Ui.matchWrap());
+
+        List<Conversation> recent = store.list(Conversation.IMAGE);
+        conversation = recent.isEmpty() ? new Conversation(Conversation.IMAGE) : recent.get(0);
+        showResults();
+        Models.load(a, false, new Models.Listener() {
+            @Override
+            public void onModels(List<OrModel> models, String error) {
+                refreshOptions();
+            }
+        });
+        refreshOptions();
+        return root;
+    }
+
+    @Override
+    public void onShow() {
+        refreshOptions();
+    }
+
+    /** Controls for what the chosen model accepts, and its listed prices. */
+    private void refreshOptions() {
+        if (optionsBox == null) return;
+        Palette p = Ui.p();
+        OrModel m = Models.find(model());
+        modelButton.setText((m != null ? m.name : model()) + "  ▼");
+        optionsBox.removeAllViews();
+        ImageParams params = Models.imageParams(model());
+        boolean imageApi = m == null || m.servesImageApi();
+        List<String> ratios = params != null ? params.aspectRatios : new ArrayList<String>();
+        List<String> sizes = params != null ? params.resolutions : new ArrayList<String>();
+        if (!ratios.isEmpty()) optionsBox.addView(choiceRow("Aspect", ratios, aspect, new Choice() {
+            public void chose(String v) {
+                aspect = v;
+                refreshOptions();
+            }
+        }));
+        if (!sizes.isEmpty()) optionsBox.addView(choiceRow("Resolution", sizes, resolution, new Choice() {
+            public void chose(String v) {
+                resolution = v;
+                refreshOptions();
+            }
+        }));
+        if (params == null && m != null && !imageApi) {
+            TextView t = Ui.body(a, 13, p.secondary);
+            t.setText("This model makes images through chat; OpenRouter lists no size options for it, so it uses "
+                    + "its own defaults.");
+            optionsBox.addView(t);
+        }
+        int maxRefs = params != null ? params.maxReferences : (m != null && m.acceptsImages() ? 4 : 0);
+        refreshReferences(maxRefs);
+        StringBuilder cost = new StringBuilder();
+        if (m == null) {
+            cost.append(Models.all().isEmpty() ? "Loading OpenRouter's model list…" : "Model not in OpenRouter's list.");
+        } else {
+            cost.append("Listed prices (US dollars): ");
+            List<String> parts = new ArrayList<String>();
+            if (m.priceImageOutput != null) parts.add("output image tokens " + Format.perMillion(m.priceImageOutput));
+            if (m.priceImageToken != null && !m.priceImageToken.equals(m.priceImageOutput)) {
+                parts.add("image tokens " + Format.perMillion(m.priceImageToken));
+            }
+            if (m.priceImage != null) parts.add("input images " + Format.perUnit(m.priceImage, "unit"));
+            if (OrModel.value(m.pricePrompt) != null && OrModel.value(m.pricePrompt).signum() > 0) {
+                parts.add("prompt " + Format.perMillion(m.pricePrompt));
+            }
+            if (OrModel.value(m.priceCompletion) != null && OrModel.value(m.priceCompletion).signum() > 0) {
+                parts.add("text out " + Format.perMillion(m.priceCompletion));
+            }
+            if (m.priceRequest != null) parts.add("per request " + Format.perUnit(m.priceRequest, "request"));
+            cost.append(parts.isEmpty() ? "none listed" : Format.join(parts, " · "));
+            cost.append(". The cost of an image depends on its size; the actual charge OpenRouter reports appears "
+                    + "under each image. Failed generations are not billed by the Image API.");
+        }
+        costLine.setText(cost.toString());
+    }
+
+    interface Choice {
+        void chose(String value);
+    }
+
+    private View choiceRow(String label, List<String> values, String chosen, final Choice choice) {
+        HorizontalScrollView row = Ui.chipRow(a);
+        ((LinearLayout) row.getChildAt(0)).setPadding(0, Ui.dp(a, 6), 0, 0);
+        TextView l = Ui.text(a, 13, Ui.p().secondary, false);
+        l.setText(label);
+        Ui.addChip(row, l);
+        TextView def = Ui.chip(a, "Default", chosen == null);
+        def.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                choice.chose(null);
+            }
+        });
+        Ui.addChip(row, def);
+        for (final String v : values) {
+            TextView chip = Ui.chip(a, v, v.equals(chosen));
+            chip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    choice.chose(v);
+                }
+            });
+            Ui.addChip(row, chip);
+        }
+        return row;
+    }
+
+    private void refreshReferences(final int max) {
+        referencesRow.removeAllViews();
+        while (references.size() > max) references.remove(references.size() - 1);
+        if (max <= 0) return;
+        referencesRow.setPadding(0, Ui.dp(a, 8), 0, 0);
+        for (final Attachment r : references) {
+            ImageView iv = new ImageView(a);
+            Bitmap b = Attachments.thumbnail(r.path, Ui.dp(a, 64));
+            if (b != null) iv.setImageBitmap(b);
+            iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            iv.setContentDescription("Reference image, tap to remove");
+            iv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    references.remove(r);
+                    refreshReferences(max);
+                }
+            });
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Ui.dp(a, 56), Ui.dp(a, 56));
+            lp.rightMargin = Ui.dp(a, 6);
+            referencesRow.addView(iv, lp);
+        }
+        if (references.size() < max) {
+            TextView add = Ui.chip(a, references.isEmpty() ? "Add reference image (edit)" : "Add", false);
+            add.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    a.startForResult(ImagePage.this, Attachments.pickIntent("image/*"), PICK_REFERENCE);
+                }
+            });
+            referencesRow.addView(add);
+        }
+    }
+
+    @Override
+    public void onResult(int request, int result, final Intent data) {
+        if (request != PICK_REFERENCE || result != Activity.RESULT_OK || data == null || data.getData() == null) return;
+        Bg.run(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final Attachment x = Attachments.importUri(a, store, data.getData());
+                    Bg.ui(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!x.isImage()) {
+                                Ui.toast(a, "Choose an image");
+                                return;
+                            }
+                            references.add(x);
+                            refreshOptions();
+                        }
+                    });
+                } catch (final Exception e) {
+                    Bg.ui(new Runnable() {
+                        @Override
+                        public void run() {
+                            Ui.toast(a, "Couldn't add: " + e.getMessage());
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void showResults() {
+        results.removeAllViews();
+        List<Message> ms = conversation.messages;
+        for (int i = ms.size() - 1; i >= 0; i--) {
+            Message m = ms.get(i);
+            if (m.isUser()) continue;
+            Message req = i > 0 ? ms.get(i - 1) : null;
+            if (req != null && req.isUser()) {
+                TextView t = Ui.body(a, 14, Ui.p().text);
+                t.setText(req.text);
+                t.setPadding(Ui.dp(a, 4), Ui.dp(a, 16), Ui.dp(a, 4), 0);
+                t.setTextIsSelectable(true);
+                results.addView(t, Ui.matchWrap());
+            }
+            MessageView v = new MessageView(a, m, this);
+            v.setPadding(0, Ui.dp(a, 4), 0, Ui.dp(a, 4));
+            results.addView(v, Ui.matchWrap());
+        }
+    }
+
+    private void showHistory() {
+        Sheet s = new Sheet(a, "Image sessions");
+        List<Conversation> all = store.list(Conversation.IMAGE);
+        if (all.isEmpty()) s.message("Nothing generated yet.");
+        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
+        for (final Conversation c : all) {
+            s.row(c.title, df.format(new Date(c.updated)), c.id.equals(conversation.id), new Runnable() {
+                @Override
+                public void run() {
+                    conversation = c;
+                    showResults();
+                }
+            });
+        }
+        s.button("Delete current", false, new Runnable() {
+            @Override
+            public void run() {
+                Sheet.confirm(a, "Delete this image session?", "Its images are removed from this device "
+                        + "(copies you saved stay).", "Delete", true, new Runnable() {
+                    @Override
+                    public void run() {
+                        store.delete(conversation);
+                        conversation = new Conversation(Conversation.IMAGE);
+                        showResults();
+                    }
+                });
+            }
+        });
+        s.button("Close", true, null).show();
+    }
+
+    @Override
+    public void retry(Message failed) {
+        int i = conversation.messages.indexOf(failed);
+        if (i > 0 && conversation.messages.get(i - 1).isUser()) {
+            prompt.setText(conversation.messages.get(i - 1).text);
+            conversation.messages.remove(i);
+            conversation.messages.remove(i - 1);
+            showResults();
+            start();
+        }
+    }
+
+    private void start() {
+        final String text = prompt.getText().toString().trim();
+        if (text.length() == 0) {
+            Ui.toast(a, "Describe the image first");
+            return;
+        }
+        if (Secrets.isLocked()) {
+            SettingsPage.unlockDialog(a, null);
+            return;
+        }
+        final String key = Secrets.get(Secrets.OPENROUTER_KEY);
+        if (key == null) {
+            Sheet.alert(a, "OpenRouter API key needed", "Add your OpenRouter key in Settings to generate images.");
+            return;
+        }
+        final OrModel m = Models.find(model());
+        if (m != null && !m.isImage()) {
+            Sheet.alert(a, "Not an image model", m.name + " doesn't list image output. Choose another model.");
+            return;
+        }
+        final boolean viaImageApi = m == null || m.servesImageApi();
+        final String model = model();
+        final String ratio = aspect;
+        final String res = resolution;
+        final List<Attachment> refs = new ArrayList<Attachment>(references);
+
+        Message req = new Message(Message.USER);
+        req.text = text;
+        req.attachments.addAll(refs);
+        final Message out = new Message(Message.ASSISTANT);
+        out.model = model;
+        out.streaming = true;
+        out.text = "Generating" + (ratio != null ? " · " + ratio : "") + (res != null ? " · " + res : "") + "…";
+        conversation.messages.add(req);
+        conversation.messages.add(out);
+        if (conversation.title.equals("New conversation")) conversation.autoTitle();
+        running = out;
+        generate.setText("Cancel");
+        showResults();
+        scroll.post(new Runnable() {
+            @Override
+            public void run() {
+                scroll.smoothScrollTo(0, results.getTop());
+            }
+        });
+        final Http[] holder = new Http[1];
+        active = holder;
+        final Conversation conv = conversation;
+        Bg.run(new Runnable() {
+            @Override
+            public void run() {
+                String error = null;
+                OpenRouter.ImageResult r = null;
+                try {
+                    List<String> dataUrls = new ArrayList<String>();
+                    for (Attachment x : refs) dataUrls.add(OpenRouter.DataUrl.of(x.mime, Attachments.read(x.path)));
+                    OpenRouter or = new OpenRouter(key);
+                    r = viaImageApi ? or.generateImage(model, text, ratio, res, dataUrls, holder)
+                            : or.generateImageViaChat(model, text, ratio, dataUrls, holder);
+                    for (int i = 0; i < r.images.size(); i++) {
+                        String mime = r.mimes.get(i);
+                        String ext = mime.contains("jpeg") ? "jpg" : mime.contains("webp") ? "webp" : "png";
+                        File f = store.newMedia(ext);
+                        FileOutputStream fo = new FileOutputStream(f);
+                        try {
+                            fo.write(r.images.get(i));
+                        } finally {
+                            fo.close();
+                        }
+                        synchronized (out) {
+                            out.images.add(new Attachment("image." + ext, mime, f.getAbsolutePath(), r.images.get(i).length));
+                        }
+                    }
+                } catch (IOException e) {
+                    error = holder[0] != null && holder[0].isCancelled() ? "Cancelled" : ChatPage.describe(e);
+                }
+                final String err = error;
+                final OpenRouter.ImageResult result = r;
+                Bg.ui(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (out) {
+                            out.streaming = false;
+                            out.text = result != null && result.text.length() > 0 ? result.text : "";
+                            if (result != null) {
+                                out.cost = result.cost;
+                                out.promptTokens = result.promptTokens;
+                                out.completionTokens = result.completionTokens;
+                            }
+                            if (err != null) out.error = err;
+                        }
+                        store.save(conv);
+                        if (running == out) {
+                            running = null;
+                            active = null;
+                            generate.setText("Generate");
+                        }
+                        if (conv == conversation) showResults();
+                    }
+                });
+            }
+        });
+    }
+
+    private void cancel() {
+        Http[] h = active;
+        if (h != null && h[0] != null) h[0].cancel();
+    }
+
+    @Override
+    public void onDestroy() {
+        cancel();
+    }
+}

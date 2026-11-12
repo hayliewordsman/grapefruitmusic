@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 7+: cleartext HTTP is refused and only the system's trust anchors are used (no user
+     CAs). Android 4.2-6 ignore this file; the app's Http class refuses non-HTTPS URLs itself. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
