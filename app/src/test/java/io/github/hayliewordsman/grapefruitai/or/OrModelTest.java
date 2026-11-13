@@ -32,7 +32,7 @@ public class OrModelTest {
 
     @Test
     public void parsesEveryModel() {
-        assertEquals(11, models.size());
+        assertEquals(12, models.size());
     }
 
     @Test

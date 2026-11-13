@@ -33,9 +33,39 @@ public final class OpenRouter {
     public static final long MAX_ATTACHMENT = 12L * 1024 * 1024;
 
     private final String key;
+    private final Transport transport;
+
+    /** Sends one JSON POST and returns the response text; replaced in tests. */
+    public interface Transport {
+        String post(String url, Map<String, String> headers, String json, Http[] holder) throws IOException;
+    }
+
+    static final Transport HTTPS = new Transport() {
+        @Override
+        public String post(String url, Map<String, String> headers, String json, Http[] holder) throws IOException {
+            Http h = new Http("POST", url).json(json).readTimeout(Http.STREAM_READ_TIMEOUT_MS);
+            for (Map.Entry<String, String> e : headers.entrySet()) h.header(e.getKey(), e.getValue());
+            if (holder != null) holder[0] = h;
+            return h.text();
+        }
+    };
 
     public OpenRouter(String key) {
+        this(key, HTTPS);
+    }
+
+    public OpenRouter(String key, Transport transport) {
         this.key = key;
+        this.transport = transport;
+    }
+
+    private Map<String, String> headers() {
+        Map<String, String> h = new LinkedHashMap<String, String>();
+        h.put("HTTP-Referer", REFERER);
+        h.put("X-OpenRouter-Title", TITLE);
+        h.put("Accept", "application/json");
+        if (key != null) h.put("Authorization", "Bearer " + key);
+        return h;
     }
 
     private Http request(String method, String path) throws IOException {
@@ -124,6 +154,9 @@ public final class OpenRouter {
      */
     public void chat(String model, List<Message> history, boolean webSearch, String system,
                      final ChatListener listener, Http[] holder) throws IOException {
+        // Image-only models (e.g. meta/muse-image) are never sent to chat/completions.
+        String block = Routing.chatBlock(Models.find(model));
+        if (block != null) throw new Friendly.ModelRouteException(block);
         JSONObject body = new JSONObject();
         try {
             body.put("model", model);
@@ -286,6 +319,17 @@ public final class OpenRouter {
      */
     public ImageResult generateImage(String model, String prompt, String aspectRatio, String resolution,
                                      List<String> referenceDataUrls, Http[] holder) throws IOException {
+        String text = transport.post(BASE + IMAGES_PATH, headers(),
+                imagesRequest(model, prompt, aspectRatio, resolution, referenceDataUrls).toString(), holder);
+        return parseImages(text);
+    }
+
+    public static final String IMAGES_PATH = "/images";
+    public static final String CHAT_PATH = "/chat/completions";
+
+    /** The Images API body: model, prompt, the listed options, and input_references for editing. */
+    static JSONObject imagesRequest(String model, String prompt, String aspectRatio, String resolution,
+                                    List<String> referenceDataUrls) throws IOException {
         JSONObject body = new JSONObject();
         try {
             body.put("model", model).put("prompt", prompt);
@@ -301,9 +345,10 @@ public final class OpenRouter {
         } catch (JSONException e) {
             throw new IOException(e.getMessage());
         }
-        Http h = request("POST", "/images").json(body.toString()).readTimeout(Http.STREAM_READ_TIMEOUT_MS);
-        if (holder != null) holder[0] = h;
-        String text = h.text();
+        return body;
+    }
+
+    static ImageResult parseImages(String text) throws IOException {
         ImageResult result = new ImageResult();
         try {
             JSONObject o = new JSONObject(text);
@@ -336,6 +381,10 @@ public final class OpenRouter {
      */
     public ImageResult generateImageViaChat(String model, String prompt, String aspectRatio,
                                             List<String> referenceDataUrls, Http[] holder) throws IOException {
+        OrModel known = Models.find(model);
+        if (known != null && !known.servesChat()) {
+            throw new Friendly.ModelRouteException(known.name + " uses OpenRouter's Images API, not chat.");
+        }
         JSONObject body = new JSONObject();
         try {
             JSONObject msg = new JSONObject().put("role", "user");
@@ -355,11 +404,10 @@ public final class OpenRouter {
         } catch (JSONException e) {
             throw new IOException(e.getMessage());
         }
-        Http h = request("POST", "/chat/completions").json(body.toString()).readTimeout(Http.STREAM_READ_TIMEOUT_MS);
-        if (holder != null) holder[0] = h;
+        String responseText = transport.post(BASE + CHAT_PATH, headers(), body.toString(), holder);
         final ImageResult result = new ImageResult();
         try {
-            JSONObject o = new JSONObject(h.text());
+            JSONObject o = new JSONObject(responseText);
             final StringBuilder text = new StringBuilder();
             handleChunk(o, new ChatListener() {
                 public void onText(String d) {

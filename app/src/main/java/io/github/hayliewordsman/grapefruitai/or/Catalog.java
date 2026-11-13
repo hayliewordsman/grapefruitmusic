@@ -18,6 +18,8 @@ public final class Catalog {
     /** Capability filters (AND). */
     public boolean needTools, needVision, needFiles, needReasoning, freeOnly;
     public int kind = ALL;
+    /** Hard limit regardless of the chips: CHAT (chat-capable only), IMAGE (image models only) or ALL. */
+    public int restrict = ALL;
     public int sort = SORT_NAME;
     public String query = "";
 
@@ -26,6 +28,8 @@ public final class Catalog {
         String q = query == null ? "" : query.trim().toLowerCase(Locale.US);
         String[] words = q.length() == 0 ? new String[0] : q.split("\\s+");
         for (OrModel m : models) {
+            if (restrict == CHAT && Routing.chatBlock(m) != null) continue;
+            if (restrict == IMAGE && !m.isImage()) continue;
             if (!matchesKind(m, kind)) continue;
             if (needTools && !m.supportsTools()) continue;
             if (needVision && !m.acceptsImages()) continue;

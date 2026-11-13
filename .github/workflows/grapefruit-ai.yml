@@ -60,3 +60,45 @@ jobs:
             app/build/reports/lint-results-debug.html
           retention-days: 7
           if-no-files-found: ignore
+
+  # A rolling pre-release with the newest debug APK, downloadable without signing in to GitHub:
+  # https://github.com/<owner>/<repo>/releases/download/grapefruit-ai-debug/grapefruit-ai-debug.apk
+  # Only for pushes and manual runs on the Grapefruit AI branch; only this job can write.
+  prerelease:
+    needs: debug
+    if: github.ref == 'refs/heads/grapefruit-ai-android-4.2.2' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: grapefruit-ai-prerelease
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: grapefruit-ai-debug-apk
+          path: apk
+
+      - name: Publish debug pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          TAG=grapefruit-ai-debug
+          cp apk/*.apk grapefruit-ai-debug.apk
+          SHORT=${SHA:0:7}
+          NOTES="Debug build of Grapefruit AI from grapefruit-ai-android-4.2.2 at ${SHORT}.
+
+          Signed with a debug key: uninstall it before installing a release-signed build.
+          Built by ${RUN_URL}
+          This pre-release is replaced on every push to the branch."
+          # Replace the previous rolling pre-release and its tag (only this workflow's own tag).
+          if gh release view "$TAG" --repo "$REPO" > /dev/null 2>&1; then
+            gh release delete "$TAG" --repo "$REPO" --yes --cleanup-tag
+          fi
+          gh release create "$TAG" grapefruit-ai-debug.apk --repo "$REPO" --target "$SHA" \
+            --prerelease --title "Grapefruit AI debug (${SHORT})" --notes "$NOTES"

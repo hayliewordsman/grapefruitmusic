@@ -15,6 +15,7 @@ described here; nothing else is claimed to work.
 | HTTPS-only URL policy, refusal of plain HTTP and URL credentials, readable HTTP errors | `HttpTest`, `Api17Test` |
 | Model catalog parsing, prices in USD per M tokens, "not listed"/"variable" (never invented), Chat/Coding/Image filters, search, sorting | `OrModelTest`, `CatalogTest`, `FormatTest`, against a sample of OpenRouter's **live** `/api/v1/models?output_modalities=all` and `/api/v1/images/models` responses (fetched 2026-11-12) |
 | Image prices in real units (per image, per megapixel, per M image tokens, per request; resolution variants; several providers), the model-page fallback for models the Images API doesn't price (Meta Muse Image: `$0.01/image`), and no "Input: Free / Output: Free" for image-only models | `ImagePricingTest`, against live Images API responses and the openrouter.ai/meta/muse-image page (2026-11-13); also checked by hand against all 66 live Images API models |
+| Model routing: image-only models (`meta/muse-image`) never reach chat/completions (refused before any request), Images-API models post to `/api/v1/images` with uploads as `input_references`, chat-image models use chat/completions only from the Images tab; Chat's picker excludes image-only models; editing offered per model from live metadata; friendly error text with hidden raw details | `RoutingTest`, `FriendlyTest`, `ImageRequestTest` (API 17, fake transport), `ImageModelUiTest` (API 17) |
 | Streaming chunk handling: text, reasoning, `url_citation` annotations, usage/cost, mid-stream errors | `ChatChunkTest`, `SseTest` (OpenRouter's documented SSE format) |
 | Markdown: headings, lists, quotes, rules, tables, fenced code (also unclosed while streaming); code blocks have Copy | `MarkdownTest`, `Api17Test` |
 | OpenCode V2 client: every request the app makes (info, location, models, default model, providers, agents, projects, sessions list/create/get/delete, switch model/agent, prompt, interrupt, messages, active, diff, permissions and reply, fs list/read/find, vcs status, events) is a documented V2 route with only documented query parameters and body fields, over HTTPS with Basic auth | `OpenCodeApiTest` (Robolectric, API 17), against the routes and request schemas of https://opencode.ai/docs/openapi.json (fetched 2026-11-13, kept as `opencode-v2-routes.json`) |
@@ -45,6 +46,11 @@ or OpenCode server was available while building:
   (the helper is the one the other Grapefruit apps use on 4.2.2).
 
 ## Known limitations
+
+- Image editing for models whose Images API entry lists no parameters (Meta Muse Image on
+  2026-11-13) is offered because they accept image input; up to 4 images are allowed since
+  OpenRouter lists no limit. Not run against the live API here.
+- The rolling debug pre-release is public on the repository's Releases page.
 
 - The model-page price fallback reads OpenRouter's public web page, which has no documented format;
   if the page changes, those models fall back to their listed token rate or "not listed".

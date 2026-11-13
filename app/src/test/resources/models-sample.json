@@ -776,6 +776,49 @@
    "endpoints": [
     "/api/v1/images"
    ]
+  },
+  {
+   "id": "recraft/recraft-v4.1-flash",
+   "canonical_slug": "recraft/recraft-v4.1-flash-20260923",
+   "hugging_face_id": null,
+   "name": "Recraft: Recraft V4.1 Flash",
+   "created": 1790177946,
+   "description": "Recraft V4.1 Flash is a text-to-image model from Recraft, the speed and cost tier of the V4.1 family. It generates ~1K raster images in about 1.5 seconds end to end,...",
+   "context_length": 65536,
+   "architecture": {
+    "modality": "text->image",
+    "input_modalities": [
+     "text"
+    ],
+    "output_modalities": [
+     "image"
+    ],
+    "tokenizer": "Other",
+    "instruct_type": null
+   },
+   "pricing": {
+    "prompt": "0",
+    "completion": "0",
+    "image_token": "0.00000167664670658683",
+    "image_output": "0.00000167664670658683"
+   },
+   "top_provider": {
+    "context_length": 65536,
+    "max_completion_tokens": 58982,
+    "is_moderated": false
+   },
+   "per_request_limits": null,
+   "supported_parameters": [],
+   "default_parameters": {},
+   "supported_voices": null,
+   "knowledge_cutoff": null,
+   "expiration_date": null,
+   "links": {
+    "details": "/api/v1/models/recraft/recraft-v4.1-flash-20260923/endpoints"
+   },
+   "endpoints": [
+    "/api/v1/images"
+   ]
   }
  ]
 }

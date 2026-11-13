@@ -17,6 +17,10 @@ public final class ImageParams {
     public final List<String> resolutions = new ArrayList<String>();
     /** Reference images for editing: 0 when the model takes none. */
     public int maxReferences;
+    /** Whether OpenRouter lists input_references for this model at all (with any limit). */
+    public boolean listsReferences;
+    /** Whether OpenRouter lists any parameters for this model (some, like Muse Image, list none). */
+    public boolean listsParameters;
     public boolean supportsStreaming;
 
     private ImageParams(String id) {
@@ -28,10 +32,14 @@ public final class ImageParams {
         p.supportsStreaming = o.optBoolean("supports_streaming", false);
         JSONObject params = o.optJSONObject("supported_parameters");
         if (params != null) {
+            p.listsParameters = params.length() > 0;
             enumValues(params.optJSONObject("aspect_ratio"), p.aspectRatios);
             enumValues(params.optJSONObject("resolution"), p.resolutions);
             JSONObject refs = params.optJSONObject("input_references");
-            if (refs != null) p.maxReferences = Math.max(0, refs.optInt("max", 1));
+            if (refs != null) {
+                p.listsReferences = true;
+                p.maxReferences = Math.max(0, refs.optInt("max", 1));
+            }
         }
         return p;
     }

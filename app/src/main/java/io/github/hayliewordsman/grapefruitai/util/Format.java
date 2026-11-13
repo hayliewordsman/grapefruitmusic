@@ -94,6 +94,7 @@ public final class Format {
         b.append(" · ").append(tokens(m.contextLength)).append(" context");
         b.append(" · ").append(join(m.input, "+")).append(" → ").append(join(m.output, "+"));
         if (m.supportsTools()) b.append(" · tools");
+        b.append(" · ").append(io.github.hayliewordsman.grapefruitai.or.Routing.apiLabel(m));
         return b.toString();
     }
 
@@ -158,6 +159,7 @@ public final class Format {
         if (m.maxCompletion > 0 && m.outputsText()) b.append("Max output: ").append(count(m.maxCompletion)).append(" tokens\n");
         b.append("Input: ").append(m.input.isEmpty() ? "unknown" : join(m.input, ", ")).append('\n');
         b.append("Output: ").append(m.output.isEmpty() ? "unknown" : join(m.output, ", ")).append('\n');
+        b.append("Uses: OpenRouter ").append(io.github.hayliewordsman.grapefruitai.or.Routing.apiLabel(m)).append('\n');
         if (m.outputsText()) {
             b.append("Tool calling: ").append(m.parameters.isEmpty() ? "unknown" : m.supportsTools() ? "yes" : "no").append('\n');
         }

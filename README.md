@@ -16,8 +16,16 @@ coding agent running on your own server.
 | Tab | What it does |
 | --- | --- |
 | **Chat** (Chat / Research) | Streams replies from the OpenRouter model you pick, renders Markdown with copyable code blocks, takes image/PDF/text attachments when the model accepts them, and keeps conversation history on the device. Web search is a per-app toggle that uses OpenRouter's documented `web` plugin; with it off, the model is told it has no live web access. |
-| **Images** | Generates images with OpenRouter's Image API (`POST /api/v1/images`), or through chat completions for image models only served there. Aspect ratio, resolution and reference images (for editing) appear only when that model lists them in `GET /api/v1/images/models`. Results can be saved as PNG or JPEG. |
+| **Images** | Text-to-image generation and editing of uploaded images (from the gallery) with OpenRouter's Images API (`POST /api/v1/images`, uploads sent as `input_references`), or through chat completions for image models only served there. The tab says which API the model uses. Aspect ratio and resolution appear only when the model lists them in `GET /api/v1/images/models`; editing is offered only to models that accept image input, with the limit OpenRouter lists, and otherwise explained. Results can be saved as PNG or JPEG. |
 | **Code** (OpenCode Agent) | Connects to an OpenCode 2 server through its V2 API (`/api/…`) over HTTPS with basic auth: create and resume sessions, choose the server's models (OpenRouter-backed ones first) and agent, send prompts, watch tool calls live, approve or reject permission requests, browse project files and changes, and download files and build artifacts (APKs). Shows token use and cost the server reports. |
+
+Models are routed by their live metadata (the `endpoints` they serve and their input/output
+modalities): image-only models such as `meta/muse-image` never go to `/api/v1/chat/completions`.
+Chat's picker lists only models served by the Chat API; if a conversation still has an image-only
+model, the app says "This model is for image generation/editing. Use the Images tab instead." and
+can carry the prompt and images there. OpenRouter errors are shown in plain words, with the raw
+message behind "Show details". Each model's details say whether it uses the Chat API, the Images
+API, or both.
 
 The model picker lists OpenRouter's whole live catalog (`GET /api/v1/models?output_modalities=all`)
 with search, Chat/Coding/Image filters, capability filters (tools, vision, files, reasoning, free)
@@ -44,10 +52,17 @@ and cached with it for six hours.
 
 ## Install on Android
 
-1. Open the repository's **Actions** tab, choose the latest successful **Grapefruit AI debug APK**
-   run on `grapefruit-ai-android-4.2.2`, and download the `grapefruit-ai-debug-apk` artifact
-   (a zip; artifacts are kept for 14 days).
-2. Unzip it to get `app-debug.apk` and copy it to the tablet.
+1. Download the newest debug APK, no GitHub sign-in needed:
+   <https://github.com/hayliewordsman/grapefruitmusic/releases/download/grapefruit-ai-debug/grapefruit-ai-debug.apk>
+   (the rolling **Grapefruit AI debug** pre-release, replaced by every push to
+   `grapefruit-ai-android-4.2.2`). Skip to step 3.
+
+   Alternatively, signed in to GitHub, open the latest successful **Grapefruit AI debug APK** run in
+   the **Actions** tab and download the `grapefruit-ai-debug-apk` artifact (a zip; kept 14 days;
+   GitHub answers 404 to artifact links when you aren't signed in).
+2. If you used the artifact, unzip it to get `app-debug.apk`. Copy the APK to the tablet (Android
+   4.2.2's own browser may not manage modern HTTPS sites, so a computer and USB or
+   `adb install` is the dependable route).
 3. Allow the install:
    - Android 4.2–7: *Settings → Security → Unknown sources*.
    - Android 8+: allow your file manager or browser to *install unknown apps* when asked.

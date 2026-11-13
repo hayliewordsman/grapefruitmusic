@@ -24,6 +24,9 @@ import io.github.hayliewordsman.grapefruitai.util.Format;
 public final class MessageView extends LinearLayout {
     public interface Actions {
         void retry(Message failed);
+
+        /** The model belongs in the Images tab: take the request there. */
+        void useImagesTab(Message failed);
     }
 
     private final Activity a;
@@ -226,16 +229,39 @@ public final class MessageView extends LinearLayout {
         t.setText(m.error);
         t.setTextIsSelectable(true);
         box.addView(t);
-        if (actions != null) {
-            TextView retry = Ui.button(a, "Retry", true, new OnClickListener() {
+        if (m.errorDetail != null && !m.errorDetail.equals(m.error)) {
+            // The raw server message, only when asked for.
+            final TextView toggle = Ui.text(a, 13, p.accent, true);
+            final TextView detail = Ui.body(a, 12, p.secondary);
+            detail.setText(m.errorDetail);
+            detail.setTextIsSelectable(true);
+            detail.setVisibility(GONE);
+            toggle.setText("Show details");
+            toggle.setMinHeight(Ui.dp(a, 36));
+            toggle.setGravity(Gravity.CENTER_VERTICAL);
+            toggle.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    actions.retry(m);
+                    boolean show = detail.getVisibility() != VISIBLE;
+                    detail.setVisibility(show ? VISIBLE : GONE);
+                    toggle.setText(show ? "Hide details" : "Show details");
+                }
+            });
+            box.addView(toggle);
+            box.addView(detail);
+        }
+        if (actions != null) {
+            final boolean images = io.github.hayliewordsman.grapefruitai.or.Routing.USE_IMAGES_TAB.equals(m.error);
+            TextView button = Ui.button(a, images ? "Open Images tab" : "Retry", true, new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (images) actions.useImagesTab(m);
+                    else actions.retry(m);
                 }
             });
             LayoutParams lp = Ui.wrap();
             lp.topMargin = Ui.dp(a, 8);
-            box.addView(retry, lp);
+            box.addView(button, lp);
         }
         LayoutParams lp = Ui.matchWrap();
         lp.topMargin = Ui.dp(a, 6);

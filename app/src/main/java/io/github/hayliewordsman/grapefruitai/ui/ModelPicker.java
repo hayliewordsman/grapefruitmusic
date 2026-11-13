@@ -22,6 +22,7 @@ import java.util.List;
 import io.github.hayliewordsman.grapefruitai.or.Catalog;
 import io.github.hayliewordsman.grapefruitai.or.Models;
 import io.github.hayliewordsman.grapefruitai.or.OrModel;
+import io.github.hayliewordsman.grapefruitai.or.Routing;
 import io.github.hayliewordsman.grapefruitai.util.Format;
 
 /**
@@ -43,6 +44,8 @@ public final class ModelPicker {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         final Catalog catalog = new Catalog();
         catalog.kind = kind;
+        // Chat never lists image-only models; Images only lists image models.
+        catalog.restrict = kind == Catalog.IMAGE ? Catalog.IMAGE : Catalog.CHAT;
         final List<OrModel> shown = new ArrayList<OrModel>();
 
         LinearLayout root = Ui.vertical(c);
@@ -104,7 +107,8 @@ public final class ModelPicker {
                 shown.addAll(catalog.apply(Models.all()));
                 adapter.notifyDataSetChanged();
                 String err = Models.lastError();
-                count.setText(shown.size() + " of " + Models.all().size() + " models · prices in US dollars"
+                count.setText(shown.size() + (catalog.restrict == Catalog.IMAGE ? " image models" : " chat models")
+                        + " of " + Models.all().size() + " · prices in US dollars"
                         + (err != null && Models.all().isEmpty() ? " · " + err : ""));
                 for (int i = 0; i < kinds.length; i++) Ui.setChipChosen(kinds[i], catalog.kind == i);
                 for (int i = 0; i < sorts.length; i++) Ui.setChipChosen(sorts[i], catalog.sort == i);
@@ -115,6 +119,9 @@ public final class ModelPicker {
         for (int i = 0; i < Catalog.KIND_NAMES.length; i++) {
             final int k = i;
             kinds[i] = Ui.chip(c, Catalog.KIND_NAMES[i], catalog.kind == i);
+            boolean relevant = catalog.restrict == Catalog.IMAGE ? (i == Catalog.ALL)
+                    : (i != Catalog.IMAGE);
+            if (!relevant) continue;
             kinds[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -174,8 +181,13 @@ public final class ModelPicker {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                OrModel m = shown.get(position);
+                if (catalog.restrict == Catalog.CHAT && Routing.chatBlock(m) != null) {
+                    Sheet.alert(c, "Not a chat model", Routing.chatBlock(m));
+                    return;
+                }
                 dialog.dismiss();
-                listener.onPicked(shown.get(position));
+                listener.onPicked(m);
             }
         });
         list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {

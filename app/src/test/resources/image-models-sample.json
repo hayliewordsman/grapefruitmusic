@@ -216,6 +216,58 @@
    },
    "supports_streaming": false,
    "endpoints": "/api/v1/images/models/minimax/minimax-h3-image/endpoints"
+  },
+  {
+   "id": "meta/muse-image",
+   "name": "Meta: Muse Image",
+   "description": "Muse Image is an agentic image generation model from Meta that generates and edits images from text and reference images. Unlike single-pass image models, it reasons before it renders, breaking...",
+   "created": 1787764532,
+   "architecture": {
+    "input_modalities": [
+     "text",
+     "image"
+    ],
+    "output_modalities": [
+     "image"
+    ]
+   },
+   "supported_parameters": {},
+   "supports_streaming": false,
+   "endpoints": "/api/v1/images/models/meta/muse-image/endpoints"
+  },
+  {
+   "id": "recraft/recraft-v4.1-flash",
+   "name": "Recraft: Recraft V4.1 Flash",
+   "description": "Recraft V4.1 Flash is a text-to-image model from Recraft, the speed and cost tier of the V4.1 family. It generates ~1K raster images in about 1.5 seconds end to end,...",
+   "created": 1790177946,
+   "architecture": {
+    "input_modalities": [
+     "text"
+    ],
+    "output_modalities": [
+     "image"
+    ]
+   },
+   "supported_parameters": {
+    "aspect_ratio": {
+     "type": "enum",
+     "values": [
+      "1:1",
+      "4:3",
+      "3:4",
+      "16:9",
+      "9:16",
+      "auto"
+     ]
+    },
+    "n": {
+     "type": "range",
+     "min": 1,
+     "max": 6
+    }
+   },
+   "supports_streaming": false,
+   "endpoints": "/api/v1/images/models/recraft/recraft-v4.1-flash/endpoints"
   }
  ]
 }

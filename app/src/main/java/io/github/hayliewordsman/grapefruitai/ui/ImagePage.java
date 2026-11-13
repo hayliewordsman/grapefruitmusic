@@ -27,11 +27,13 @@ import io.github.hayliewordsman.grapefruitai.chat.Message;
 import io.github.hayliewordsman.grapefruitai.chat.Store;
 import io.github.hayliewordsman.grapefruitai.net.Http;
 import io.github.hayliewordsman.grapefruitai.or.Catalog;
+import io.github.hayliewordsman.grapefruitai.or.Friendly;
 import io.github.hayliewordsman.grapefruitai.or.ImageParams;
 import io.github.hayliewordsman.grapefruitai.or.ImagePricing;
 import io.github.hayliewordsman.grapefruitai.or.Models;
 import io.github.hayliewordsman.grapefruitai.or.OpenRouter;
 import io.github.hayliewordsman.grapefruitai.or.OrModel;
+import io.github.hayliewordsman.grapefruitai.or.Routing;
 import io.github.hayliewordsman.grapefruitai.secure.Secrets;
 import io.github.hayliewordsman.grapefruitai.util.Bg;
 import io.github.hayliewordsman.grapefruitai.util.Format;
@@ -54,6 +56,8 @@ public final class ImagePage extends Page implements MessageView.Actions {
     private TextView costLine;
     private LinearLayout optionsBox;
     private LinearLayout referencesRow;
+    private TextView apiLine;
+    private TextView editNote;
     private TextView generate;
     private final List<Attachment> references = new ArrayList<Attachment>();
     private String aspect;
@@ -127,9 +131,10 @@ public final class ImagePage extends Page implements MessageView.Actions {
                 return true;
             }
         });
-        LinearLayout.LayoutParams mlp = Ui.wrap();
-        mlp.bottomMargin = Ui.dp(a, 8);
-        inner.addView(modelButton, mlp);
+        inner.addView(modelButton, Ui.wrap());
+        apiLine = Ui.body(a, 13, p.secondary);
+        apiLine.setPadding(Ui.dp(a, 4), Ui.dp(a, 4), Ui.dp(a, 4), Ui.dp(a, 8));
+        inner.addView(apiLine, Ui.matchWrap());
 
         prompt = Ui.field(a, "Describe the image", true);
         prompt.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE
@@ -142,6 +147,9 @@ public final class ImagePage extends Page implements MessageView.Actions {
         inner.addView(optionsBox, Ui.matchWrap());
         referencesRow = Ui.horizontal(a);
         inner.addView(referencesRow, Ui.matchWrap());
+        editNote = Ui.body(a, 13, p.secondary);
+        editNote.setPadding(Ui.dp(a, 4), Ui.dp(a, 4), Ui.dp(a, 4), 0);
+        inner.addView(editNote, Ui.matchWrap());
 
         costLine = Ui.body(a, 13, p.secondary);
         costLine.setPadding(Ui.dp(a, 4), Ui.dp(a, 8), Ui.dp(a, 4), Ui.dp(a, 8));
@@ -207,8 +215,20 @@ public final class ImagePage extends Page implements MessageView.Actions {
                     + "its own defaults.");
             optionsBox.addView(t);
         }
-        int maxRefs = params != null ? params.maxReferences : (m != null && m.acceptsImages() ? 4 : 0);
-        refreshReferences(maxRefs);
+        Routing.ImageRoute route = Routing.imageRoute(m);
+        if (m == null) {
+            apiLine.setText(Models.all().isEmpty() ? "" : "This model isn't in OpenRouter's list; it will be sent to the Images API.");
+        } else if (route == Routing.ImageRoute.IMAGES_API) {
+            apiLine.setText("This model uses OpenRouter Images API.");
+        } else if (route == Routing.ImageRoute.CHAT_COMPLETIONS) {
+            apiLine.setText("This model makes images through OpenRouter's Chat API (image output).");
+        } else {
+            apiLine.setText(m.name + " doesn't generate images. Choose an image model.");
+        }
+        Routing.Editing editing = Routing.editing(m, params);
+        refreshReferences(editing.supported ? editing.maxImages : 0);
+        editNote.setText(editing.note);
+        generate.setText(running != null ? "Cancel" : references.isEmpty() ? "Generate" : "Edit image");
         StringBuilder cost = new StringBuilder();
         if (m == null) {
             cost.append(Models.all().isEmpty() ? "Loading OpenRouter's model list…" : "Model not in OpenRouter's list.");
@@ -280,7 +300,7 @@ public final class ImagePage extends Page implements MessageView.Actions {
                 @Override
                 public void onClick(View v) {
                     references.remove(r);
-                    refreshReferences(max);
+                    refreshOptions();
                 }
             });
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Ui.dp(a, 56), Ui.dp(a, 56));
@@ -288,7 +308,7 @@ public final class ImagePage extends Page implements MessageView.Actions {
             referencesRow.addView(iv, lp);
         }
         if (references.size() < max) {
-            TextView add = Ui.chip(a, references.isEmpty() ? "Add reference image (edit)" : "Add", false);
+            TextView add = Ui.chip(a, references.isEmpty() ? "Add an image to edit" : "Add another image", false);
             add.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -409,11 +429,18 @@ public final class ImagePage extends Page implements MessageView.Actions {
             return;
         }
         final OrModel m = Models.find(model());
-        if (m != null && !m.isImage()) {
-            Sheet.alert(a, "Not an image model", m.name + " doesn't list image output. Choose another model.");
+        final Routing.ImageRoute route = Routing.imageRoute(m);
+        if (route == Routing.ImageRoute.NONE) {
+            Sheet.alert(a, "Not an image model", m.name + " doesn't generate images. Choose a model from the "
+                    + "Images tab's list.");
             return;
         }
-        final boolean viaImageApi = m == null || m.servesImageApi();
+        Routing.Editing editing = Routing.editing(m, Models.imageParams(model()));
+        if (!references.isEmpty() && !editing.supported) {
+            Sheet.alert(a, "Image editing not supported", editing.note);
+            return;
+        }
+        final boolean viaImageApi = route == Routing.ImageRoute.IMAGES_API;
         final String model = model();
         final String ratio = aspect;
         final String res = resolution;
@@ -425,7 +452,9 @@ public final class ImagePage extends Page implements MessageView.Actions {
         final Message out = new Message(Message.ASSISTANT);
         out.model = model;
         out.streaming = true;
-        out.text = "Generating" + (ratio != null ? " · " + ratio : "") + (res != null ? " · " + res : "") + "…";
+        out.text = (refs.isEmpty() ? "Generating" : "Editing " + refs.size() + " image" + (refs.size() == 1 ? "" : "s"))
+                + (ratio != null ? " · " + ratio : "") + (res != null ? " · " + res : "")
+                + (viaImageApi ? " · Images API" : " · Chat API") + "…";
         conversation.messages.add(req);
         conversation.messages.add(out);
         if (conversation.title.equals("New conversation")) conversation.autoTitle();
@@ -439,12 +468,13 @@ public final class ImagePage extends Page implements MessageView.Actions {
             }
         });
         final Http[] holder = new Http[1];
+        final boolean[] cancelled = new boolean[1];
         active = holder;
         final Conversation conv = conversation;
         Bg.run(new Runnable() {
             @Override
             public void run() {
-                String error = null;
+                Friendly.Error error = null;
                 OpenRouter.ImageResult r = null;
                 try {
                     List<String> dataUrls = new ArrayList<String>();
@@ -467,9 +497,10 @@ public final class ImagePage extends Page implements MessageView.Actions {
                         }
                     }
                 } catch (IOException e) {
-                    error = holder[0] != null && holder[0].isCancelled() ? "Cancelled" : ChatPage.describe(e);
+                    error = holder[0] != null && holder[0].isCancelled() ? null : Friendly.of(e);
+                    if (error == null) cancelled[0] = true;
                 }
-                final String err = error;
+                final Friendly.Error err = error;
                 final OpenRouter.ImageResult result = r;
                 Bg.ui(new Runnable() {
                     @Override
@@ -482,19 +513,62 @@ public final class ImagePage extends Page implements MessageView.Actions {
                                 out.promptTokens = result.promptTokens;
                                 out.completionTokens = result.completionTokens;
                             }
-                            if (err != null) out.error = err;
+                            if (err != null) {
+                                out.error = err.message;
+                                out.errorDetail = err.detail;
+                            } else if (cancelled[0]) {
+                                out.error = "Cancelled";
+                            }
                         }
                         store.save(conv);
                         if (running == out) {
                             running = null;
                             active = null;
-                            generate.setText("Generate");
                         }
+                        refreshOptions();
                         if (conv == conversation) showResults();
                     }
                 });
             }
         });
+    }
+
+    /** From the Chat tab: an image model, the prompt, and images to edit. */
+    public void prefill(String modelId, String text, List<Attachment> images) {
+        view();
+        OrModel m = Models.find(modelId);
+        if (m == null || m.isImage()) Prefs.put(Prefs.IMAGE_MODEL, modelId);
+        aspect = null;
+        resolution = null;
+        if (text != null && text.length() > 0) prompt.setText(text);
+        references.clear();
+        if (images != null) for (Attachment x : images) if (x.isImage()) references.add(x);
+        refreshOptions();
+        if (!references.isEmpty() && !Routing.editing(m, Models.imageParams(modelId)).supported) {
+            Ui.toast(a, "This model can't edit images; the images were not added");
+        }
+    }
+
+    @Override
+    public void useImagesTab(Message failed) {
+        // Already here.
+    }
+
+    /** For tests: the chosen references and the generate button's label. */
+    List<Attachment> references() {
+        return references;
+    }
+
+    String buttonLabel() {
+        return generate.getText().toString();
+    }
+
+    String apiLabel() {
+        return apiLine.getText().toString();
+    }
+
+    String editingNote() {
+        return editNote.getText().toString();
     }
 
     private void cancel() {

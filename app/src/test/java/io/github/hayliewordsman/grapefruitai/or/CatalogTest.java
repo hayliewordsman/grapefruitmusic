@@ -24,7 +24,7 @@ public class CatalogTest {
         c.kind = Catalog.IMAGE;
         List<OrModel> images = c.apply(models);
         for (OrModel m : images) assertTrue(m.id, m.outputsImage());
-        assertEquals(5, images.size());
+        assertEquals(6, images.size());
         c.kind = Catalog.CODING;
         for (OrModel m : c.apply(models)) assertTrue(m.supportsTools());
         c.kind = Catalog.CHAT;

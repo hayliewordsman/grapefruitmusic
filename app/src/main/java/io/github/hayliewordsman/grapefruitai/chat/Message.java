@@ -22,6 +22,8 @@ public final class Message {
     public final List<String[]> citations = new ArrayList<String[]>();
     public String model;
     public String error;
+    /** The raw server error behind {@link #error}, shown only when expanded. */
+    public String errorDetail;
     /** Streaming, stopped by the user, or done. */
     public boolean streaming;
     public boolean stopped;
@@ -46,6 +48,7 @@ public final class Message {
         if (reasoning.length() > 0) o.put("reasoning", reasoning);
         if (model != null) o.put("model", model);
         if (error != null) o.put("error", error);
+        if (errorDetail != null) o.put("errorDetail", errorDetail);
         if (stopped) o.put("stopped", true);
         if (webSearch) o.put("web", true);
         if (promptTokens > 0) o.put("in", promptTokens);
@@ -70,6 +73,7 @@ public final class Message {
         m.time = o.optLong("time", 0);
         m.model = o.has("model") ? o.optString("model") : null;
         m.error = o.has("error") ? o.optString("error") : null;
+        m.errorDetail = o.has("errorDetail") ? o.optString("errorDetail") : null;
         m.stopped = o.optBoolean("stopped", false);
         m.webSearch = o.optBoolean("web", false);
         m.promptTokens = o.optLong("in", 0);

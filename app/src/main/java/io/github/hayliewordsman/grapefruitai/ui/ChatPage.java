@@ -25,9 +25,11 @@ import io.github.hayliewordsman.grapefruitai.chat.Store;
 import io.github.hayliewordsman.grapefruitai.net.Http;
 import io.github.hayliewordsman.grapefruitai.net.HttpException;
 import io.github.hayliewordsman.grapefruitai.or.Catalog;
+import io.github.hayliewordsman.grapefruitai.or.Friendly;
 import io.github.hayliewordsman.grapefruitai.or.Models;
 import io.github.hayliewordsman.grapefruitai.or.OpenRouter;
 import io.github.hayliewordsman.grapefruitai.or.OrModel;
+import io.github.hayliewordsman.grapefruitai.or.Routing;
 import io.github.hayliewordsman.grapefruitai.secure.Secrets;
 import io.github.hayliewordsman.grapefruitai.util.Bg;
 import io.github.hayliewordsman.grapefruitai.util.Format;
@@ -403,10 +405,20 @@ public final class ChatPage extends Page implements MessageView.Actions {
     // --- Sending ---
 
     private void sendFromInput() {
-        String text = input.getText().toString().trim();
+        send(input.getText().toString().trim());
+    }
+
+    /** Sends text (and the pending attachments) with the chosen model, if it's a chat model. */
+    void send(String text) {
         if (text.length() == 0 && pending.isEmpty()) return;
+        OrModel chosen = Models.find(model());
+        String block = Routing.chatBlock(chosen);
+        if (block != null) {
+            offerImagesTab(chosen, text, new ArrayList<Attachment>(pending), true);
+            return;
+        }
         if (!ensureKey()) return;
-        String problem = attachmentProblem(Models.find(model()), pending);
+        String problem = attachmentProblem(chosen, pending);
         if (problem != null) {
             Sheet.alert(a, "Attachment not supported", problem);
             return;
@@ -443,6 +455,55 @@ public final class ChatPage extends Page implements MessageView.Actions {
             return false;
         }
         return true;
+    }
+
+    /** The last friendly sheet shown (for tests). */
+    Sheet lastSheet;
+
+    /**
+     * The model is for image generation/editing: say so, and offer to take the prompt and any
+     * images to the Images tab with that model.
+     */
+    private void offerImagesTab(final OrModel m, final String text, final List<Attachment> files, final boolean clear) {
+        final List<Attachment> images = new ArrayList<Attachment>();
+        for (Attachment x : files) if (x.isImage()) images.add(x);
+        boolean image = m != null && m.isImage();
+        Sheet s = new Sheet(a, image ? "Use the Images tab" : "Not a chat model")
+                .message(Routing.chatBlock(m) != null ? Routing.chatBlock(m) : Routing.USE_IMAGES_TAB);
+        if (image) {
+            s.message(images.isEmpty() ? "Your prompt will be carried over."
+                    : "Your prompt and " + images.size() + " image" + (images.size() == 1 ? "" : "s")
+                    + " will be carried over to edit there.");
+            s.button("Cancel", false, null);
+            s.button("Open Images tab", true, new Runnable() {
+                @Override
+                public void run() {
+                    ((ImagePage) a.page(MainActivity.TAB_IMAGES)).prefill(m.id, text, images);
+                    if (clear) {
+                        pending.clear();
+                        refreshPending();
+                        input.setText("");
+                    }
+                    a.showTab(MainActivity.TAB_IMAGES);
+                }
+            });
+        } else {
+            s.button("Choose a chat model", true, new Runnable() {
+                @Override
+                public void run() {
+                    pickModel();
+                }
+            });
+        }
+        lastSheet = s.show();
+    }
+
+    @Override
+    public void useImagesTab(Message failed) {
+        int i = conversation.messages.indexOf(failed);
+        Message user = i > 0 && conversation.messages.get(i - 1).isUser() ? conversation.messages.get(i - 1) : null;
+        offerImagesTab(Models.find(failed.model != null ? failed.model : model()),
+                user != null ? user.text : "", user != null ? user.attachments : new ArrayList<Attachment>(), false);
     }
 
     @Override
@@ -485,7 +546,7 @@ public final class ChatPage extends Page implements MessageView.Actions {
         Bg.run(new Runnable() {
             @Override
             public void run() {
-                String error = null;
+                Friendly.Error error = null;
                 int attempt = 0;
                 while (true) {
                     try {
@@ -493,9 +554,10 @@ public final class ChatPage extends Page implements MessageView.Actions {
                                 new Listener(reply), holder);
                         error = null;
                     } catch (IOException e) {
-                        error = holder[0] != null && holder[0].isCancelled() ? null : describe(e);
-                        boolean transient_ = !(e instanceof HttpException) || ((HttpException) e).code >= 500
-                                || ((HttpException) e).code == 408;
+                        error = holder[0] != null && holder[0].isCancelled() ? null : Friendly.of(e);
+                        boolean transient_ = !(e instanceof Friendly.ModelRouteException)
+                                && (!(e instanceof HttpException) || ((HttpException) e).code >= 500
+                                || ((HttpException) e).code == 408);
                         boolean empty;
                         synchronized (reply) {
                             empty = reply.text.length() == 0 && reply.images.isEmpty();
@@ -519,7 +581,7 @@ public final class ChatPage extends Page implements MessageView.Actions {
                     }
                     break;
                 }
-                final String err = error;
+                final Friendly.Error err = error;
                 Bg.ui(new Runnable() {
                     @Override
                     public void run() {
@@ -538,11 +600,14 @@ public final class ChatPage extends Page implements MessageView.Actions {
         return m != null ? m : e.getClass().getSimpleName();
     }
 
-    private void finish(Conversation conv, Message reply, Http[] holder, String error) {
+    private void finish(Conversation conv, Message reply, Http[] holder, Friendly.Error error) {
         synchronized (reply) {
             reply.streaming = false;
             if (holder[0] != null && holder[0].isCancelled()) reply.stopped = true;
-            if (error != null) reply.error = error;
+            if (error != null) {
+                reply.error = error.message;
+                reply.errorDetail = error.detail;
+            }
         }
         store.save(conv);
         if (streaming == reply) {

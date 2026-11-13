@@ -59,6 +59,13 @@ public final class Models {
         pricingListeners.remove(r);
     }
 
+    /** Tests: install a catalog and image parameters without the network. */
+    public static synchronized void setForTest(List<OrModel> list, Map<String, ImageParams> params) {
+        models = Collections.unmodifiableList(list);
+        imageParams = params != null ? params : new HashMap<String, ImageParams>();
+        fetched = System.currentTimeMillis();
+    }
+
     public static synchronized OrModel find(String id) {
         return Catalog.find(models, id);
     }
@@ -272,7 +279,7 @@ public final class Models {
                     sp.put("resolution", new org.json.JSONObject().put("type", "enum")
                             .put("values", new org.json.JSONArray(p.resolutions)));
                 }
-                if (p.maxReferences > 0) {
+                if (p.listsReferences) {
                     sp.put("input_references", new org.json.JSONObject().put("type", "range")
                             .put("min", 0).put("max", p.maxReferences));
                 }
