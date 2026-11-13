@@ -204,6 +204,24 @@ public final class CodePage extends Page {
 
     /** Settings changed: rebuild the client and reconnect. */
     public void configChanged() {
+        configChanged(false);
+    }
+
+    /**
+     * Re-reads the URL, username, password and project from Settings, then connects (reporting
+     * the result in a dialog if asked). Builds the page first if it hasn't been shown yet.
+     */
+    public void reconnect(boolean report) {
+        if (transcriptBox == null) view();
+        configChanged(report);
+    }
+
+    /** What's missing from the backend settings, or null. */
+    String configError() {
+        return configError;
+    }
+
+    private void configChanged(boolean report) {
         stopEvents();
         client = null;
         configError = null;
@@ -225,8 +243,9 @@ public final class CodePage extends Page {
         refreshChrome();
         if (client == null) {
             showSetup();
+            if (report) Sheet.alert(a, "OpenCode backend", configError != null ? configError : "Not configured");
         } else {
-            testConnection(false);
+            testConnection(report);
         }
     }
 

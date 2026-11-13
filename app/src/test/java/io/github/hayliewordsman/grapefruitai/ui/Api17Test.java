@@ -98,6 +98,41 @@ public class Api17Test {
         c.pause().stop().destroy();
     }
 
+    /** Regression: the password saved after the Code tab was opened must be used by Test connection. */
+    @Test
+    public void passwordSavedLaterIsUsed() throws Exception {
+        Secrets.clearAll();
+        Prefs.put(Prefs.OC_URL, "https://opencode.invalid");
+        ActivityController<MainActivity> c = Robolectric.buildActivity(MainActivity.class).setup();
+        MainActivity a = c.get();
+        a.showTab(MainActivity.TAB_CODE);
+        CodePage code = (CodePage) a.page(MainActivity.TAB_CODE);
+        assertTrue(code.configError(), code.configError().contains("password"));
+        a.showTab(MainActivity.TAB_SETTINGS);
+        Secrets.put(Secrets.OPENCODE_PASSWORD, "secret");
+        a.secretsChanged();
+        assertNull(code.configError());
+        code.reconnect(true);
+        assertNull(code.configError());
+        Secrets.clearAll();
+        c.pause().stop().destroy();
+    }
+
+    /** Test connection from Settings before the Code tab was ever opened. */
+    @Test
+    public void testConnectionBeforeCodeTabWasShown() throws Exception {
+        Prefs.put(Prefs.OC_URL, "https://opencode.invalid");
+        Secrets.put(Secrets.OPENCODE_PASSWORD, "secret");
+        ActivityController<MainActivity> c = Robolectric.buildActivity(MainActivity.class).setup();
+        MainActivity a = c.get();
+        a.showTab(MainActivity.TAB_SETTINGS);
+        CodePage code = (CodePage) a.page(MainActivity.TAB_CODE);
+        code.reconnect(true);
+        assertNull(code.configError());
+        Secrets.clearAll();
+        c.pause().stop().destroy();
+    }
+
     @Test
     public void markdownCodeBlocksHaveCopy() {
         ActivityController<MainActivity> c = Robolectric.buildActivity(MainActivity.class).setup();

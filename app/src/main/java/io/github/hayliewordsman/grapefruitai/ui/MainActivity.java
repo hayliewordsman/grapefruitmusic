@@ -205,6 +205,11 @@ public final class MainActivity extends Activity {
         Saver.onPermissionResult(this, request, results);
     }
 
+    /** The server password changed (set, unlocked or cleared): the Code tab reconnects with it. */
+    public void secretsChanged() {
+        ((CodePage) pages[TAB_CODE]).configChanged();
+    }
+
     /** Applies a new theme: everything is rebuilt in its colours. */
     public void applyTheme(int id) {
         prefs.edit().putInt(Prefs.THEME, id).commit();

@@ -186,7 +186,7 @@ public final class SettingsPage extends Page {
         g.action("Test connection", false, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((CodePage) a.page(MainActivity.TAB_CODE)).testConnection(true);
+                ((CodePage) a.page(MainActivity.TAB_CODE)).reconnect(true);
             }
         });
         g.footer("Agent runs use the provider keys configured on the OpenCode server, billed to the server's "
@@ -209,6 +209,7 @@ public final class SettingsPage extends Page {
                     @Override
                     public void run() {
                         Secrets.clearAll();
+                        a.secretsChanged();
                         fill();
                     }
                 });
@@ -264,6 +265,7 @@ public final class SettingsPage extends Page {
                         try {
                             Secrets.put(name, v);
                             Ui.toast(a, Secrets.mode() == Secrets.SESSION ? "Kept for this session" : "Saved, encrypted");
+                            if (Secrets.OPENCODE_PASSWORD.equals(name)) a.secretsChanged();
                         } catch (Exception e) {
                             Ui.toast(a, "Couldn't save: " + e.getMessage());
                         }
@@ -402,6 +404,7 @@ public final class SettingsPage extends Page {
                                     @Override
                                     public void run() {
                                         Ui.toast(a, err != null ? err : "Unlocked");
+                                        if (err == null && a instanceof MainActivity) ((MainActivity) a).secretsChanged();
                                         if (err == null && then != null) then.run();
                                     }
                                 });
