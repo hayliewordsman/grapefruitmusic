@@ -14,6 +14,7 @@ described here; nothing else is claimed to work.
 | AES-256-CBC + HMAC-SHA256 round trip, tamper and wrong-key detection, PBKDF2 | `CryptoTest` |
 | HTTPS-only URL policy, refusal of plain HTTP and URL credentials, readable HTTP errors | `HttpTest`, `Api17Test` |
 | Model catalog parsing, prices in USD per M tokens, "not listed"/"variable" (never invented), Chat/Coding/Image filters, search, sorting | `OrModelTest`, `CatalogTest`, `FormatTest`, against a sample of OpenRouter's **live** `/api/v1/models?output_modalities=all` and `/api/v1/images/models` responses (fetched 2026-11-12) |
+| Image prices in real units (per image, per megapixel, per M image tokens, per request; resolution variants; several providers), the model-page fallback for models the Images API doesn't price (Meta Muse Image: `$0.01/image`), and no "Input: Free / Output: Free" for image-only models | `ImagePricingTest`, against live Images API responses and the openrouter.ai/meta/muse-image page (2026-11-13); also checked by hand against all 66 live Images API models |
 | Streaming chunk handling: text, reasoning, `url_citation` annotations, usage/cost, mid-stream errors | `ChatChunkTest`, `SseTest` (OpenRouter's documented SSE format) |
 | Markdown: headings, lists, quotes, rules, tables, fenced code (also unclosed while streaming); code blocks have Copy | `MarkdownTest`, `Api17Test` |
 | OpenCode event handling: message/part updates and deltas, session status, permissions asked/replied, other sessions ignored, token and cost totals | `TranscriptTest`, with event shapes from the `@opencode-ai/sdk` 1.19.5 OpenAPI types |
@@ -40,6 +41,9 @@ or OpenCode server was available while building:
   (the helper is the one the other Grapefruit apps use on 4.2.2).
 
 ## Known limitations
+
+- The model-page price fallback reads OpenRouter's public web page, which has no documented format;
+  if the page changes, those models fall back to their listed token rate or "not listed".
 
 - **No per-user key for OpenCode agents.** OpenCode's server API takes no API key per request, so
   agent runs are billed to the provider credentials on the server. The app tells you this and never

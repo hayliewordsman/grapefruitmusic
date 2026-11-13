@@ -71,6 +71,29 @@ public final class OpenRouter {
         return out;
     }
 
+    private static final java.util.regex.Pattern MODEL_ID =
+            java.util.regex.Pattern.compile("[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*", java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    /** An OpenRouter model ID safe to put in a URL path ("author/slug"). */
+    public static boolean validModelId(String id) {
+        return id != null && MODEL_ID.matcher(id).matches();
+    }
+
+    /** GET /images/models/{id}/endpoints: each provider's prices with their units. */
+    public static String fetchImageEndpointsJson(String id) throws IOException {
+        if (!validModelId(id)) throw new IOException("Unexpected model ID");
+        return new OpenRouter(null).request("GET", "/images/models/" + id + "/endpoints").text();
+    }
+
+    /**
+     * The model's page on openrouter.ai, read only for its schema.org price data when the
+     * Images API lists no prices for the model.
+     */
+    public static String fetchModelPage(String id) throws IOException {
+        if (!validModelId(id)) throw new IOException("Unexpected model ID");
+        return new Http("GET", "https://openrouter.ai/" + id).header("Accept", "text/html").text();
+    }
+
     /** GET /key: label, usage and limit of the user's key. */
     public JSONObject keyInfo() throws IOException {
         try {

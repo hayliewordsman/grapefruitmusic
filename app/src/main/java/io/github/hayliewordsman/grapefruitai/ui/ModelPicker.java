@@ -216,6 +216,20 @@ public final class ModelPicker {
             }
         });
 
+        // Image prices arrive after the model list: redraw the rows when they do.
+        final Runnable pricesArrived = new Runnable() {
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        };
+        Models.addPricingListener(pricesArrived);
+        dialog.setOnDismissListener(new android.content.DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(android.content.DialogInterface d) {
+                Models.removePricingListener(pricesArrived);
+            }
+        });
         dialog.setContentView(root);
         Window w = dialog.getWindow();
         if (w != null) {
@@ -267,12 +281,12 @@ public final class ModelPicker {
         name.setText(m.name);
         name.setTextColor(chosen ? p.accent : p.text);
         summary.setText(Format.modelSummary(m));
-        prices.setText(Format.modelPrices(m));
+        prices.setText(Format.modelPrices(m, Models.pricing(m.id)));
         row.setContentDescription(m.name + (chosen ? ", chosen" : ""));
         return row;
     }
 
     public static void details(Context c, OrModel m) {
-        new Sheet(c, m.name).message(Format.modelDetails(m)).button("Close", true, null).show();
+        new Sheet(c, m.name).message(Format.modelDetails(m, Models.pricing(m.id))).button("Close", true, null).show();
     }
 }

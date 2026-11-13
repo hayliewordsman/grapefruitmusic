@@ -28,6 +28,7 @@ import io.github.hayliewordsman.grapefruitai.chat.Store;
 import io.github.hayliewordsman.grapefruitai.net.Http;
 import io.github.hayliewordsman.grapefruitai.or.Catalog;
 import io.github.hayliewordsman.grapefruitai.or.ImageParams;
+import io.github.hayliewordsman.grapefruitai.or.ImagePricing;
 import io.github.hayliewordsman.grapefruitai.or.Models;
 import io.github.hayliewordsman.grapefruitai.or.OpenRouter;
 import io.github.hayliewordsman.grapefruitai.or.OrModel;
@@ -167,6 +168,7 @@ public final class ImagePage extends Page implements MessageView.Actions {
                 refreshOptions();
             }
         });
+        Models.addPricingListener(pricesArrived);
         refreshOptions();
         return root;
     }
@@ -211,23 +213,23 @@ public final class ImagePage extends Page implements MessageView.Actions {
         if (m == null) {
             cost.append(Models.all().isEmpty() ? "Loading OpenRouter's model list…" : "Model not in OpenRouter's list.");
         } else {
-            cost.append("Listed prices (US dollars): ");
-            List<String> parts = new ArrayList<String>();
-            if (m.priceImageOutput != null) parts.add("output image tokens " + Format.perMillion(m.priceImageOutput));
-            if (m.priceImageToken != null && !m.priceImageToken.equals(m.priceImageOutput)) {
-                parts.add("image tokens " + Format.perMillion(m.priceImageToken));
+            ImagePricing pricing = Models.pricing(m.id);
+            cost.append("Image generation: ").append(Format.imageGeneration(m, pricing));
+            if (pricing != null) {
+                for (String line : pricing.lines()) {
+                    if (!line.startsWith("Image generation")) cost.append("\n").append(line);
+                }
             }
-            if (m.priceImage != null) parts.add("input images " + Format.perUnit(m.priceImage, "unit"));
-            if (OrModel.value(m.pricePrompt) != null && OrModel.value(m.pricePrompt).signum() > 0) {
-                parts.add("prompt " + Format.perMillion(m.pricePrompt));
+            if (!m.outputsText() && OrModel.value(m.pricePrompt) != null && OrModel.value(m.pricePrompt).signum() > 0
+                    && (pricing == null || !pricing.lines().toString().contains("Prompt text"))) {
+                cost.append("\nPrompt text: ").append(Format.perMillion(m.pricePrompt));
             }
-            if (OrModel.value(m.priceCompletion) != null && OrModel.value(m.priceCompletion).signum() > 0) {
-                parts.add("text out " + Format.perMillion(m.priceCompletion));
+            cost.append("\nPrices in US dollars");
+            if (pricing != null && ImagePricing.MODEL_PAGE.equals(pricing.source)) {
+                cost.append(", from the model's openrouter.ai page (OpenRouter's API doesn't list them)");
             }
-            if (m.priceRequest != null) parts.add("per request " + Format.perUnit(m.priceRequest, "request"));
-            cost.append(parts.isEmpty() ? "none listed" : Format.join(parts, " · "));
-            cost.append(". The cost of an image depends on its size; the actual charge OpenRouter reports appears "
-                    + "under each image. Failed generations are not billed by the Image API.");
+            cost.append(". The actual charge OpenRouter reports appears under each image; failed generations "
+                    + "are not billed by the Images API.");
         }
         costLine.setText(cost.toString());
     }
@@ -503,5 +505,13 @@ public final class ImagePage extends Page implements MessageView.Actions {
     @Override
     public void onDestroy() {
         cancel();
+        Models.removePricingListener(pricesArrived);
     }
+
+    private final Runnable pricesArrived = new Runnable() {
+        @Override
+        public void run() {
+            refreshOptions();
+        }
+    };
 }

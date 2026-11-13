@@ -30,6 +30,10 @@ public final class Models {
     private static boolean loading;
     private static String lastError;
     private static final List<Listener> waiting = new ArrayList<Listener>();
+    /** Image prices in their real units, by model ID (Images API, or the model page). */
+    private static Map<String, ImagePricing> pricing = new HashMap<String, ImagePricing>();
+    private static boolean pricingLoading;
+    private static final List<Runnable> pricingListeners = new ArrayList<Runnable>();
 
     private Models() {
     }
@@ -40,6 +44,19 @@ public final class Models {
 
     public static synchronized ImageParams imageParams(String id) {
         return imageParams.get(id);
+    }
+
+    public static synchronized ImagePricing pricing(String id) {
+        return pricing.get(id);
+    }
+
+    /** Called on the main thread whenever image prices arrive. */
+    public static synchronized void addPricingListener(Runnable r) {
+        if (!pricingListeners.contains(r)) pricingListeners.add(r);
+    }
+
+    public static synchronized void removePricingListener(Runnable r) {
+        pricingListeners.remove(r);
     }
 
     public static synchronized OrModel find(String id) {
@@ -68,7 +85,10 @@ public final class Models {
                 });
             }
             boolean fresh = System.currentTimeMillis() - fetched < MAX_AGE;
-            if (fresh && !force && !models.isEmpty()) return;
+            if (fresh && !force && !models.isEmpty()) {
+                if (pricing.isEmpty()) loadPricing(c, models);
+                return;
+            }
             if (listener != null) waiting.add(listener);
             if (loading) return;
             loading = true;
@@ -114,8 +134,68 @@ public final class Models {
                         for (Listener l : done) l.onModels(result, err);
                     }
                 });
+                if (error == null) loadPricing(c, result);
             }
         });
+    }
+
+    /**
+     * Fetches each Images API model's prices (one small request per model, one at a time so an
+     * old tablet isn't swamped), falling back to the model page's published price when the API
+     * lists none. Runs in the background; listeners hear when it's done.
+     */
+    static void loadPricing(final Context c, final List<OrModel> list) {
+        synchronized (Models.class) {
+            if (pricingLoading) return;
+            pricingLoading = true;
+        }
+        Bg.run(new Runnable() {
+            @Override
+            public void run() {
+                Map<String, ImagePricing> found = new HashMap<String, ImagePricing>();
+                for (OrModel m : list) {
+                    if (!m.isImage() || !m.servesImageApi()) continue;
+                    ImagePricing p = null;
+                    try {
+                        p = ImagePricing.fromEndpoints(OpenRouter.fetchImageEndpointsJson(m.id));
+                    } catch (Exception ignored) {
+                        // Try the page below.
+                    }
+                    if (p == null || p.isEmpty()) {
+                        try {
+                            ImagePricing page = ImagePricing.fromModelPage(m.id, OpenRouter.fetchModelPage(m.id));
+                            if (!page.isEmpty()) p = page;
+                        } catch (Exception ignored) {
+                            // Not listed anywhere we can read: shown as not listed.
+                        }
+                    }
+                    if (p != null && !p.isEmpty()) found.put(m.id, p);
+                }
+                final List<Runnable> notify;
+                synchronized (Models.class) {
+                    pricingLoading = false;
+                    if (!found.isEmpty()) pricing = found;
+                    notify = new ArrayList<Runnable>(pricingListeners);
+                }
+                if (!found.isEmpty()) writePricing(c, found);
+                Bg.ui(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (Runnable r : notify) r.run();
+                    }
+                });
+            }
+        });
+    }
+
+    private static void writePricing(Context c, Map<String, ImagePricing> map) {
+        try {
+            org.json.JSONArray a = new org.json.JSONArray();
+            for (ImagePricing p : map.values()) a.put(p.toJson());
+            write(new File(c.getCacheDir(), "image-pricing.json"), new org.json.JSONObject().put("data", a).toString());
+        } catch (Exception ignored) {
+            // Cache is optional.
+        }
     }
 
     private static void readCache(Context c) {
@@ -133,6 +213,16 @@ public final class Models {
                     m.put(p.id, p);
                 }
                 imageParams = m;
+            }
+            File pr = new File(c.getCacheDir(), "image-pricing.json");
+            if (pr.exists()) {
+                org.json.JSONArray data = new org.json.JSONObject(read(pr)).getJSONArray("data");
+                Map<String, ImagePricing> m = new HashMap<String, ImagePricing>();
+                for (int i = 0; i < data.length(); i++) {
+                    ImagePricing p = ImagePricing.fromJson(data.getJSONObject(i));
+                    if (!p.isEmpty()) m.put(p.modelId, p);
+                }
+                pricing = m;
             }
         } catch (Exception ignored) {
             // A damaged cache is refetched.

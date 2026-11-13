@@ -32,7 +32,7 @@ public class OrModelTest {
 
     @Test
     public void parsesEveryModel() {
-        assertEquals(10, models.size());
+        assertEquals(11, models.size());
     }
 
     @Test
@@ -106,7 +106,8 @@ public class OrModelTest {
     public void detailsAreLabelledUsd() {
         String d = Format.modelDetails(get("openai/gpt-image-1"));
         assertTrue(d, d.contains("US dollars"));
-        assertTrue(d, d.contains("Output image tokens: $40.00 / M tokens"));
+        assertTrue(d, d.contains("Image generation: $40.00 / M image tokens"));
+        assertTrue(d, d.contains("Prompt text: $10.00 / M tokens"));
         assertTrue(d, d.contains("actual charge"));
     }
 

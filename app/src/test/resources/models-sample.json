@@ -726,6 +726,56 @@
     ],
     "default_effort": "low"
    }
+  },
+  {
+   "id": "meta/muse-image",
+   "canonical_slug": "meta/muse-image-1.0-eval-20260824",
+   "hugging_face_id": null,
+   "name": "Meta: Muse Image",
+   "created": 1787764532,
+   "description": "Muse Image is an agentic image generation model from Meta that generates and edits images from text and reference images. Unlike single-pass image models, it reasons before it renders, breaking...",
+   "context_length": 65536,
+   "architecture": {
+    "modality": "text+image->image",
+    "input_modalities": [
+     "text",
+     "image"
+    ],
+    "output_modalities": [
+     "image"
+    ],
+    "tokenizer": "Other",
+    "instruct_type": null
+   },
+   "pricing": {
+    "prompt": "0",
+    "completion": "0",
+    "image_token": "0.00000239520958083832",
+    "image_output": "0.00000239520958083832"
+   },
+   "top_provider": {
+    "context_length": 65536,
+    "max_completion_tokens": 58982,
+    "is_moderated": true
+   },
+   "per_request_limits": null,
+   "supported_parameters": [
+    "max_tokens",
+    "repetition_penalty",
+    "temperature",
+    "top_k",
+    "top_p"
+   ],
+   "default_parameters": {},
+   "supported_voices": null,
+   "knowledge_cutoff": null,
+   "expiration_date": null,
+   "links": {
+    "details": "/api/v1/models/meta/muse-image-1.0-eval-20260824/endpoints"
+   },
+   "endpoints": [
+    "/api/v1/images"
+   ]
   }
  ]
 }

@@ -22,10 +22,25 @@ coding agent running on your own server.
 The model picker lists OpenRouter's whole live catalog (`GET /api/v1/models?output_modalities=all`)
 with search, Chat/Coding/Image filters, capability filters (tools, vision, files, reasoning, free)
 and sorting by name, provider, input price, output price, context window and age. Each model shows
-its provider, context window, input/output modalities, tool calling and prices in **US dollars**
-per million tokens (plus per-image, per-request and web-search charges where OpenRouter lists
-them). A price OpenRouter doesn't list is shown as "not listed", never estimated. Touch and hold a
-model for every listed price.
+its provider, context window, input/output modalities, tool calling and prices in **US dollars**,
+each in its real unit:
+
+- **Text models:** per million input and output tokens, plus per-request and web-search charges
+  where OpenRouter lists them.
+- **Image models:** the generation price from OpenRouter's Images API
+  (`GET /api/v1/images/models/{id}/endpoints`): per image (`Image generation: $0.01/image`), per
+  megapixel (`$0.03/megapixel`) or per million image tokens, with resolution and quality variants,
+  input/reference image prices and per-request surcharges. Text token prices are only shown for
+  image models that produce text or actually charge for prompt text, so image-only models don't show
+  a misleading "Input: Free / Output: Free".
+- If the Images API lists no prices for a model (on 2026-11-13 that was only `meta/muse-image`),
+  the app reads the price OpenRouter publishes in that model's openrouter.ai page (its schema.org
+  price data) and says so. If neither has one, it shows OpenRouter's listed image token rate, or
+  "not listed".
+
+A price OpenRouter doesn't list is never estimated. Touch and hold a model for every listed price.
+Image prices are fetched in the background after the model list (one small request per image model)
+and cached with it for six hours.
 
 ## Install on Android
 
