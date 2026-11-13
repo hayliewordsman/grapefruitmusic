@@ -1,7 +1,6 @@
 package io.github.hayliewordsman.grapefruitai.ui;
 
 import android.app.Activity;
-import android.util.Base64;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -20,27 +19,33 @@ import io.github.hayliewordsman.grapefruitai.oc.OpenCode;
 import io.github.hayliewordsman.grapefruitai.util.Bg;
 
 /**
- * The OpenCode project's files: browse directories (GET /file), see what changed (GET
- * /file/status), find files and build artifacts (GET /find/file), view text and download files
- * (GET /file/content) to the device.
+ * The OpenCode project's files through the V2 API: browse (GET /api/fs/list), uncommitted changes
+ * (GET /api/vcs/status), files this session changed, find (GET /api/fs/find), and view or
+ * download files (GET /api/fs/read/…).
  */
 final class FileBrowser {
     private FileBrowser() {
     }
 
-    static void show(final Activity a, final OpenCode c, final String path) {
+    static void show(final Activity a, final OpenCode c, final String path, final List<String> sessionChanges) {
         final Sheet s = new Sheet(a, path.length() == 0 ? "Project files" : path);
         final TextView loading = s.row("Loading…", null, false, null);
         if (path.length() > 0) {
-            String parent = path.contains("/") ? path.substring(0, path.lastIndexOf('/')) : "";
-            final String up = parent;
+            final String up = path.contains("/") ? path.substring(0, path.lastIndexOf('/')) : "";
             s.row("Up one level", up.length() == 0 ? "project root" : up, false, new Runnable() {
                 public void run() {
-                    show(a, c, up);
+                    show(a, c, up, sessionChanges);
                 }
             });
         } else {
-            s.row("Changed files", "What the agent (or anyone) changed in the working tree", false, new Runnable() {
+            if (sessionChanges != null && !sessionChanges.isEmpty()) {
+                s.row("Changed in this session", sessionChanges.size() + " files", false, new Runnable() {
+                    public void run() {
+                        sessionChanges(a, c, sessionChanges);
+                    }
+                });
+            }
+            s.row("Uncommitted changes", "The project's working tree (Git)", false, new Runnable() {
                 public void run() {
                     changed(a, c);
                 }
@@ -74,20 +79,19 @@ final class FileBrowser {
                                     boolean dx = "directory".equals(x.optString("type"));
                                     boolean dy = "directory".equals(y.optString("type"));
                                     if (dx != dy) return dx ? -1 : 1;
-                                    return x.optString("name").compareToIgnoreCase(y.optString("name"));
+                                    return name(x.optString("path")).compareToIgnoreCase(name(y.optString("path")));
                                 }
                             });
                             loading.setText(items.isEmpty() ? "Empty" : items.size() + " items");
                             for (final JSONObject f : items) {
                                 final boolean dir = "directory".equals(f.optString("type"));
                                 final String p = f.optString("path");
-                                s.row(f.optString("name") + (dir ? "/" : ""), f.optBoolean("ignored") ? "ignored by git" : null,
-                                        false, new Runnable() {
-                                            public void run() {
-                                                if (dir) show(a, c, p);
-                                                else open(a, c, p);
-                                            }
-                                        });
+                                s.row(name(p) + (dir ? "/" : ""), null, false, new Runnable() {
+                                    public void run() {
+                                        if (dir) show(a, c, p, sessionChanges);
+                                        else open(a, c, p);
+                                    }
+                                });
                             }
                         }
                     });
@@ -102,22 +106,39 @@ final class FileBrowser {
         });
     }
 
+    static String name(String path) {
+        String p = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+        return p.contains("/") ? p.substring(p.lastIndexOf('/') + 1) : p;
+    }
+
+    private static void sessionChanges(final Activity a, final OpenCode c, List<String> files) {
+        Sheet s = new Sheet(a, "Changed in this session");
+        for (final String f : files) {
+            s.row(f, null, false, new Runnable() {
+                public void run() {
+                    open(a, c, f);
+                }
+            });
+        }
+        s.button("Close", true, null).show();
+    }
+
     private static void changed(final Activity a, final OpenCode c) {
         Bg.run(new Runnable() {
             public void run() {
                 try {
-                    final JSONArray list = c.fileStatus();
+                    final JSONArray list = c.vcsStatus();
                     Bg.ui(new Runnable() {
                         public void run() {
-                            Sheet s = new Sheet(a, "Changed files");
-                            if (list.length() == 0) s.message("No changes in the working tree.");
+                            Sheet s = new Sheet(a, "Uncommitted changes");
+                            if (list.length() == 0) s.message("No uncommitted changes.");
                             for (int i = 0; i < list.length(); i++) {
                                 final JSONObject f = list.optJSONObject(i);
                                 if (f == null) continue;
-                                s.row(f.optString("path"), f.optString("status") + " · +" + f.optInt("added") + " / -"
-                                        + f.optInt("removed"), false, new Runnable() {
+                                s.row(f.optString("file"), f.optString("status") + " · +" + f.optInt("additions") + " / -"
+                                        + f.optInt("deletions"), false, new Runnable() {
                                     public void run() {
-                                        if (!"deleted".equals(f.optString("status"))) open(a, c, f.optString("path"));
+                                        if (!"deleted".equals(f.optString("status"))) open(a, c, f.optString("file"));
                                     }
                                 });
                             }
@@ -136,12 +157,14 @@ final class FileBrowser {
             public void run() {
                 try {
                     final List<String> found = new ArrayList<String>();
-                    String[] queries = query.equals(".apk") ? new String[]{".apk", ".aab", ".zip"} : new String[]{query};
+                    boolean artifacts = query.equals(".apk");
+                    String[] queries = artifacts ? new String[]{".apk", ".aab", ".zip"} : new String[]{query};
                     for (String q : queries) {
                         JSONArray list = c.findFiles(q);
                         for (int i = 0; i < list.length(); i++) {
-                            String p = list.optString(i);
-                            if (query.equals(".apk") && !(p.endsWith(".apk") || p.endsWith(".aab") || p.endsWith(".zip"))) continue;
+                            JSONObject e = list.optJSONObject(i);
+                            String p = e != null ? e.optString("path") : list.optString(i);
+                            if (artifacts && !(p.endsWith(".apk") || p.endsWith(".aab") || p.endsWith(".zip"))) continue;
                             if (!found.contains(p)) found.add(p);
                         }
                     }
@@ -152,8 +175,7 @@ final class FileBrowser {
                             for (final String p : found) {
                                 s.row(p, null, false, new Runnable() {
                                     public void run() {
-                                        if (p.endsWith("/")) show(a, c, p.substring(0, p.length() - 1));
-                                        else open(a, c, p);
+                                        open(a, c, p);
                                     }
                                 });
                             }
@@ -167,45 +189,48 @@ final class FileBrowser {
         });
     }
 
+    /** UTF-8 text without NUL bytes in its first 8 KB counts as text. */
+    static boolean looksLikeText(byte[] b) {
+        int n = Math.min(b.length, 8192);
+        for (int i = 0; i < n; i++) if (b[i] == 0) return false;
+        try {
+            java.nio.charset.Charset.forName("UTF-8").newDecoder()
+                    .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                    .decode(java.nio.ByteBuffer.wrap(b, 0, n == b.length ? n : Math.max(0, n - 4)));
+            return true;
+        } catch (java.nio.charset.CharacterCodingException e) {
+            return false;
+        }
+    }
+
     /** Shows a text file (with Copy and Download), or offers to download a binary one. */
     static void open(final Activity a, final OpenCode c, final String path) {
         Ui.toast(a, "Opening " + path);
         Bg.run(new Runnable() {
             public void run() {
                 try {
-                    final JSONObject f = c.readFile(path);
+                    final byte[] bytes = c.readFile(path);
                     Bg.ui(new Runnable() {
                         public void run() {
-                            final String name = path.contains("/") ? path.substring(path.lastIndexOf('/') + 1) : path;
-                            final String content = f.optString("content", "");
-                            final boolean base64 = "base64".equals(f.optString("encoding"))
-                                    || "binary".equals(f.optString("type"));
-                            final String mime = f.optString("mimeType", base64 ? "application/octet-stream" : "text/plain");
+                            final String name = name(path);
+                            final boolean text = looksLikeText(bytes);
+                            final String mime = text ? "text/plain" : Attachments.guessMime(name);
                             Sheet s = new Sheet(a, name);
-                            if (base64) {
-                                s.message("Binary file (" + mime + ").");
+                            if (!text) {
+                                s.message("Binary file, " + io.github.hayliewordsman.grapefruitai.util.Format.bytes(bytes.length) + ".");
                             } else {
-                                String shown = content.length() > 60000 ? content.substring(0, 60000) + "\n… (truncated)" : content;
-                                View code = MdRender.codeBlock(a, shown, mime);
-                                s.view(code);
-                                String diff = f.optString("diff", "");
-                                if (diff.length() > 0) {
-                                    TextView t = Ui.text(a, 14, Ui.p().accent, true);
-                                    t.setText("Uncommitted changes");
-                                    t.setPadding(0, Ui.dp(a, 10), 0, Ui.dp(a, 4));
-                                    s.view(t);
-                                    s.view(MdRender.codeBlock(a, diff, "diff"));
+                                String content;
+                                try {
+                                    content = new String(bytes, "UTF-8");
+                                } catch (java.io.UnsupportedEncodingException e) {
+                                    content = "";
                                 }
+                                String shown = content.length() > 60000 ? content.substring(0, 60000) + "\n… (truncated)" : content;
+                                View code = MdRender.codeBlock(a, shown, name);
+                                s.view(code);
                             }
                             s.button("Download", false, new Runnable() {
                                 public void run() {
-                                    byte[] bytes;
-                                    try {
-                                        bytes = base64 ? Base64.decode(content, Base64.DEFAULT) : content.getBytes("UTF-8");
-                                    } catch (Exception e) {
-                                        Ui.toast(a, "Couldn't decode the file");
-                                        return;
-                                    }
                                     Saver.saveFile(a, bytes, name, mime);
                                 }
                             });

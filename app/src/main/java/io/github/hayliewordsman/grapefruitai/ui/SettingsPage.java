@@ -144,8 +144,8 @@ public final class SettingsPage extends Page {
             @Override
             public void onClick(View v) {
                 editText("OpenCode server URL", "https://agent.example.com", Prefs.OC_URL, InputType.TYPE_CLASS_TEXT
-                        | InputType.TYPE_TEXT_VARIATION_URI, "Must be HTTPS. Put opencode serve behind a TLS reverse "
-                        + "proxy; don't expose its port directly.");
+                        | InputType.TYPE_TEXT_VARIATION_URI, "An OpenCode 2 server (V2 API). Must be HTTPS: the root "
+                        + "URL of your tunnel or TLS reverse proxy, without a path. Don't expose the port directly.");
             }
         });
         g.value("Username", Prefs.str(Prefs.OC_USER, "opencode"), new View.OnClickListener() {

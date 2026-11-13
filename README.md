@@ -17,7 +17,7 @@ coding agent running on your own server.
 | --- | --- |
 | **Chat** (Chat / Research) | Streams replies from the OpenRouter model you pick, renders Markdown with copyable code blocks, takes image/PDF/text attachments when the model accepts them, and keeps conversation history on the device. Web search is a per-app toggle that uses OpenRouter's documented `web` plugin; with it off, the model is told it has no live web access. |
 | **Images** | Generates images with OpenRouter's Image API (`POST /api/v1/images`), or through chat completions for image models only served there. Aspect ratio, resolution and reference images (for editing) appear only when that model lists them in `GET /api/v1/images/models`. Results can be saved as PNG or JPEG. |
-| **Code** (OpenCode Agent) | Connects to `opencode serve` over HTTPS with basic auth: create and resume sessions, choose the server's models (OpenRouter-backed ones first) and agent, send prompts, watch tool calls live, approve or reject permission requests, browse project files and changes, and download files and build artifacts (APKs). Shows token use and cost the server reports. |
+| **Code** (OpenCode Agent) | Connects to an OpenCode 2 server through its V2 API (`/api/…`) over HTTPS with basic auth: create and resume sessions, choose the server's models (OpenRouter-backed ones first) and agent, send prompts, watch tool calls live, approve or reject permission requests, browse project files and changes, and download files and build artifacts (APKs). Shows token use and cost the server reports. |
 
 The model picker lists OpenRouter's whole live catalog (`GET /api/v1/models?output_modalities=all`)
 with search, Chat/Coding/Image filters, capability filters (tools, vision, files, reasoning, free)
@@ -79,8 +79,19 @@ The key is sent only to `openrouter.ai`, never logged, never built into the APK,
 
 ## OpenCode backend
 
-The Code tab drives an OpenCode server you run yourself (for example on a VPS). Nothing about the
-Android build runs on that server: APKs are built on GitHub-hosted runners.
+The Code tab drives an OpenCode server you run yourself (for example on a VPS). It speaks OpenCode's
+**V2 API** (https://opencode.ai/docs/api, every route under `/api`), so it needs **OpenCode 2.x**;
+OpenCode 1.x servers, which only have the old V1 routes, answer 404. Nothing about the Android
+build runs on that server: APKs are built on GitHub-hosted runners.
+
+What the app uses: `GET /api/info` (reachability and version), `GET /api/location` (credentials and
+project), `GET /api/model`, `/api/model/default` and `/api/agent` (model and agent choice),
+`/api/session` (list, create, delete), `POST /api/session/{id}/model` and `/agent` (switch),
+`POST /api/session/{id}/prompt`, `POST /api/session/{id}/interrupt`, `GET /api/session/{id}/message`,
+`GET /api/event` (live events), `GET /api/session/{id}/permission` and
+`POST /api/session/{id}/permission/{requestID}/reply` (`{"decision": "once" | "always" | "reject"}`),
+and `/api/fs/list`, `/api/fs/read/…`, `/api/fs/find`, `/api/vcs/status` for files. The project is
+sent as `location[directory]`.
 
 ### Server
 
@@ -91,7 +102,9 @@ cd /path/to/your/project
 opencode serve --hostname 127.0.0.1 --port 4096
 ```
 
-Put an HTTPS reverse proxy in front of it; the app refuses plain HTTP. With Caddy, for example:
+Reach it over HTTPS: an HTTPS tunnel (OpenTunnel, Cloudflare Tunnel…) pointed at the service, or a
+reverse proxy. The app refuses plain HTTP. Use the tunnel's root URL (e.g. `https://xyz.example.net`)
+as the Server URL, without a path. With Caddy as a reverse proxy, for example:
 
 ```
 agent.example.com {
@@ -121,8 +134,19 @@ commands:
 ### App
 
 **Settings → OpenCode backend**: Server URL (`https://…`), Username (default `opencode`),
-Password (stored like the API key), Project (the server's projects, or a path; sent as OpenCode's
-`directory` parameter), and Protected projects. Then **Test connection**.
+Password (stored like the API key), Project (the server's projects, or an absolute path; sent as
+`location[directory]`), and Protected projects. Then **Test connection**, which checks in order
+and says which step failed:
+
+| Result | Meaning |
+| --- | --- |
+| Backend settings incomplete | No URL, a URL that isn't `https://`, no password, or a locked saved password. |
+| Wrong username or password (HTTP 401) | The server refused the credentials (`OPENCODE_SERVER_USERNAME`/`OPENCODE_SERVER_PASSWORD`). |
+| OpenCode API not found (HTTP 404) | Nothing at `/api/info`: wrong URL (a path after the host?), or not an OpenCode 2 server. |
+| Project directory not found (HTTP 404) | The Project path doesn't exist on the server. |
+| Secure connection failed (TLS) | Untrusted or expired certificate, or a certificate for another name. Checks are never turned off. |
+| Server name not found / Couldn't connect / Timed out | DNS, network, tunnel or service down. The app retries these by itself. |
+| Not an OpenCode server | The answer wasn't OpenCode JSON (for example a tunnel's sign-in page). |
 
 In the Code tab, permission requests appear above the composer with **Reject**, **Allow once**
 and (for routine requests only) **Always**. The app adds its own second confirmation for anything

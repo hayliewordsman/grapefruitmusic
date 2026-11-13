@@ -67,7 +67,8 @@ public final class Risk {
     public static Risk of(JSONObject request, List<String> protectedPaths) {
         List<String> reasons = new ArrayList<String>();
         int level = NORMAL;
-        String permission = request.optString("permission", request.optString("type", ""));
+        // V2 requests name the action ("bash", "edit"…) and its resources; V1 used permission/patterns.
+        String permission = request.optString("action", request.optString("permission", request.optString("type", "")));
         String text = describeText(request);
         String lower = text.toLowerCase(Locale.US);
         for (String[] p : DESTRUCTIVE_PATTERNS) {
@@ -88,7 +89,8 @@ public final class Risk {
             level = Math.max(level, CAUTION);
             reasons.add("Outside the project directory");
         }
-        if (permission.equals("edit") || permission.equals("write") || permission.equals("patch")) {
+        if (permission.equals("edit") || permission.equals("write") || permission.equals("patch")
+                || permission.equals("apply_patch")) {
             level = Math.max(level, CAUTION);
             reasons.add("Edits files");
         }
@@ -107,7 +109,8 @@ public final class Risk {
     /** The request's command, patterns and file paths as one string, for matching and display. */
     public static String describeText(JSONObject request) {
         StringBuilder b = new StringBuilder();
-        JSONArray patterns = request.optJSONArray("patterns");
+        JSONArray patterns = request.optJSONArray("resources");
+        if (patterns == null) patterns = request.optJSONArray("patterns");
         if (patterns == null) {
             Object p = request.opt("pattern");
             if (p instanceof JSONArray) patterns = (JSONArray) p;
@@ -121,6 +124,8 @@ public final class Risk {
                 if (v.length() > 0) b.append(v).append('\n');
             }
         }
+        String message = request.optString("message", "");
+        if (message.length() > 0) b.append(message).append('\n');
         String title = request.optString("title", "");
         if (title.length() > 0) b.append(title).append('\n');
         return b.toString().trim();

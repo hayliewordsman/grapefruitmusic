@@ -26,6 +26,7 @@ import java.util.Map;
 import io.github.hayliewordsman.grapefruitai.md.MdRender;
 import io.github.hayliewordsman.grapefruitai.net.Http;
 import io.github.hayliewordsman.grapefruitai.net.HttpException;
+import io.github.hayliewordsman.grapefruitai.oc.ConnectionCheck;
 import io.github.hayliewordsman.grapefruitai.oc.OpenCode;
 import io.github.hayliewordsman.grapefruitai.oc.Risk;
 import io.github.hayliewordsman.grapefruitai.oc.Transcript;
@@ -62,8 +63,13 @@ public final class CodePage extends Page {
     private ScrollView scroll;
     private EditText input;
     private IconView send;
-    private JSONObject providers;
+    /** Models the server can use (Model.Info), and its default. */
+    private JSONArray models;
+    private JSONObject defaultModel;
     private JSONArray agentsList;
+    /** The open session's own model and agent, as the server reports them. */
+    private String sessionModel;
+    private String sessionAgent;
     private String agent = "build";
     private Transcript transcript;
     private String version;
@@ -91,7 +97,7 @@ public final class CodePage extends Page {
         files.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ready()) FileBrowser.show(a, client, "");
+                if (ready()) FileBrowser.show(a, client, "", transcript != null ? transcript.changedFiles() : null);
             }
         });
         header.addView(files);
@@ -228,9 +234,13 @@ public final class CodePage extends Page {
         connected = false;
         String url = Prefs.str(Prefs.OC_URL, "");
         if (url.length() == 0) {
-            configError = "No server set";
+            configError = "Server URL not set";
+        } else if (!url.trim().toLowerCase(java.util.Locale.US).startsWith("https://")) {
+            configError = "Only HTTPS connections are allowed: the server URL must start with https://";
         } else if (Secrets.isLocked()) {
-            configError = "Saved password is locked";
+            configError = "The saved password is locked: unlock it in Settings";
+        } else if (!Secrets.has(Secrets.OPENCODE_PASSWORD)) {
+            configError = "Server password not set (OPENCODE_SERVER_PASSWORD)";
         } else {
             try {
                 client = new OpenCode(url, Prefs.str(Prefs.OC_USER, "opencode"),
@@ -243,7 +253,10 @@ public final class CodePage extends Page {
         refreshChrome();
         if (client == null) {
             showSetup();
-            if (report) Sheet.alert(a, "OpenCode backend", configError != null ? configError : "Not configured");
+            if (report) {
+                ConnectionCheck.Result r = ConnectionCheck.missing(configError != null ? configError : "Not configured");
+                Sheet.alert(a, r.title, r.detail + ". Fill it in under Settings → OpenCode backend.");
+            }
         } else {
             testConnection(report);
         }
@@ -277,7 +290,7 @@ public final class CodePage extends Page {
         TextView body = Ui.body(a, 14, p.secondary);
         body.setText((configError != null ? configError + ".\n\n" : "")
                 + "Coding mode drives an OpenCode agent running on your own server (`opencode serve`). The app "
-                + "needs:\n• an HTTPS URL (a TLS reverse proxy in front of opencode serve)\n• the server password "
+                + "needs:\n• OpenCode 2 (V2 API) at an HTTPS URL (a tunnel or TLS reverse proxy)\n• the server password "
                 + "(OPENCODE_SERVER_PASSWORD) and username\n• optionally, the project directory on the server\n\n"
                 + "The agent uses the provider keys configured on the server. Your OpenRouter key in this app is "
                 + "not sent to the server.");
@@ -296,7 +309,10 @@ public final class CodePage extends Page {
 
     public void testConnection(final boolean report) {
         if (client == null) {
-            if (report) Sheet.alert(a, "OpenCode backend", configError != null ? configError : "Not configured");
+            if (report) {
+                ConnectionCheck.Result r = ConnectionCheck.missing(configError != null ? configError : "Not configured");
+                Sheet.alert(a, r.title, r.detail);
+            }
             return;
         }
         final OpenCode c = client;
@@ -304,45 +320,34 @@ public final class CodePage extends Page {
         Bg.run(new Runnable() {
             @Override
             public void run() {
-                String error = null;
-                JSONObject health = null;
-                JSONObject prov = null;
-                JSONArray ag = null;
-                try {
-                    health = c.health();
-                    prov = c.providers();
-                    try {
-                        ag = c.agents();
-                    } catch (IOException ignored) {
-                        // Older servers.
-                    }
-                } catch (IOException e) {
-                    error = describe(e);
-                }
-                final String err = error;
-                final JSONObject h = health, pr = prov;
-                final JSONArray agl = ag;
+                final ConnectionCheck.Result r = ConnectionCheck.run(c);
                 Bg.ui(new Runnable() {
                     @Override
                     public void run() {
                         if (c != client) return;
-                        if (err != null) {
+                        if (!r.ok()) {
                             connected = false;
-                            Ui.setStatus(statusPill, Ui.STATUS_ERROR, "Backend: offline");
-                            if (report) Sheet.alert(a, "Connection failed", err);
-                            else if (transcript == null) showMessage("Couldn't reach the OpenCode server: " + err);
-                            scheduleRetry();
+                            Ui.setStatus(statusPill, Ui.STATUS_ERROR, "Backend: " + shortLabel(r.kind));
+                            if (report) Sheet.alert(a, r.title, r.detail);
+                            else if (transcript == null) showMessage(r.title + "\n\n" + r.detail);
+                            // Retry by itself only where waiting can help.
+                            if (r.kind == ConnectionCheck.Kind.NETWORK || r.kind == ConnectionCheck.Kind.SERVER_ERROR) {
+                                scheduleRetry();
+                            }
                             return;
                         }
                         connected = true;
-                        version = h.optString("version", "");
-                        providers = pr;
-                        agentsList = agl;
+                        version = r.version;
+                        models = r.models;
+                        defaultModel = r.defaultModel;
+                        agentsList = r.agents;
                         Ui.setStatus(statusPill, Ui.STATUS_OK, "Backend: connected" + (version.length() > 0 ? " " + version : ""));
                         refreshChrome();
                         if (report) {
                             Sheet.alert(a, "Connected", "OpenCode " + version + " at " + Prefs.str(Prefs.OC_URL, "")
-                                    + "\nProviders configured on the server: " + providerNames());
+                                    + "\nProject: " + r.project
+                                    + "\nModels available: " + (models != null ? models.length() : 0)
+                                    + " (providers: " + providerNames() + ")");
                         }
                         startEvents();
                         if (transcript == null) openLatestSession();
@@ -351,6 +356,19 @@ public final class CodePage extends Page {
                 });
             }
         });
+    }
+
+    static String shortLabel(ConnectionCheck.Kind k) {
+        switch (k) {
+            case MISSING_SETTINGS: return "not set up";
+            case UNAUTHORIZED: return "wrong password";
+            case NOT_FOUND: return "API not found";
+            case PROJECT_NOT_FOUND: return "project not found";
+            case TLS: return "TLS error";
+            case NOT_OPENCODE: return "not OpenCode";
+            case SERVER_ERROR: return "server error";
+            default: return "offline";
+        }
     }
 
     private boolean retryScheduled;
@@ -368,17 +386,19 @@ public final class CodePage extends Page {
     }
 
     static String describe(IOException e) {
-        if (e instanceof HttpException && ((HttpException) e).code == 401) {
-            return "The server refused the username or password (HTTP 401).";
-        }
-        return ChatPage.describe(e);
+        ConnectionCheck.Result r = ConnectionCheck.classify(e, "the server", Prefs.str(Prefs.OC_DIRECTORY, ""));
+        if (e instanceof HttpException && r.kind == ConnectionCheck.Kind.SERVER_ERROR) return e.getMessage();
+        return r.title + ". " + r.detail;
     }
 
     private String providerNames() {
-        if (providers == null) return "unknown";
-        JSONArray list = providers.optJSONArray("providers");
+        if (models == null) return "unknown";
         List<String> names = new ArrayList<String>();
-        for (int i = 0; list != null && i < list.length(); i++) names.add(list.optJSONObject(i).optString("id"));
+        for (int i = 0; i < models.length(); i++) {
+            JSONObject m = models.optJSONObject(i);
+            String pid = m != null ? m.optString("providerID") : "";
+            if (pid.length() > 0 && !names.contains(pid)) names.add(pid);
+        }
         return names.isEmpty() ? "none" : Format.join(names, ", ");
     }
 
@@ -470,16 +490,22 @@ public final class CodePage extends Page {
             return;
         }
         if (transcript != null && transcript.apply(type, props)) {
-            if ("session.error".equals(type) && transcript.lastError != null) {
+            if (("session.execution.failed".equals(type) || "session.execution.interrupted".equals(type))
+                    && transcript.lastError != null) {
                 Ui.toast(a, transcript.lastError);
+            }
+            if ("session.renamed".equals(type)) sessionTitle.setText(transcript.title);
+            if ("session.execution.succeeded".equals(type) || "session.idle".equals(type)) {
+                // The projection holds the final versions of streamed text: fetch it once a turn ends.
+                reload();
+                return;
             }
             queueRefresh();
         }
-        if ("session.updated".equals(type) && transcript != null) {
-            JSONObject info = props.optJSONObject("info");
-            if (info != null && transcript.sessionId.equals(info.optString("id"))) {
-                sessionTitle.setText(info.optString("title", ""));
-            }
+        if ("session.deleted".equals(type) && transcript != null && transcript.sessionId.equals(props.optString("sessionID"))) {
+            transcript = null;
+            showMessage("This session was deleted on the server.");
+            refreshChrome();
         }
     }
 
@@ -548,7 +574,8 @@ public final class CodePage extends Page {
                             if (sorted.isEmpty()) s.message("No sessions on the server for this project.");
                             DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
                             for (final JSONObject o : sorted) {
-                                String detail = df.format(new Date(updated(o))) + " · " + o.optString("directory", "");
+                                JSONObject loc = o.optJSONObject("location");
+                                String detail = df.format(new Date(updated(o))) + " · " + (loc != null ? loc.optString("directory", "") : "");
                                 s.row(o.optString("title", o.optString("id")), detail,
                                         transcript != null && transcript.sessionId.equals(o.optString("id")),
                                         new Runnable() {
@@ -613,6 +640,10 @@ public final class CodePage extends Page {
 
     private void open(JSONObject session) {
         transcript = new Transcript(session.optString("id"));
+        transcript.setSession(session);
+        JSONObject m = session.optJSONObject("model");
+        sessionModel = m != null ? m.optString("providerID") + "/" + m.optString("id") : null;
+        sessionAgent = session.has("agent") ? session.optString("agent") : null;
         partViews.clear();
         transcriptBox.removeAllViews();
         sessionTitle.setText(session.optString("title", ""));
@@ -628,7 +659,8 @@ public final class CodePage extends Page {
             @Override
             public void run() {
                 try {
-                    final JSONObject s = c.createSession(null);
+                    final String[] m = model();
+                    final JSONObject s = c.createSession(agent, m != null ? m[0] : null, m != null ? m[1] : null);
                     Bg.ui(new Runnable() {
                         public void run() {
                             open(s);
@@ -656,26 +688,19 @@ public final class CodePage extends Page {
             public void run() {
                 try {
                     JSONArray messages = c.messages(t.sessionId);
-                    JSONArray pending = null;
+                    JSONArray pending = c.permissions(t.sessionId);
+                    JSONObject info = null;
+                    JSONObject active = null;
                     try {
-                        pending = c.pendingPermissions();
+                        info = c.session(t.sessionId);
+                        active = c.activeSessions();
                     } catch (IOException ignored) {
-                        // Older servers: permissions arrive as events only.
-                    }
-                    JSONObject statuses = null;
-                    try {
-                        statuses = c.sessionStatus();
-                    } catch (IOException ignored) {
-                        // Optional.
+                        // Optional extras.
                     }
                     t.load(messages);
-                    if (pending != null) t.setPermissions(pending);
-                    if (statuses != null && statuses.optJSONObject(t.sessionId) != null) {
-                        t.apply("session.status", new JSONObject().put("sessionID", t.sessionId)
-                                .put("status", statuses.optJSONObject(t.sessionId)));
-                    } else if (statuses != null) {
-                        t.status = "idle";
-                    }
+                    t.setPermissions(pending);
+                    t.setSession(info);
+                    if (active != null) t.setBusy(active.optJSONObject(t.sessionId) != null);
                     Bg.ui(new Runnable() {
                         public void run() {
                             if (t == transcript) {
@@ -708,76 +733,98 @@ public final class CodePage extends Page {
 
     private void pickModel() {
         if (!ready()) return;
-        if (providers == null) {
+        if (models == null) {
             Ui.toast(a, "Not connected yet");
             return;
         }
         Sheet s = new Sheet(a, "Agent model");
-        s.message("Models the OpenCode server has configured. OpenRouter-backed models are listed first. Prices "
-                + "are as the server reports them (USD per million tokens), billed to the server's provider account.");
+        s.message("Models the OpenCode server can use (GET /api/model). OpenRouter-backed models are listed first. "
+                + "Prices are as the server reports them (USD per million tokens), billed to the server's provider "
+                + "account.");
         String[] current = model();
-        s.row("Server default", defaultModels(), current == null, new Runnable() {
+        s.row("Server default", defaultModelName(), current == null, new Runnable() {
             public void run() {
-                Prefs.put(Prefs.OC_MODEL, "");
-                refreshChrome();
+                chooseModel(null);
             }
         });
-        JSONArray list = providers.optJSONArray("providers");
         List<JSONObject> ordered = new ArrayList<JSONObject>();
-        for (int i = 0; list != null && i < list.length(); i++) {
-            JSONObject pr = list.optJSONObject(i);
-            if (pr == null) continue;
-            if ("openrouter".equals(pr.optString("id"))) ordered.add(0, pr);
-            else ordered.add(pr);
-        }
-        if (ordered.isEmpty() || !"openrouter".equals(ordered.get(0).optString("id"))) {
-            s.message("No OpenRouter provider is configured on this server. Configure it on the server (for "
-                    + "example `opencode auth login` with an OpenRouter key) to use OpenRouter models here.");
-        }
-        for (JSONObject pr : ordered) {
-            final String pid = pr.optString("id");
-            JSONObject models = pr.optJSONObject("models");
-            if (models == null) continue;
-            Iterator<String> it = models.keys();
-            while (it.hasNext()) {
-                final String mid = it.next();
-                JSONObject m = models.optJSONObject(mid);
-                if (m == null) continue;
-                StringBuilder d = new StringBuilder(pid);
-                JSONObject limit = m.optJSONObject("limit");
-                if (limit != null && limit.optLong("context") > 0) {
-                    d.append(" · ").append(Format.tokens(limit.optLong("context"))).append(" context");
-                }
-                JSONObject cost = m.optJSONObject("cost");
-                if (cost != null && cost.has("input")) {
-                    d.append(" · USD in $").append(cost.optDouble("input")).append(" / out $")
-                            .append(cost.optDouble("output")).append(" per M");
-                }
-                JSONObject caps = m.optJSONObject("capabilities");
-                if (caps != null && caps.optBoolean("toolcall")) d.append(" · tools");
-                else if (m.optBoolean("tool_call", false)) d.append(" · tools");
-                boolean chosen = current != null && current[0].equals(pid) && current[1].equals(mid);
-                s.row(m.optString("name", mid), d.toString(), chosen, new Runnable() {
-                    public void run() {
-                        Prefs.put(Prefs.OC_MODEL, pid + "/" + mid);
-                        refreshChrome();
-                    }
-                });
+        boolean openRouter = false;
+        for (int i = 0; i < models.length(); i++) {
+            JSONObject m = models.optJSONObject(i);
+            if (m == null || !m.optBoolean("enabled", true)) continue;
+            if ("openrouter".equals(m.optString("providerID"))) {
+                ordered.add(0, m);
+                openRouter = true;
+            } else {
+                ordered.add(m);
             }
+        }
+        if (!openRouter) {
+            s.message("No OpenRouter models are available on this server. Connect OpenRouter on the server to use "
+                    + "them here.");
+        }
+        for (JSONObject m : ordered) {
+            final String pid = m.optString("providerID");
+            final String mid = m.optString("id");
+            StringBuilder d = new StringBuilder(pid);
+            JSONObject limit = m.optJSONObject("limit");
+            if (limit != null && limit.optLong("context") > 0) {
+                d.append(" · ").append(Format.tokens(limit.optLong("context"))).append(" context");
+            }
+            JSONArray costs = m.optJSONArray("cost");
+            JSONObject cost = null;
+            for (int i = 0; costs != null && i < costs.length(); i++) {
+                JSONObject c = costs.optJSONObject(i);
+                if (c != null && c.optJSONObject("tier") == null) cost = c;
+            }
+            if (cost != null) {
+                d.append(" · USD in $").append(trim(cost.optDouble("input"))).append(" / out $")
+                        .append(trim(cost.optDouble("output"))).append(" per M tokens");
+            }
+            JSONObject caps = m.optJSONObject("capabilities");
+            if (caps != null && caps.optBoolean("tools")) d.append(" · tools");
+            if ("deprecated".equals(m.optString("status"))) d.append(" · deprecated");
+            boolean chosen = current != null && current[0].equals(pid) && current[1].equals(mid);
+            s.row(m.optString("name", mid), d.toString(), chosen, new Runnable() {
+                public void run() {
+                    chooseModel(new String[]{pid, mid});
+                }
+            });
         }
         s.button("Close", true, null).show();
     }
 
-    private String defaultModels() {
-        JSONObject d = providers != null ? providers.optJSONObject("default") : null;
-        if (d == null || d.length() == 0) return "Whatever the server is configured to use";
-        List<String> parts = new ArrayList<String>();
-        Iterator<String> it = d.keys();
-        while (it.hasNext()) {
-            String k = it.next();
-            parts.add(k + "/" + d.optString(k));
-        }
-        return Format.join(parts, ", ");
+    private static String trim(double v) {
+        return java.math.BigDecimal.valueOf(v).stripTrailingZeros().toPlainString();
+    }
+
+    /** Remembers the model and, if a session is open, switches it there (POST /api/session/{id}/model). */
+    private void chooseModel(final String[] m) {
+        Prefs.put(Prefs.OC_MODEL, m == null ? "" : m[0] + "/" + m[1]);
+        refreshChrome();
+        final Transcript t = transcript;
+        final OpenCode c = client;
+        if (m == null || t == null || c == null) return;
+        Bg.run(new Runnable() {
+            public void run() {
+                try {
+                    c.switchModel(t.sessionId, m[0], m[1]);
+                    sessionModel = m[0] + "/" + m[1];
+                } catch (final IOException e) {
+                    Bg.ui(new Runnable() {
+                        public void run() {
+                            Ui.toast(a, "Couldn't switch the model: " + describe(e));
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private String defaultModelName() {
+        if (defaultModel == null) return "Whatever the server is configured to use";
+        return defaultModel.optString("providerID") + "/" + defaultModel.optString("id")
+                + (defaultModel.has("name") ? " (" + defaultModel.optString("name") + ")" : "");
     }
 
     private void pickAgent() {
@@ -788,7 +835,7 @@ public final class CodePage extends Page {
         for (int i = 0; agentsList != null && i < agentsList.length(); i++) {
             JSONObject o = agentsList.optJSONObject(i);
             if (o == null || o.optBoolean("hidden", false) || "subagent".equals(o.optString("mode"))) continue;
-            names.add(o.optString("name"));
+            names.add(o.optString("id", o.optString("name")));
         }
         if (names.isEmpty()) {
             names.add("build");
@@ -797,12 +844,34 @@ public final class CodePage extends Page {
         for (final String n : names) {
             s.row(n, null, n.equals(agent), new Runnable() {
                 public void run() {
-                    agent = n;
-                    refreshChrome();
+                    chooseAgent(n);
                 }
             });
         }
         s.button("Close", true, null).show();
+    }
+
+    /** Remembers the agent and, if a session is open, switches it (POST /api/session/{id}/agent). */
+    private void chooseAgent(final String name) {
+        agent = name;
+        refreshChrome();
+        final Transcript t = transcript;
+        final OpenCode c = client;
+        if (t == null || c == null || name.equals(sessionAgent)) return;
+        Bg.run(new Runnable() {
+            public void run() {
+                try {
+                    c.switchAgent(t.sessionId, name);
+                    sessionAgent = name;
+                } catch (final IOException e) {
+                    Bg.ui(new Runnable() {
+                        public void run() {
+                            Ui.toast(a, "Couldn't switch the agent: " + describe(e));
+                        }
+                    });
+                }
+            }
+        });
     }
 
     private void refreshChrome() {
@@ -849,8 +918,16 @@ public final class CodePage extends Page {
             @Override
             public void run() {
                 try {
-                    JSONArray parts = new JSONArray().put(new JSONObject().put("type", "text").put("text", text));
-                    c.prompt(t.sessionId, parts, m != null ? m[0] : null, m != null ? m[1] : null, ag);
+                    // The session keeps its own model and agent: switch them first if the user changed them.
+                    if (m != null && !(m[0] + "/" + m[1]).equals(sessionModel)) {
+                        c.switchModel(t.sessionId, m[0], m[1]);
+                        sessionModel = m[0] + "/" + m[1];
+                    }
+                    if (ag != null && !ag.equals(sessionAgent)) {
+                        c.switchAgent(t.sessionId, ag);
+                        sessionAgent = ag;
+                    }
+                    c.prompt(t.sessionId, text);
                     if (!eventsRunning) {
                         Bg.ui(new Runnable() {
                             public void run() {
@@ -880,7 +957,7 @@ public final class CodePage extends Page {
         Bg.run(new Runnable() {
             public void run() {
                 try {
-                    c.abort(t.sessionId);
+                    c.interrupt(t.sessionId);
                 } catch (final IOException e) {
                     Bg.ui(new Runnable() {
                         public void run() {
@@ -910,7 +987,7 @@ public final class CodePage extends Page {
             card.setBackground(Ui.shape(a, p.surface, Ui.dp(a, 20), true, false));
             card.setPadding(Ui.dp(a, 16), Ui.dp(a, 12), Ui.dp(a, 16), Ui.dp(a, 12));
             TextView title = Ui.text(a, 15, risk.level == Risk.DESTRUCTIVE ? p.danger : p.accent, true);
-            title.setText("Permission needed: " + req.optString("permission", "action")
+            title.setText("Permission needed: " + req.optString("action", req.optString("permission", "action"))
                     + (risk.level != Risk.NORMAL ? " · " + risk.label() : ""));
             card.addView(title);
             TextView what = Ui.body(a, 13, p.text);
@@ -1046,34 +1123,28 @@ public final class CodePage extends Page {
         }
         Map<String, Object[]> keep = new HashMap<String, Object[]>();
         for (Transcript.Msg m : messages) {
-            for (JSONObject part : m.parts.values()) {
-                String id = part.optString("id");
-                String sig = part.toString();
-                Object[] cached = partViews.get(id);
-                View v;
-                if (cached != null && sig.equals(cached[0])) {
-                    v = (View) cached[1];
-                } else {
-                    v = PartView.build(a, m, part);
-                }
-                if (v == null) continue;
-                if (v.getParent() != null) ((ViewGroup) v.getParent()).removeView(v);
-                keep.put(id, new Object[]{sig, v});
-                transcriptBox.addView(v, Ui.matchWrap());
+            String id = m.id();
+            Object[] cached = partViews.get(id);
+            View v;
+            if (cached != null && cached[0] == m && ((Integer) cached[1]) == m.version) {
+                v = (View) cached[2];
+            } else {
+                v = PartView.build(a, m);
             }
-            if (!m.isUser()) {
-                View footer = PartView.footer(a, m);
-                if (footer != null) transcriptBox.addView(footer, Ui.matchWrap());
-            }
+            if (v == null) continue;
+            if (v.getParent() != null) ((ViewGroup) v.getParent()).removeView(v);
+            keep.put(id, new Object[]{m, m.version, v});
+            transcriptBox.addView(v, Ui.matchWrap());
         }
         partViews.clear();
         partViews.putAll(keep);
+        if (sessionTitle != null && transcript.title.length() > 0) sessionTitle.setText(transcript.title);
     }
 
     /** Settings' "Project" row: the server's projects, or a typed path. */
     public void chooseProject() {
         final Sheet s = new Sheet(a, "Project");
-        s.message("The directory on the server the agent works in (OpenCode's `directory` parameter).");
+        s.message("The directory on the server the agent works in (OpenCode's location[directory] parameter).");
         s.row("Server default", "The directory opencode serve was started in", Prefs.str(Prefs.OC_DIRECTORY, "").length() == 0,
                 new Runnable() {
                     public void run() {
@@ -1092,9 +1163,11 @@ public final class CodePage extends Page {
                             public void run() {
                                 loading.setText(list.length() == 0 ? "No projects reported" : "Projects on the server:");
                                 for (int i = 0; i < list.length(); i++) {
-                                    final String wt = list.optJSONObject(i).optString("worktree", "");
+                                    JSONObject pr = list.optJSONObject(i);
+                                    if (pr == null) continue;
+                                    final String wt = pr.optString("canonical", pr.optString("worktree", ""));
                                     if (wt.length() == 0 || wt.equals("/")) continue;
-                                    s.row(wt, list.optJSONObject(i).optString("name", ""),
+                                    s.row(wt, pr.optString("name", ""),
                                             wt.equals(Prefs.str(Prefs.OC_DIRECTORY, "")), new Runnable() {
                                                 public void run() {
                                                     Prefs.put(Prefs.OC_DIRECTORY, wt);

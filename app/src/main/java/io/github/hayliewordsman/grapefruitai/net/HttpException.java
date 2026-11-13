@@ -7,6 +7,17 @@ public final class HttpException extends IOException {
     public final int code;
     public final String body;
 
+    /** OpenCode V2's error tag ("UnauthorizedError", "LocationNotFoundError"…), or null. */
+    public String tag() {
+        if (body == null) return null;
+        try {
+            String t = new org.json.JSONObject(body).optString("_tag", "");
+            return t.length() > 0 ? t : null;
+        } catch (org.json.JSONException e) {
+            return null;
+        }
+    }
+
     public HttpException(int code, String body) {
         super(describe(code, body));
         this.code = code;

@@ -17,7 +17,9 @@ described here; nothing else is claimed to work.
 | Image prices in real units (per image, per megapixel, per M image tokens, per request; resolution variants; several providers), the model-page fallback for models the Images API doesn't price (Meta Muse Image: `$0.01/image`), and no "Input: Free / Output: Free" for image-only models | `ImagePricingTest`, against live Images API responses and the openrouter.ai/meta/muse-image page (2026-11-13); also checked by hand against all 66 live Images API models |
 | Streaming chunk handling: text, reasoning, `url_citation` annotations, usage/cost, mid-stream errors | `ChatChunkTest`, `SseTest` (OpenRouter's documented SSE format) |
 | Markdown: headings, lists, quotes, rules, tables, fenced code (also unclosed while streaming); code blocks have Copy | `MarkdownTest`, `Api17Test` |
-| OpenCode event handling: message/part updates and deltas, session status, permissions asked/replied, other sessions ignored, token and cost totals | `TranscriptTest`, with event shapes from the `@opencode-ai/sdk` 1.19.5 OpenAPI types |
+| OpenCode V2 client: every request the app makes (info, location, models, default model, providers, agents, projects, sessions list/create/get/delete, switch model/agent, prompt, interrupt, messages, active, diff, permissions and reply, fs list/read/find, vcs status, events) is a documented V2 route with only documented query parameters and body fields, over HTTPS with Basic auth | `OpenCodeApiTest` (Robolectric, API 17), against the routes and request schemas of https://opencode.ai/docs/openapi.json (fetched 2026-11-13, kept as `opencode-v2-routes.json`) |
+| V2 event handling: `session.text/reasoning.*` by ordinal, `session.tool.*`, `session.step.*`, `session.execution.*`, retries, usage totals, `permission.asked/replied`, other sessions ignored; loading projected messages | `TranscriptTest`, with event and message shapes from the same OpenAPI document |
+| Connection test outcomes: missing settings, HTTP 401, HTTP 404 (API vs project directory), TLS (untrusted, wrong name), network (DNS, refused, timeout), non-OpenCode answers | `ConnectionCheckTest`, `OpenCodeApiTest` |
 | Risk classification for permission requests (git push, rm, reset --hard, sudo, publishing, protected projects…) | `RiskTest` |
 
 ## Implemented but not exercised against live services
@@ -30,10 +32,12 @@ or OpenCode server was available while building:
   files), web search plugin, image generation (Image API and chat image output) and image editing
   with reference images.
 - `GET /api/v1/key` (key check).
-- Everything in the Code tab against a running `opencode serve`: health, providers, agents,
-  sessions, `prompt_async`, the `/event` stream with reconnect, permission replies
-  (`POST /permission/{id}/reply`, falling back to `/session/{id}/permissions/{id}`), abort, file
-  listing/reading/status, find, downloads.
+- The Code tab against a real OpenCode 2.2.7 server: requests are checked against the published
+  OpenAPI document, but no live server was available here, and the document doesn't describe the
+  authentication scheme (the app keeps HTTP Basic, as OpenCode's server docs describe for
+  `OPENCODE_SERVER_PASSWORD`). The meaning of `ordinal` in text/reasoning events is inferred
+  (position in the message's content); the app reloads the session when a turn ends, so the final
+  text always comes from the server's projection.
 - Android Keystore storage (Android 4.3+): Robolectric can't emulate the keystore.
 - Saving to Pictures/Download (MediaStore on Android 10+, public folders and the runtime permission
   on 6–9), and the system file picker.
@@ -52,6 +56,8 @@ or OpenCode server was available while building:
 - Image generation is not streamed (partial previews from the Image API are not shown).
 - Text files attached in Chat are sent as text; other files need a model with `file` input.
 - The Code tab sends text prompts; attaching files to OpenCode prompts is not implemented.
+- The V2 event stream (`GET /api/event`) is volatile: events during a disconnection are lost, so
+  the app reloads the session after reconnecting.
 - GitHub operations (Actions logs, artifact downloads, commits, pushes) happen through the agent's
   tools on the server (for example the `gh` CLI if installed there); the app shows them and asks
   for approval but has no GitHub API client of its own.

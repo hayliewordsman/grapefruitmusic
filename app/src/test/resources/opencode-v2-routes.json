@@ -1,0 +1,1357 @@
+{
+ "info": {
+  "description": "Experimental HttpApi surface for selected instance routes.",
+  "title": "opencode HttpApi",
+  "version": "0.0.1"
+ },
+ "routes": {
+  "DELETE /api/credential/{credentialID}": {
+   "auth": false,
+   "query": []
+  },
+  "DELETE /api/debug/location": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "DELETE /api/experimental/artifacts/{artifactID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "DELETE /api/experimental/fs/watch": {
+   "auth": false,
+   "body": [
+    "path"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "path"
+   ]
+  },
+  "DELETE /api/experimental/mcp/{server}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "DELETE /api/experimental/persistent-pty/{ptyID}": {
+   "auth": false,
+   "query": []
+  },
+  "DELETE /api/experimental/schedule/{scheduleID}": {
+   "auth": false,
+   "query": []
+  },
+  "DELETE /api/experimental/session/{sessionID}/instructions/entries/{key}": {
+   "auth": false,
+   "query": []
+  },
+  "DELETE /api/integration/{integrationID}/connect/command/{attemptID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "DELETE /api/integration/{integrationID}/connect/oauth/{attemptID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "DELETE /api/permission/saved/{id}": {
+   "auth": false,
+   "query": []
+  },
+  "DELETE /api/pty/{ptyID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "DELETE /api/session/{sessionID}": {
+   "auth": false,
+   "query": []
+  },
+  "DELETE /api/session/{sessionID}/form/{formID}": {
+   "auth": false,
+   "query": [
+    "message"
+   ]
+  },
+  "DELETE /api/session/{sessionID}/inbox/{inboxID}": {
+   "auth": false,
+   "query": []
+  },
+  "DELETE /api/session/{sessionID}/revert": {
+   "auth": false,
+   "query": []
+  },
+  "DELETE /api/shell/{id}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "DELETE /api/worktree": {
+   "auth": false,
+   "body": [
+    "directory",
+    "force",
+    "projectID"
+   ],
+   "query": [],
+   "required": [
+    "projectID",
+    "directory",
+    "force"
+   ]
+  },
+  "GET /api/agent": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/agent/{agentID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/command": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/config": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/config/shell": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/credential": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/debug/location": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/event": {
+   "auth": false,
+   "query": [
+    "types"
+   ]
+  },
+  "GET /api/experimental/artifacts": {
+   "auth": false,
+   "query": [
+    "location",
+    "sessionID",
+    "provider"
+   ]
+  },
+  "GET /api/experimental/artifacts/providers": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/experimental/artifacts/{artifactID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/experimental/artifacts/{artifactID}/view/*": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/experimental/client-mcp": {
+   "auth": false,
+   "query": [
+    "location",
+    "name",
+    "ticket"
+   ]
+  },
+  "GET /api/experimental/job": {
+   "auth": false,
+   "query": [
+    "sessionID",
+    "kind",
+    "status",
+    "descendants"
+   ]
+  },
+  "GET /api/experimental/media/{hash}": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/experimental/migration/v1": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/experimental/persistent-pty/{ptyID}": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/experimental/persistent-pty/{ptyID}/connect": {
+   "auth": false,
+   "query": [
+    "cursor",
+    "role",
+    "attachment_id",
+    "takeover",
+    "input_protocol",
+    "ticket"
+   ]
+  },
+  "GET /api/experimental/persistent-pty/{ptyID}/snapshot": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/experimental/schedule": {
+   "auth": false,
+   "query": [
+    "sessionID"
+   ]
+  },
+  "GET /api/experimental/schedule/{scheduleID}": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/experimental/session/stats": {
+   "auth": false,
+   "query": [
+    "from",
+    "to",
+    "project",
+    "timezone",
+    "tools"
+   ]
+  },
+  "GET /api/experimental/session/{sessionID}/export": {
+   "auth": false,
+   "query": [
+    "sanitize"
+   ]
+  },
+  "GET /api/experimental/session/{sessionID}/instructions/entries": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/experimental/session/{sessionID}/log": {
+   "auth": false,
+   "query": [
+    "after",
+    "follow"
+   ]
+  },
+  "GET /api/experimental/session/{sessionID}/terminal": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/experimental/session/{sessionID}/terminal/read": {
+   "auth": false,
+   "query": [
+    "lines"
+   ]
+  },
+  "GET /api/experimental/usage/limits": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/experimental/voice/models": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/form": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/fs/find": {
+   "auth": false,
+   "query": [
+    "location",
+    "query",
+    "type",
+    "limit"
+   ]
+  },
+  "GET /api/fs/list": {
+   "auth": false,
+   "query": [
+    "location",
+    "path"
+   ]
+  },
+  "GET /api/fs/read/*": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/info": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/integration": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/integration/{integrationID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/integration/{integrationID}/connect/command/{attemptID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/integration/{integrationID}/connect/oauth/{attemptID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/location": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/mcp": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/mcp/resource": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/model": {
+   "auth": false,
+   "query": [
+    "location",
+    "types"
+   ]
+  },
+  "GET /api/model/default": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/permission/request": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/permission/saved": {
+   "auth": false,
+   "query": [
+    "projectID"
+   ]
+  },
+  "GET /api/plugin": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/plugin/gui": {
+   "auth": false,
+   "query": [
+    "location",
+    "id"
+   ]
+  },
+  "GET /api/project": {
+   "auth": false,
+   "query": [
+    "archived"
+   ]
+  },
+  "GET /api/provider": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/provider/{providerID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/pty": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/pty/{ptyID}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/pty/{ptyID}/connect": {
+   "auth": false,
+   "query": [
+    "location[directory]",
+    "cursor",
+    "ticket"
+   ]
+  },
+  "GET /api/reference": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/session": {
+   "auth": false,
+   "query": [
+    "limit",
+    "order",
+    "search",
+    "parentID",
+    "archived",
+    "directory",
+    "project",
+    "subpath",
+    "cursor"
+   ]
+  },
+  "GET /api/session/active": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/session/{sessionID}": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/session/{sessionID}/context": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/session/{sessionID}/diff": {
+   "auth": false,
+   "query": [
+    "from",
+    "to",
+    "context"
+   ]
+  },
+  "GET /api/session/{sessionID}/form": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/session/{sessionID}/form/{formID}": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/session/{sessionID}/inbox": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/session/{sessionID}/message": {
+   "auth": false,
+   "query": [
+    "limit",
+    "order",
+    "cursor",
+    "type"
+   ]
+  },
+  "GET /api/session/{sessionID}/message/{messageID}": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/session/{sessionID}/permission": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/session/{sessionID}/permission/{requestID}": {
+   "auth": false,
+   "query": []
+  },
+  "GET /api/shell": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/shell/{id}": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/shell/{id}/output": {
+   "auth": false,
+   "query": [
+    "location",
+    "cursor",
+    "limit"
+   ]
+  },
+  "GET /api/skill": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/vcs": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/vcs/base": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/vcs/branch": {
+   "auth": false,
+   "query": [
+    "location",
+    "search",
+    "limit"
+   ]
+  },
+  "GET /api/vcs/diff": {
+   "auth": false,
+   "query": [
+    "location",
+    "mode",
+    "base",
+    "context",
+    "untracked"
+   ]
+  },
+  "GET /api/vcs/status": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/websearch/provider": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "GET /api/worktree": {
+   "auth": false,
+   "query": [
+    "projectID"
+   ]
+  },
+  "GET /auth/connect/{code}": {
+   "auth": false,
+   "query": []
+  },
+  "PATCH /api/credential/{credentialID}": {
+   "auth": false,
+   "body": [
+    "label"
+   ],
+   "query": [],
+   "required": [
+    "label"
+   ]
+  },
+  "PATCH /api/experimental/artifacts/{artifactID}": {
+   "auth": false,
+   "body": [
+    "entry",
+    "files",
+    "sessionID",
+    "title"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "files"
+   ]
+  },
+  "PATCH /api/experimental/config": {
+   "auth": false,
+   "body": [
+    "shell"
+   ],
+   "query": [],
+   "required": [
+    "shell"
+   ]
+  },
+  "PATCH /api/permission/saved/{id}": {
+   "auth": false,
+   "body": [
+    "action",
+    "resource"
+   ],
+   "query": [],
+   "required": []
+  },
+  "PATCH /api/project/{projectID}": {
+   "auth": false,
+   "body": [
+    "canonical",
+    "commands",
+    "icon",
+    "name"
+   ],
+   "query": [],
+   "required": []
+  },
+  "PATCH /api/session/{sessionID}": {
+   "auth": false,
+   "body": [
+    "archived",
+    "metadata",
+    "permissions",
+    "title"
+   ],
+   "query": [],
+   "required": []
+  },
+  "PATCH /api/session/{sessionID}/inbox/{inboxID}": {
+   "auth": false,
+   "body": [
+    "delivery"
+   ],
+   "query": [],
+   "required": [
+    "delivery"
+   ]
+  },
+  "POST /api/credential": {
+   "auth": false,
+   "body": [
+    "activate",
+    "id",
+    "integrationID",
+    "label",
+    "value"
+   ],
+   "query": [],
+   "required": [
+    "integrationID",
+    "value"
+   ]
+  },
+  "POST /api/credential/{credentialID}/activate": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/debug/heap-dump": {
+   "auth": false,
+   "query": [
+    "directory"
+   ]
+  },
+  "POST /api/experimental/artifacts": {
+   "auth": false,
+   "body": [
+    "entry",
+    "files",
+    "provider",
+    "sessionID",
+    "title"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "title",
+    "files"
+   ]
+  },
+  "POST /api/experimental/client-mcp/token": {
+   "auth": false,
+   "query": [
+    "location",
+    "name"
+   ]
+  },
+  "POST /api/experimental/fs/watch": {
+   "auth": false,
+   "body": [
+    "path"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "path"
+   ]
+  },
+  "POST /api/experimental/fs/write": {
+   "auth": false,
+   "query": [
+    "location",
+    "path"
+   ]
+  },
+  "POST /api/experimental/generate": {
+   "auth": false,
+   "body": [
+    "model",
+    "prompt"
+   ],
+   "query": [],
+   "required": [
+    "prompt"
+   ]
+  },
+  "POST /api/experimental/generate/decisions": {
+   "auth": false,
+   "body": [
+    "input",
+    "model",
+    "questions"
+   ],
+   "query": [],
+   "required": [
+    "model",
+    "input",
+    "questions"
+   ]
+  },
+  "POST /api/experimental/generate/image": {
+   "auth": false,
+   "body": [
+    "aspect",
+    "images",
+    "model",
+    "n",
+    "prompt",
+    "resolution"
+   ],
+   "query": [],
+   "required": [
+    "model",
+    "prompt"
+   ]
+  },
+  "POST /api/experimental/generate/text": {
+   "auth": false,
+   "body": [
+    "model",
+    "prompt"
+   ],
+   "query": [],
+   "required": [
+    "prompt"
+   ]
+  },
+  "POST /api/experimental/integration/wellknown": {
+   "auth": false,
+   "body": [
+    "url"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "url"
+   ]
+  },
+  "POST /api/experimental/mcp/{server}/connect": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "POST /api/experimental/mcp/{server}/disconnect": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "POST /api/experimental/persistent-pty/handoff": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/experimental/persistent-pty/shutdown": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/experimental/persistent-pty/{ptyID}/connect-token": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/experimental/schedule": {
+   "auth": false,
+   "body": [
+    "ends",
+    "if",
+    "name",
+    "prompt",
+    "sessionID",
+    "until",
+    "when"
+   ],
+   "query": [],
+   "required": [
+    "sessionID",
+    "prompt"
+   ]
+  },
+  "POST /api/experimental/schedule/{scheduleID}/pause": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/experimental/schedule/{scheduleID}/resume": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/experimental/session/import": {
+   "auth": false,
+   "body": [
+    "info",
+    "location",
+    "messages"
+   ],
+   "query": [],
+   "required": [
+    "info",
+    "messages"
+   ]
+  },
+  "POST /api/experimental/session/{sessionID}/skill": {
+   "auth": false,
+   "body": [
+    "id",
+    "resume"
+   ],
+   "query": [],
+   "required": [
+    "id"
+   ]
+  },
+  "POST /api/experimental/session/{sessionID}/terminal": {
+   "auth": false,
+   "body": [
+    "args",
+    "command",
+    "cwd",
+    "env",
+    "size",
+    "title"
+   ],
+   "query": [],
+   "required": [
+    "args",
+    "title",
+    "env"
+   ]
+  },
+  "POST /api/experimental/session/{sessionID}/wait": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/experimental/voice/session": {
+   "auth": false,
+   "body": [
+    "model",
+    "session",
+    "transport"
+   ],
+   "query": [],
+   "required": [
+    "model",
+    "transport"
+   ]
+  },
+  "POST /api/integration/{integrationID}/connect/command": {
+   "auth": false,
+   "body": [
+    "label",
+    "methodID"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "methodID"
+   ]
+  },
+  "POST /api/integration/{integrationID}/connect/external": {
+   "auth": false,
+   "body": [
+    "answer",
+    "label",
+    "methodID"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "methodID"
+   ]
+  },
+  "POST /api/integration/{integrationID}/connect/key": {
+   "auth": false,
+   "body": [
+    "answer",
+    "key",
+    "label"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "key"
+   ]
+  },
+  "POST /api/integration/{integrationID}/connect/oauth": {
+   "auth": false,
+   "body": [
+    "answer",
+    "label",
+    "methodID"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "methodID"
+   ]
+  },
+  "POST /api/integration/{integrationID}/connect/oauth/{attemptID}/complete": {
+   "auth": false,
+   "body": [
+    "code"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": []
+  },
+  "POST /api/location/reload": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/pair": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/plugin/check": {
+   "auth": false,
+   "body": [
+    "target"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": []
+  },
+  "POST /api/plugin/update": {
+   "auth": false,
+   "body": [
+    "targets"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "targets"
+   ]
+  },
+  "POST /api/pty": {
+   "auth": false,
+   "body": [
+    "args",
+    "command",
+    "cwd",
+    "env",
+    "title"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": []
+  },
+  "POST /api/pty/{ptyID}/connect-token": {
+   "auth": false,
+   "query": [
+    "location"
+   ]
+  },
+  "POST /api/rpc/{rpcID}/{method}": {
+   "auth": false,
+   "body": [
+    "input"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": []
+  },
+  "POST /api/session": {
+   "auth": false,
+   "body": [
+    "agent",
+    "id",
+    "location",
+    "metadata",
+    "model",
+    "parentID",
+    "permissions",
+    "title"
+   ],
+   "query": [],
+   "required": []
+  },
+  "POST /api/session/{sessionID}/agent": {
+   "auth": false,
+   "body": [
+    "agent"
+   ],
+   "query": [],
+   "required": [
+    "agent"
+   ]
+  },
+  "POST /api/session/{sessionID}/background": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/session/{sessionID}/command": {
+   "auth": false,
+   "body": [
+    "agents",
+    "delivery",
+    "files",
+    "name",
+    "skills",
+    "text"
+   ],
+   "query": [],
+   "required": [
+    "name",
+    "text"
+   ]
+  },
+  "POST /api/session/{sessionID}/compact": {
+   "auth": false,
+   "body": [
+    "delivery",
+    "id"
+   ],
+   "query": [],
+   "required": []
+  },
+  "POST /api/session/{sessionID}/fork": {
+   "auth": false,
+   "body": [
+    "before"
+   ],
+   "query": [],
+   "required": []
+  },
+  "POST /api/session/{sessionID}/form": {
+   "auth": false,
+   "body": [
+    "fields",
+    "id",
+    "metadata",
+    "title"
+   ],
+   "query": [],
+   "required": [
+    "title",
+    "fields"
+   ]
+  },
+  "POST /api/session/{sessionID}/form/{formID}/reply": {
+   "auth": false,
+   "body": [
+    "answer"
+   ],
+   "query": [],
+   "required": [
+    "answer"
+   ]
+  },
+  "POST /api/session/{sessionID}/generate": {
+   "auth": false,
+   "body": [
+    "prompt"
+   ],
+   "query": [],
+   "required": [
+    "prompt"
+   ]
+  },
+  "POST /api/session/{sessionID}/interrupt": {
+   "auth": false,
+   "query": [
+    "resume"
+   ]
+  },
+  "POST /api/session/{sessionID}/model": {
+   "auth": false,
+   "body": [
+    "model"
+   ],
+   "query": [],
+   "required": [
+    "model"
+   ]
+  },
+  "POST /api/session/{sessionID}/move": {
+   "auth": false,
+   "body": [
+    "delivery",
+    "directory"
+   ],
+   "query": [],
+   "required": [
+    "directory"
+   ]
+  },
+  "POST /api/session/{sessionID}/permission": {
+   "auth": false,
+   "body": [
+    "action",
+    "agent",
+    "id",
+    "metadata",
+    "resources",
+    "save",
+    "source"
+   ],
+   "query": [],
+   "required": [
+    "action",
+    "resources"
+   ]
+  },
+  "POST /api/session/{sessionID}/permission/{requestID}/reply": {
+   "auth": false,
+   "body": [
+    "decision",
+    "message"
+   ],
+   "query": [],
+   "required": [
+    "decision"
+   ]
+  },
+  "POST /api/session/{sessionID}/prompt": {
+   "auth": false,
+   "body": [
+    "agents",
+    "delivery",
+    "files",
+    "id",
+    "metadata",
+    "resume",
+    "skills",
+    "text"
+   ],
+   "query": [],
+   "required": [
+    "text"
+   ]
+  },
+  "POST /api/session/{sessionID}/revert/commit": {
+   "auth": false,
+   "query": []
+  },
+  "POST /api/session/{sessionID}/revert/stage": {
+   "auth": false,
+   "body": [
+    "files",
+    "messageID"
+   ],
+   "query": [],
+   "required": [
+    "messageID"
+   ]
+  },
+  "POST /api/session/{sessionID}/shell": {
+   "auth": false,
+   "body": [
+    "command",
+    "id"
+   ],
+   "query": [],
+   "required": [
+    "command"
+   ]
+  },
+  "POST /api/session/{sessionID}/synthetic": {
+   "auth": false,
+   "body": [
+    "delivery",
+    "description",
+    "id",
+    "metadata",
+    "resume",
+    "text"
+   ],
+   "query": [],
+   "required": [
+    "text"
+   ]
+  },
+  "POST /api/session/{sessionID}/view": {
+   "auth": false,
+   "body": [
+    "idle"
+   ],
+   "query": [],
+   "required": [
+    "idle"
+   ]
+  },
+  "POST /api/shell": {
+   "auth": false,
+   "body": [
+    "command",
+    "cwd",
+    "metadata",
+    "timeout"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "command"
+   ]
+  },
+  "POST /api/vcs/init": {
+   "auth": false,
+   "query": [
+    "location",
+    "provider"
+   ]
+  },
+  "POST /api/websearch": {
+   "auth": false,
+   "body": [
+    "providerID",
+    "query"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "query"
+   ]
+  },
+  "POST /api/worktree": {
+   "auth": false,
+   "body": [
+    "branch",
+    "directory",
+    "from",
+    "name",
+    "projectID"
+   ],
+   "query": [],
+   "required": [
+    "projectID"
+   ]
+  },
+  "POST /api/worktree/refresh": {
+   "auth": false,
+   "body": [
+    "projectID"
+   ],
+   "query": [],
+   "required": [
+    "projectID"
+   ]
+  },
+  "PUT /api/experimental/mcp/{server}": {
+   "auth": false,
+   "body": [
+    "config"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": [
+    "config"
+   ]
+  },
+  "PUT /api/experimental/persistent-pty/{ptyID}": {
+   "auth": false,
+   "body": [
+    "attachmentID",
+    "size",
+    "title"
+   ],
+   "query": [],
+   "required": []
+  },
+  "PUT /api/experimental/session/{sessionID}/instructions/entries/{key}": {
+   "auth": false,
+   "body": [
+    "value"
+   ],
+   "query": [],
+   "required": [
+    "value"
+   ]
+  },
+  "PUT /api/pty/{ptyID}": {
+   "auth": false,
+   "body": [
+    "size",
+    "title"
+   ],
+   "query": [
+    "location"
+   ],
+   "required": []
+  },
+  "PUT /api/session/{sessionID}/environment": {
+   "auth": false,
+   "body": [
+    "variables"
+   ],
+   "query": [],
+   "required": [
+    "variables"
+   ]
+  }
+ },
+ "source": "https://opencode.ai/docs/openapi.json (fetched 2026-11-13)"
+}
